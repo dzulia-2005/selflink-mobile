@@ -1,3 +1,5 @@
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback } from 'react';
 import {
@@ -14,20 +16,26 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { MetalButton } from '@components/MetalButton';
 import { MetalPanel } from '@components/MetalPanel';
+import { StatusPill } from '@components/StatusPill';
+import { useBackendHealth } from '@hooks/useBackendHealth';
+import { RootStackParamList } from '@navigation/AppNavigator';
 import { theme } from '@theme/index';
 
 export function HomeScreen() {
-  const handleMentorPress = useCallback(() => {
-    // placeholder
-  }, []);
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { status, error, refresh } = useBackendHealth();
 
-  const handleSoulMatchPress = useCallback(() => {
-    // placeholder
-  }, []);
+  const handleMentorPress = useCallback(() => {
+    navigation.navigate('Mentor');
+  }, [navigation]);
 
   const handlePaymentsPress = useCallback(() => {
-    // placeholder
-  }, []);
+    navigation.navigate('Payments');
+  }, [navigation]);
+
+  const handleSoulMatchPress = useCallback(() => {
+    navigation.navigate('SoulMatch');
+  }, [navigation]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -54,6 +62,15 @@ export function HomeScreen() {
             <MetalButton title="Payments" onPress={handlePaymentsPress} />
           </View>
         </MetalPanel>
+
+        <MetalPanel>
+          <View style={styles.statusHeader}>
+            <Text style={styles.panelTitle}>Platform Status</Text>
+            <StatusPill status={status} />
+          </View>
+          {error && <Text style={styles.statusError}>{error}</Text>}
+          <MetalButton title="Refresh Connection" onPress={refresh} />
+        </MetalPanel>
       </ScrollView>
     </SafeAreaView>
   );
@@ -67,6 +84,8 @@ type Styles = {
   headline: TextStyle;
   subhead: TextStyle;
   panelTitle: TextStyle;
+  statusHeader: ViewStyle;
+  statusError: TextStyle;
   buttonRow: ViewStyle;
 };
 
@@ -102,6 +121,17 @@ const styles = StyleSheet.create<Styles>({
     color: theme.palette.titanium,
     ...theme.typography.subtitle,
     marginBottom: theme.spacing.md,
+  },
+  statusHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: theme.spacing.sm,
+  },
+  statusError: {
+    color: theme.palette.ember,
+    ...theme.typography.body,
+    marginBottom: theme.spacing.sm,
   },
   buttonRow: {
     gap: theme.spacing.sm,
