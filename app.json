@@ -25,6 +25,10 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "backendUrl": "http://localhost:8000",
+      "healthEndpoint": "/api/health/"
     }
   }
 }

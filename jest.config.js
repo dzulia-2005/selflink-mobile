@@ -9,7 +9,7 @@ module.exports = {
   setupFiles: ['<rootDir>/jest.polyfills.ts'],
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   transformIgnorePatterns: [
-    'node_modules/(?!(react-native|@react-native|expo|expo-status-bar|expo-linear-gradient|expo-haptics|expo-modules-core|@expo|@react-navigation)/)',
+    'node_modules/(?!(react-native|@react-native|expo|expo-status-bar|expo-constants|expo-linear-gradient|expo-haptics|expo-modules-core|react-native-safe-area-context|@expo|@react-navigation)/)',
   ],
   moduleFileExtensions: [...sourceExts, ...assetExts, 'json', 'tsx', 'ts', 'js', 'jsx'],
   moduleNameMapper: {

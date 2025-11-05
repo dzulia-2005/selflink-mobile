@@ -9,7 +9,9 @@
       "@theme/*": ["src/theme/*"],
       "@navigation/*": ["src/navigation/*"],
       "@utils/*": ["src/utils/*"],
-      "@hooks/*": ["src/hooks/*"]
+      "@hooks/*": ["src/hooks/*"],
+      "@config/*": ["src/config/*"],
+      "@services/*": ["src/services/*"]
     }
   }
 }
