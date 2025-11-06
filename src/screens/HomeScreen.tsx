@@ -1,7 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import {
   Image,
   ImageStyle,
@@ -17,6 +17,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { MetalButton } from '@components/MetalButton';
 import { MetalPanel } from '@components/MetalPanel';
 import { StatusPill } from '@components/StatusPill';
+import { useAuth } from '@hooks/useAuth';
 import { useBackendHealth } from '@hooks/useBackendHealth';
 import { RootStackParamList } from '@navigation/AppNavigator';
 import { theme } from '@theme/index';
@@ -24,6 +25,8 @@ import { theme } from '@theme/index';
 export function HomeScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { status, error, refresh } = useBackendHealth();
+  const { user, signOut } = useAuth();
+  const [isSigningOut, setIsSigningOut] = useState(false);
 
   const handleMentorPress = useCallback(() => {
     navigation.navigate('Mentor');
@@ -36,6 +39,18 @@ export function HomeScreen() {
   const handleSoulMatchPress = useCallback(() => {
     navigation.navigate('SoulMatch');
   }, [navigation]);
+
+  const handleSignOut = useCallback(async () => {
+    if (isSigningOut) {
+      return;
+    }
+    try {
+      setIsSigningOut(true);
+      await signOut();
+    } finally {
+      setIsSigningOut(false);
+    }
+  }, [signOut, isSigningOut]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -53,6 +68,22 @@ export function HomeScreen() {
             one luminous space.
           </Text>
         </View>
+
+        <MetalPanel glow>
+          <View style={styles.statusHeader}>
+            <View>
+              <Text style={styles.panelTitle}>Welcome back</Text>
+              <Text style={styles.subtitle}>
+                {user?.name ?? user?.email ?? 'Selflink Explorer'}
+              </Text>
+            </View>
+            <StatusPill status="online" label="Signed In" />
+          </View>
+          <MetalButton
+            title={isSigningOut ? 'Signing Out…' : 'Sign Out'}
+            onPress={handleSignOut}
+          />
+        </MetalPanel>
 
         <MetalPanel glow>
           <Text style={styles.panelTitle}>Today&apos;s Journey</Text>
@@ -84,6 +115,7 @@ type Styles = {
   headline: TextStyle;
   subhead: TextStyle;
   panelTitle: TextStyle;
+  subtitle: TextStyle;
   statusHeader: ViewStyle;
   statusError: TextStyle;
   buttonRow: ViewStyle;
@@ -121,6 +153,10 @@ const styles = StyleSheet.create<Styles>({
     color: theme.palette.titanium,
     ...theme.typography.subtitle,
     marginBottom: theme.spacing.md,
+  },
+  subtitle: {
+    color: theme.palette.silver,
+    ...theme.typography.body,
   },
   statusHeader: {
     flexDirection: 'row',
