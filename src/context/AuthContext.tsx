@@ -9,6 +9,7 @@ import {
 } from 'react';
 
 import { apiClient } from '@services/api/client';
+import { fetchCurrentUser } from '@services/api/user';
 
 const TOKEN_KEY = 'selflink.auth.token';
 
@@ -68,7 +69,8 @@ export function AuthProvider({ children }: Props) {
         const storedToken = await SecureStore.getItemAsync(TOKEN_KEY);
         if (storedToken && isMounted) {
           apiClient.setToken(storedToken);
-          setState((prev) => ({ ...prev, token: storedToken }));
+          const profile = await fetchCurrentUser();
+          setState({ token: storedToken, user: profile });
         }
       } catch (error) {
         console.warn('AuthContext: failed to load token', error);

@@ -1,5 +1,6 @@
 import { AuthUser } from '@context/AuthContext';
 import { apiClient } from '@services/api/client';
+import { fetchCurrentUser } from '@services/api/user';
 
 type LoginResponse = {
   token: string;
@@ -26,7 +27,11 @@ export async function loginWithPassword(
     if (!result?.token) {
       throw new Error('Missing token in response');
     }
-    return result;
+    let user = result.user;
+    if (!user) {
+      user = await fetchCurrentUser();
+    }
+    return { token: result.token, user };
   } catch (error) {
     console.warn('Falling back to mock login flow', error);
     const { email } = credentials;

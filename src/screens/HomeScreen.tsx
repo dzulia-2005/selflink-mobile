@@ -80,6 +80,10 @@ export function HomeScreen() {
             <StatusPill status="online" label="Signed In" />
           </View>
           <MetalButton
+            title="View Profile"
+            onPress={() => navigation.navigate('Profile')}
+          />
+          <MetalButton
             title={isSigningOut ? 'Signing Out…' : 'Sign Out'}
             onPress={handleSignOut}
           />

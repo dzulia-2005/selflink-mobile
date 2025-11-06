@@ -51,5 +51,6 @@ describe('HomeScreen', () => {
     expect(getByText('Mentor Session')).toBeTruthy();
     expect(getByText('SoulMatch')).toBeTruthy();
     expect(getByText('Payments')).toBeTruthy();
+    expect(getByText('View Profile')).toBeTruthy();
   });
 });

@@ -9,6 +9,7 @@ import { HomeScreen } from '@screens/HomeScreen';
 import { LoginScreen } from '@screens/LoginScreen';
 import { MentorScreen } from '@screens/MentorScreen';
 import { PaymentsScreen } from '@screens/PaymentsScreen';
+import { ProfileScreen } from '@screens/ProfileScreen';
 import { SoulMatchScreen } from '@screens/SoulMatchScreen';
 import { theme } from '@theme/index';
 
@@ -19,6 +20,7 @@ export type RootStackParamList = {
   Mentor: undefined;
   SoulMatch: undefined;
   Payments: undefined;
+  Profile: undefined;
 };
 
 export type AuthStackParamList = {
@@ -71,6 +73,11 @@ export function AppNavigator() {
           }}
         >
           <Stack.Screen name="Home" component={HomeScreen} />
+          <Stack.Screen
+            name="Profile"
+            component={ProfileScreen}
+            options={{ headerTitle: 'Profile' }}
+          />
           <Stack.Screen
             name="Mentor"
             component={MentorScreen}
