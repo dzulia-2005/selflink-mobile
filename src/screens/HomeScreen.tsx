@@ -16,8 +16,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { MetalButton } from '@components/MetalButton';
 import { MetalPanel } from '@components/MetalPanel';
-import { StatusPill } from '@components/StatusPill';
 import { MetalToast } from '@components/MetalToast';
+import { StatusPill } from '@components/StatusPill';
 import { useAuth } from '@hooks/useAuth';
 import { useBackendHealth } from '@hooks/useBackendHealth';
 import { RootStackParamList } from '@navigation/AppNavigator';

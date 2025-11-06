@@ -52,7 +52,7 @@ src/
 
 - `HomeScreen` surfaces mentor, SoulMatch, and payments actions with navigation hooks plus a backend status panel (`StatusPill`).
 - `MentorScreen`, `SoulMatchScreen`, and `PaymentsScreen` provide polished placeholder flows ready for integrating Django endpoints.
-- `ProfileScreen` displays the signed-in user, placeholder avatar, and offers edit/sign-out actions.
+- `ProfileScreen` lets users tweak display name or avatar URL (with inline metallic toasts) and sign out.
 - `AppNavigator` registers the stack screens with metallic theming; add new routes here as features land.
 
 ## CI

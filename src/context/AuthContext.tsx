@@ -9,7 +9,7 @@ import {
 } from 'react';
 
 import { apiClient } from '@services/api/client';
-import { fetchCurrentUser } from '@services/api/user';
+import { fetchCurrentUser, updateCurrentUser } from '@services/api/user';
 
 const TOKEN_KEY = 'selflink.auth.token';
 
@@ -40,6 +40,7 @@ type AuthContextValue = {
   signOut: () => Promise<void>;
   setUser: (user: AuthUser | null) => void;
   refreshProfile: () => Promise<void>;
+  updateProfile: (input: Partial<AuthUser>) => Promise<void>;
 };
 
 export const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -147,14 +148,36 @@ export function AuthProvider({ children }: Props) {
       token: state.token,
       user: state.user,
       loading,
-       profileError,
+      profileError,
       isAuthenticated: Boolean(state.token),
       signIn,
       signOut,
       setUser,
       refreshProfile,
+      updateProfile: async (input: Partial<AuthUser>) => {
+        if (!state.token) {
+          return;
+        }
+        try {
+          const updated = await updateCurrentUser(input);
+          setState((prev) => ({ ...prev, user: updated }));
+          setProfileError(null);
+        } catch (error) {
+          console.warn('AuthContext: profile update failed', error);
+          throw error;
+        }
+      },
     }),
-    [state.token, state.user, loading, profileError, signIn, signOut, setUser, refreshProfile],
+    [
+      state.token,
+      state.user,
+      loading,
+      profileError,
+      signIn,
+      signOut,
+      setUser,
+      refreshProfile,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

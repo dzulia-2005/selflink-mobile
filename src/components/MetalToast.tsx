@@ -15,13 +15,13 @@ type Props = {
   onDismiss?: () => void;
 };
 
-const toneMap: Record<Tone, { colors: string[]; text: string }> = {
+const toneMap: Record<Tone, { colors: readonly [string, string]; text: string }> = {
   info: {
-    colors: ['#E0F2FE', '#BFDBFE'],
+    colors: ['#E0F2FE', '#BFDBFE'] as const,
     text: theme.palette.titanium,
   },
   error: {
-    colors: ['#FEE2E2', '#FCA5A5'],
+    colors: ['#FEE2E2', '#FCA5A5'] as const,
     text: '#7F1D1D',
   },
 };
@@ -41,13 +41,19 @@ export const MetalToast = memo(function MetalToast({
   const palette = toneMap[tone];
 
   return (
-    <LinearGradient colors={palette.colors} style={styles.container} start={{ x: 0, y: 0 }}>
+    <LinearGradient
+      colors={palette.colors}
+      style={styles.container}
+      start={{ x: 0, y: 0 }}
+    >
       <Text style={[styles.message, { color: palette.text }]}>{message}</Text>
       {(actionLabel || onDismiss) && (
         <View style={styles.actions}>
           {actionLabel && onAction && (
             <Pressable onPress={onAction} style={styles.actionButton}>
-              <Text style={[styles.actionText, { color: palette.text }]}>{actionLabel}</Text>
+              <Text style={[styles.actionText, { color: palette.text }]}>
+                {actionLabel}
+              </Text>
             </Pressable>
           )}
           {onDismiss && (
