@@ -1,25 +1,38 @@
 module.exports = function (api) {
   api.cache(true);
+  const plugins = [
+    [
+      'module-resolver',
+      {
+        extensions: ['.tsx', '.ts', '.js', '.json'],
+        alias: {
+          '@components': './src/components',
+          '@screens': './src/screens',
+          '@theme': './src/theme',
+          '@navigation': './src/navigation',
+          '@utils': './src/utils',
+          '@hooks': './src/hooks',
+          '@config': './src/config',
+          '@services': './src/services',
+          '@context': './src/context',
+          'react-native-worklets/plugin': './src/utils/workletsPluginStub',
+        },
+      },
+    ],
+  ];
+
+  if (!process.env.DISABLE_REANIMATED_PLUGIN) {
+    try {
+      require.resolve('react-native-reanimated/plugin');
+      plugins.push('react-native-reanimated/plugin');
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.warn('react-native-reanimated/plugin not available, skipping.');
+    }
+  }
+
   return {
     presets: ['babel-preset-expo'],
-    plugins: [
-      [
-        'module-resolver',
-        {
-          extensions: ['.tsx', '.ts', '.js', '.json'],
-          alias: {
-            '@components': './src/components',
-            '@screens': './src/screens',
-            '@theme': './src/theme',
-            '@navigation': './src/navigation',
-            '@utils': './src/utils',
-            '@hooks': './src/hooks',
-            '@config': './src/config',
-            '@services': './src/services',
-            '@context': './src/context',
-          },
-        },
-      ],
-    ],
+    plugins,
   };
 };
