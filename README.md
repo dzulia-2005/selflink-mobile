@@ -46,6 +46,7 @@ src/
 - `AppNavigator` now gates access: unauthenticated users see Login; signed-in users reach Home/Mentor/SoulMatch/Payments and can sign out directly from the Home welcome panel.
 - Home’s welcome panel shows the active user and exposes a Sign Out CTA, making it easy to switch accounts during testing.
 - `src/services/api/user.ts` and the auth provider call `/api/v1/users/me/` to hydrate the profile on launch and after login.
+- `src/components/MetalToast.tsx` supplies metallic toasts used for graceful login/profile error messaging.
 
 ## Screens & Navigation
 

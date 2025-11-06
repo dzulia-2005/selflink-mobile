@@ -1,18 +1,11 @@
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
-import {
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { MetalButton } from '@components/MetalButton';
 import { MetalPanel } from '@components/MetalPanel';
+import { MetalToast } from '@components/MetalToast';
 import { useAuth } from '@hooks/useAuth';
 import { loginWithPassword } from '@services/api/auth';
 import { theme } from '@theme/index';
@@ -22,13 +15,14 @@ export function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleLogin = async () => {
     if (isSubmitting) {
       return;
     }
     if (!email || !password) {
-      Alert.alert('Missing info', 'Please enter both email and password to continue.');
+      setErrorMessage('Please enter both email and password to continue.');
       return;
     }
 
@@ -36,9 +30,10 @@ export function LoginScreen() {
       setIsSubmitting(true);
       const result = await loginWithPassword({ email, password });
       await signIn(result);
+      setErrorMessage(null);
     } catch (error) {
       console.error('Login failed', error);
-      Alert.alert('Login failed', 'Please try again.');
+      setErrorMessage('Login failed. Please verify your credentials and try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -52,6 +47,13 @@ export function LoginScreen() {
         style={styles.flex}
       >
         <View style={styles.content}>
+          <MetalToast
+            visible={Boolean(errorMessage)}
+            message={errorMessage ?? ''}
+            tone="error"
+            actionLabel="Dismiss"
+            onAction={() => setErrorMessage(null)}
+          />
           <Text style={styles.headline}>Welcome to Selflink</Text>
           <Text style={styles.subtitle}>
             Sign in to unlock your mentor, SoulMatch, and premium social experiences.

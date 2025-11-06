@@ -17,6 +17,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { MetalButton } from '@components/MetalButton';
 import { MetalPanel } from '@components/MetalPanel';
 import { StatusPill } from '@components/StatusPill';
+import { MetalToast } from '@components/MetalToast';
 import { useAuth } from '@hooks/useAuth';
 import { useBackendHealth } from '@hooks/useBackendHealth';
 import { RootStackParamList } from '@navigation/AppNavigator';
@@ -25,7 +26,7 @@ import { theme } from '@theme/index';
 export function HomeScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { status, error, refresh } = useBackendHealth();
-  const { user, signOut } = useAuth();
+  const { user, signOut, profileError, refreshProfile } = useAuth();
   const [isSigningOut, setIsSigningOut] = useState(false);
 
   const handleMentorPress = useCallback(() => {
@@ -56,6 +57,13 @@ export function HomeScreen() {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar style="light" />
       <ScrollView contentContainerStyle={styles.content}>
+        <MetalToast
+          visible={Boolean(profileError)}
+          message={profileError ?? ''}
+          tone="error"
+          actionLabel="Retry"
+          onAction={refreshProfile}
+        />
         <View style={styles.hero}>
           <Image
             source={require('../../assets/icon.png')}
