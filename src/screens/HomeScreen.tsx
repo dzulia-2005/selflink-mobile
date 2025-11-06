@@ -1,7 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   Image,
   ImageStyle,
@@ -16,8 +16,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { MetalButton } from '@components/MetalButton';
 import { MetalPanel } from '@components/MetalPanel';
-import { MetalToast } from '@components/MetalToast';
 import { StatusPill } from '@components/StatusPill';
+import { useToast } from '@context/ToastContext';
 import { useAuth } from '@hooks/useAuth';
 import { useBackendHealth } from '@hooks/useBackendHealth';
 import { RootStackParamList } from '@navigation/AppNavigator';
@@ -27,7 +27,9 @@ export function HomeScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { status, error, refresh } = useBackendHealth();
   const { user, signOut, profileError, refreshProfile } = useAuth();
+  const toast = useToast();
   const [isSigningOut, setIsSigningOut] = useState(false);
+  const [profileToastId, setProfileToastId] = useState<number | null>(null);
 
   const handleMentorPress = useCallback(() => {
     navigation.navigate('Mentor');
@@ -53,17 +55,26 @@ export function HomeScreen() {
     }
   }, [signOut, isSigningOut]);
 
+  useEffect(() => {
+    if (profileError) {
+      const id = toast.push({
+        message: profileError,
+        tone: 'error',
+        actionLabel: 'Retry',
+        onAction: refreshProfile,
+        duration: 6000,
+      });
+      setProfileToastId(id);
+    } else if (profileToastId) {
+      toast.dismiss(profileToastId);
+      setProfileToastId(null);
+    }
+  }, [profileError, refreshProfile, toast, profileToastId]);
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar style="light" />
       <ScrollView contentContainerStyle={styles.content}>
-        <MetalToast
-          visible={Boolean(profileError)}
-          message={profileError ?? ''}
-          tone="error"
-          actionLabel="Retry"
-          onAction={refreshProfile}
-        />
         <View style={styles.hero}>
           <Image
             source={require('../../assets/icon.png')}

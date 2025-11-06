@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useColorScheme } from 'react-native';
 
 import { AuthProvider } from '@context/AuthContext';
+import { ToastProvider } from '@context/ToastContext';
 import { AppNavigator } from '@navigation/AppNavigator';
 import { theme } from '@theme/index';
 
@@ -29,9 +30,11 @@ export default function App() {
   }
 
   return (
-    <AuthProvider>
-      <StatusBar style={statusBarStyle} backgroundColor={theme.palette.midnight} />
-      <AppNavigator />
-    </AuthProvider>
+    <ToastProvider>
+      <AuthProvider>
+        <StatusBar style={statusBarStyle} backgroundColor={theme.palette.midnight} />
+        <AppNavigator />
+      </AuthProvider>
+    </ToastProvider>
   );
 }

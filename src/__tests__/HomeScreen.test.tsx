@@ -2,6 +2,7 @@ import { render } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { HomeScreen } from '@screens/HomeScreen';
+import { ToastProvider } from '@context/ToastContext';
 
 jest.mock('@react-navigation/native', () => {
   const actual = jest.requireActual('@react-navigation/native');
@@ -43,9 +44,11 @@ describe('HomeScreen', () => {
     };
 
     const { getByText } = render(
-      <SafeAreaProvider initialMetrics={initialMetrics}>
-        <HomeScreen />
-      </SafeAreaProvider>,
+      <ToastProvider>
+        <SafeAreaProvider initialMetrics={initialMetrics}>
+          <HomeScreen />
+        </SafeAreaProvider>
+      </ToastProvider>,
     );
 
     expect(getByText('Mentor Session')).toBeTruthy();

@@ -11,6 +11,7 @@ import { MentorScreen } from '@screens/MentorScreen';
 import { PaymentsScreen } from '@screens/PaymentsScreen';
 import { ProfileScreen } from '@screens/ProfileScreen';
 import { SoulMatchScreen } from '@screens/SoulMatchScreen';
+import { ToastContainer } from '@screens/ToastContainer';
 import { theme } from '@theme/index';
 
 enableScreens(true);
@@ -61,6 +62,7 @@ export function AppNavigator() {
 
   return (
     <NavigationContainer theme={navigationTheme}>
+      <ToastContainer />
       {isAuthenticated ? (
         <Stack.Navigator
           screenOptions={{
