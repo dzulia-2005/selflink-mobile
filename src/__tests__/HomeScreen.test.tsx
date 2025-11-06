@@ -21,6 +21,20 @@ jest.mock('@hooks/useBackendHealth', () => ({
   }),
 }));
 
+const mockSignOut = jest.fn();
+
+jest.mock('@hooks/useAuth', () => ({
+  useAuth: () => ({
+    token: 'token',
+    user: { id: '1', email: 'steve@apple.com', name: 'Steve Jobs' },
+    loading: false,
+    isAuthenticated: true,
+    signIn: jest.fn(),
+    signOut: mockSignOut,
+    setUser: jest.fn(),
+  }),
+}));
+
 describe('HomeScreen', () => {
   it('renders the call to action buttons', () => {
     const initialMetrics = {
