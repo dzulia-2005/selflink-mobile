@@ -53,6 +53,7 @@ src/
 - `src/services/api/matrix.ts` fetches `/api/v1/matrix/profile/` and posts to `/api/v1/matrix/sync/` so the SoulMatch/Mentor areas can share the same profile contract as the backend evolves.
 - `src/services/api/media.ts` offers list + CRUD helpers for `/api/v1/media/` and `/api/v1/media/{id}/`, keeping uploads/metadata updates consistent across clients.
 - `src/services/api/mentor.ts` exposes CRUD helpers for `/api/v1/mentor/profile/` so mentor personalization can be managed from mobile or desktop with the same code.
+- `src/services/api/mentorSessions.ts` wraps `/api/v1/mentor/sessions/`, `/api/v1/mentor/sessions/{id}/`, and `/api/v1/mentor/sessions/ask/` so questions, answers, and logs stay in sync across clients.
 - `src/components/MetalToast.tsx` and `src/context/ToastContext.tsx` supply metallic toasts used for graceful login/profile error messaging across the app.
 
 ## Screens & Navigation
