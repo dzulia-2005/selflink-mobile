@@ -48,6 +48,7 @@ src/
 - Home’s welcome panel shows the active user and exposes a Sign Out CTA, making it easy to switch accounts during testing.
 - `src/services/api/user.ts` handles `/api/v1/users/*` (list/detail/follow/followers) plus the `/api/v1/users/me/` hydration flow used by AuthContext.
 - `src/hooks/useUsersDirectory.ts` provides a reusable controller for searching, paginating, and following users against the `/api/v1/users/*` endpoints.
+- `src/hooks/usePaymentsCatalog.ts` hydrates gifts, plans, and subscription data so payments UI can stay reactive and shareable across platforms.
 - `src/services/api/comments.ts` wraps `/api/v1/comments/` so shared clients (mobile/desktop) can page through comment threads and perform CRUD via the same helper.
 - `src/services/api/devices.ts` handles `/api/v1/devices/` CRUD so mobile/web can register or remove push tokens consistently.
 - `src/services/api/feed.ts` wraps `/api/v1/feed/home/` and `/api/v1/home/highlights/` so all clients can fetch both the paginated timeline and highlight rail with the same helper.
@@ -70,6 +71,7 @@ src/
 
 - `HomeScreen` surfaces mentor, SoulMatch, and payments actions with navigation hooks plus a backend status panel (`StatusPill`).
 - `CommunityScreen` delivers a Jobs-inspired metallic directory with live search, follow toggles, and thoughtful defaults drawn from the new `useUsersDirectory` hook.
+- `PaymentsScreen` now renders live plan/gift catalogs, echoing Apple’s polish (clarity), Torvalds’ pragmatism (structured data), and Musk’s ambition (forward-looking copy).
 - `MentorScreen`, `SoulMatchScreen`, and `PaymentsScreen` provide polished placeholder flows ready for integrating Django endpoints.
 - `ProfileScreen` lets users tweak display name or avatar URL (with inline metallic toasts) and sign out.
 - `AppNavigator` registers the stack screens with metallic theming; add new routes here as features land.
