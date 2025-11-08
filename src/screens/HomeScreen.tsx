@@ -35,6 +35,10 @@ export function HomeScreen() {
     navigation.navigate('Mentor');
   }, [navigation]);
 
+  const handleMessagesPress = useCallback(() => {
+    navigation.navigate('Messages');
+  }, [navigation]);
+
   const handleCommunityPress = useCallback(() => {
     navigation.navigate('Community');
   }, [navigation]);
@@ -118,6 +122,7 @@ export function HomeScreen() {
           <Text style={styles.panelTitle}>Today&apos;s Journey</Text>
           <View style={styles.buttonRow}>
             <MetalButton title="Community" onPress={handleCommunityPress} />
+            <MetalButton title="Messages" onPress={handleMessagesPress} />
             <MetalButton title="Mentor Session" onPress={handleMentorPress} />
             <MetalButton title="SoulMatch" onPress={handleSoulMatchPress} />
             <MetalButton title="Payments" onPress={handlePaymentsPress} />

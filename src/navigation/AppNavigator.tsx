@@ -9,6 +9,7 @@ import { CommunityScreen } from '@screens/CommunityScreen';
 import { HomeScreen } from '@screens/HomeScreen';
 import { LoginScreen } from '@screens/LoginScreen';
 import { MentorScreen } from '@screens/MentorScreen';
+import { MessagesScreen } from '@screens/MessagesScreen';
 import { PaymentsScreen } from '@screens/PaymentsScreen';
 import { ProfileScreen } from '@screens/ProfileScreen';
 import { RegisterScreen } from '@screens/RegisterScreen';
@@ -21,6 +22,7 @@ enableScreens(true);
 export type RootStackParamList = {
   Home: undefined;
   Community: undefined;
+  Messages: undefined;
   Mentor: undefined;
   SoulMatch: undefined;
   Payments: undefined;
@@ -83,6 +85,11 @@ export function AppNavigator() {
             name="Community"
             component={CommunityScreen}
             options={{ headerTitle: 'Community' }}
+          />
+          <Stack.Screen
+            name="Messages"
+            component={MessagesScreen}
+            options={{ headerTitle: 'Messages' }}
           />
           <Stack.Screen
             name="Profile"
