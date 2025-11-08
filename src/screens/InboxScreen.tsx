@@ -6,20 +6,31 @@ import {
   RefreshControl,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThreadCard } from '@components/ThreadCard';
+import { MetalButton } from '@components/MetalButton';
+import { MetalPanel } from '@components/MetalPanel';
+import { useToast } from '@context/ToastContext';
 import { useThreads } from '@hooks/useThreads';
 import { RootStackParamList } from '@navigation/AppNavigator';
 import { theme } from '@theme/index';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useState } from 'react';
 
 export function InboxScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { threads, loading, refreshing, loadMore, hasMore, refresh } = useThreads();
+  const toast = useToast();
+  const { threads, loading, refreshing, loadMore, hasMore, refresh, createThread } =
+    useThreads();
+  const [handles, setHandles] = useState('');
+  const [message, setMessage] = useState('');
+  const [title, setTitle] = useState('');
+  const [creating, setCreating] = useState(false);
 
   const openThread = useCallback(
     (threadId: number) => {
@@ -27,6 +38,38 @@ export function InboxScreen() {
     },
     [navigation],
   );
+
+  const handleCreateThread = useCallback(async () => {
+    if (creating) return;
+    const participant_handles = handles
+      .split(',')
+      .map((handle) => handle.trim())
+      .filter(Boolean);
+
+    if (participant_handles.length === 0 || !message.trim()) {
+      toast.push({
+        tone: 'error',
+        message: 'Add at least one handle and a message.',
+      });
+      return;
+    }
+    try {
+      setCreating(true);
+      const thread = await createThread({
+        title: title.trim() || undefined,
+        participant_handles,
+        initial_message: message.trim(),
+      });
+      setHandles('');
+      setMessage('');
+      setTitle('');
+      openThread(thread.id);
+    } catch (error) {
+      // toast handled in hook
+    } finally {
+      setCreating(false);
+    }
+  }, [creating, createThread, handles, message, openThread, title, toast]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -66,6 +109,39 @@ export function InboxScreen() {
             </View>
           )
         }
+        ListHeaderComponent={
+          <MetalPanel glow>
+            <Text style={styles.panelTitle}>Start a Conversation</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Title (optional)"
+              placeholderTextColor={theme.palette.graphite}
+              value={title}
+              onChangeText={setTitle}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Participant handles (comma separated)"
+              placeholderTextColor={theme.palette.graphite}
+              value={handles}
+              onChangeText={setHandles}
+              autoCapitalize="none"
+            />
+            <TextInput
+              style={[styles.input, styles.messageInput]}
+              placeholder="Opening message"
+              placeholderTextColor={theme.palette.graphite}
+              value={message}
+              onChangeText={setMessage}
+              multiline
+            />
+            <MetalButton
+              title={creating ? 'Sending…' : 'Start Thread'}
+              onPress={handleCreateThread}
+              disabled={creating}
+            />
+          </MetalPanel>
+        }
       />
     </SafeAreaView>
   );
@@ -94,6 +170,25 @@ const styles = StyleSheet.create({
     padding: theme.spacing.lg,
     gap: theme.spacing.sm,
     paddingBottom: theme.spacing.xl,
+  },
+  panelTitle: {
+    color: theme.palette.titanium,
+    ...theme.typography.subtitle,
+    marginBottom: theme.spacing.sm,
+  },
+  input: {
+    borderRadius: theme.radius.md,
+    borderWidth: 1,
+    borderColor: theme.palette.graphite,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+    color: theme.palette.platinum,
+    backgroundColor: theme.palette.obsidian,
+    marginBottom: theme.spacing.sm,
+  },
+  messageInput: {
+    minHeight: 80,
+    textAlignVertical: 'top',
   },
   loader: {
     paddingVertical: theme.spacing.md,

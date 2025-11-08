@@ -66,7 +66,7 @@ src/
 - `src/services/api/payments.ts` centralizes gift types, subscription plans, and subscriptions (`/api/v1/payments/*`) so payments UI shares one contract.
 - `src/services/api/posts.ts` offers full CRUD for `/api/v1/posts/`, like/unlike helpers, and shared search functions for both posts and users.
 - `src/services/api/soulmatch.ts` provides the `/api/v1/soulmatch/` fetch and `/api/v1/soulmatch/refresh/` mutation used by the SoulMatch screen.
-- `src/services/api/threads.ts` and `src/hooks/useThreads.ts` list `/api/v1/threads/` so the inbox can pass thread IDs into the messaging flow.
+- `src/services/api/threads.ts` and `src/hooks/useThreads.ts` cover `/api/v1/threads/` (list + create + read/typing signals) so the inbox can pass thread IDs into the messaging flow.
 - `src/components/MetalToast.tsx` and `src/context/ToastContext.tsx` supply metallic toasts used for graceful login/profile error messaging across the app.
 
 ## Screens & Navigation
@@ -75,7 +75,7 @@ src/
 - `CommunityScreen` delivers a Jobs-inspired metallic directory with live search, follow toggles, and thoughtful defaults drawn from the new `useUsersDirectory` hook.
 - `PaymentsScreen` now renders live plan/gift catalogs, echoing Apple’s polish (clarity), Torvalds’ pragmatism (structured data), and Musk’s ambition (forward-looking copy).
 - `MessagesScreen` stitches together `useMessages` + metallic message bubbles so users can browse + send chats with the new API.
-- `InboxScreen` lists threads via `useThreads` so users can pick which conversation to open before landing in Messages.
+- `InboxScreen` lists threads via `useThreads`, includes a metallic “New Thread” composer, and hands off the selected conversation to `MessagesScreen`.
 - `MentorScreen`, `SoulMatchScreen`, and `PaymentsScreen` provide polished placeholder flows ready for integrating Django endpoints.
 - `ProfileScreen` lets users tweak display name or avatar URL (with inline metallic toasts) and sign out.
 - `AppNavigator` registers the stack screens with metallic theming; add new routes here as features land.

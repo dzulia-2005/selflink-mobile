@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { useToast } from '@context/ToastContext';
-import { listThreads, Thread } from '@services/api/threads';
+import { createThread, listThreads, Thread } from '@services/api/threads';
 
 type Options = {
   pageSize?: number;
@@ -48,6 +48,22 @@ export function useThreads(options: Options = {}) {
     fetchThreads(true);
   }, [fetchThreads]);
 
+  const startThread = useCallback(
+    async (payload: Parameters<typeof createThread>[0]) => {
+      try {
+        const thread = await createThread(payload);
+        setThreads((prev) => [thread, ...prev]);
+        toast.push({ tone: 'info', message: 'Thread created.' });
+        return thread;
+      } catch (error) {
+        console.warn('useThreads: failed to create thread', error);
+        toast.push({ tone: 'error', message: 'Unable to create thread.' });
+        throw error;
+      }
+    },
+    [toast],
+  );
+
   return {
     threads,
     loading,
@@ -59,5 +75,6 @@ export function useThreads(options: Options = {}) {
       if (!hasMore || loadingMore) return;
       fetchThreads(false);
     },
+    createThread: startThread,
   };
 }

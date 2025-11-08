@@ -47,6 +47,20 @@ export async function getThread(id: number): Promise<Thread> {
   return apiClient.request<Thread>(`/api/v1/threads/${id}/`, { method: 'GET' });
 }
 
+export type CreateThreadPayload = {
+  title?: string;
+  participant_ids?: number[];
+  participant_handles?: string[];
+  initial_message?: string;
+};
+
+export async function createThread(payload: CreateThreadPayload): Promise<Thread> {
+  return apiClient.request<Thread>('/api/v1/threads/', {
+    method: 'POST',
+    body: payload,
+  });
+}
+
 export async function markThreadRead(id: number): Promise<void> {
   await apiClient.request(`/api/v1/threads/${id}/read/`, { method: 'POST' });
 }
