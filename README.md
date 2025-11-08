@@ -60,6 +60,7 @@ src/
 - `src/services/api/moderationEnforcements.ts` fetches `/api/v1/moderation/enforcements/` (with detail lookups) so clients can display the enforcement history tied to a user or post.
 - `src/services/api/moderationReports.ts` covers `/api/v1/moderation/reports/` (list + CRUD) for end-user report flows that escalate into moderation queues.
 - `src/services/api/notifications.ts` handles `/api/v1/notifications/`, item CRUD, and `/api/v1/notifications/mark-all-read/` so inbox badges stay in sync.
+- `src/services/api/payments.ts` centralizes gift types, subscription plans, and subscriptions (`/api/v1/payments/*`) so payments UI shares one contract.
 - `src/components/MetalToast.tsx` and `src/context/ToastContext.tsx` supply metallic toasts used for graceful login/profile error messaging across the app.
 
 ## Screens & Navigation
