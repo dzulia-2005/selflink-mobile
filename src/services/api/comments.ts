@@ -69,3 +69,16 @@ export async function fetchComments(
 
   return apiClient.request<CommentsResponse>(path, { method: 'GET' });
 }
+
+export type CreateCommentPayload = {
+  post: number;
+  text: string;
+  parent?: number | null;
+};
+
+export async function createComment(payload: CreateCommentPayload): Promise<Comment> {
+  return apiClient.request<Comment>('/api/v1/comments/', {
+    method: 'POST',
+    body: payload,
+  });
+}
