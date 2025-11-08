@@ -49,8 +49,7 @@ export async function getThread(id: number): Promise<Thread> {
 
 export type CreateThreadPayload = {
   title?: string;
-  participant_ids?: number[];
-  participant_handles?: string[];
+  participant_ids: number[];
   initial_message?: string;
 };
 
@@ -88,8 +87,4 @@ export async function getTypingStatus(id: number): Promise<TypingStatus> {
   return apiClient.request<TypingStatus>(`/api/v1/threads/${id}/typing/`, {
     method: 'GET',
   });
-}
-
-export async function leaveThread(id: number): Promise<void> {
-  await apiClient.request(`/api/v1/threads/${id}/leave/`, { method: 'POST' });
 }

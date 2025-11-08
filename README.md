@@ -75,8 +75,8 @@ src/
 - `CommunityScreen` delivers a Jobs-inspired metallic directory with live search, follow toggles, and thoughtful defaults drawn from the new `useUsersDirectory` hook.
 - `PaymentsScreen` now renders live plan/gift catalogs, echoing Apple’s polish (clarity), Torvalds’ pragmatism (structured data), and Musk’s ambition (forward-looking copy).
 - `MessagesScreen` stitches together `useMessages` + metallic message bubbles so users can browse + send chats with the new API.
-- `InboxScreen` lists threads via `useThreads`, includes a metallic “New Thread” composer for handles or IDs, and hands off the selected conversation to `MessagesScreen`.
-- `MessagesScreen` now enforces a selected thread, shows live typing indicators via `/threads/{id}/typing/`, and exposes mark-read / leave-thread actions.
+- `InboxScreen` lists threads via `useThreads`, includes a metallic “New Thread” composer for numeric participant IDs (matching the backend contract), and hands off the selected conversation to `MessagesScreen`.
+- `MessagesScreen` now enforces a selected thread, shows live typing indicators via `/threads/{id}/typing/`, and exposes mark-read tooling (leave actions will land once the backend route ships).
 - `MentorScreen`, `SoulMatchScreen`, and `PaymentsScreen` provide polished placeholder flows ready for integrating Django endpoints.
 - `ProfileScreen` lets users tweak display name or avatar URL (with inline metallic toasts) and sign out.
 - `AppNavigator` registers the stack screens with metallic theming; add new routes here as features land.

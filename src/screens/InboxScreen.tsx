@@ -27,7 +27,6 @@ export function InboxScreen() {
   const toast = useToast();
   const { threads, loading, refreshing, loadMore, hasMore, refresh, createThread } =
     useThreads();
-  const [handles, setHandles] = useState('');
   const [ids, setIds] = useState('');
   const [message, setMessage] = useState('');
   const [title, setTitle] = useState('');
@@ -42,19 +41,15 @@ export function InboxScreen() {
 
   const handleCreateThread = useCallback(async () => {
     if (creating) return;
-    const participant_handles = handles
-      .split(',')
-      .map((handle) => handle.trim())
-      .filter(Boolean);
     const participant_ids = ids
       .split(',')
       .map((value) => Number(value.trim()))
       .filter((value) => !Number.isNaN(value));
 
-    if (participant_handles.length === 0 && participant_ids.length === 0) {
+    if (participant_ids.length === 0) {
       toast.push({
         tone: 'error',
-        message: 'Add at least one participant handle or ID.',
+        message: 'Add at least one participant ID.',
       });
       return;
     }
@@ -70,11 +65,9 @@ export function InboxScreen() {
       setCreating(true);
       const thread = await createThread({
         title: title.trim() || undefined,
-        participant_handles: participant_handles.length ? participant_handles : undefined,
-        participant_ids: participant_ids.length ? participant_ids : undefined,
-        initial_message: message.trim(),
+        participant_ids,
+        initial_message: message.trim() || undefined,
       });
-      setHandles('');
       setIds('');
       setMessage('');
       setTitle('');
@@ -134,14 +127,6 @@ export function InboxScreen() {
               value={title}
               onChangeText={setTitle}
             />
-        <TextInput
-          style={styles.input}
-          placeholder="Participant handles (comma separated)"
-          placeholderTextColor={theme.palette.graphite}
-          value={handles}
-          onChangeText={setHandles}
-          autoCapitalize="none"
-        />
         <TextInput
           style={styles.input}
           placeholder="Participant IDs (comma separated)"

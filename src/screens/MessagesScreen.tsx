@@ -1,4 +1,4 @@
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import { RouteProp, useRoute } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useState } from 'react';
 import {
@@ -18,11 +18,9 @@ import { MetalPanel } from '@components/MetalPanel';
 import { useToast } from '@context/ToastContext';
 import { useMessages } from '@hooks/useMessages';
 import { RootStackParamList } from '@navigation/AppNavigator';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { theme } from '@theme/index';
 import {
   getTypingStatus,
-  leaveThread,
   markThreadRead,
   sendTypingSignal,
   TypingStatus,
@@ -32,13 +30,11 @@ type MessagesRoute = RouteProp<RootStackParamList, 'Messages'>;
 
 export function MessagesScreen() {
   const route = useRoute<MessagesRoute>();
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const toast = useToast();
   const threadId = route.params.threadId;
   const [markingRead, setMarkingRead] = useState(false);
   const [typingSignal, setTypingSignal] = useState(false);
   const [typingStatus, setTypingStatus] = useState<TypingStatus | null>(null);
-  const [leaving, setLeaving] = useState(false);
   const {
     messages,
     loading,
@@ -64,21 +60,6 @@ export function MessagesScreen() {
       setMarkingRead(false);
     }
   }, [markingRead, threadId, toast]);
-
-  const handleLeaveThread = useCallback(async () => {
-    if (leaving) return;
-    try {
-      setLeaving(true);
-      await leaveThread(threadId);
-      toast.push({ tone: 'info', message: 'Left thread.' });
-      navigation.goBack();
-    } catch (error) {
-      console.warn('MessagesScreen: leave thread failed', error);
-      toast.push({ tone: 'error', message: 'Unable to leave thread.' });
-    } finally {
-      setLeaving(false);
-    }
-  }, [leaving, navigation, threadId, toast]);
 
   useEffect(() => {
     let cancelled = false;
@@ -118,11 +99,6 @@ export function MessagesScreen() {
             title={markingRead ? 'Marking…' : 'Mark as Read'}
             onPress={handleMarkRead}
             disabled={markingRead}
-          />
-          <MetalButton
-            title={leaving ? 'Leaving…' : 'Leave Thread'}
-            onPress={handleLeaveThread}
-            disabled={leaving}
           />
         </View>
         {typingStatus?.typing && (
