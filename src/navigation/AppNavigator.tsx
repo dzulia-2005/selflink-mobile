@@ -5,6 +5,7 @@ import { ActivityIndicator, Platform, StyleSheet, Text, View } from 'react-nativ
 import { enableScreens } from 'react-native-screens';
 
 import { useAuth } from '@hooks/useAuth';
+import { CommunityScreen } from '@screens/CommunityScreen';
 import { HomeScreen } from '@screens/HomeScreen';
 import { LoginScreen } from '@screens/LoginScreen';
 import { MentorScreen } from '@screens/MentorScreen';
@@ -19,6 +20,7 @@ enableScreens(true);
 
 export type RootStackParamList = {
   Home: undefined;
+  Community: undefined;
   Mentor: undefined;
   SoulMatch: undefined;
   Payments: undefined;
@@ -77,6 +79,11 @@ export function AppNavigator() {
           }}
         >
           <Stack.Screen name="Home" component={HomeScreen} />
+          <Stack.Screen
+            name="Community"
+            component={CommunityScreen}
+            options={{ headerTitle: 'Community' }}
+          />
           <Stack.Screen
             name="Profile"
             component={ProfileScreen}
