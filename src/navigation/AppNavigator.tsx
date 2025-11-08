@@ -24,7 +24,7 @@ export type RootStackParamList = {
   Home: undefined;
   Community: undefined;
   Inbox: undefined;
-  Messages: { threadId?: number } | undefined;
+  Messages: { threadId: number };
   Mentor: undefined;
   SoulMatch: undefined;
   Payments: undefined;

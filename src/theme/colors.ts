@@ -15,4 +15,5 @@ export const gradients = {
   panel: ['#F8FAFC', '#E2E8F0', '#CBD5F5'] as const,
   button: ['#F1F5F9', '#CBD5F5'] as const,
   buttonActive: ['#BFDBFE', '#93C5FD'] as const,
+  buttonDisabled: ['#1F2937', '#0F172A'] as const,
 };

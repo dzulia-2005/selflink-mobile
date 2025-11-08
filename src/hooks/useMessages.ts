@@ -9,7 +9,7 @@ import {
 } from '@services/api/messages';
 
 type Options = {
-  threadId?: number;
+  threadId: number;
   pageSize?: number;
   ordering?: string;
 };
@@ -39,7 +39,7 @@ export function useMessages(options: Options = {}) {
       cursor: undefined,
       ordering: options.ordering,
       page_size: options.pageSize ?? 25,
-      search: options.threadId ? `thread:${options.threadId}` : undefined,
+      thread: options.threadId,
     }),
     [options.ordering, options.pageSize, options.threadId],
   );
@@ -103,7 +103,7 @@ export function useMessages(options: Options = {}) {
     try {
       setComposer((prev) => ({ ...prev, sending: true }));
       const message = await createMessage({
-        thread: options.threadId ?? 0,
+        thread: options.threadId,
         body: composer.body.trim(),
       });
       setMessages((prev) => [message, ...prev]);

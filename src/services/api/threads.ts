@@ -46,3 +46,21 @@ export async function listThreads(params: ThreadQuery = {}): Promise<ThreadListR
 export async function getThread(id: number): Promise<Thread> {
   return apiClient.request<Thread>(`/api/v1/threads/${id}/`, { method: 'GET' });
 }
+
+export async function markThreadRead(id: number): Promise<void> {
+  await apiClient.request(`/api/v1/threads/${id}/read/`, { method: 'POST' });
+}
+
+export type TypingPayload = {
+  typing?: boolean;
+};
+
+export async function sendTypingSignal(
+  id: number,
+  payload: TypingPayload = { typing: true },
+): Promise<void> {
+  await apiClient.request(`/api/v1/threads/${id}/typing/`, {
+    method: 'POST',
+    body: payload,
+  });
+}

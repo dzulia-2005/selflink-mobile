@@ -48,6 +48,7 @@ export type MessageQuery = {
   ordering?: string;
   page_size?: number;
   search?: string;
+  thread?: number;
 };
 
 export type MessagePayload = {
@@ -65,6 +66,7 @@ export async function listMessages(params: MessageQuery = {}): Promise<MessageLi
   if (params.ordering) searchParams.set('ordering', params.ordering);
   if (params.page_size) searchParams.set('page_size', String(params.page_size));
   if (params.search) searchParams.set('search', params.search);
+  if (params.thread) searchParams.set('thread', String(params.thread));
 
   const qs = searchParams.toString();
   const path = `/api/v1/messages/${qs ? `?${qs}` : ''}`;

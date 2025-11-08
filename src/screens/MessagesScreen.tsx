@@ -15,15 +15,21 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { MessageBubble } from '@components/MessageBubble';
 import { MetalButton } from '@components/MetalButton';
 import { MetalPanel } from '@components/MetalPanel';
+import { useToast } from '@context/ToastContext';
 import { useMessages } from '@hooks/useMessages';
 import { RootStackParamList } from '@navigation/AppNavigator';
 import { theme } from '@theme/index';
+import { markThreadRead, sendTypingSignal } from '@services/api/threads';
+import { useState } from 'react';
 
 type MessagesRoute = RouteProp<RootStackParamList, 'Messages'>;
 
 export function MessagesScreen() {
   const route = useRoute<MessagesRoute>();
-  const threadId = route.params?.threadId ?? 0;
+  const toast = useToast();
+  const threadId = route.params.threadId;
+  const [markingRead, setMarkingRead] = useState(false);
+  const [typingSignal, setTypingSignal] = useState(false);
   const {
     messages,
     loading,
@@ -36,6 +42,34 @@ export function MessagesScreen() {
     refresh,
   } = useMessages({ ordering: '-created_at', threadId });
 
+  const handleMarkRead = useCallback(async () => {
+    if (markingRead) return;
+    try {
+      setMarkingRead(true);
+      await markThreadRead(threadId);
+      toast.push({ tone: 'info', message: 'Marked as read.' });
+    } catch (error) {
+      console.warn('MessagesScreen: mark read failed', error);
+      toast.push({ tone: 'error', message: 'Unable to mark thread read.' });
+    } finally {
+      setMarkingRead(false);
+    }
+  }, [markingRead, threadId, toast]);
+
+  const handleTypingSignal = useCallback(async () => {
+    if (typingSignal) return;
+    try {
+      setTypingSignal(true);
+      await sendTypingSignal(threadId);
+      toast.push({ tone: 'info', message: 'Typing signal sent.' });
+    } catch (error) {
+      console.warn('MessagesScreen: typing signal failed', error);
+      toast.push({ tone: 'error', message: 'Unable to send typing signal.' });
+    } finally {
+      setTypingSignal(false);
+    }
+  }, [threadId, toast, typingSignal]);
+
   const keyExtractor = useCallback((item: { id: number }) => String(item.id), []);
 
   return (
@@ -47,6 +81,18 @@ export function MessagesScreen() {
           Inspired by Jobs’ obsession for detail, tempered by Linus’ clarity, aiming for
           Musk-scale reach.
         </Text>
+        <View style={styles.actionRow}>
+          <MetalButton
+            title={markingRead ? 'Marking…' : 'Mark as Read'}
+            onPress={handleMarkRead}
+            disabled={markingRead}
+          />
+          <MetalButton
+            title={typingSignal ? 'Signaling…' : 'Send Typing Signal'}
+            onPress={handleTypingSignal}
+            disabled={typingSignal}
+          />
+        </View>
       </MetalPanel>
 
       <FlatList
@@ -116,6 +162,11 @@ const styles = StyleSheet.create({
   heroSubtitle: {
     color: theme.palette.silver,
     ...theme.typography.body,
+  },
+  actionRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: theme.spacing.sm,
   },
   list: {
     flex: 1,
