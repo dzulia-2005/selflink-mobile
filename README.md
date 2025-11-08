@@ -46,7 +46,7 @@ src/
 - `src/screens/RegisterScreen.tsx` collects the backend-required payload (email, handle, name, password, optional full name/intention) and reuses the toast/auth flows before routing new users into the app.
 - `AppNavigator` now gates access: unauthenticated users see Login; signed-in users reach Home/Mentor/SoulMatch/Payments and can sign out directly from the Home welcome panel.
 - Home’s welcome panel shows the active user and exposes a Sign Out CTA, making it easy to switch accounts during testing.
-- `src/services/api/user.ts` and the auth provider call `/api/v1/users/me/` to hydrate the profile on launch and after login.
+- `src/services/api/user.ts` handles `/api/v1/users/*` (list/detail/follow/followers) plus the `/api/v1/users/me/` hydration flow used by AuthContext.
 - `src/services/api/comments.ts` wraps `/api/v1/comments/` so shared clients (mobile/desktop) can page through comment threads and perform CRUD via the same helper.
 - `src/services/api/devices.ts` handles `/api/v1/devices/` CRUD so mobile/web can register or remove push tokens consistently.
 - `src/services/api/feed.ts` wraps `/api/v1/feed/home/` and `/api/v1/home/highlights/` so all clients can fetch both the paginated timeline and highlight rail with the same helper.
