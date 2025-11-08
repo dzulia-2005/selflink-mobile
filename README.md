@@ -56,6 +56,7 @@ src/
 - `src/services/api/mentorSessions.ts` wraps `/api/v1/mentor/sessions/`, `/api/v1/mentor/sessions/{id}/`, and `/api/v1/mentor/sessions/ask/` so questions, answers, and logs stay in sync across clients.
 - `src/services/api/mentorTasks.ts` centralizes `/api/v1/mentor/tasks/`, `/api/v1/mentor/tasks/{id}/`, and `/api/v1/mentor/tasks/today/` calls so daily task queues use shared code.
 - `src/services/api/messages.ts` provides list + CRUD helpers for `/api/v1/messages/` so chats and inbox features rely on a single shared wrapper.
+- `src/services/api/moderationAdminReports.ts` lets moderators list and manage `/api/v1/moderation/admin/reports/` entries (full CRUD) from any client.
 - `src/components/MetalToast.tsx` and `src/context/ToastContext.tsx` supply metallic toasts used for graceful login/profile error messaging across the app.
 
 ## Screens & Navigation
