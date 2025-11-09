@@ -208,3 +208,24 @@ export async function patchSubscription(
 export async function deleteSubscription(id: number): Promise<void> {
   await apiClient.request(`/api/v1/payments/subscriptions/${id}/`, { method: 'DELETE' });
 }
+
+// Stripe Checkout
+export type StripeCheckoutSessionPayload = {
+  plan_id?: number;
+};
+
+export type StripeCheckoutSessionResponse = {
+  url: string;
+};
+
+export async function createStripeCheckoutSession(
+  payload: StripeCheckoutSessionPayload = {},
+): Promise<StripeCheckoutSessionResponse> {
+  return apiClient.request<StripeCheckoutSessionResponse>(
+    '/api/v1/payments/stripe/checkout-session/',
+    {
+      method: 'POST',
+      body: payload,
+    },
+  );
+}

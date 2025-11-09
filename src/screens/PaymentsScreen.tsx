@@ -1,9 +1,10 @@
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  Linking,
   ScrollView,
   StyleSheet,
   Text,
@@ -13,17 +14,46 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { MetalButton } from '@components/MetalButton';
 import { MetalPanel } from '@components/MetalPanel';
+import { useToast } from '@context/ToastContext';
 import { usePaymentsCatalog } from '@hooks/usePaymentsCatalog';
 import { RootStackParamList } from '@navigation/AppNavigator';
+import { createStripeCheckoutSession } from '@services/api/payments';
 import { theme } from '@theme/index';
 
 export function PaymentsScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { gifts, plans, activeSubscription, loading, refresh } = usePaymentsCatalog();
+  const toast = useToast();
+  const [launchingCheckout, setLaunchingCheckout] = useState(false);
 
-  const handleOpenSubscription = useCallback(() => {
-    // TODO: Launch Stripe Checkout via backend session
-  }, []);
+  const handleOpenSubscription = useCallback(
+    async (planId?: number) => {
+      if (launchingCheckout) {
+        return;
+      }
+      try {
+        setLaunchingCheckout(true);
+        const { url } = await createStripeCheckoutSession(planId ? { plan_id: planId } : {});
+        if (!url) {
+          throw new Error('Missing checkout session URL');
+        }
+        const canOpen = await Linking.canOpenURL(url);
+        if (!canOpen) {
+          throw new Error('Cannot open Stripe checkout URL');
+        }
+        await Linking.openURL(url);
+      } catch (error) {
+        console.error('PaymentsScreen: failed to open Stripe Checkout', error);
+        toast.push({
+          tone: 'error',
+          message: 'Unable to launch checkout. Please try again.',
+        });
+      } finally {
+        setLaunchingCheckout(false);
+      }
+    },
+    [launchingCheckout, toast],
+  );
 
   const handleOpenWallet = useCallback(() => {
     navigation.navigate('WalletLedger');
@@ -79,7 +109,11 @@ export function PaymentsScreen() {
           )}
           <View style={styles.buttonRow}>
             <MetalButton title="Refresh Catalog" onPress={refresh} />
-            <MetalButton title="Manage Subscription" onPress={handleOpenSubscription} />
+            <MetalButton
+              title={launchingCheckout ? 'Opening…' : 'Manage Subscription'}
+              onPress={() => handleOpenSubscription()}
+              disabled={launchingCheckout}
+            />
           </View>
         </MetalPanel>
 
@@ -101,7 +135,11 @@ export function PaymentsScreen() {
                     • {feature}
                   </Text>
                 ))}
-                <MetalButton title="Select Plan" onPress={handleOpenSubscription} />
+                <MetalButton
+                  title="Select Plan"
+                  onPress={() => handleOpenSubscription(plan.id)}
+                  disabled={launchingCheckout}
+                />
               </View>
             ))
           )}
