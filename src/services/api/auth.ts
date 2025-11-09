@@ -83,7 +83,7 @@ export async function refreshSession(refreshToken: string): Promise<LoginRespons
   const result = await apiClient.request<LoginResponse>('/api/v1/auth/token/refresh/', {
     method: 'POST',
     auth: false,
-    body: { refreshToken },
+    body: { refresh: refreshToken },
   });
 
   if (!result?.token) {
