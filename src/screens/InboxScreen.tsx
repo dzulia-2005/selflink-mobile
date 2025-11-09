@@ -77,7 +77,7 @@ export function InboxScreen() {
     } finally {
       setCreating(false);
     }
-  }, [creating, createThread, handles, message, openThread, title, toast]);
+  }, [creating, createThread, ids, message, openThread, title, toast]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
