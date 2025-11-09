@@ -112,18 +112,23 @@ export function MessagesScreen() {
       ws.onmessage = (event) => {
         try {
           const payload = JSON.parse(event.data);
-          if (payload?.type === 'typing' && payload.thread_id === threadId) {
-            if (payload.is_typing) {
-              setTypingStatus({ typing: true });
-              if (typingTimeoutRef.current) {
-                clearTimeout(typingTimeoutRef.current);
-              }
-              typingTimeoutRef.current = setTimeout(
-                () => setTypingStatus(null),
-                7000,
-              );
-            } else {
-              setTypingStatus(null);
+            if (payload?.type === 'typing' && payload.thread_id === threadId) {
+              if (payload.is_typing) {
+                setTypingStatus({
+                  typing: true,
+                  userId: payload.user_id,
+                  userName: payload.user_name,
+                  userHandle: payload.user_handle,
+                });
+                if (typingTimeoutRef.current) {
+                  clearTimeout(typingTimeoutRef.current);
+                }
+                typingTimeoutRef.current = setTimeout(
+                  () => setTypingStatus(null),
+                  7000,
+                );
+              } else {
+                setTypingStatus(null);
             }
           }
         } catch (error) {
@@ -162,7 +167,7 @@ export function MessagesScreen() {
       try {
         const status = await getTypingStatus(threadId);
         if (!cancelled) {
-          setTypingStatus(status);
+          setTypingStatus(status.typing ? status : null);
         }
       } catch (error) {
         if (__DEV__) {
@@ -181,7 +186,7 @@ export function MessagesScreen() {
   const notifyTyping = useCallback(
     async (active: boolean) => {
       try {
-        await sendTypingSignal(threadId, { typing: active });
+        await sendTypingSignal(threadId, { is_typing: active });
       } catch (error) {
         if (__DEV__) {
           console.warn('MessagesScreen: typing signal failed', error);
@@ -228,7 +233,9 @@ export function MessagesScreen() {
         </View>
         {typingStatus?.typing && (
           <Text style={styles.typingText}>
-            {typingStatus.user?.name ?? typingStatus.user?.handle ?? 'Someone'} is typing…
+            {typingStatus.userName ??
+              (typingStatus.userHandle ? `@${typingStatus.userHandle}` : 'Someone')}{' '}
+            is typing…
           </Text>
         )}
       </MetalPanel>

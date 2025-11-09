@@ -16,7 +16,9 @@ const wrapper = ({ children }: { children: ReactNode }) => (
 const baseThread = {
   id: 1,
   title: 'Chat with Steve',
+  is_group: false,
   participants: [],
+  members: [],
   last_message: { body: 'hello', created_at: '2025-02-01T10:00:00Z' },
   unread_count: 0,
   created_at: '2025-02-01T09:00:00Z',

@@ -1,15 +1,27 @@
 import { apiClient } from '@services/api/client';
 import type { MessageUser } from '@services/api/messages';
 
+export type ThreadMember = {
+  id: number;
+  user: MessageUser;
+  role: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ThreadLastMessage = {
+  body: string;
+  created_at: string;
+};
+
 export type Thread = {
   id: number;
-  title?: string;
+  title?: string | null;
+  is_group: boolean;
   participants: MessageUser[];
-  last_message?: {
-    body: string;
-    created_at: string;
-  };
-  unread_count?: number;
+  members: ThreadMember[];
+  last_message?: ThreadLastMessage | null;
+  unread_count: number;
   created_at: string;
   updated_at: string;
 };
@@ -65,12 +77,12 @@ export async function markThreadRead(id: number): Promise<void> {
 }
 
 export type TypingPayload = {
-  typing?: boolean;
+  is_typing?: boolean;
 };
 
 export async function sendTypingSignal(
   id: number,
-  payload: TypingPayload = { typing: true },
+  payload: TypingPayload = { is_typing: true },
 ): Promise<void> {
   await apiClient.request(`/api/v1/threads/${id}/typing/`, {
     method: 'POST',
@@ -80,13 +92,31 @@ export async function sendTypingSignal(
 
 export type TypingStatus = {
   typing: boolean;
-  user?: MessageUser;
+  userId?: number;
+  userName?: string | null;
+  userHandle?: string | null;
+};
+
+type TypingStatusResponse = {
+  typing_user_ids: number[];
+  users?: MessageUser[];
 };
 
 export async function getTypingStatus(id: number): Promise<TypingStatus> {
-  return apiClient.request<TypingStatus>(`/api/v1/threads/${id}/typing/`, {
-    method: 'GET',
-  });
+  const response = await apiClient.request<TypingStatusResponse>(
+    `/api/v1/threads/${id}/typing/`,
+    {
+      method: 'GET',
+    },
+  );
+  const user = response.users?.[0];
+  const userId = user?.id ?? response.typing_user_ids[0];
+  return {
+    typing: response.typing_user_ids.length > 0,
+    userId,
+    userName: user?.name ?? null,
+    userHandle: user?.handle ?? null,
+  };
 }
 
 export async function leaveThread(id: number): Promise<void> {
