@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useToast } from '@context/ToastContext';
 import {
@@ -30,6 +30,7 @@ export function useUsersDirectory(options: Options = {}) {
   const [debouncedSearch, setDebouncedSearch] = useState(search);
   const [users, setUsers] = useState<DirectoryUser[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
+  const cursorRef = useRef<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -71,8 +72,13 @@ export function useUsersDirectory(options: Options = {}) {
     [toast],
   );
 
+  useEffect(() => {
+    cursorRef.current = cursor;
+  }, [cursor]);
+
   const fetchPage = useCallback(
     async (reset = false) => {
+      const cursorValue = reset ? null : cursorRef.current;
       if (reset) {
         setRefreshing(true);
       } else {
@@ -81,7 +87,7 @@ export function useUsersDirectory(options: Options = {}) {
       try {
         const response = await listUsers({
           ...pageParams,
-          cursor: reset ? undefined : cursor ?? undefined,
+          cursor: cursorValue ?? undefined,
         });
         applyPage(response, reset);
       } catch (error) {
@@ -92,7 +98,7 @@ export function useUsersDirectory(options: Options = {}) {
         setLoadingMore(false);
       }
     },
-    [applyPage, cursor, handleError, pageParams],
+    [applyPage, handleError, pageParams],
   );
 
   useEffect(() => {
