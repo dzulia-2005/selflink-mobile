@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useToast } from '@context/ToastContext';
 import {
@@ -27,6 +27,7 @@ function normalizeUser(user: UserProfile): DirectoryUser {
 export function useUsersDirectory(options: Options = {}) {
   const toast = useToast();
   const [search, setSearch] = useState(options.initialSearch ?? '');
+  const [debouncedSearch, setDebouncedSearch] = useState(search);
   const [users, setUsers] = useState<DirectoryUser[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -34,15 +35,19 @@ export function useUsersDirectory(options: Options = {}) {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [pendingFollows, setPendingFollows] = useState<Record<number, boolean>>({});
-  const searchRef = useRef(search);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 400);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   const pageParams: UsersQuery = useMemo(
     () => ({
       cursor: undefined,
       page_size: options.pageSize,
-      search: search.trim() || undefined,
+      search: debouncedSearch.trim() || undefined,
     }),
-    [options.pageSize, search],
+    [debouncedSearch, options.pageSize],
   );
 
   const applyPage = useCallback(
@@ -91,11 +96,8 @@ export function useUsersDirectory(options: Options = {}) {
   );
 
   useEffect(() => {
-    if (searchRef.current !== search) {
-      searchRef.current = search;
-    }
     fetchPage(true);
-  }, [fetchPage, search]);
+  }, [fetchPage, debouncedSearch]);
 
   const refresh = useCallback(() => fetchPage(true), [fetchPage]);
 

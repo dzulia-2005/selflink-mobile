@@ -19,4 +19,10 @@ export const typography = {
     fontWeight: '400' as const,
     lineHeight: 22,
   },
+  caption: {
+    fontSize: 13,
+    fontWeight: '400' as const,
+    letterSpacing: 0.2,
+    lineHeight: 18,
+  },
 } as const;

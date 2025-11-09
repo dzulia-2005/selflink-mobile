@@ -16,6 +16,7 @@ import { ThreadCard } from '@components/ThreadCard';
 import { MetalButton } from '@components/MetalButton';
 import { MetalPanel } from '@components/MetalPanel';
 import { useToast } from '@context/ToastContext';
+import { useAuth } from '@hooks/useAuth';
 import { useUsersDirectory } from '@hooks/useUsersDirectory';
 import { useThreads } from '@hooks/useThreads';
 import { RootStackParamList } from '@navigation/AppNavigator';
@@ -27,6 +28,7 @@ import type { UserProfile } from '@services/api/user';
 export function InboxScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const toast = useToast();
+  const { user: authUser } = useAuth();
   const { threads, loading, refreshing, loadMore, hasMore, refresh, createThread } =
     useThreads();
   const {
@@ -48,7 +50,21 @@ export function InboxScreen() {
     [navigation],
   );
 
-  const selectedIds = useMemo(() => selectedUsers.map((user) => user.id), [selectedUsers]);
+  const authUserId = useMemo(() => Number(authUser?.id) || null, [authUser?.id]);
+  const filteredDirectory = useMemo(
+    () =>
+      directoryUsers.filter((candidate) =>
+        authUserId ? candidate.id !== authUserId : true,
+      ),
+    [authUserId, directoryUsers],
+  );
+  const selectedIds = useMemo(
+    () =>
+      selectedUsers
+        .map((user) => user.id)
+        .filter((id) => (authUserId ? id !== authUserId : true)),
+    [authUserId, selectedUsers],
+  );
 
   const handleCreateThread = useCallback(async () => {
     if (creating) return;
@@ -87,6 +103,9 @@ export function InboxScreen() {
 
   const toggleUserSelection = useCallback(
     (user: UserProfile) => {
+      if (authUserId && user.id === authUserId) {
+        return;
+      }
       setSelectedUsers((prev) => {
         const exists = prev.some((item) => item.id === user.id);
         if (exists) {
@@ -95,7 +114,7 @@ export function InboxScreen() {
         return [...prev, user];
       });
     },
-    [],
+    [authUserId],
   );
 
   return (
@@ -177,10 +196,10 @@ export function InboxScreen() {
             <View style={styles.directoryList}>
               {loadingDirectory ? (
                 <ActivityIndicator color={theme.palette.platinum} />
-              ) : directoryUsers.length === 0 ? (
+              ) : filteredDirectory.length === 0 ? (
                 <Text style={styles.helper}>No matches found.</Text>
               ) : (
-                directoryUsers.map((user) => {
+                filteredDirectory.map((user) => {
                   const isSelected = selectedIds.includes(user.id);
                   const initials =
                     user.name
