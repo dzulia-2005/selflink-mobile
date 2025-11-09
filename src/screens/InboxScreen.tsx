@@ -1,8 +1,9 @@
 import { StatusBar } from 'expo-status-bar';
-import { useCallback } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
+  Pressable,
   RefreshControl,
   StyleSheet,
   Text,
@@ -15,19 +16,27 @@ import { ThreadCard } from '@components/ThreadCard';
 import { MetalButton } from '@components/MetalButton';
 import { MetalPanel } from '@components/MetalPanel';
 import { useToast } from '@context/ToastContext';
+import { useUsersDirectory } from '@hooks/useUsersDirectory';
 import { useThreads } from '@hooks/useThreads';
 import { RootStackParamList } from '@navigation/AppNavigator';
 import { theme } from '@theme/index';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useState } from 'react';
+import type { UserProfile } from '@services/api/user';
 
 export function InboxScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const toast = useToast();
   const { threads, loading, refreshing, loadMore, hasMore, refresh, createThread } =
     useThreads();
-  const [ids, setIds] = useState('');
+  const {
+    users: directoryUsers,
+    search,
+    setSearch,
+    loading: loadingDirectory,
+    refresh: refreshDirectory,
+  } = useUsersDirectory({ pageSize: 20 });
+  const [selectedUsers, setSelectedUsers] = useState<UserProfile[]>([]);
   const [message, setMessage] = useState('');
   const [title, setTitle] = useState('');
   const [creating, setCreating] = useState(false);
@@ -39,14 +48,11 @@ export function InboxScreen() {
     [navigation],
   );
 
+  const selectedIds = useMemo(() => selectedUsers.map((user) => user.id), [selectedUsers]);
+
   const handleCreateThread = useCallback(async () => {
     if (creating) return;
-    const participant_ids = ids
-      .split(',')
-      .map((value) => Number(value.trim()))
-      .filter((value) => !Number.isNaN(value));
-
-    if (participant_ids.length === 0) {
+    if (selectedIds.length === 0) {
       toast.push({
         tone: 'error',
         message: 'Add at least one participant ID.',
@@ -65,10 +71,10 @@ export function InboxScreen() {
       setCreating(true);
       const thread = await createThread({
         title: title.trim() || undefined,
-        participant_ids,
+        participant_ids: selectedIds,
         initial_message: message.trim() || undefined,
       });
-      setIds('');
+      setSelectedUsers([]);
       setMessage('');
       setTitle('');
       openThread(thread.id);
@@ -77,7 +83,20 @@ export function InboxScreen() {
     } finally {
       setCreating(false);
     }
-  }, [creating, createThread, ids, message, openThread, title, toast]);
+  }, [creating, createThread, selectedIds, message, openThread, title, toast]);
+
+  const toggleUserSelection = useCallback(
+    (user: UserProfile) => {
+      setSelectedUsers((prev) => {
+        const exists = prev.some((item) => item.id === user.id);
+        if (exists) {
+          return prev.filter((item) => item.id !== user.id);
+        }
+        return [...prev, user];
+      });
+    },
+    [],
+  );
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -120,6 +139,9 @@ export function InboxScreen() {
         ListHeaderComponent={
           <MetalPanel glow>
             <Text style={styles.panelTitle}>Start a Conversation</Text>
+            <Text style={styles.helper}>
+              Pick participants from your community and drop them a message.
+            </Text>
             <TextInput
               style={styles.input}
               placeholder="Title (optional)"
@@ -127,14 +149,67 @@ export function InboxScreen() {
               value={title}
               onChangeText={setTitle}
             />
-        <TextInput
-          style={styles.input}
-          placeholder="Participant IDs (comma separated)"
-          placeholderTextColor={theme.palette.graphite}
-          value={ids}
-          onChangeText={setIds}
-          keyboardType="number-pad"
-        />
+            <TextInput
+              style={styles.input}
+              placeholder="Search people by name or handle"
+              placeholderTextColor={theme.palette.graphite}
+              value={search}
+              onChangeText={setSearch}
+              autoCapitalize="none"
+            />
+            <View style={styles.selectedWrap}>
+              {selectedUsers.length === 0 ? (
+                <Text style={styles.helper}>No participants selected yet.</Text>
+              ) : (
+                selectedUsers.map((user) => (
+                  <Pressable
+                    key={user.id}
+                    style={styles.selectedChip}
+                    onPress={() => toggleUserSelection(user)}
+                  >
+                    <Text style={styles.selectedChipText}>
+                      {user.name ?? user.handle ?? user.email}
+                    </Text>
+                  </Pressable>
+                ))
+              )}
+            </View>
+            <View style={styles.directoryList}>
+              {loadingDirectory ? (
+                <ActivityIndicator color={theme.palette.platinum} />
+              ) : directoryUsers.length === 0 ? (
+                <Text style={styles.helper}>No matches found.</Text>
+              ) : (
+                directoryUsers.map((user) => {
+                  const isSelected = selectedIds.includes(user.id);
+                  const initials =
+                    user.name
+                      ?.split(' ')
+                      .map((part) => part[0])
+                      .join('')
+                      .slice(0, 2)
+                      .toUpperCase() ??
+                    user.handle?.slice(0, 2).toUpperCase() ??
+                    'U';
+                  return (
+                    <Pressable
+                      key={user.id}
+                      style={[styles.userRow, isSelected && styles.userRowSelected]}
+                      onPress={() => toggleUserSelection(user)}
+                    >
+                      <View style={styles.userAvatar}>
+                        <Text style={styles.userAvatarText}>{initials}</Text>
+                      </View>
+                      <View style={styles.userCopy}>
+                        <Text style={styles.userName}>{user.name ?? 'Unnamed'}</Text>
+                        <Text style={styles.userHandle}>@{user.handle ?? 'handle'}</Text>
+                      </View>
+                      <Text style={styles.userAction}>{isSelected ? 'Remove' : 'Add'}</Text>
+                    </Pressable>
+                  );
+                })
+              )}
+            </View>
             <TextInput
               style={[styles.input, styles.messageInput]}
               placeholder="Opening message"
@@ -146,8 +221,11 @@ export function InboxScreen() {
             <MetalButton
               title={creating ? 'Sending…' : 'Start Thread'}
               onPress={handleCreateThread}
-              disabled={creating}
+              disabled={creating || selectedUsers.length === 0}
             />
+            <Pressable style={styles.refreshDirectory} onPress={refreshDirectory}>
+              <Text style={styles.refreshText}>Refresh people list</Text>
+            </Pressable>
           </MetalPanel>
         }
       />
@@ -184,6 +262,11 @@ const styles = StyleSheet.create({
     ...theme.typography.subtitle,
     marginBottom: theme.spacing.sm,
   },
+  helper: {
+    color: theme.palette.silver,
+    ...theme.typography.caption,
+    marginBottom: theme.spacing.sm,
+  },
   input: {
     borderRadius: theme.radius.md,
     borderWidth: 1,
@@ -197,6 +280,76 @@ const styles = StyleSheet.create({
   messageInput: {
     minHeight: 80,
     textAlignVertical: 'top',
+  },
+  selectedWrap: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: theme.spacing.xs,
+    marginBottom: theme.spacing.sm,
+  },
+  selectedChip: {
+    backgroundColor: theme.palette.obsidian,
+    borderRadius: theme.radius.pill,
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: theme.spacing.xs,
+    borderWidth: 1,
+    borderColor: theme.palette.graphite,
+  },
+  selectedChipText: {
+    color: theme.palette.platinum,
+    ...theme.typography.caption,
+  },
+  directoryList: {
+    gap: theme.spacing.xs,
+    marginBottom: theme.spacing.md,
+  },
+  userRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: theme.radius.md,
+    borderWidth: 1,
+    borderColor: theme.palette.graphite,
+    padding: theme.spacing.sm,
+    backgroundColor: theme.palette.obsidian,
+    gap: theme.spacing.sm,
+  },
+  userRowSelected: {
+    borderColor: theme.palette.azure,
+  },
+  userAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: theme.palette.graphite,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  userAvatarText: {
+    color: theme.palette.platinum,
+    ...theme.typography.caption,
+  },
+  userCopy: {
+    flex: 1,
+  },
+  userName: {
+    color: theme.palette.platinum,
+    ...theme.typography.subtitle,
+  },
+  userHandle: {
+    color: theme.palette.silver,
+    ...theme.typography.caption,
+  },
+  userAction: {
+    color: theme.palette.azure,
+    ...theme.typography.caption,
+  },
+  refreshDirectory: {
+    alignSelf: 'flex-start',
+    marginTop: theme.spacing.xs,
+  },
+  refreshText: {
+    color: theme.palette.azure,
+    ...theme.typography.caption,
   },
   loader: {
     paddingVertical: theme.spacing.md,
