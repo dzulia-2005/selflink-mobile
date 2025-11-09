@@ -12,9 +12,14 @@ type RequestOptions = {
 
 export class ApiClient {
   private token: string | null = null;
+  private refreshHandler?: () => Promise<string | null>;
 
   setToken(token: string | null) {
     this.token = token;
+  }
+
+  setRefreshHandler(handler?: () => Promise<string | null>) {
+    this.refreshHandler = handler;
   }
 
   async request<T>(path: string, options: RequestOptions = {}): Promise<T> {
@@ -30,20 +35,38 @@ export class ApiClient {
       finalHeaders['Content-Type'] = 'application/json';
     }
 
-    if (auth && this.token) {
-      finalHeaders.Authorization = `Bearer ${this.token}`;
-    }
+    const serializedBody =
+      body instanceof FormData
+        ? body
+        : body !== undefined
+          ? JSON.stringify(body)
+          : undefined;
 
-    const response = await fetch(url, {
-      method,
-      headers: finalHeaders,
-      body:
-        body instanceof FormData
-          ? body
-          : body !== undefined
-            ? JSON.stringify(body)
-            : undefined,
-    });
+    const send = async () => {
+      const headersWithAuth = {
+        ...finalHeaders,
+        ...(auth && this.token ? { Authorization: `Bearer ${this.token}` } : {}),
+      };
+
+      return fetch(url, {
+        method,
+        headers: headersWithAuth,
+        body: body instanceof FormData ? body : serializedBody,
+      });
+    };
+
+    let response = await send();
+    if (
+      response.status === 401 &&
+      auth &&
+      this.refreshHandler &&
+      !(body instanceof FormData)
+    ) {
+      const newToken = await this.refreshHandler();
+      if (newToken) {
+        response = await send();
+      }
+    }
 
     if (!response.ok) {
       const errorText = await response.text().catch(() => '');

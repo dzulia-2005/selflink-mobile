@@ -5,13 +5,16 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 
 import { apiClient } from '@services/api/client';
+import { refreshSession } from '@services/api/auth';
 import { fetchCurrentUser, updateCurrentUser } from '@services/api/user';
 
 const TOKEN_KEY = 'selflink.auth.token';
+const REFRESH_TOKEN_KEY = 'selflink.auth.refresh';
 
 export type AuthUser = {
   id: string;
@@ -22,11 +25,13 @@ export type AuthUser = {
 
 type AuthState = {
   token: string | null;
+  refreshToken: string | null;
   user: AuthUser | null;
 };
 
 type SignInPayload = {
   token: string;
+  refreshToken?: string | null;
   user?: AuthUser;
 };
 
@@ -49,41 +54,62 @@ type Props = {
   children: ReactNode;
 };
 
-async function persistToken(token: string | null) {
+async function persistTokens(token: string | null, refreshToken: string | null) {
   try {
     if (token) {
       await SecureStore.setItemAsync(TOKEN_KEY, token);
     } else {
       await SecureStore.deleteItemAsync(TOKEN_KEY);
     }
+
+    if (refreshToken) {
+      await SecureStore.setItemAsync(REFRESH_TOKEN_KEY, refreshToken);
+    } else {
+      await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
+    }
   } catch (error) {
-    console.warn('AuthContext: failed to persist token', error);
+    console.warn('AuthContext: failed to persist tokens', error);
   }
 }
 
 export function AuthProvider({ children }: Props) {
-  const [state, setState] = useState<AuthState>({ token: null, user: null });
+  const [state, setState] = useState<AuthState>({
+    token: null,
+    refreshToken: null,
+    user: null,
+  });
   const [loading, setLoading] = useState(true);
   const [profileError, setProfileError] = useState<string | null>(null);
   const [refreshingProfile, setRefreshingProfile] = useState(false);
+  const refreshTokenRef = useRef<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
     (async () => {
       try {
         const storedToken = await SecureStore.getItemAsync(TOKEN_KEY);
+        const storedRefresh = await SecureStore.getItemAsync(REFRESH_TOKEN_KEY);
         if (storedToken && isMounted) {
           apiClient.setToken(storedToken);
+          refreshTokenRef.current = storedRefresh;
           try {
             const profile = await fetchCurrentUser();
             if (isMounted) {
-              setState({ token: storedToken, user: profile });
+              setState({
+                token: storedToken,
+                refreshToken: storedRefresh,
+                user: profile,
+              });
               setProfileError(null);
             }
           } catch (error) {
             console.warn('AuthContext: failed to fetch profile', error);
             if (isMounted) {
-              setState({ token: storedToken, user: null });
+              setState({
+                token: storedToken,
+                refreshToken: storedRefresh,
+                user: null,
+              });
               setProfileError('Unable to load profile. Tap to retry.');
             }
           }
@@ -101,24 +127,54 @@ export function AuthProvider({ children }: Props) {
     };
   }, []);
 
-  const applyAuth = useCallback(async (token: string | null, user: AuthUser | null) => {
-    setState({ token, user });
-    apiClient.setToken(token);
-    await persistToken(token);
-    if (token) {
-      setProfileError(null);
-    }
-  }, []);
+  const applyAuth = useCallback(
+    async (token: string | null, refreshToken: string | null, user?: AuthUser | null) => {
+      setState((prev) => ({
+        token,
+        refreshToken,
+        user: user === undefined ? prev.user : user,
+      }));
+      apiClient.setToken(token);
+      refreshTokenRef.current = refreshToken;
+      await persistTokens(token, refreshToken);
+      if (token) {
+        setProfileError(null);
+      }
+    },
+    [],
+  );
+
+  useEffect(() => {
+    apiClient.setRefreshHandler(async () => {
+      if (!refreshTokenRef.current) {
+        return null;
+      }
+      try {
+        const result = await refreshSession(refreshTokenRef.current);
+        const nextRefresh = result.refreshToken ?? refreshTokenRef.current;
+        await applyAuth(result.token, nextRefresh, result.user);
+        return result.token;
+      } catch (error) {
+        console.warn('AuthContext: token refresh failed', error);
+        await applyAuth(null, null, null);
+        return null;
+      }
+    });
+
+    return () => {
+      apiClient.setRefreshHandler(undefined);
+    };
+  }, [applyAuth]);
 
   const signIn = useCallback(
-    async ({ token, user }: SignInPayload) => {
-      await applyAuth(token, user ?? null);
+    async ({ token, refreshToken, user }: SignInPayload) => {
+      await applyAuth(token, refreshToken ?? null, user ?? null);
     },
     [applyAuth],
   );
 
   const signOut = useCallback(async () => {
-    await applyAuth(null, null);
+    await applyAuth(null, null, null);
     setProfileError(null);
   }, [applyAuth]);
 

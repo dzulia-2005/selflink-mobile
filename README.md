@@ -47,6 +47,7 @@ src/
 - `AppNavigator` now gates access: unauthenticated users see Login; signed-in users reach Home/Mentor/SoulMatch/Payments and can sign out directly from the Home welcome panel.
 - Home’s welcome panel shows the active user and exposes a Sign Out CTA, making it easy to switch accounts during testing.
 - `src/services/api/user.ts` handles `/api/v1/users/*` (list/detail/follow/followers) plus the `/api/v1/users/me/` hydration flow used by AuthContext.
+- Auth automatically refreshes expired access tokens via `/api/v1/auth/token/refresh/`, and falling back to logout if the refresh token is invalid.
 - `src/hooks/useUsersDirectory.ts` provides a reusable controller for searching, paginating, and following users against the `/api/v1/users/*` endpoints.
 - `src/hooks/usePaymentsCatalog.ts` hydrates gifts, plans, and subscription data so payments UI can stay reactive and shareable across platforms.
 - `src/hooks/useMessages.ts` wraps `/api/v1/messages/`, emits typing signals, and ties into the realtime websocket feed for thread activity (with REST fallback).

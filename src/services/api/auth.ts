@@ -4,6 +4,7 @@ import { fetchCurrentUser } from '@services/api/user';
 
 type LoginResponse = {
   token: string;
+  refreshToken?: string;
   user: AuthUser;
 };
 
@@ -38,7 +39,7 @@ export async function loginWithPassword(
     if (!user) {
       user = await fetchCurrentUser();
     }
-    return { token: result.token, user };
+    return { token: result.token, refreshToken: result.refreshToken, user };
   } catch (error) {
     console.warn('Falling back to mock login flow', error);
     const { email } = credentials;
@@ -49,6 +50,7 @@ export async function loginWithPassword(
     };
     return {
       token: 'mock-token',
+      refreshToken: 'mock-refresh-token',
       user: localUser,
     };
   }
@@ -70,9 +72,23 @@ export async function registerUser(payload: RegisterPayload): Promise<LoginRespo
     if (!user) {
       user = await fetchCurrentUser();
     }
-    return { token: result.token, user };
+    return { token: result.token, refreshToken: result.refreshToken, user };
   } catch (error) {
     console.warn('Registration failed', error);
     throw error;
   }
+}
+
+export async function refreshSession(refreshToken: string): Promise<LoginResponse> {
+  const result = await apiClient.request<LoginResponse>('/api/v1/auth/token/refresh/', {
+    method: 'POST',
+    auth: false,
+    body: { refreshToken },
+  });
+
+  if (!result?.token) {
+    throw new Error('Missing token in refresh response');
+  }
+
+  return result;
 }
