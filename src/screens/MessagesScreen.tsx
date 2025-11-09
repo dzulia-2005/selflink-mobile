@@ -257,21 +257,21 @@ export function MessagesScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor="#fff" />
         }
         ListEmptyComponent={
-          !loading && (
+          !loading ? (
             <View style={styles.empty}>
               <Text style={styles.emptyTitle}>No transmissions yet</Text>
               <Text style={styles.emptyCopy}>
                 Start a conversation that feels crafted—not spammed.
               </Text>
             </View>
-          )
+          ) : null
         }
         ListFooterComponent={
-          loading && (
+          loading ? (
             <View style={styles.loader}>
               <ActivityIndicator color={theme.palette.platinum} />
             </View>
-          )
+          ) : null
         }
       />
 
