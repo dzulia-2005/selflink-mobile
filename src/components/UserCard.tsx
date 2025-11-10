@@ -1,16 +1,9 @@
 import { memo, useMemo } from 'react';
-import {
-  Image,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { MetalPanel } from '@components/MetalPanel';
-import { theme } from '@theme/index';
-
 import type { UserProfile } from '@services/api/user';
+import { theme } from '@theme/index';
 
 type Props = {
   user: UserProfile & { flags?: Record<string, unknown> & { following?: boolean } };
@@ -23,7 +16,9 @@ export const UserCard = memo(function UserCard({
   onToggleFollow,
   pending = false,
 }: Props) {
-  const following = Boolean((user.flags as Record<string, unknown> & { following?: boolean })?.following);
+  const following = Boolean(
+    (user.flags as Record<string, unknown> & { following?: boolean })?.following,
+  );
   const initials = useMemo(() => {
     if (user.name) {
       return user.name

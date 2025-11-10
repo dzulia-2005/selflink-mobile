@@ -1,9 +1,8 @@
 import { memo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { theme } from '@theme/index';
-
 import type { Thread } from '@services/api/threads';
+import { theme } from '@theme/index';
 
 type Props = {
   thread: Thread;
@@ -12,7 +11,8 @@ type Props = {
 
 export const ThreadCard = memo(function ThreadCard({ thread, onPress }: Props) {
   const participants =
-    thread.participants?.map((participant) => participant.name || participant.handle) ?? [];
+    thread.participants?.map((participant) => participant.name || participant.handle) ??
+    [];
   const title = thread.title || participants.join(', ');
 
   return (

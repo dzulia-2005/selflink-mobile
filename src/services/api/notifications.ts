@@ -34,17 +34,27 @@ export async function listNotifications(
   params: NotificationQuery = {},
 ): Promise<NotificationListResponse> {
   const searchParams = new URLSearchParams();
-  if (params.cursor) searchParams.set('cursor', params.cursor);
-  if (params.ordering) searchParams.set('ordering', params.ordering);
-  if (params.page_size) searchParams.set('page_size', String(params.page_size));
-  if (params.search) searchParams.set('search', params.search);
+  if (params.cursor) {
+    searchParams.set('cursor', params.cursor);
+  }
+  if (params.ordering) {
+    searchParams.set('ordering', params.ordering);
+  }
+  if (params.page_size) {
+    searchParams.set('page_size', String(params.page_size));
+  }
+  if (params.search) {
+    searchParams.set('search', params.search);
+  }
 
   const qs = searchParams.toString();
   const path = `/api/v1/notifications/${qs ? `?${qs}` : ''}`;
   return apiClient.request<NotificationListResponse>(path, { method: 'GET' });
 }
 
-export async function createNotification(payload: NotificationPayload): Promise<Notification> {
+export async function createNotification(
+  payload: NotificationPayload,
+): Promise<Notification> {
   return apiClient.request<Notification>('/api/v1/notifications/', {
     method: 'POST',
     body: payload,
@@ -52,7 +62,9 @@ export async function createNotification(payload: NotificationPayload): Promise<
 }
 
 export async function getNotification(id: number): Promise<Notification> {
-  return apiClient.request<Notification>(`/api/v1/notifications/${id}/`, { method: 'GET' });
+  return apiClient.request<Notification>(`/api/v1/notifications/${id}/`, {
+    method: 'GET',
+  });
 }
 
 export async function updateNotification(

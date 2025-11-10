@@ -6,8 +6,8 @@ import { enableScreens } from 'react-native-screens';
 
 import { useAuth } from '@hooks/useAuth';
 import { CommunityScreen } from '@screens/CommunityScreen';
-import { InboxScreen } from '@screens/InboxScreen';
 import { HomeScreen } from '@screens/HomeScreen';
+import { InboxScreen } from '@screens/InboxScreen';
 import { LoginScreen } from '@screens/LoginScreen';
 import { MentorScreen } from '@screens/MentorScreen';
 import { MessagesScreen } from '@screens/MessagesScreen';
@@ -15,8 +15,8 @@ import { PaymentsScreen } from '@screens/PaymentsScreen';
 import { ProfileScreen } from '@screens/ProfileScreen';
 import { RegisterScreen } from '@screens/RegisterScreen';
 import { SoulMatchScreen } from '@screens/SoulMatchScreen';
-import { WalletLedgerScreen } from '@screens/WalletLedgerScreen';
 import { ToastContainer } from '@screens/ToastContainer';
+import { WalletLedgerScreen } from '@screens/WalletLedgerScreen';
 import { theme } from '@theme/index';
 
 enableScreens(true);

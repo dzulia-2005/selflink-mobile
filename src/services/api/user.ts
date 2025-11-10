@@ -19,10 +19,18 @@ export type UsersQuery = {
 
 function buildQuery(path: string, params: UsersQuery = {}): string {
   const searchParams = new URLSearchParams();
-  if (params.cursor) searchParams.set('cursor', params.cursor);
-  if (params.ordering) searchParams.set('ordering', params.ordering);
-  if (params.page_size) searchParams.set('page_size', String(params.page_size));
-  if (params.search) searchParams.set('search', params.search);
+  if (params.cursor) {
+    searchParams.set('cursor', params.cursor);
+  }
+  if (params.ordering) {
+    searchParams.set('ordering', params.ordering);
+  }
+  if (params.page_size) {
+    searchParams.set('page_size', String(params.page_size));
+  }
+  if (params.search) {
+    searchParams.set('search', params.search);
+  }
   const qs = searchParams.toString();
   return `${path}${qs ? `?${qs}` : ''}`;
 }
@@ -48,14 +56,20 @@ export async function unfollowUser(id: number): Promise<void> {
   await apiClient.request(`/api/v1/users/${id}/follow/`, { method: 'DELETE' });
 }
 
-export async function listFollowers(id: number, params: UsersQuery = {}): Promise<UsersListResponse> {
+export async function listFollowers(
+  id: number,
+  params: UsersQuery = {},
+): Promise<UsersListResponse> {
   return apiClient.request<UsersListResponse>(
     buildQuery(`/api/v1/users/${id}/followers/`, params),
     { method: 'GET' },
   );
 }
 
-export async function listFollowing(id: number, params: UsersQuery = {}): Promise<UsersListResponse> {
+export async function listFollowing(
+  id: number,
+  params: UsersQuery = {},
+): Promise<UsersListResponse> {
   return apiClient.request<UsersListResponse>(
     buildQuery(`/api/v1/users/${id}/following/`, params),
     { method: 'GET' },

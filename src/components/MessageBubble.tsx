@@ -1,10 +1,9 @@
 import { memo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { theme } from '@theme/index';
-
-import type { Message } from '@services/api/messages';
 import { useAuth } from '@hooks/useAuth';
+import type { Message } from '@services/api/messages';
+import { theme } from '@theme/index';
 
 type Props = {
   message: Message;

@@ -36,10 +36,18 @@ export async function listMentorTasks(
   params: MentorTaskQuery = {},
 ): Promise<MentorTaskListResponse> {
   const searchParams = new URLSearchParams();
-  if (params.cursor) searchParams.set('cursor', params.cursor);
-  if (params.ordering) searchParams.set('ordering', params.ordering);
-  if (params.page_size) searchParams.set('page_size', String(params.page_size));
-  if (params.search) searchParams.set('search', params.search);
+  if (params.cursor) {
+    searchParams.set('cursor', params.cursor);
+  }
+  if (params.ordering) {
+    searchParams.set('ordering', params.ordering);
+  }
+  if (params.page_size) {
+    searchParams.set('page_size', String(params.page_size));
+  }
+  if (params.search) {
+    searchParams.set('search', params.search);
+  }
 
   const qs = searchParams.toString();
   const path = `/api/v1/mentor/tasks/${qs ? `?${qs}` : ''}`;

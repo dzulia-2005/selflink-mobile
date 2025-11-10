@@ -1,4 +1,5 @@
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
@@ -15,12 +16,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { MessageBubble } from '@components/MessageBubble';
 import { MetalButton } from '@components/MetalButton';
 import { MetalPanel } from '@components/MetalPanel';
+import { env } from '@config/env';
 import { useToast } from '@context/ToastContext';
 import { useAuth } from '@hooks/useAuth';
 import { useMessages } from '@hooks/useMessages';
 import { RootStackParamList } from '@navigation/AppNavigator';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { theme } from '@theme/index';
 import {
   getTypingStatus,
   leaveThread,
@@ -28,7 +28,7 @@ import {
   sendTypingSignal,
   TypingStatus,
 } from '@services/api/threads';
-import { env } from '@config/env';
+import { theme } from '@theme/index';
 
 type MessagesRoute = RouteProp<RootStackParamList, 'Messages'>;
 
@@ -69,7 +69,9 @@ export function MessagesScreen() {
   });
 
   const handleMarkRead = useCallback(async () => {
-    if (markingRead) return;
+    if (markingRead) {
+      return;
+    }
     try {
       setMarkingRead(true);
       await markThreadRead(threadId);
@@ -83,7 +85,9 @@ export function MessagesScreen() {
   }, [markingRead, threadId, toast]);
 
   const handleLeaveThread = useCallback(async () => {
-    if (leaving) return;
+    if (leaving) {
+      return;
+    }
     try {
       setLeaving(true);
       await leaveThread(threadId);
@@ -112,23 +116,20 @@ export function MessagesScreen() {
       ws.onmessage = (event) => {
         try {
           const payload = JSON.parse(event.data);
-            if (payload?.type === 'typing' && payload.thread_id === threadId) {
-              if (payload.is_typing) {
-                setTypingStatus({
-                  typing: true,
-                  userId: payload.user_id,
-                  userName: payload.user_name,
-                  userHandle: payload.user_handle,
-                });
-                if (typingTimeoutRef.current) {
-                  clearTimeout(typingTimeoutRef.current);
-                }
-                typingTimeoutRef.current = setTimeout(
-                  () => setTypingStatus(null),
-                  7000,
-                );
-              } else {
-                setTypingStatus(null);
+          if (payload?.type === 'typing' && payload.thread_id === threadId) {
+            if (payload.is_typing) {
+              setTypingStatus({
+                typing: true,
+                userId: payload.user_id,
+                userName: payload.user_name,
+                userHandle: payload.user_handle,
+              });
+              if (typingTimeoutRef.current) {
+                clearTimeout(typingTimeoutRef.current);
+              }
+              typingTimeoutRef.current = setTimeout(() => setTypingStatus(null), 7000);
+            } else {
+              setTypingStatus(null);
             }
           }
         } catch (error) {

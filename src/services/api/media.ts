@@ -39,10 +39,18 @@ export type MediaPartialPayload = Partial<MediaPayload>;
 
 export async function listMedia(params: MediaQuery = {}): Promise<MediaListResponse> {
   const searchParams = new URLSearchParams();
-  if (params.cursor) searchParams.set('cursor', params.cursor);
-  if (params.ordering) searchParams.set('ordering', params.ordering);
-  if (params.page_size) searchParams.set('page_size', String(params.page_size));
-  if (params.search) searchParams.set('search', params.search);
+  if (params.cursor) {
+    searchParams.set('cursor', params.cursor);
+  }
+  if (params.ordering) {
+    searchParams.set('ordering', params.ordering);
+  }
+  if (params.page_size) {
+    searchParams.set('page_size', String(params.page_size));
+  }
+  if (params.search) {
+    searchParams.set('search', params.search);
+  }
 
   const qs = searchParams.toString();
   const path = `/api/v1/media/${qs ? `?${qs}` : ''}`;
@@ -67,7 +75,10 @@ export async function updateMedia(id: number, payload: MediaPayload): Promise<Me
   });
 }
 
-export async function patchMedia(id: number, payload: MediaPartialPayload): Promise<MediaItem> {
+export async function patchMedia(
+  id: number,
+  payload: MediaPartialPayload,
+): Promise<MediaItem> {
   return apiClient.request<MediaItem>(`/api/v1/media/${id}/`, {
     method: 'PATCH',
     body: payload,

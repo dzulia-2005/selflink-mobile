@@ -31,7 +31,9 @@ export function useThreads(options: Options = {}) {
           cursor: cursorValue ?? undefined,
           ordering: '-updated_at',
         });
-        setThreads((prev) => (replace ? response.results : [...prev, ...response.results]));
+        setThreads((prev) =>
+          replace ? response.results : [...prev, ...response.results],
+        );
         setCursor(response.next);
         setHasMore(Boolean(response.next));
       } catch (error) {
@@ -69,7 +71,9 @@ export function useThreads(options: Options = {}) {
   const refresh = useCallback(() => loadPage(true, null), [loadPage]);
 
   const loadMore = useCallback(async () => {
-    if (!hasMore || loadingMore) return;
+    if (!hasMore || loadingMore) {
+      return;
+    }
     await loadPage(false, cursor);
   }, [cursor, hasMore, loadPage, loadingMore]);
 

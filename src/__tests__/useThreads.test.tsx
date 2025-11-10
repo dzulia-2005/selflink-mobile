@@ -1,13 +1,15 @@
-import { ReactNode } from 'react';
 import { act, renderHook, waitFor } from '@testing-library/react-native';
+import { ReactNode } from 'react';
 
 import { ToastProvider } from '@context/ToastContext';
 import { useThreads } from '@hooks/useThreads';
-import { listThreads as mockListThreads } from '@services/api/threads';
+import { listThreads } from '@services/api/threads';
 
 jest.mock('@services/api/threads', () => ({
   listThreads: jest.fn(),
 }));
+
+const mockListThreads = jest.mocked(listThreads);
 
 const wrapper = ({ children }: { children: ReactNode }) => (
   <ToastProvider>{children}</ToastProvider>

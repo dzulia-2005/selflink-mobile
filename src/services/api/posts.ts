@@ -27,10 +27,18 @@ export type PostPartialPayload = Partial<PostPayload>;
 
 function buildQuery(path: string, params: PostQuery = {}): string {
   const searchParams = new URLSearchParams();
-  if (params.cursor) searchParams.set('cursor', params.cursor);
-  if (params.ordering) searchParams.set('ordering', params.ordering);
-  if (params.page_size) searchParams.set('page_size', String(params.page_size));
-  if (params.search) searchParams.set('search', params.search);
+  if (params.cursor) {
+    searchParams.set('cursor', params.cursor);
+  }
+  if (params.ordering) {
+    searchParams.set('ordering', params.ordering);
+  }
+  if (params.page_size) {
+    searchParams.set('page_size', String(params.page_size));
+  }
+  if (params.search) {
+    searchParams.set('search', params.search);
+  }
   const qs = searchParams.toString();
   return `${path}${qs ? `?${qs}` : ''}`;
 }
@@ -80,16 +88,28 @@ export async function unlikePost(id: number): Promise<void> {
 
 export type SearchPostsResponse = PostListResponse;
 
-export async function searchPosts(query: string, params: Omit<PostQuery, 'search'> = {}): Promise<SearchPostsResponse> {
+export async function searchPosts(
+  query: string,
+  params: Omit<PostQuery, 'search'> = {},
+): Promise<SearchPostsResponse> {
   const searchParams = new URLSearchParams();
   searchParams.set('search', query);
-  if (params.cursor) searchParams.set('cursor', params.cursor);
-  if (params.ordering) searchParams.set('ordering', params.ordering);
-  if (params.page_size) searchParams.set('page_size', String(params.page_size));
+  if (params.cursor) {
+    searchParams.set('cursor', params.cursor);
+  }
+  if (params.ordering) {
+    searchParams.set('ordering', params.ordering);
+  }
+  if (params.page_size) {
+    searchParams.set('page_size', String(params.page_size));
+  }
   const qs = searchParams.toString();
-  return apiClient.request<SearchPostsResponse>(`/api/v1/search/posts/${qs ? `?${qs}` : ''}`, {
-    method: 'GET',
-  });
+  return apiClient.request<SearchPostsResponse>(
+    `/api/v1/search/posts/${qs ? `?${qs}` : ''}`,
+    {
+      method: 'GET',
+    },
+  );
 }
 
 export type SearchUsersResponse = {
@@ -98,14 +118,26 @@ export type SearchUsersResponse = {
   results: FeedPost['author'][];
 };
 
-export async function searchUsers(query: string, params: Omit<PostQuery, 'search'> = {}): Promise<SearchUsersResponse> {
+export async function searchUsers(
+  query: string,
+  params: Omit<PostQuery, 'search'> = {},
+): Promise<SearchUsersResponse> {
   const searchParams = new URLSearchParams();
   searchParams.set('search', query);
-  if (params.cursor) searchParams.set('cursor', params.cursor);
-  if (params.ordering) searchParams.set('ordering', params.ordering);
-  if (params.page_size) searchParams.set('page_size', String(params.page_size));
+  if (params.cursor) {
+    searchParams.set('cursor', params.cursor);
+  }
+  if (params.ordering) {
+    searchParams.set('ordering', params.ordering);
+  }
+  if (params.page_size) {
+    searchParams.set('page_size', String(params.page_size));
+  }
   const qs = searchParams.toString();
-  return apiClient.request<SearchUsersResponse>(`/api/v1/search/users/${qs ? `?${qs}` : ''}`, {
-    method: 'GET',
-  });
+  return apiClient.request<SearchUsersResponse>(
+    `/api/v1/search/users/${qs ? `?${qs}` : ''}`,
+    {
+      method: 'GET',
+    },
+  );
 }

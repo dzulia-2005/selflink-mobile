@@ -1,3 +1,5 @@
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useMemo, useState } from 'react';
 import {
@@ -12,18 +14,16 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { ThreadCard } from '@components/ThreadCard';
 import { MetalButton } from '@components/MetalButton';
 import { MetalPanel } from '@components/MetalPanel';
+import { ThreadCard } from '@components/ThreadCard';
 import { useToast } from '@context/ToastContext';
 import { useAuth } from '@hooks/useAuth';
-import { useUsersDirectory } from '@hooks/useUsersDirectory';
 import { useThreads } from '@hooks/useThreads';
+import { useUsersDirectory } from '@hooks/useUsersDirectory';
 import { RootStackParamList } from '@navigation/AppNavigator';
-import { theme } from '@theme/index';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { UserProfile } from '@services/api/user';
+import { theme } from '@theme/index';
 
 export function InboxScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -67,7 +67,9 @@ export function InboxScreen() {
   );
 
   const handleCreateThread = useCallback(async () => {
-    if (creating) return;
+    if (creating) {
+      return;
+    }
     if (selectedIds.length === 0) {
       toast.push({
         tone: 'error',
@@ -130,14 +132,18 @@ export function InboxScreen() {
         contentContainerStyle={styles.list}
         data={threads}
         keyExtractor={(item) => String(item.id)}
-        renderItem={({ item }) => <ThreadCard thread={item} onPress={() => openThread(item.id)} />}
+        renderItem={({ item }) => (
+          <ThreadCard thread={item} onPress={() => openThread(item.id)} />
+        )}
         onEndReachedThreshold={0.2}
         onEndReached={() => {
           if (hasMore && !loading && !refreshing) {
             loadMore();
           }
         }}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor="#fff" />}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor="#fff" />
+        }
         ListFooterComponent={
           loading ? (
             <View style={styles.loader}>
@@ -223,7 +229,9 @@ export function InboxScreen() {
                         <Text style={styles.userName}>{user.name ?? 'Unnamed'}</Text>
                         <Text style={styles.userHandle}>@{user.handle ?? 'handle'}</Text>
                       </View>
-                      <Text style={styles.userAction}>{isSelected ? 'Remove' : 'Add'}</Text>
+                      <Text style={styles.userAction}>
+                        {isSelected ? 'Remove' : 'Add'}
+                      </Text>
                     </Pressable>
                   );
                 })

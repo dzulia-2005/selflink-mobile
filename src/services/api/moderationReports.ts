@@ -1,6 +1,11 @@
 import { apiClient } from '@services/api/client';
 
-export type ModerationReportStatus = 'open' | 'reviewing' | 'resolved' | 'dismissed' | string;
+export type ModerationReportStatus =
+  | 'open'
+  | 'reviewing'
+  | 'resolved'
+  | 'dismissed'
+  | string;
 
 export type ModerationReport = {
   id: number;
@@ -39,10 +44,18 @@ export async function listModerationReports(
   params: ModerationReportQuery = {},
 ): Promise<ModerationReportListResponse> {
   const searchParams = new URLSearchParams();
-  if (params.cursor) searchParams.set('cursor', params.cursor);
-  if (params.ordering) searchParams.set('ordering', params.ordering);
-  if (params.page_size) searchParams.set('page_size', String(params.page_size));
-  if (params.search) searchParams.set('search', params.search);
+  if (params.cursor) {
+    searchParams.set('cursor', params.cursor);
+  }
+  if (params.ordering) {
+    searchParams.set('ordering', params.ordering);
+  }
+  if (params.page_size) {
+    searchParams.set('page_size', String(params.page_size));
+  }
+  if (params.search) {
+    searchParams.set('search', params.search);
+  }
 
   const qs = searchParams.toString();
   const path = `/api/v1/moderation/reports/${qs ? `?${qs}` : ''}`;

@@ -26,7 +26,9 @@ export function MetalButton({ title, icon, onPress, disabled = false }: Props) {
   );
 
   const handlePressIn = useCallback(() => {
-    if (disabled) return;
+    if (disabled) {
+      return;
+    }
     setPressed(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => undefined);
   }, [disabled]);

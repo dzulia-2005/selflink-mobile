@@ -33,18 +33,31 @@ export type PaginatedQuery = {
 
 function buildQuery(path: string, params: PaginatedQuery = {}): string {
   const searchParams = new URLSearchParams();
-  if (params.cursor) searchParams.set('cursor', params.cursor);
-  if (params.ordering) searchParams.set('ordering', params.ordering);
-  if (params.page_size) searchParams.set('page_size', String(params.page_size));
-  if (params.search) searchParams.set('search', params.search);
+  if (params.cursor) {
+    searchParams.set('cursor', params.cursor);
+  }
+  if (params.ordering) {
+    searchParams.set('ordering', params.ordering);
+  }
+  if (params.page_size) {
+    searchParams.set('page_size', String(params.page_size));
+  }
+  if (params.search) {
+    searchParams.set('search', params.search);
+  }
   const qs = searchParams.toString();
   return `${path}${qs ? `?${qs}` : ''}`;
 }
 
-export async function listGiftTypes(params: PaginatedQuery = {}): Promise<GiftTypeListResponse> {
-  return apiClient.request<GiftTypeListResponse>(buildQuery('/api/v1/payments/gifts/', params), {
-    method: 'GET',
-  });
+export async function listGiftTypes(
+  params: PaginatedQuery = {},
+): Promise<GiftTypeListResponse> {
+  return apiClient.request<GiftTypeListResponse>(
+    buildQuery('/api/v1/payments/gifts/', params),
+    {
+      method: 'GET',
+    },
+  );
 }
 
 export async function createGiftType(payload: GiftTypePayload): Promise<GiftType> {
@@ -58,14 +71,20 @@ export async function getGiftType(id: number): Promise<GiftType> {
   return apiClient.request<GiftType>(`/api/v1/payments/gifts/${id}/`, { method: 'GET' });
 }
 
-export async function updateGiftType(id: number, payload: GiftTypePayload): Promise<GiftType> {
+export async function updateGiftType(
+  id: number,
+  payload: GiftTypePayload,
+): Promise<GiftType> {
   return apiClient.request<GiftType>(`/api/v1/payments/gifts/${id}/`, {
     method: 'PUT',
     body: payload,
   });
 }
 
-export async function patchGiftType(id: number, payload: GiftTypePartialPayload): Promise<GiftType> {
+export async function patchGiftType(
+  id: number,
+  payload: GiftTypePartialPayload,
+): Promise<GiftType> {
   return apiClient.request<GiftType>(`/api/v1/payments/gifts/${id}/`, {
     method: 'PATCH',
     body: payload,
@@ -103,9 +122,12 @@ export type PlanPayload = {
 export type PlanPartialPayload = Partial<PlanPayload>;
 
 export async function listPlans(params: PaginatedQuery = {}): Promise<PlanListResponse> {
-  return apiClient.request<PlanListResponse>(buildQuery('/api/v1/payments/plans/', params), {
-    method: 'GET',
-  });
+  return apiClient.request<PlanListResponse>(
+    buildQuery('/api/v1/payments/plans/', params),
+    {
+      method: 'GET',
+    },
+  );
 }
 
 export async function createPlan(payload: PlanPayload): Promise<Plan> {
@@ -138,7 +160,12 @@ export async function deletePlan(id: number): Promise<void> {
 }
 
 // Subscriptions
-export type SubscriptionStatus = 'active' | 'canceled' | 'incomplete' | 'past_due' | string;
+export type SubscriptionStatus =
+  | 'active'
+  | 'canceled'
+  | 'incomplete'
+  | 'past_due'
+  | string;
 
 export type Subscription = {
   id: number;
@@ -172,7 +199,9 @@ export async function listSubscriptions(
   );
 }
 
-export async function createSubscription(payload: SubscriptionPayload): Promise<Subscription> {
+export async function createSubscription(
+  payload: SubscriptionPayload,
+): Promise<Subscription> {
   return apiClient.request<Subscription>('/api/v1/payments/subscriptions/', {
     method: 'POST',
     body: payload,

@@ -33,7 +33,9 @@ export function PaymentsScreen() {
       }
       try {
         setLaunchingCheckout(true);
-        const { url } = await createStripeCheckoutSession(planId ? { plan_id: planId } : {});
+        const { url } = await createStripeCheckoutSession(
+          planId ? { plan_id: planId } : {},
+        );
         if (!url) {
           throw new Error('Missing checkout session URL');
         }
@@ -92,11 +94,17 @@ export function PaymentsScreen() {
           {activeSubscription ? (
             <>
               <Text style={styles.body}>
-                You&apos;re on <Text style={styles.emphasis}>{activeSubscription.plan.name}</Text>{' '}
-                ({formatPrice(activeSubscription.plan.price_cents, activeSubscription.plan.interval)}).
+                You&apos;re on{' '}
+                <Text style={styles.emphasis}>{activeSubscription.plan.name}</Text> (
+                {formatPrice(
+                  activeSubscription.plan.price_cents,
+                  activeSubscription.plan.interval,
+                )}
+                ).
               </Text>
               <Text style={styles.caption}>
-                Current period ends {new Date(
+                Current period ends{' '}
+                {new Date(
                   activeSubscription.current_period_end ?? activeSubscription.updated_at,
                 ).toLocaleDateString()}
               </Text>
@@ -120,7 +128,9 @@ export function PaymentsScreen() {
         <MetalPanel>
           <Text style={styles.panelTitle}>Available Plans</Text>
           {plans.length === 0 ? (
-            <Text style={styles.body}>Plans will appear here once the backend seeds them.</Text>
+            <Text style={styles.body}>
+              Plans will appear here once the backend seeds them.
+            </Text>
           ) : (
             plans.map((plan) => (
               <View key={plan.id} style={styles.card}>
@@ -172,8 +182,8 @@ export function PaymentsScreen() {
         <MetalPanel>
           <Text style={styles.panelTitle}>Wallet</Text>
           <Text style={styles.body}>
-            Soon: monitor balances, gifts, and transaction history with a Torvalds-approved
-            clarity.
+            Soon: monitor balances, gifts, and transaction history with a
+            Torvalds-approved clarity.
           </Text>
           <MetalButton title="View Wallet" onPress={handleOpenWallet} />
         </MetalPanel>

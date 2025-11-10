@@ -1,7 +1,9 @@
 import '@testing-library/jest-native/extend-expect';
 
 // React 19 requires explicitly opting into act() support for custom environments.
-(globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+(
+  globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT?: boolean }
+).IS_REACT_ACT_ENVIRONMENT = true;
 
 const mockFetch = async () => ({
   ok: true,

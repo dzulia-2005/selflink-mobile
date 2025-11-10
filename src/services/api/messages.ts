@@ -60,13 +60,25 @@ export type MessagePayload = {
 
 export type MessagePartialPayload = Partial<MessagePayload>;
 
-export async function listMessages(params: MessageQuery = {}): Promise<MessageListResponse> {
+export async function listMessages(
+  params: MessageQuery = {},
+): Promise<MessageListResponse> {
   const searchParams = new URLSearchParams();
-  if (params.cursor) searchParams.set('cursor', params.cursor);
-  if (params.ordering) searchParams.set('ordering', params.ordering);
-  if (params.page_size) searchParams.set('page_size', String(params.page_size));
-  if (params.search) searchParams.set('search', params.search);
-  if (params.thread) searchParams.set('thread', String(params.thread));
+  if (params.cursor) {
+    searchParams.set('cursor', params.cursor);
+  }
+  if (params.ordering) {
+    searchParams.set('ordering', params.ordering);
+  }
+  if (params.page_size) {
+    searchParams.set('page_size', String(params.page_size));
+  }
+  if (params.search) {
+    searchParams.set('search', params.search);
+  }
+  if (params.thread) {
+    searchParams.set('thread', String(params.thread));
+  }
 
   const qs = searchParams.toString();
   const path = `/api/v1/messages/${qs ? `?${qs}` : ''}`;
@@ -74,19 +86,34 @@ export async function listMessages(params: MessageQuery = {}): Promise<MessageLi
 }
 
 export async function createMessage(payload: MessagePayload): Promise<Message> {
-  return apiClient.request<Message>('/api/v1/messages/', { method: 'POST', body: payload });
+  return apiClient.request<Message>('/api/v1/messages/', {
+    method: 'POST',
+    body: payload,
+  });
 }
 
 export async function getMessage(id: number): Promise<Message> {
   return apiClient.request<Message>(`/api/v1/messages/${id}/`, { method: 'GET' });
 }
 
-export async function updateMessage(id: number, payload: MessagePayload): Promise<Message> {
-  return apiClient.request<Message>(`/api/v1/messages/${id}/`, { method: 'PUT', body: payload });
+export async function updateMessage(
+  id: number,
+  payload: MessagePayload,
+): Promise<Message> {
+  return apiClient.request<Message>(`/api/v1/messages/${id}/`, {
+    method: 'PUT',
+    body: payload,
+  });
 }
 
-export async function patchMessage(id: number, payload: MessagePartialPayload): Promise<Message> {
-  return apiClient.request<Message>(`/api/v1/messages/${id}/`, { method: 'PATCH', body: payload });
+export async function patchMessage(
+  id: number,
+  payload: MessagePartialPayload,
+): Promise<Message> {
+  return apiClient.request<Message>(`/api/v1/messages/${id}/`, {
+    method: 'PATCH',
+    body: payload,
+  });
 }
 
 export async function deleteMessage(id: number): Promise<void> {

@@ -51,15 +51,12 @@ export function useUsersDirectory(options: Options = {}) {
     [debouncedSearch, options.pageSize],
   );
 
-  const applyPage = useCallback(
-    (response: UsersListResponse, reset: boolean) => {
-      const normalized = response.results.map(normalizeUser);
-      setUsers((prev) => (reset ? normalized : [...prev, ...normalized]));
-      setCursor(response.next);
-      setHasMore(Boolean(response.next));
-    },
-    [],
-  );
+  const applyPage = useCallback((response: UsersListResponse, reset: boolean) => {
+    const normalized = response.results.map(normalizeUser);
+    setUsers((prev) => (reset ? normalized : [...prev, ...normalized]));
+    setCursor(response.next);
+    setHasMore(Boolean(response.next));
+  }, []);
 
   const handleError = useCallback(
     (error: unknown, message: string) => {

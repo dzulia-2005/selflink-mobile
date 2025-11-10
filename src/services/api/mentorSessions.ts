@@ -32,10 +32,18 @@ export async function listMentorSessions(
   params: MentorSessionQuery = {},
 ): Promise<MentorSessionListResponse> {
   const searchParams = new URLSearchParams();
-  if (params.cursor) searchParams.set('cursor', params.cursor);
-  if (params.ordering) searchParams.set('ordering', params.ordering);
-  if (params.page_size) searchParams.set('page_size', String(params.page_size));
-  if (params.search) searchParams.set('search', params.search);
+  if (params.cursor) {
+    searchParams.set('cursor', params.cursor);
+  }
+  if (params.ordering) {
+    searchParams.set('ordering', params.ordering);
+  }
+  if (params.page_size) {
+    searchParams.set('page_size', String(params.page_size));
+  }
+  if (params.search) {
+    searchParams.set('search', params.search);
+  }
 
   const qs = searchParams.toString();
   const path = `/api/v1/mentor/sessions/${qs ? `?${qs}` : ''}`;
@@ -51,11 +59,8 @@ export async function getMentorSession(id: number): Promise<MentorSession> {
 export async function askMentor(
   payload: MentorSessionAskPayload,
 ): Promise<MentorSessionAskResponse> {
-  return apiClient.request<MentorSessionAskResponse>(
-    '/api/v1/mentor/sessions/ask/',
-    {
-      method: 'POST',
-      body: payload,
-    },
-  );
+  return apiClient.request<MentorSessionAskResponse>('/api/v1/mentor/sessions/ask/', {
+    method: 'POST',
+    body: payload,
+  });
 }

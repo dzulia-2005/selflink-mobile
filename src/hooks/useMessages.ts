@@ -26,6 +26,7 @@ const initialComposer: MessageComposerState = {
 };
 
 export function useMessages(options: Options) {
+  const { threadId, pageSize, ordering, onThreadMissing } = options;
   const toast = useToast();
   const [messages, setMessages] = useState<Message[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
@@ -38,11 +39,11 @@ export function useMessages(options: Options) {
   const query: MessageQuery = useMemo(
     () => ({
       cursor: undefined,
-      ordering: options.ordering,
-      page_size: options.pageSize ?? 25,
-      thread: options.threadId,
+      ordering,
+      page_size: pageSize ?? 25,
+      thread: threadId,
     }),
-    [options.ordering, options.pageSize, options.threadId],
+    [ordering, pageSize, threadId],
   );
 
   const handleError = useCallback(
@@ -54,7 +55,7 @@ export function useMessages(options: Options) {
   );
 
   const fetchPage = useCallback(
-    async (reset: boolean) => {
+    async (reset: boolean, currentCursor?: string | null) => {
       if (reset) {
         setRefreshing(true);
       } else {
@@ -63,15 +64,17 @@ export function useMessages(options: Options) {
       try {
         const response = await listMessages({
           ...query,
-          cursor: reset ? undefined : cursor ?? undefined,
+          cursor: reset ? undefined : (currentCursor ?? undefined),
         });
-        setMessages((prev) => (reset ? response.results : [...prev, ...response.results]));
+        setMessages((prev) =>
+          reset ? response.results : [...prev, ...response.results],
+        );
         setCursor(response.next);
         setHasMore(Boolean(response.next));
       } catch (error) {
         handleError(error, 'Unable to load messages.');
         if (error instanceof Error && error.message.includes('(404')) {
-          options.onThreadMissing?.();
+          onThreadMissing?.();
         }
       } finally {
         setLoading(false);
@@ -79,7 +82,7 @@ export function useMessages(options: Options) {
         setLoadingMore(false);
       }
     },
-    [cursor, handleError, options.onThreadMissing, query],
+    [handleError, onThreadMissing, query],
   );
 
   useEffect(() => {
@@ -92,8 +95,8 @@ export function useMessages(options: Options) {
     if (!hasMore || loadingMore) {
       return;
     }
-    fetchPage(false);
-  }, [fetchPage, hasMore, loadingMore]);
+    fetchPage(false, cursor);
+  }, [cursor, fetchPage, hasMore, loadingMore]);
 
   const updateComposer = useCallback(
     (body: string) => setComposer((prev) => ({ ...prev, body })),
@@ -107,7 +110,7 @@ export function useMessages(options: Options) {
     try {
       setComposer((prev) => ({ ...prev, sending: true }));
       const message = await createMessage({
-        thread: options.threadId,
+        thread: threadId,
         body: composer.body.trim(),
       });
       setMessages((prev) => [message, ...prev]);
@@ -116,7 +119,7 @@ export function useMessages(options: Options) {
       handleError(error, 'Unable to send message.');
       setComposer((prev) => ({ ...prev, sending: false }));
     }
-  }, [composer.body, handleError, options.threadId]);
+  }, [composer.body, handleError, threadId]);
 
   return {
     messages,
