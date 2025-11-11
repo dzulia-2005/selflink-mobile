@@ -1,3 +1,5 @@
+import type { NavigatorScreenParams } from '@react-navigation/native';
+
 export type AuthStackParamList = {
   Login: undefined;
   Register: undefined;
@@ -12,14 +14,6 @@ export type RootStackParamList = {
   Auth: undefined;
   Onboarding: undefined;
   Main: undefined;
-};
-
-export type MainTabsParamList = {
-  Feed: undefined;
-  Messages: undefined;
-  Mentor: undefined;
-  Notifications: undefined;
-  Profile: undefined;
 };
 
 export type FeedStackParamList = {
@@ -41,21 +35,10 @@ export type ProfileStackParamList = {
   UserProfile: { userId: number };
 };
 
-export type FeedStackParamList = {
-  FeedHome: undefined;
-  PostDetails: { postId: number; post?: any } | undefined;
-  CreatePost: undefined;
-  SearchProfiles: undefined;
-  UserProfile: { userId: number };
-};
-
-export type MessagesStackParamList = {
-  Threads: undefined;
-  Chat: { threadId: number };
-};
-
-export type ProfileStackParamList = {
-  ProfileHome: undefined;
-  SearchProfiles: undefined;
-  UserProfile: { userId: number };
+export type MainTabsParamList = {
+  Feed: NavigatorScreenParams<FeedStackParamList> | undefined;
+  Messages: NavigatorScreenParams<MessagesStackParamList> | undefined;
+  Mentor: undefined;
+  Notifications: undefined;
+  Profile: NavigatorScreenParams<ProfileStackParamList> | undefined;
 };

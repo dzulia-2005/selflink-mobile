@@ -15,6 +15,7 @@ import { getOrCreateDirectThread } from '@api/messaging';
 import type { UserSummary } from '@api/users';
 import { useAuthStore } from '@store/authStore';
 import { UserAvatar } from '@components/UserAvatar';
+import { useMessagingStore } from '@store/messagingStore';
 
 interface RouteParams {
   userId: number;
@@ -31,6 +32,7 @@ export function UserProfileScreen() {
   const [followPending, setFollowPending] = useState(false);
   const [messagePending, setMessagePending] = useState(false);
   const currentUserId = useAuthStore((state) => state.currentUser?.id);
+  const upsertThread = useMessagingStore((state) => state.upsertThread);
   const userId = route.params.userId;
 
   useEffect(() => {
@@ -97,19 +99,38 @@ export function UserProfileScreen() {
     }
   }, [isOwnProfile, profile]);
 
+  const openChatScreen = useCallback(
+    (threadId: number, otherUserId?: number) => {
+      const parent = navigation.getParent?.();
+      if (parent?.navigate) {
+        parent.navigate(
+          'Messages' as never,
+          {
+            screen: 'Chat',
+            params: { threadId, otherUserId },
+          } as never,
+        );
+        return;
+      }
+      navigation.navigate('Chat' as never, { threadId, otherUserId } as never);
+    },
+    [navigation],
+  );
+
   const handleMessage = useCallback(async () => {
     if (!profile || isOwnProfile) return;
     setMessagePending(true);
     try {
       const thread = await getOrCreateDirectThread(profile.id);
-      navigation.navigate('Chat', { threadId: thread.id, otherUserId: profile.id });
+      upsertThread(thread);
+      openChatScreen(thread.id, profile.id);
     } catch (err) {
       console.warn('UserProfile: failed to start DM', err);
       Alert.alert('Unable to start chat', 'Please try again in a few moments.');
     } finally {
       setMessagePending(false);
     }
-  }, [isOwnProfile, navigation, profile]);
+  }, [isOwnProfile, openChatScreen, profile, upsertThread]);
 
   if (loading) {
     return (

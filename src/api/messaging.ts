@@ -1,9 +1,21 @@
 import { apiClient } from './client';
 import type { CreateThreadPayload, Message, Thread } from '@schemas/messaging';
 
+type ListPayload<T> = T[] | { results?: T[] | null };
+
+function extractResults<T>(payload: ListPayload<T>): T[] {
+  if (Array.isArray(payload)) {
+    return payload;
+  }
+  if (payload && Array.isArray(payload.results)) {
+    return payload.results;
+  }
+  return [];
+}
+
 export async function getThreads(): Promise<Thread[]> {
-  const { data } = await apiClient.get<Thread[]>('/threads/');
-  return data;
+  const { data } = await apiClient.get<ListPayload<Thread>>('/threads/');
+  return extractResults(data);
 }
 
 export async function createThread(payload: CreateThreadPayload): Promise<Thread> {
@@ -11,13 +23,18 @@ export async function createThread(payload: CreateThreadPayload): Promise<Thread
   return data;
 }
 
-export async function getThreadMessages(threadId: string | number, page?: number): Promise<Message[]> {
+export async function getThreadMessages(
+  threadId: string | number,
+  cursor?: string,
+): Promise<Message[]> {
   const params = new URLSearchParams({ thread: String(threadId) });
-  if (page) {
-    params.append('page', String(page));
+  if (cursor) {
+    params.append('cursor', cursor);
   }
-  const { data } = await apiClient.get<Message[]>(`/messages/?${params.toString()}`);
-  return data;
+  const { data } = await apiClient.get<ListPayload<Message>>(
+    `/messages/?${params.toString()}`,
+  );
+  return extractResults(data);
 }
 
 export async function sendMessage(threadId: string | number, text: string): Promise<Message> {

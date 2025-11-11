@@ -13,6 +13,7 @@ interface MessagingState {
   loadThreadMessages: (threadId: string | number) => Promise<void>;
   sendMessage: (threadId: string | number, text: string) => Promise<void>;
   handleIncomingMessage: (message: Message) => void;
+  upsertThread: (thread: Thread) => void;
 }
 
 export const useMessagingStore = create<MessagingState>((set, get) => ({
@@ -25,7 +26,11 @@ export const useMessagingStore = create<MessagingState>((set, get) => ({
     set({ isLoadingThreads: true, error: undefined });
     try {
       const threads = await messagingApi.getThreads();
-      set({ threads });
+      set({
+        threads: threads.sort(
+          (a, b) => new Date(b.updated_at).valueOf() - new Date(a.updated_at).valueOf(),
+        ),
+      });
     } catch (error) {
       set({ error: error instanceof Error ? error.message : 'Unable to load threads.' });
     } finally {
@@ -57,11 +62,28 @@ export const useMessagingStore = create<MessagingState>((set, get) => ({
       set((state) => {
         const key = String(threadId);
         const existing = state.messagesByThread[key] ?? [];
+        const nextThreads = state.threads
+          .map((thread) =>
+            thread.id === message.thread
+              ? {
+                  ...thread,
+                  last_message: {
+                    body: message.body,
+                    created_at: message.created_at,
+                  },
+                  updated_at: message.created_at,
+                }
+              : thread,
+          )
+          .sort(
+            (a, b) => new Date(b.updated_at).valueOf() - new Date(a.updated_at).valueOf(),
+          );
         return {
           messagesByThread: {
             ...state.messagesByThread,
             [key]: [...existing, message],
           },
+          threads: nextThreads,
         };
       });
     } catch (error) {
@@ -74,12 +96,37 @@ export const useMessagingStore = create<MessagingState>((set, get) => ({
       const key = String(message.thread);
       const existing = state.messagesByThread[key] ?? [];
       const alreadyExists = existing.some((item) => item.id === message.id);
+      const threads = state.threads
+        .map((thread) =>
+          thread.id === message.thread
+            ? {
+                ...thread,
+                last_message: {
+                  body: message.body,
+                  created_at: message.created_at,
+                },
+                updated_at: message.created_at,
+              }
+            : thread,
+        )
+        .sort(
+          (a, b) => new Date(b.updated_at).valueOf() - new Date(a.updated_at).valueOf(),
+        );
       return {
         messagesByThread: {
           ...state.messagesByThread,
           [key]: alreadyExists ? existing : [...existing, message],
         },
+        threads,
       };
+    });
+  },
+  upsertThread(thread) {
+    set((state) => {
+      const next = state.threads.filter((existing) => existing.id !== thread.id);
+      next.unshift(thread);
+      next.sort((a, b) => new Date(b.updated_at).valueOf() - new Date(a.updated_at).valueOf());
+      return { threads: next };
     });
   },
 }));

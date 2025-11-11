@@ -1,5 +1,5 @@
 import { memo, useCallback, useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
 import { followUser, unfollowUser } from '@api/users';
@@ -19,6 +19,7 @@ function FeedPostCardComponent({ post }: Props) {
   const likePost = useFeedStore((state) => state.likePost);
   const unlikePost = useFeedStore((state) => state.unlikePost);
   const [followPending, setFollowPending] = useState(false);
+  const [likePending, setLikePending] = useState(false);
   const [isFollowing, setIsFollowing] = useState(() => {
     if ((post.author as any).is_following !== undefined) {
       return Boolean((post.author as any).is_following);
@@ -30,13 +31,24 @@ function FeedPostCardComponent({ post }: Props) {
     return Boolean(flags.following || flags.is_following);
   });
 
-  const handleLikeToggle = useCallback(() => {
-    if (post.liked) {
-      unlikePost(post.id).catch(() => undefined);
-    } else {
-      likePost(post.id).catch(() => undefined);
+  const handleLikeToggle = useCallback(async () => {
+    if (likePending) {
+      return;
     }
-  }, [likePost, unlikePost, post.id, post.liked]);
+    setLikePending(true);
+    try {
+      if (post.liked) {
+        await unlikePost(post.id);
+      } else {
+        await likePost(post.id);
+      }
+    } catch (error) {
+      console.warn('FeedPostCard: like toggle failed', error);
+      Alert.alert('Unable to update like', 'Please try again.');
+    } finally {
+      setLikePending(false);
+    }
+  }, [likePending, likePost, unlikePost, post.id, post.liked]);
 
   const handleFollowToggle = useCallback(async () => {
     if (followPending || post.author.id === currentUserId) {
@@ -95,7 +107,12 @@ function FeedPostCardComponent({ post }: Props) {
       </TouchableOpacity>
 
       <View style={styles.footer}>
-        <TouchableOpacity onPress={handleLikeToggle} accessibilityRole="button">
+        <TouchableOpacity
+          onPress={handleLikeToggle}
+          accessibilityRole="button"
+          disabled={likePending}
+          style={likePending ? styles.likeDisabled : undefined}
+        >
           <Text style={styles.actionText}>
             {post.liked ? 'Unlike' : 'Like'} • {post.like_count}
           </Text>
@@ -160,5 +177,8 @@ const styles = StyleSheet.create({
   actionText: {
     color: '#60A5FA',
     fontWeight: '500',
+  },
+  likeDisabled: {
+    opacity: 0.6,
   },
 });

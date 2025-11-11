@@ -24,14 +24,15 @@ export function SearchProfilesScreen() {
   const currentUserId = useAuthStore((state) => state.currentUser?.id);
 
   const handleSearch = useCallback(async () => {
-    if (!query.trim()) {
+    const normalizedQuery = query.trim();
+    if (!normalizedQuery) {
       setResults([]);
       return;
     }
     setIsLoading(true);
     setError(undefined);
     try {
-      const data = await searchUsers(query.trim());
+      const data = await searchUsers(normalizedQuery);
       setResults(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to search users.');

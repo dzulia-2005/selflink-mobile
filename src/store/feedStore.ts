@@ -69,6 +69,7 @@ export const useFeedStore = create<FeedState>((set, get) => ({
       await socialApi.likePost(postId);
     } catch (error) {
       set({ posts: previousPosts, error: 'Unable to like post.' });
+      throw error;
     }
   },
   async unlikePost(postId) {
@@ -84,6 +85,7 @@ export const useFeedStore = create<FeedState>((set, get) => ({
       await socialApi.unlikePost(postId);
     } catch (error) {
       set({ posts: previousPosts, error: 'Unable to unlike post.' });
+      throw error;
     }
   },
   async addComment(postId, text) {

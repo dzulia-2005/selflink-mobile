@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   StyleSheet,
   Text,
@@ -28,6 +29,7 @@ export function ChatScreen() {
   const threadId = route.params.threadId;
   const otherUserId = route.params.otherUserId;
   const [input, setInput] = useState('');
+  const [isSending, setIsSending] = useState(false);
   const loadThreadMessages = useMessagingStore((state) => state.loadThreadMessages);
   const sendMessage = useMessagingStore((state) => state.sendMessage);
   const handleIncomingMessage = useMessagingStore((state) => state.handleIncomingMessage);
@@ -69,16 +71,20 @@ export function ChatScreen() {
   }, [token, threadId, handleIncomingMessage]);
 
   const handleSend = useCallback(async () => {
-    if (!input.trim()) {
+    if (!input.trim() || isSending) {
       return;
     }
+    setIsSending(true);
     try {
       await sendMessage(threadId, input.trim());
       setInput('');
     } catch (error) {
       console.warn('ChatScreen: failed to send message', error);
+      Alert.alert('Unable to send message', 'Please try again.');
+    } finally {
+      setIsSending(false);
     }
-  }, [input, sendMessage, threadId]);
+  }, [input, isSending, sendMessage, threadId]);
 
   if (isLoading && messages.length === 0) {
     return (
@@ -104,8 +110,12 @@ export function ChatScreen() {
           value={input}
           onChangeText={setInput}
         />
-        <TouchableOpacity onPress={handleSend} style={styles.sendButton}>
-          <Text style={styles.sendButtonText}>Send</Text>
+        <TouchableOpacity
+          onPress={handleSend}
+          style={[styles.sendButton, isSending && styles.sendButtonDisabled]}
+          disabled={isSending}
+        >
+          <Text style={styles.sendButtonText}>{isSending ? 'Sending…' : 'Send'}</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -152,6 +162,9 @@ const styles = StyleSheet.create({
   sendButtonText: {
     color: '#fff',
     fontWeight: '600',
+  },
+  sendButtonDisabled: {
+    opacity: 0.7,
   },
   messageBubble: {
     padding: 12,
