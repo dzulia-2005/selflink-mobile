@@ -29,7 +29,7 @@
     "extra": {
       "backendUrl": "http://192.168.0.104:8000/",
       "healthEndpoint": "/api/v1/users/me/",
-      "realtimeUrl": "ws://192.168.0.104:9000/ws"
+      "realtimeUrl": "ws://192.168.0.104:8001/ws"
     }
   }
 }

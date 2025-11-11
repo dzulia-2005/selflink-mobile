@@ -12,6 +12,8 @@ import {
 import { useNavigation } from '@react-navigation/native';
 
 import { followUser, searchUsers, unfollowUser, UserSummary } from '@api/users';
+import { UserAvatar } from '@components/UserAvatar';
+import { useAuthStore } from '@store/authStore';
 
 export function SearchProfilesScreen() {
   const navigation = useNavigation<any>();
@@ -19,6 +21,7 @@ export function SearchProfilesScreen() {
   const [results, setResults] = useState<UserSummary[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | undefined>();
+  const currentUserId = useAuthStore((state) => state.currentUser?.id);
 
   const handleSearch = useCallback(async () => {
     if (!query.trim()) {
@@ -56,13 +59,28 @@ export function SearchProfilesScreen() {
         keyExtractor={(item) => String(item.id)}
         renderItem={({ item }) => (
           <View style={styles.resultRow}>
-            <TouchableOpacity onPress={() => navigation.navigate('UserProfile', { userId: item.id })}>
-              <Text style={styles.resultName}>{item.name || item.handle || item.username}</Text>
-              <Text style={styles.resultHandle}>@{item.handle || item.username}</Text>
+            <TouchableOpacity
+              style={styles.userInfo}
+              onPress={() => navigation.navigate('UserProfile', { userId: item.id })}
+            >
+              <UserAvatar uri={item.photo} label={item.name || item.handle} size={40} />
+              <View style={styles.resultMeta}>
+                <Text style={styles.resultName}>{item.name || item.handle || item.username}</Text>
+                <Text style={styles.resultHandle}>@{item.handle || item.username}</Text>
+                <Text style={styles.resultCounts}>
+                  Followers: {item.followers_count ?? 0} • Following: {item.following_count ?? 0}
+                </Text>
+              </View>
             </TouchableOpacity>
             <TouchableOpacity
-              style={styles.followButton}
+              style={[
+                styles.followButton,
+                item.id === currentUserId && styles.followButtonDisabled,
+              ]}
               onPress={async () => {
+                if (item.id === currentUserId) {
+                  return;
+                }
                 const next = !item.is_following;
                 setResults((prev) =>
                   prev.map((user) =>
@@ -85,7 +103,13 @@ export function SearchProfilesScreen() {
                 }
               }}
             >
-              <Text style={styles.followButtonText}>{item.is_following ? 'Unfollow' : 'Follow'}</Text>
+              <Text style={styles.followButtonText}>
+                {item.id === currentUserId
+                  ? 'You'
+                  : item.is_following
+                    ? 'Following'
+                    : 'Follow'}
+              </Text>
             </TouchableOpacity>
           </View>
         )}
@@ -133,12 +157,24 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    gap: 12,
   },
+  userInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    gap: 12,
+  },
+  resultMeta: { flex: 1 },
   resultName: {
     fontWeight: '600',
   },
   resultHandle: {
     color: '#475569',
+  },
+  resultCounts: {
+    color: '#475569',
+    fontSize: 12,
   },
   followButton: {
     borderWidth: 1,
@@ -146,6 +182,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 4,
+  },
+  followButtonDisabled: {
+    opacity: 0.6,
   },
   followButtonText: {
     fontWeight: '600',

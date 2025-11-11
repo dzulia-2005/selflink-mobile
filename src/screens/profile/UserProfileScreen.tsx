@@ -1,10 +1,20 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Button, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  Button,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 
 import { followUser, getUserProfile, unfollowUser } from '@api/users';
 import { getOrCreateDirectThread } from '@api/messaging';
 import type { UserSummary } from '@api/users';
+import { useAuthStore } from '@store/authStore';
+import { UserAvatar } from '@components/UserAvatar';
 
 interface RouteParams {
   userId: number;
@@ -18,8 +28,9 @@ export function UserProfileScreen() {
   const [profile, setProfile] = useState<UserSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | undefined>();
-  const [isFollowing, setIsFollowing] = useState(false);
-  const [followersCount, setFollowersCount] = useState(0);
+  const [followPending, setFollowPending] = useState(false);
+  const [messagePending, setMessagePending] = useState(false);
+  const currentUserId = useAuthStore((state) => state.currentUser?.id);
   const userId = route.params.userId;
 
   useEffect(() => {
@@ -30,8 +41,6 @@ export function UserProfileScreen() {
       .then((data) => {
         if (!isMounted) return;
         setProfile(data);
-        setIsFollowing(Boolean(data.is_following));
-        setFollowersCount(data.followers_count ?? 0);
       })
       .catch((err) => {
         if (!isMounted) return;
@@ -45,11 +54,24 @@ export function UserProfileScreen() {
     };
   }, [userId]);
 
+  const isOwnProfile = profile?.id === currentUserId;
+
   const handleFollowToggle = useCallback(async () => {
-    if (!profile) return;
-    const nextState = !isFollowing;
-    setIsFollowing(nextState);
-    setFollowersCount((prev) => Math.max(0, prev + (nextState ? 1 : -1)));
+    if (!profile || isOwnProfile) return;
+    const nextState = !profile.is_following;
+    setFollowPending(true);
+    setProfile((prev) =>
+      prev
+        ? {
+            ...prev,
+            is_following: nextState,
+            followers_count: Math.max(
+              0,
+              (prev.followers_count ?? 0) + (nextState ? 1 : -1),
+            ),
+          }
+        : prev,
+    );
     try {
       if (nextState) {
         await followUser(profile.id);
@@ -58,20 +80,36 @@ export function UserProfileScreen() {
       }
     } catch (err) {
       console.warn('UserProfile: follow toggle failed', err);
-      setIsFollowing(!nextState);
-      setFollowersCount((prev) => Math.max(0, prev + (nextState ? -1 : 1)));
+      setProfile((prev) =>
+        prev
+          ? {
+              ...prev,
+              is_following: !nextState,
+              followers_count: Math.max(
+                0,
+                (prev.followers_count ?? 0) + (nextState ? -1 : 1),
+              ),
+            }
+          : prev,
+      );
+    } finally {
+      setFollowPending(false);
     }
-  }, [profile, isFollowing]);
+  }, [isOwnProfile, profile]);
 
   const handleMessage = useCallback(async () => {
-    if (!profile) return;
+    if (!profile || isOwnProfile) return;
+    setMessagePending(true);
     try {
       const thread = await getOrCreateDirectThread(profile.id);
       navigation.navigate('Chat', { threadId: thread.id, otherUserId: profile.id });
     } catch (err) {
       console.warn('UserProfile: failed to start DM', err);
+      Alert.alert('Unable to start chat', 'Please try again in a few moments.');
+    } finally {
+      setMessagePending(false);
     }
-  }, [navigation, profile]);
+  }, [isOwnProfile, navigation, profile]);
 
   if (loading) {
     return (
@@ -91,21 +129,45 @@ export function UserProfileScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.name}>{profile.name || profile.handle || profile.username}</Text>
-      <Text style={styles.handle}>@{profile.handle || profile.username}</Text>
+      <View style={styles.header}>
+        <UserAvatar uri={profile.photo} label={profile.name || profile.handle} size={72} />
+        <View style={styles.headerText}>
+          <Text style={styles.name}>{profile.name || profile.handle || profile.username}</Text>
+          <Text style={styles.handle}>@{profile.handle || profile.username}</Text>
+        </View>
+      </View>
       {profile.bio ? <Text>{profile.bio}</Text> : null}
       <View style={styles.statsRow}>
-        <Text>Followers: {followersCount}</Text>
+        <Text>Followers: {profile.followers_count ?? 0}</Text>
         <Text>Following: {profile.following_count ?? 0}</Text>
+        <Text>Posts: {profile.posts_count ?? 0}</Text>
       </View>
-      <View style={styles.actionsRow}>
-        <TouchableOpacity style={styles.actionButton} onPress={handleFollowToggle}>
-          <Text style={styles.actionLabel}>{isFollowing ? 'Unfollow' : 'Follow'}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.actionButton} onPress={handleMessage}>
-          <Text style={styles.actionLabel}>Message</Text>
-        </TouchableOpacity>
-      </View>
+      {!isOwnProfile ? (
+        <View style={styles.actionsRow}>
+          <TouchableOpacity
+            style={[styles.actionButton, followPending && styles.disabledButton]}
+            onPress={handleFollowToggle}
+            disabled={followPending}
+          >
+            <Text style={styles.actionLabel}>
+              {followPending
+                ? 'Please wait…'
+                : profile.is_following
+                  ? 'Unfollow'
+                  : 'Follow'}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.actionButton, styles.primaryButton]}
+            onPress={handleMessage}
+            disabled={messagePending}
+          >
+            <Text style={[styles.actionLabel, styles.primaryLabel]}>
+              {messagePending ? 'Opening…' : 'Message'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      ) : null}
       <View style={styles.linksRow}>
         <Button title="Followers" onPress={() => console.log('TODO: followers list')} />
         <Button title="Following" onPress={() => console.log('TODO: following list')} />
@@ -117,6 +179,8 @@ export function UserProfileScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, gap: 16 },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  header: { flexDirection: 'row', alignItems: 'center', gap: 16 },
+  headerText: { flex: 1 },
   name: { fontSize: 20, fontWeight: '600' },
   handle: { color: '#475569' },
   statsRow: { flexDirection: 'row', gap: 16 },
@@ -129,6 +193,12 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     alignItems: 'center',
   },
+  primaryButton: {
+    backgroundColor: '#2563EB',
+    borderColor: '#2563EB',
+  },
   actionLabel: { fontWeight: '600' },
+  primaryLabel: { color: '#fff' },
+  disabledButton: { opacity: 0.7 },
   linksRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 12 },
 });

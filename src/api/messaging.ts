@@ -28,10 +28,15 @@ export async function sendMessage(threadId: string | number, text: string): Prom
   return data;
 }
 
-export async function getOrCreateDirectThread(userId: number | string): Promise<Thread> {
-  const { data } = await apiClient.post<Thread>('/threads/direct/', {
-    user_id: userId,
-  }); // TODO: verify endpoint path with backend
+export async function getOrCreateDirectThread(
+  userId: number | string,
+  initialMessage?: string,
+): Promise<Thread> {
+  const payload: Record<string, unknown> = { user_id: userId };
+  if (initialMessage?.trim()) {
+    payload.initial_message = initialMessage.trim();
+  }
+  const { data } = await apiClient.post<Thread>('/threads/direct/', payload);
   return data;
 }
 export async function getThread(threadId: string | number): Promise<Thread> {

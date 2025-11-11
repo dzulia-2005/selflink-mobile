@@ -20,6 +20,10 @@ export interface User {
   birth_place: string;
   locale: string;
   flags: Record<string, unknown>;
+  followers_count?: number;
+  following_count?: number;
+  posts_count?: number;
+  is_following?: boolean;
   created_at: string;
   updated_at: string;
   settings?: UserSettings;

@@ -93,7 +93,7 @@ export async function searchPosts(
   params: Omit<PostQuery, 'search'> = {},
 ): Promise<SearchPostsResponse> {
   const searchParams = new URLSearchParams();
-  searchParams.set('search', query);
+  searchParams.set('q', query);
   if (params.cursor) {
     searchParams.set('cursor', params.cursor);
   }
@@ -123,7 +123,7 @@ export async function searchUsers(
   params: Omit<PostQuery, 'search'> = {},
 ): Promise<SearchUsersResponse> {
   const searchParams = new URLSearchParams();
-  searchParams.set('search', query);
+  searchParams.set('q', query);
   if (params.cursor) {
     searchParams.set('cursor', params.cursor);
   }
