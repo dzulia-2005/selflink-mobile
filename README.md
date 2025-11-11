@@ -72,15 +72,14 @@ src/
 
 ## Screens & Navigation
 
-- `HomeScreen` surfaces mentor, SoulMatch, and payments actions with navigation hooks plus a backend status panel (`StatusPill`).
-- `CommunityScreen` delivers a Jobs-inspired metallic directory with live search, follow toggles, and thoughtful defaults drawn from the new `useUsersDirectory` hook.
-- `PaymentsScreen` now renders live plan/gift catalogs, echoing Apple’s polish (clarity), Torvalds’ pragmatism (structured data), and Musk’s ambition (forward-looking copy).
-- `MessagesScreen` stitches together `useMessages` + metallic message bubbles so users can browse + send chats with the new API.
-- `InboxScreen` lists threads via `useThreads`, includes a metallic “New Thread” composer for numeric participant IDs (matching the backend contract), and hands off the selected conversation to `MessagesScreen`.
-- `MessagesScreen` now enforces a selected thread, shows live typing indicators via `/threads/{id}/typing/` or the `/ws` realtime feed, and exposes mark-read/leave-thread tooling.
-- `MentorScreen`, `SoulMatchScreen`, and `PaymentsScreen` provide polished placeholder flows ready for integrating Django endpoints.
-- `ProfileScreen` lets users tweak display name or avatar URL (with inline metallic toasts) and sign out.
-- `AppNavigator` registers the stack screens with metallic theming; add new routes here as features land.
+- `FeedScreen` loads the server timeline, offers pull-to-refresh/infinite scroll, and exposes follow/unfollow + profile deep-links for each author. Empty feeds now show a “Create your first post” CTA and a floating “New Post” button.
+- `PostDetailsScreen` fetches a single post plus comments and lets you add new comments inline.
+- `SearchProfilesScreen` hits `/search/users/`, renders the results list, and lets you jump to a user profile or toggle follow/unfollow directly from the list.
+- `UserProfileScreen` fetches `/users/{id}/`, displays follower counts, allows follow/unfollow with optimistic updates, and provides a “Message” button that calls `POST /threads/direct/` (TODO: confirm path) before navigating to Chat.
+- `CreatePostScreen` is a simple form that calls `createPost` and returns to the feed when finished.
+- Messaging flows now use stacked navigation: `ThreadsScreen` lists threads, provides quick navigation to Chat, and includes a “View profile” affordance for direct threads; `ChatScreen` loads messages, sends via REST, optionally shows a header “Profile” button (if `otherUserId` is provided), and still handles realtime updates.
+- `ProfileScreen`, `MentorHomeScreen`, `NotificationsScreen`, etc., remain as before but now can launch the shared search/profile flows.
+- `MainTabsNavigator` nests stack navigators for Feed, Messages, and Profile tabs so the new routes (`PostDetails`, `CreatePost`, `SearchProfiles`, `UserProfile`, `Chat`) are properly registered.
 
 ## CI
 
