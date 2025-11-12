@@ -64,15 +64,9 @@ function wrapLargeIntegers(payload: string): string {
       }
 
       const digitsOnly = token.replace(/[^0-9]/g, '');
-      const needsWrapping =
-        !hasDecimal && !hasExponent && digitsOnly.length >= BIG_INT_LENGTH;
+      const needsWrapping = !hasDecimal && !hasExponent && digitsOnly.length >= BIG_INT_LENGTH;
 
-      if (needsWrapping) {
-        result += `"${token}"`;
-      } else {
-        result += token;
-      }
-
+      result += needsWrapping ? `"${token}"` : token;
       index = cursor;
       continue;
     }

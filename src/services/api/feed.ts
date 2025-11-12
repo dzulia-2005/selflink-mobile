@@ -1,7 +1,7 @@
 import { apiClient } from '@services/api/client';
 
 export type FeedPostAuthor = {
-  id: number;
+  id: string;
   email: string;
   handle: string;
   name: string;
@@ -30,7 +30,7 @@ export type FeedPostAuthor = {
 };
 
 export type FeedPostMedia = {
-  id: number;
+  id: string;
   s3_key: string;
   mime: string;
   width: number;
@@ -43,7 +43,7 @@ export type FeedPostMedia = {
 };
 
 export type FeedPost = {
-  id: number;
+  id: string;
   author: FeedPostAuthor;
   text: string;
   visibility: string;
@@ -56,7 +56,7 @@ export type FeedPost = {
 };
 
 export type FeedItem = {
-  id: number;
+  id: string;
   post: FeedPost;
   score: number;
   created_at: string;

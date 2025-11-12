@@ -1,3 +1,5 @@
+import { isAxiosError } from 'axios';
+
 import { apiClient } from './client';
 import type { Comment, Post, TimelineEntry } from '@schemas/social';
 
@@ -22,33 +24,27 @@ const buildQuery = (path: string, params?: QueryParams) => {
 
 export interface FeedResponse {
   results: TimelineEntry[];
-  nextCursor: string | null;
+  nextUrl: string | null;
 }
 
-export async function getFeed(params?: { page?: number; cursor?: string }): Promise<FeedResponse> {
-  const url = buildQuery(FEED_ENDPOINT, {
-    page: params?.page,
-    cursor: params?.cursor,
-  });
+export async function getFeed(nextUrl?: string): Promise<FeedResponse> {
+  const url = nextUrl ?? FEED_ENDPOINT;
   const { data } = await apiClient.get<unknown>(url);
 
-  let entries: TimelineEntry[] = [];
-  if (Array.isArray(data)) {
-    entries = data;
-  } else if (data && typeof data === 'object' && Array.isArray((data as any).results)) {
-    entries = (data as { results: TimelineEntry[] }).results;
-  }
+  const entries: TimelineEntry[] = Array.isArray(data)
+    ? data
+    : Array.isArray((data as any)?.results)
+      ? ((data as { results: TimelineEntry[] }).results ?? [])
+      : [];
 
-  const lastEntry = entries[entries.length - 1];
-  const nextCursor =
-    (data as { next_cursor?: string | null })?.next_cursor ??
-    (data as { next?: string | null })?.next ??
-    lastEntry?.created_at ??
-    null;
+  const next =
+    (typeof data === 'object' && data !== null && 'next' in data
+      ? (data as { next?: string | null }).next
+      : null) ?? null;
 
   return {
     results: entries,
-    nextCursor,
+    nextUrl: next,
   };
 }
 
@@ -94,21 +90,45 @@ export async function createPost(payload: CreatePostPayload): Promise<Post> {
   return data;
 }
 
-export async function likePost(postId: string | number): Promise<void> {
-  await apiClient.post(`/posts/${postId}/like/`, {});
+const logApiError = (error: unknown, context: string) => {
+  if (__DEV__ && isAxiosError(error)) {
+    console.warn(`${context} failed`, error.response?.data ?? error.message);
+  }
+};
+
+export async function likePost(postId: string): Promise<void> {
+  try {
+    await apiClient.post(`/posts/${postId}/like/`, {});
+  } catch (error) {
+    logApiError(error, 'likePost');
+    throw error;
+  }
 }
 
-export async function unlikePost(postId: string | number): Promise<void> {
-  await apiClient.post(`/posts/${postId}/unlike/`, {});
+export async function unlikePost(postId: string): Promise<void> {
+  try {
+    await apiClient.post(`/posts/${postId}/unlike/`, {});
+  } catch (error) {
+    logApiError(error, 'unlikePost');
+    throw error;
+  }
 }
 
-export async function addComment(postId: string | number, text: string): Promise<Comment> {
-  const post = typeof postId === 'bigint' ? postId.toString() : String(postId);
-  const { data } = await apiClient.post<Comment>('/comments/', {
-    post,
-    text,
-  });
-  return data;
+export async function addComment(postId: string, text: string): Promise<Comment> {
+  const trimmed = text.trim();
+  if (!trimmed) {
+    throw new Error('Comment text is required.');
+  }
+  try {
+    const { data } = await apiClient.post<Comment>('/comments/', {
+      post: postId,
+      text: trimmed,
+    });
+    return data;
+  } catch (error) {
+    logApiError(error, 'addComment');
+    throw error;
+  }
 }
 
 export async function getPostComments(postId: string | number, page?: number): Promise<Comment[]> {

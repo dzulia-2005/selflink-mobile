@@ -1,6 +1,7 @@
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 
 import { env } from '@config/env';
+import { parseJsonPreservingLargeInts } from '@utils/json';
 
 const rawBaseUrl = (process.env.EXPO_PUBLIC_API_URL || env.backendUrl || 'http://localhost:8000').replace(/\/$/, '');
 export const API_BASE_URL = `${rawBaseUrl}/api/v1`;
@@ -18,6 +19,29 @@ export const apiClient = axios.create({
     Accept: 'application/json',
   },
 });
+
+apiClient.defaults.transformResponse = [
+  (data: unknown, headers?: Record<string, string>) => {
+    if (typeof data !== 'string') {
+      return data;
+    }
+    const trimmed = data.trim();
+    if (!trimmed) {
+      return null;
+    }
+    const contentType = headers?.['content-type'] ?? headers?.['Content-Type'] ?? '';
+    const looksJson = contentType.includes('application/json') || /^[\[{]/.test(trimmed);
+    if (!looksJson) {
+      return data;
+    }
+    try {
+      return parseJsonPreservingLargeInts(trimmed);
+    } catch (error) {
+      console.warn('apiClient: failed to parse JSON response', error);
+      return JSON.parse(trimmed);
+    }
+  },
+];
 
 export function setAuthTokenProvider(provider: TokenProvider) {
   getAccessToken = provider;

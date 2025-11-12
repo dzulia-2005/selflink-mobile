@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Button,
   FlatList,
   StyleSheet,
@@ -15,7 +16,7 @@ import { useFeedStore } from '@store/feedStore';
 import type { Comment, Post } from '@schemas/social';
 
 interface RouteParams {
-  postId: number;
+  postId: string;
   post?: Post;
 }
 
@@ -76,11 +77,17 @@ export function PostDetailsScreen() {
     }
     setSubmitting(true);
     try {
-      const newComment = await addCommentToStore(postId, commentText.trim());
+      const trimmed = commentText.trim();
+      const newComment = await addCommentToStore(postId, trimmed);
       setComments((prev) => [...prev, newComment]);
       setCommentText('');
     } catch (error) {
       console.warn('PostDetails: failed to add comment', error);
+      const message =
+        typeof error === 'object' && error && 'response' in error
+          ? ((error as any).response?.data?.detail as string | undefined)
+          : undefined;
+      Alert.alert('Unable to add comment', message || 'Please try again.');
     } finally {
       setSubmitting(false);
     }

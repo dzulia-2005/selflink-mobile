@@ -1,7 +1,9 @@
 import { User } from './user';
 
+export type Identifier = string;
+
 export interface MediaAsset {
-  id: number;
+  id: Identifier;
   s3_key: string;
   mime: string;
   width: number | null;
@@ -14,7 +16,7 @@ export interface MediaAsset {
 }
 
 export interface Post {
-  id: number;
+  id: Identifier;
   author: User;
   text: string;
   visibility: string;
@@ -30,12 +32,12 @@ export interface PostInput {
   text: string;
   visibility?: string;
   language?: string;
-  media_ids?: number[];
+  media_ids?: Identifier[];
 }
 
 export interface Comment {
-  id: number;
-  post: number;
+  id: Identifier;
+  post: Identifier;
   author: User;
   text: string;
   parent: number | null;
@@ -43,13 +45,13 @@ export interface Comment {
 }
 
 export interface CommentInput {
-  post: number;
+  post: Identifier;
   text: string;
-  parent?: number | null;
+  parent?: Identifier | null;
 }
 
 export interface TimelineEntry {
-  id: number;
+  id: Identifier;
   post: Post;
   score: number;
   created_at: string;

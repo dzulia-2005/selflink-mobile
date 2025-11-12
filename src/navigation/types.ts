@@ -18,7 +18,7 @@ export type RootStackParamList = {
 
 export type FeedStackParamList = {
   FeedHome: undefined;
-  PostDetails: { postId: number; post?: unknown } | undefined;
+  PostDetails: { postId: string; post?: unknown } | undefined;
   CreatePost: undefined;
   SearchProfiles: undefined;
   UserProfile: { userId: number };

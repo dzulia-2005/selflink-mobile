@@ -6,26 +6,28 @@ import type { Comment, Post } from '@schemas/social';
 interface FeedState {
   posts: Post[];
   isLoading: boolean;
+  isPaging: boolean;
   error?: string;
-  cursor: string | null;
+  nextUrl: string | null;
   loadFeed: () => Promise<void>;
   loadMore: () => Promise<void>;
-  likePost: (postId: number) => Promise<void>;
-  unlikePost: (postId: number) => Promise<void>;
-  addComment: (postId: number, text: string) => Promise<Comment>;
+  likePost: (postId: string) => Promise<void>;
+  unlikePost: (postId: string) => Promise<void>;
+  addComment: (postId: string, text: string) => Promise<Comment>;
 }
 
 export const useFeedStore = create<FeedState>((set, get) => ({
   posts: [],
   isLoading: false,
+  isPaging: false,
   error: undefined,
-  cursor: null,
+  nextUrl: null,
   async loadFeed() {
     set({ isLoading: true, error: undefined });
     try {
       const response = await socialApi.getFeed();
       const posts = response.results.map((entry) => entry.post);
-      set({ posts, cursor: response.nextCursor ?? null });
+      set({ posts, nextUrl: response.nextUrl });
     } catch (error) {
       set({ error: error instanceof Error ? error.message : 'Unable to load feed.' });
     } finally {
@@ -33,34 +35,41 @@ export const useFeedStore = create<FeedState>((set, get) => ({
     }
   },
   async loadMore() {
-    const { cursor, posts } = get();
-    if (!cursor) {
+    const { nextUrl, posts, isPaging } = get();
+    if (!nextUrl || isPaging) {
       return;
     }
+    set({ isPaging: true, error: undefined });
     try {
-      // TODO: Backend pagination currently relies on cursor filtering; once a proper
-      //       paginated endpoint is available we should switch to it.
-      const response = await socialApi.getFeed({ cursor });
+      const response = await socialApi.getFeed(nextUrl);
       if (!response.results.length) {
-        set({ cursor: null });
+        set({ nextUrl: response.nextUrl });
         return;
       }
-      const newPosts = response.results
+      const incoming = response.results
         .map((entry) => entry.post)
-        .filter((incoming) => !posts.some((existing) => existing.id === incoming.id));
+        .filter(
+          (post) => !posts.some((existing) => String(existing.id) === String(post.id)),
+        );
+      if (!incoming.length) {
+        set({ nextUrl: response.nextUrl });
+        return;
+      }
       set({
-        posts: posts.concat(newPosts),
-        cursor: response.nextCursor ?? null,
+        posts: posts.concat(incoming),
+        nextUrl: response.nextUrl,
       });
     } catch (error) {
       set({ error: error instanceof Error ? error.message : 'Unable to load more posts.' });
+    } finally {
+      set({ isPaging: false });
     }
   },
   async likePost(postId) {
     const previousPosts = get().posts;
     set({
       posts: previousPosts.map((post) =>
-        post.id === postId
+        String(post.id) === String(postId)
           ? { ...post, liked: true, like_count: post.like_count + 1 }
           : post,
       ),
@@ -76,7 +85,7 @@ export const useFeedStore = create<FeedState>((set, get) => ({
     const previousPosts = get().posts;
     set({
       posts: previousPosts.map((post) =>
-        post.id === postId
+        String(post.id) === String(postId)
           ? { ...post, liked: false, like_count: Math.max(0, post.like_count - 1) }
           : post,
       ),
@@ -89,11 +98,15 @@ export const useFeedStore = create<FeedState>((set, get) => ({
     }
   },
   async addComment(postId, text) {
+    const trimmed = text.trim();
+    if (!trimmed) {
+      throw new Error('Comment text is required.');
+    }
     try {
-      const comment = await socialApi.addComment(postId, text);
+      const comment = await socialApi.addComment(postId, trimmed);
       set({
         posts: get().posts.map((post) =>
-          post.id === postId
+          String(post.id) === String(postId)
             ? { ...post, comment_count: post.comment_count + 1 }
             : post,
         ),

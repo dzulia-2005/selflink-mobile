@@ -1,5 +1,6 @@
 import { env } from '@config/env';
 import { buildUrl } from '@utils/url';
+import { parseJsonPreservingLargeInts } from '@utils/json';
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
@@ -76,11 +77,12 @@ export class ApiClient {
     }
 
     const contentType = response.headers.get('content-type');
+    const rawText = await response.text();
     if (contentType?.includes('application/json')) {
-      return (await response.json()) as T;
+      return parseJsonPreservingLargeInts<T>(rawText);
     }
 
-    return (await response.text()) as unknown as T;
+    return rawText as unknown as T;
   }
 }
 
