@@ -3,6 +3,7 @@ import {
   Alert,
   ActivityIndicator,
   FlatList,
+  Pressable,
   RefreshControl,
   StyleSheet,
   Text,
@@ -20,6 +21,7 @@ import {
 } from '@store/messagingStore';
 import { useAuthStore } from '@store/authStore';
 import type { Thread } from '@schemas/messaging';
+import { theme } from '@theme';
 
 export function ThreadsScreen() {
   const navigation = useNavigation<any>();
@@ -79,50 +81,71 @@ export function ThreadsScreen() {
       const title = otherUser?.name || otherUser?.handle || item.title || 'Conversation';
       const preview = item.last_message?.body ?? 'No messages yet.';
       const isUnread = (item.unread_count ?? 0) > 0;
+      const lastUpdated = item.last_message?.created_at
+        ? formatThreadTime(item.last_message.created_at)
+        : '';
       return (
-        <View>
-          <TouchableOpacity
-            style={styles.thread}
+        <View style={styles.cardWrapper}>
+          <Pressable
+            style={styles.threadCard}
             onPress={() => navigation.navigate('Chat', { threadId: item.id, otherUserId: otherUser?.id })}
           >
-            <View style={styles.threadHeader}>
-              <Text style={styles.threadTitle}>{title}</Text>
+            <View style={styles.cardMainRow}>
+              <View style={[styles.avatar, isUnread && styles.avatarUnread]}>
+                <Text style={[styles.avatarLabel, isUnread && styles.avatarLabelUnread]}>
+                  {getInitials(title)}
+                </Text>
+              </View>
+              <View style={styles.cardContent}>
+                <View style={styles.cardHeader}>
+                  <Text
+                    style={[styles.threadTitle, isUnread && styles.threadTitleUnread]}
+                    numberOfLines={1}
+                  >
+                    {title}
+                  </Text>
+                  <Text style={styles.threadTime}>{lastUpdated}</Text>
+                </View>
+                <Text
+                  style={[styles.threadPreview, isUnread && styles.threadPreviewUnread]}
+                  numberOfLines={1}
+                >
+                  {preview}
+                </Text>
+              </View>
               {isUnread ? (
                 <View style={styles.unreadPill}>
                   <Text style={styles.unreadText}>{Math.min(item.unread_count ?? 0, 99)}</Text>
                 </View>
               ) : null}
             </View>
-            <Text style={[styles.threadPreview, isUnread && styles.threadPreviewUnread]} numberOfLines={1}>
-              {preview}
-            </Text>
-          </TouchableOpacity>
-          {otherUser ? (
+          </Pressable>
+          <View style={styles.cardFooter}>
+            {otherUser ? (
+              <TouchableOpacity style={styles.profileLink} onPress={() => openProfile(otherUser.id)}>
+                <Text style={styles.profileLinkText}>View profile</Text>
+              </TouchableOpacity>
+            ) : (
+              <View style={styles.footerSpacer} />
+            )}
             <TouchableOpacity
-              style={styles.profileLink}
-              onPress={() => openProfile(otherUser.id)}
+              onPress={() => confirmDeleteThread(item)}
+              disabled={pendingThreadId === String(item.id)}
             >
-              <Text style={styles.profileLinkText}>View profile</Text>
+              <Text
+                style={[
+                  styles.deleteLinkText,
+                  pendingThreadId === String(item.id) && styles.deleteLinkDisabledText,
+                ]}
+              >
+                {pendingThreadId === String(item.id) ? 'Deleting…' : 'Delete conversation'}
+              </Text>
             </TouchableOpacity>
-          ) : null}
-          <TouchableOpacity
-            style={styles.deleteLink}
-            onPress={() => confirmDeleteThread(item)}
-            disabled={pendingThreadId === String(item.id)}
-          >
-            <Text
-              style={[
-                styles.deleteLinkText,
-                pendingThreadId === String(item.id) && styles.deleteLinkDisabledText,
-              ]}
-            >
-              {pendingThreadId === String(item.id) ? 'Deleting…' : 'Delete conversation'}
-            </Text>
-          </TouchableOpacity>
+          </View>
         </View>
       );
     },
-    [confirmDeleteThread, currentUserId, navigation, openProfile],
+    [confirmDeleteThread, currentUserId, navigation, openProfile, pendingThreadId],
   );
 
   const keyExtractor = useCallback((item: Thread) => String(item.id), []);
@@ -145,6 +168,7 @@ export function ThreadsScreen() {
 
   return (
     <FlatList
+      style={styles.list}
       data={threads}
       keyExtractor={keyExtractor}
       renderItem={renderThread}
@@ -169,35 +193,142 @@ export function ThreadsScreen() {
   );
 }
 
+const getInitials = (value: string) => {
+  if (!value) return '?';
+  const [first, second] = value.trim().split(/\s+/);
+  const firstInitial = first?.charAt(0)?.toUpperCase() ?? '';
+  const secondInitial = second?.charAt(0)?.toUpperCase() ?? '';
+  return (firstInitial + secondInitial).slice(0, 2) || firstInitial || '?';
+};
+
+const formatThreadTime = (dateString: string) => {
+  if (!dateString) {
+    return '';
+  }
+  const date = new Date(dateString);
+  const now = new Date();
+  const sameDay =
+    date.getDate() === now.getDate() &&
+    date.getMonth() === now.getMonth() &&
+    date.getFullYear() === now.getFullYear();
+  if (sameDay) {
+    return `${date.getHours().toString().padStart(2, '0')}:${date
+      .getMinutes()
+      .toString()
+      .padStart(2, '0')}`;
+  }
+  return date.toLocaleDateString();
+};
+
 const styles = StyleSheet.create({
-  listContent: { padding: 16 },
-  thread: { paddingVertical: 12 },
-  threadTitle: { fontWeight: '600', marginBottom: 4 },
-  threadPreview: { color: '#475569' },
-  threadPreviewUnread: { fontWeight: '600', color: '#0f172a' },
-  threadHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },
+  list: {
+    flex: 1,
+    backgroundColor: theme.palette.pearl,
+  },
+  listContent: {
+    padding: theme.spacing.md,
+    backgroundColor: theme.palette.pearl,
+    gap: theme.spacing.md,
+  },
+  cardWrapper: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: theme.spacing.md,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    elevation: 2,
+  },
+  threadCard: {
+    borderRadius: 12,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: theme.palette.platinum,
+    padding: theme.spacing.sm,
+  },
+  cardMainRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
+  },
+  avatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: theme.palette.platinum,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarUnread: {
+    backgroundColor: theme.colors.primary,
+  },
+  avatarLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: theme.palette.graphite,
+  },
+  avatarLabelUnread: {
+    color: '#fff',
+  },
+  cardContent: {
+    flex: 1,
+    gap: 4,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: theme.spacing.sm,
+  },
+  threadTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: theme.palette.graphite,
+    flexShrink: 1,
+  },
+  threadTitleUnread: {
+    color: theme.colors.primary,
+  },
+  threadTime: {
+    fontSize: 12,
+    color: theme.palette.silver,
+  },
+  threadPreview: {
+    color: theme.palette.graphite,
+  },
+  threadPreviewUnread: {
+    fontWeight: '600',
+  },
   unreadPill: {
-    minWidth: 24,
+    minWidth: 28,
     paddingHorizontal: 8,
     paddingVertical: 2,
-    borderRadius: 999,
-    backgroundColor: '#22c55e',
+    borderRadius: theme.radii.pill,
+    backgroundColor: theme.colors.success,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  unreadText: {
+    color: '#fff',
+    fontWeight: '700',
+    fontSize: 12,
+  },
+  cardFooter: {
+    marginTop: theme.spacing.sm,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
   },
-  unreadText: { color: '#fff', fontWeight: '600', fontSize: 12 },
+  footerSpacer: {
+    flex: 1,
+  },
   profileLink: {
-    alignSelf: 'flex-start',
     paddingVertical: 4,
-    paddingHorizontal: 8,
+    paddingHorizontal: theme.spacing.sm,
   },
-  profileLinkText: { color: '#2563EB' },
-  deleteLink: {
-    alignSelf: 'flex-start',
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-  },
+  profileLinkText: { color: theme.colors.secondary, fontWeight: '600' },
   deleteLinkText: { color: '#dc2626', fontWeight: '600' },
   deleteLinkDisabledText: { color: '#fca5a5' },
-  separator: { height: 1, backgroundColor: '#E2E8F0' },
+  separator: { height: theme.spacing.sm },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
 });
