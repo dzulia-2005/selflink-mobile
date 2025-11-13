@@ -113,6 +113,16 @@ export function connectRealtime(token: string, urlOverride?: string): RealtimeCo
     socket.onmessage = (event) => {
       try {
         const payload = JSON.parse(event.data);
+        if (typeof __DEV__ !== 'undefined' && __DEV__) {
+          const type = typeof payload === 'object' ? (payload.type as string | undefined) : undefined;
+          if (type && (type === 'message' || type === 'message:new')) {
+            console.debug('realtime: event received', {
+              type,
+              thread: (payload as any)?.thread_id ?? (payload as any)?.thread,
+              messageId: (payload as any)?.message_id ?? (payload as any)?.message?.id,
+            });
+          }
+        }
         notify(payload);
       } catch (error) {
         console.warn('realtime: failed to parse payload', error);

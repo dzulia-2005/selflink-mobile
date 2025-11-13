@@ -32,6 +32,7 @@ export function useMessagingSync(enabled: boolean) {
   const syncThreads = useMessagingStore((state) => state.syncThreads);
   const setSessionUserId = useMessagingStore((state) => state.setSessionUserId);
   const resetMessaging = useMessagingStore((state) => state.reset);
+  const activeThreadId = useMessagingStore((state) => state.activeThreadId);
 
   const connectionRef = useRef<ReturnType<typeof connectRealtime> | null>(null);
   const pollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -53,6 +54,17 @@ export function useMessagingSync(enabled: boolean) {
     }
   }, []);
 
+  const pollThreadsAndActiveMessages = useCallback(() => {
+    syncThreads().catch(() => undefined);
+    const { activeThreadId: activeIdFromStore, loadThreadMessages } = useMessagingStore.getState();
+    if (!activeIdFromStore) {
+      return;
+    }
+    loadThreadMessages(activeIdFromStore).catch((error) => {
+      console.warn('messagingSync: failed to refresh active thread messages', error);
+    });
+  }, [syncThreads]);
+
   const ensurePolling = useCallback(() => {
     const shouldPoll = enabled && appStateRef.current === 'active' && !realtimeConnectedRef.current;
     if (!shouldPoll) {
@@ -65,11 +77,11 @@ export function useMessagingSync(enabled: boolean) {
     if (typeof __DEV__ !== 'undefined' && __DEV__) {
       console.debug('messagingSync: start polling');
     }
-    syncThreads().catch(() => undefined);
+    pollThreadsAndActiveMessages();
     pollTimerRef.current = setInterval(() => {
-      syncThreads().catch(() => undefined);
+      pollThreadsAndActiveMessages();
     }, POLL_INTERVAL_MS);
-  }, [enabled, stopPolling, syncThreads]);
+  }, [enabled, pollThreadsAndActiveMessages, stopPolling]);
 
   useEffect(() => {
     const handleAppStateChange = (next: AppStateStatus) => {
@@ -80,7 +92,7 @@ export function useMessagingSync(enabled: boolean) {
         return;
       }
       if (next === 'active' && prev !== 'active') {
-        syncThreads().catch(() => undefined);
+        pollThreadsAndActiveMessages();
       }
       ensurePolling();
     };
@@ -90,7 +102,7 @@ export function useMessagingSync(enabled: boolean) {
       subscription.remove();
       stopPolling();
     };
-  }, [enabled, ensurePolling, stopPolling, syncThreads]);
+  }, [enabled, ensurePolling, pollThreadsAndActiveMessages, stopPolling]);
 
   const fetchMessageDetails = useCallback((messageId?: number) => {
     if (!messageId) {
@@ -148,12 +160,16 @@ export function useMessagingSync(enabled: boolean) {
 
       if (!nextMessage) {
         await syncThreads();
+        if (activeThreadId) {
+          const { loadThreadMessages } = useMessagingStore.getState();
+          await loadThreadMessages(activeThreadId);
+        }
         return;
       }
 
       appendMessage(nextMessage.thread, nextMessage);
     },
-    [appendMessage, fetchMessageDetails, normalizeEnvelope, syncThreads],
+    [activeThreadId, appendMessage, fetchMessageDetails, normalizeEnvelope, syncThreads],
   );
 
   const handleRealtimePayload = useCallback(
@@ -193,7 +209,7 @@ export function useMessagingSync(enabled: boolean) {
       }
       return;
     }
-    syncThreads().catch(() => undefined);
+    pollThreadsAndActiveMessages();
     const connection = connectRealtime(token);
     connectionRef.current = connection;
     const unsubscribe = connection.subscribe(handleRealtimePayload);
@@ -205,5 +221,5 @@ export function useMessagingSync(enabled: boolean) {
       realtimeConnectedRef.current = false;
       stopPolling();
     };
-  }, [enabled, ensurePolling, handleRealtimePayload, resetMessaging, stopPolling, syncThreads, token]);
+  }, [enabled, ensurePolling, handleRealtimePayload, pollThreadsAndActiveMessages, resetMessaging, stopPolling, token]);
 }
