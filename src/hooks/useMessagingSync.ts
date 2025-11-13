@@ -55,10 +55,18 @@ export function useMessagingSync(enabled: boolean) {
   }, []);
 
   const pollThreadsAndActiveMessages = useCallback(() => {
-    syncThreads().catch(() => undefined);
+    if (typeof __DEV__ !== 'undefined' && __DEV__) {
+      console.log('messagingSync: polling threads');
+    }
+    syncThreads().catch((error) => {
+      console.warn('messagingSync: failed to sync threads', error);
+    });
     const { activeThreadId: activeIdFromStore, loadThreadMessages } = useMessagingStore.getState();
     if (!activeIdFromStore) {
       return;
+    }
+    if (typeof __DEV__ !== 'undefined' && __DEV__) {
+      console.log('messagingSync: polling active thread messages', { threadId: activeIdFromStore });
     }
     loadThreadMessages(activeIdFromStore).catch((error) => {
       console.warn('messagingSync: failed to refresh active thread messages', error);

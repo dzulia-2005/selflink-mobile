@@ -14,6 +14,45 @@ const sortMessagesChronologically = (messages: Message[]) =>
     (a, b) => new Date(a.created_at).valueOf() - new Date(b.created_at).valueOf(),
   );
 
+const mergeMessagesChronologically = (
+  existing: Message[] | undefined,
+  incoming: Message[],
+): { merged: Message[]; changed: boolean } => {
+  if (!existing || existing.length === 0) {
+    return { merged: sortMessagesChronologically(incoming), changed: incoming.length > 0 };
+  }
+  if (incoming.length === 0) {
+    return { merged: existing, changed: false };
+  }
+  const map = new Map<string, Message>();
+  existing.forEach((message) => {
+    map.set(String(message.id), message);
+  });
+  let changed = false;
+  incoming.forEach((message) => {
+    const key = String(message.id);
+    const current = map.get(key);
+    if (!current) {
+      changed = true;
+      map.set(key, message);
+      return;
+    }
+    if (
+      current.body !== message.body ||
+      current.created_at !== message.created_at ||
+      current.sender?.id !== message.sender?.id
+    ) {
+      changed = true;
+      map.set(key, message);
+    }
+  });
+  const next = sortMessagesChronologically(Array.from(map.values()));
+  if (!changed && next.length === existing.length) {
+    return { merged: existing, changed: false };
+  }
+  return { merged: next, changed: true };
+};
+
 const normalizeThreadId = (threadId: string | number | undefined) => {
   if (threadId === null || threadId === undefined) {
     return '';
@@ -289,12 +328,19 @@ export const useMessagingStore = create<MessagingState>((set, get) => ({
     set({ isLoadingMessages: true, error: undefined });
     try {
       const messages = await messagingApi.getThreadMessages(threadId);
-      set((state) => ({
-        messagesByThread: {
-          ...state.messagesByThread,
-          [key]: sortMessagesChronologically(messages),
-        },
-      }));
+      set((state) => {
+        const current = state.messagesByThread[key];
+        const { merged, changed } = mergeMessagesChronologically(current, messages);
+        if (!changed && current === merged) {
+          return state;
+        }
+        return {
+          messagesByThread: {
+            ...state.messagesByThread,
+            [key]: merged,
+          },
+        };
+      });
     } catch (error) {
       set({ error: error instanceof Error ? error.message : 'Unable to load messages.' });
     } finally {

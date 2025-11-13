@@ -73,7 +73,7 @@ export function connectRealtime(token: string, urlOverride?: string): RealtimeCo
       reconnectTimer = null;
     }
     notify({ type: 'status', status: 'connecting', attempt });
-    const url = new URL(urlOverride || env.realtimeUrl || 'ws://localhost:8001/ws');
+    const url = new URL(urlOverride || env.realtimeUrl);
     if (token) {
       url.searchParams.set('token', token);
     }
