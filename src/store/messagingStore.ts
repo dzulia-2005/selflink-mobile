@@ -45,9 +45,31 @@ const sessionOwnsThread = (thread: Thread, sessionUserId: number | null) => {
 const filterThreadsForSession = (threads: Thread[], sessionUserId: number | null) =>
   threads.filter((thread) => sessionOwnsThread(thread, sessionUserId));
 
-const buildThreadSnapshot = (threads: Thread[], sessionUserId: number | null) => {
+const buildThreadSnapshot = (
+  threads: Thread[],
+  sessionUserId: number | null,
+  fallbackUnread?: UnreadMap,
+) => {
   const scopedThreads = filterThreadsForSession(threads, sessionUserId);
-  const sorted = sortThreadsByUpdatedAt(scopedThreads);
+  const normalized = scopedThreads.map((thread) => {
+    const key = String(thread.id);
+    const serverUnread =
+      typeof thread.unread_count === 'number' ? Math.max(0, thread.unread_count) : undefined;
+    const localUnread = fallbackUnread?.[key];
+    if (serverUnread !== undefined || localUnread === undefined) {
+      return serverUnread !== undefined && serverUnread !== (thread.unread_count ?? 0)
+        ? { ...thread, unread_count: serverUnread }
+        : thread;
+    }
+    if (localUnread === (thread.unread_count ?? 0)) {
+      return thread;
+    }
+    return {
+      ...thread,
+      unread_count: Math.max(0, localUnread),
+    };
+  });
+  const sorted = sortThreadsByUpdatedAt(normalized);
   const unreadByThread: UnreadMap = {};
   for (const thread of sorted) {
     unreadByThread[String(thread.id)] = Math.max(0, thread.unread_count ?? 0);
@@ -122,8 +144,8 @@ export const useMessagingStore = create<MessagingState>((set, get) => ({
     set({ isLoadingThreads: true, error: undefined });
     try {
       const threads = await messagingApi.getThreads();
-      const sessionUserId = get().sessionUserId;
-      set(buildThreadSnapshot(threads, sessionUserId));
+      const { sessionUserId, unreadByThread } = get();
+      set(buildThreadSnapshot(threads, sessionUserId, unreadByThread));
     } catch (error) {
       set({ error: error instanceof Error ? error.message : 'Unable to load threads.' });
     } finally {
@@ -221,28 +243,37 @@ export const useMessagingStore = create<MessagingState>((set, get) => ({
   async syncThreads() {
     try {
       const threads = await messagingApi.getThreads();
-      const sessionUserId = get().sessionUserId;
-      set(buildThreadSnapshot(threads, sessionUserId));
+      const { sessionUserId, unreadByThread } = get();
+      set(buildThreadSnapshot(threads, sessionUserId, unreadByThread));
     } catch (error) {
       console.warn('messagingStore: failed to sync threads', error);
     }
   },
   setThreads(threads) {
-    const sessionUserId = get().sessionUserId;
-    set(buildThreadSnapshot(threads, sessionUserId));
+    const { sessionUserId, unreadByThread } = get();
+    set(buildThreadSnapshot(threads, sessionUserId, unreadByThread));
   },
   mergeThread(thread) {
     const state = get();
     if (!sessionOwnsThread(thread, state.sessionUserId)) {
       return;
     }
+    const key = String(thread.id);
+    const serverUnread =
+      typeof thread.unread_count === 'number' ? Math.max(0, thread.unread_count) : undefined;
+    const fallbackUnread = state.unreadByThread[key] ?? 0;
+    const resolvedUnread = serverUnread ?? fallbackUnread;
+    const normalizedThread =
+      serverUnread === undefined && thread.unread_count !== resolvedUnread
+        ? { ...thread, unread_count: resolvedUnread }
+        : thread;
     const nextThreads = sortThreadsByUpdatedAt([
-      thread,
+      normalizedThread,
       ...state.threads.filter((existing) => existing.id !== thread.id),
     ]);
     const unreadByThread = {
       ...state.unreadByThread,
-      [String(thread.id)]: Math.max(0, thread.unread_count ?? 0),
+      [key]: resolvedUnread,
     };
     set({
       threads: nextThreads,

@@ -40,9 +40,10 @@ export function ChatScreen() {
   const setActiveThread = useMessagingStore((state) => state.setActiveThread);
   const syncThreads = useMessagingStore((state) => state.syncThreads);
   const removeMessage = useMessagingStore((state) => state.removeMessage);
+  const threadKey = useMemo(() => String(threadId), [threadId]);
   const messagesSelector = useMemo(
-    () => (state: MessagingState) => state.messagesByThread[String(threadId)],
-    [threadId],
+    () => (state: MessagingState) => state.messagesByThread[threadKey],
+    [threadKey],
   );
   const messages = useMessagingStore(messagesSelector) ?? undefined;
   const isLoading = useMessagingStore((state) => state.isLoadingMessages);
@@ -68,14 +69,13 @@ export function ChatScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      const key = String(threadId);
-      setActiveThread(key);
-      markThreadRead(threadId).catch(() => undefined);
+      setActiveThread(threadKey);
+      markThreadRead(threadKey).catch(() => undefined);
       return () => {
         setActiveThread(null);
         syncThreads().catch(() => undefined);
       };
-    }, [markThreadRead, setActiveThread, syncThreads, threadId]),
+    }, [markThreadRead, setActiveThread, syncThreads, threadKey]),
   );
 
   const handleSend = useCallback(async () => {

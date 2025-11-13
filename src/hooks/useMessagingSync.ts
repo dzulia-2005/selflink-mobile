@@ -11,8 +11,17 @@ type MessageEnvelope = RealtimePayload & {
   type?: string;
   message?: Message;
   message_id?: number;
-  thread_id?: number;
+  thread_id?: number | string;
+  thread?: number | string;
+  payload?: Record<string, unknown> & {
+    message?: Message;
+    message_id?: number;
+    thread_id?: number | string;
+    thread?: number | string;
+  };
 };
+
+const MESSAGE_EVENT_TYPES = new Set(['message', 'message:new']);
 
 const POLL_INTERVAL_MS = 12_000;
 
@@ -79,6 +88,7 @@ export function useMessagingSync(enabled: boolean) {
     const subscription = AppState.addEventListener('change', handleAppStateChange);
     return () => {
       subscription.remove();
+      stopPolling();
     };
   }, [enabled, ensurePolling, stopPolling, syncThreads]);
 
@@ -103,8 +113,31 @@ export function useMessagingSync(enabled: boolean) {
     return request;
   }, []);
 
+  const normalizeEnvelope = useCallback((payload: MessageEnvelope): MessageEnvelope => {
+    if (!payload || typeof payload !== 'object') {
+      return payload;
+    }
+    if (payload.payload && typeof payload.payload === 'object') {
+      const nested = payload.payload;
+      return {
+        ...payload,
+        ...nested,
+        message: (nested.message as Message | undefined) ?? payload.message,
+        message_id: (nested.message_id as number | undefined) ?? payload.message_id,
+        thread_id:
+          typeof nested.thread_id !== 'undefined'
+            ? (nested.thread_id as number | string)
+            : typeof nested.thread !== 'undefined'
+              ? (nested.thread as number | string)
+              : payload.thread_id ?? payload.thread,
+      };
+    }
+    return payload;
+  }, []);
+
   const handleRealtimeMessage = useCallback(
-    async (payload: MessageEnvelope) => {
+    async (rawPayload: MessageEnvelope) => {
+      const payload = normalizeEnvelope(rawPayload);
       const directMessage = payload.message;
       let nextMessage: Message | null = null;
       if (directMessage?.sender) {
@@ -120,7 +153,7 @@ export function useMessagingSync(enabled: boolean) {
 
       appendMessage(nextMessage.thread, nextMessage);
     },
-    [appendMessage, fetchMessageDetails, syncThreads],
+    [appendMessage, fetchMessageDetails, normalizeEnvelope, syncThreads],
   );
 
   const handleRealtimePayload = useCallback(
@@ -140,7 +173,7 @@ export function useMessagingSync(enabled: boolean) {
         }
         return;
       }
-      if (type === 'message') {
+      if (type && MESSAGE_EVENT_TYPES.has(type)) {
         handleRealtimeMessage(payload as MessageEnvelope).catch(() => undefined);
       } else if (type === 'typing') {
         // no-op for now

@@ -81,7 +81,14 @@ export function MainTabsNavigator() {
 }
 
 const MESSAGE_BADGE_STYLE = {
-  backgroundColor: '#22c55e',
+  backgroundColor: '#16a34a',
   color: '#fff',
   fontSize: 11,
+  fontWeight: '700' as const,
+  minWidth: 18,
+  height: 18,
+  lineHeight: 16,
+  borderRadius: 9,
+  paddingHorizontal: 4,
+  textAlign: 'center' as const,
 };
