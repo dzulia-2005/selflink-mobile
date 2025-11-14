@@ -8,6 +8,7 @@ module.exports = {
   preset: 'jest-expo',
   setupFiles: ['<rootDir>/jest.polyfills.ts'],
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
+  resolver: '<rootDir>/jest.resolver.js',
   transformIgnorePatterns: [
     'node_modules/(?!(react-native|@react-native|expo|expo-status-bar|expo-constants|expo-linear-gradient|expo-haptics|expo-secure-store|expo-modules-core|react-native-safe-area-context|@expo|@react-navigation)/)',
   ],
@@ -20,5 +21,7 @@ module.exports = {
     '^@utils/(.*)$': '<rootDir>/src/utils/$1',
     '^@hooks/(.*)$': '<rootDir>/src/hooks/$1',
     '^expo/build/winter$': '<rootDir>/jest.mocks/expo-winter.ts',
+    'react-native/Libraries/BatchedBridge/NativeModules$':
+      '<rootDir>/jest.mocks/NativeModules.ts',
   },
 };
