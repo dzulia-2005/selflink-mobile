@@ -11,7 +11,8 @@ const target = path.join(
   'setup.js',
 );
 
-const marker = "const mockNativeModules = require('react-native/Libraries/BatchedBridge/NativeModules').default;";
+const marker =
+  "const mockNativeModules = require('react-native/Libraries/BatchedBridge/NativeModules').default;";
 try {
   const source = fs.readFileSync(target, 'utf8');
   if (!source.includes(marker)) {

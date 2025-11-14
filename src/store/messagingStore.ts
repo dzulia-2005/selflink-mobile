@@ -98,7 +98,7 @@ const normalizeId = (value: unknown) => {
   return String(value);
 };
 
-const sessionOwnsThread = (thread: Thread, sessionUserId: number | null) => {
+const sessionOwnsThread = (thread: Thread, sessionUserId: string | null) => {
   if (!sessionUserId) {
     return true;
   }
@@ -119,12 +119,12 @@ const sessionOwnsThread = (thread: Thread, sessionUserId: number | null) => {
   });
 };
 
-const filterThreadsForSession = (threads: Thread[], sessionUserId: number | null) =>
+const filterThreadsForSession = (threads: Thread[], sessionUserId: string | null) =>
   threads.filter((thread) => sessionOwnsThread(thread, sessionUserId));
 
 const buildThreadSnapshot = (
   threads: Thread[],
-  sessionUserId: number | null,
+  sessionUserId: string | null,
   fallbackUnread?: UnreadMap,
 ) => {
   const scopedThreads = filterThreadsForSession(threads, sessionUserId);
@@ -192,7 +192,7 @@ const initialState = {
   unreadByThread: {} as UnreadMap,
   totalUnread: 0,
   activeThreadId: null as string | null,
-  sessionUserId: null as number | null,
+  sessionUserId: null as string | null,
   typingByThread: {} as Record<string, ThreadTypingStatus | undefined>,
   isLoadingThreads: false,
   isLoadingMessages: false,
@@ -608,20 +608,26 @@ export const useMessagingStore = create<MessagingState>((set, get) => ({
     }
     set({ activeThreadId: key });
   },
-  setSessionUserId(userId) {
+  setSessionUserId(userId: string | number | null) {
+    const normalized = userId == null ? null : String(userId);
     const current = get().sessionUserId;
-    if (current === userId) {
+    if (normalized == null) {
+      if (current !== null) {
+        set({ ...initialState });
+      }
       return;
     }
-    if (userId == null) {
-      set({ ...initialState });
+    if (current === normalized) {
       return;
     }
-    if (current != null && current !== userId) {
-      set({ ...initialState, sessionUserId: userId });
-      return;
+    if (current != null && current !== normalized) {
+      set({ ...initialState, sessionUserId: normalized });
+    } else {
+      set({ sessionUserId: normalized });
     }
-    set({ sessionUserId: userId });
+    get()
+      .loadThreads()
+      .catch(() => undefined);
   },
   recomputeTotalUnread() {
     set((state) => ({

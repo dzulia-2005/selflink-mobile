@@ -35,7 +35,7 @@ const POLL_INTERVAL_MS = 12_000;
 
 export function useMessagingSync(enabled: boolean) {
   const token = useAuthStore((state) => state.accessToken);
-  const currentUserId = useAuthStore((state) => state.currentUser?.id ?? null);
+  const rawCurrentUserId = useAuthStore((state) => state.currentUser?.id ?? null);
   const appendMessage = useMessagingStore((state) => state.appendMessage);
   const syncThreads = useMessagingStore((state) => state.syncThreads);
   const setSessionUserId = useMessagingStore((state) => state.setSessionUserId);
@@ -53,8 +53,8 @@ export function useMessagingSync(enabled: boolean) {
   const realtimeConnectedRef = useRef(false);
   const appStateRef = useRef<AppStateStatus>(AppState.currentState);
   useEffect(() => {
-    setSessionUserId(currentUserId);
-  }, [currentUserId, setSessionUserId]);
+    setSessionUserId(rawCurrentUserId == null ? null : String(rawCurrentUserId));
+  }, [rawCurrentUserId, setSessionUserId]);
 
   const stopPolling = useCallback(() => {
     if (pollTimerRef.current) {

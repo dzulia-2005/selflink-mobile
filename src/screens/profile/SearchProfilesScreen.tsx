@@ -42,27 +42,27 @@ export function SearchProfilesScreen() {
   }, [query]);
 
   const handleFollowToggle = useCallback(
-    async (user: UserSummary) => {
-      if (user.id === currentUserId) {
+    async (candidate: UserSummary) => {
+      if (candidate.id === currentUserId) {
         return;
       }
-      const next = !user.is_following;
+      const nextState = !candidate.is_following;
       setResults((prev) =>
-        prev.map((candidate) =>
-          candidate.id === user.id ? { ...candidate, is_following: next } : candidate,
+        prev.map((user) =>
+          user.id === candidate.id ? { ...user, is_following: nextState } : user,
         ),
       );
       try {
-        if (next) {
-          await followUser(user.id);
+        if (nextState) {
+          await followUser(candidate.id);
         } else {
-          await unfollowUser(user.id);
+          await unfollowUser(candidate.id);
         }
       } catch (err) {
         console.warn('SearchProfiles: follow toggle failed', err);
         setResults((prev) =>
-          prev.map((candidate) =>
-            candidate.id === user.id ? { ...candidate, is_following: !next } : candidate,
+          prev.map((user) =>
+            user.id === candidate.id ? { ...user, is_following: !nextState } : user,
           ),
         );
       }
@@ -110,10 +110,9 @@ export function SearchProfilesScreen() {
   );
 
   const keyExtractor = useCallback((item: UserSummary) => String(item.id), []);
-
   const renderSeparator = useCallback(() => <View style={styles.separator} />, []);
 
-  const renderEmpty = useMemo(() => {
+  const emptyComponent = useMemo(() => {
     if (isLoading || results.length > 0) {
       return null;
     }
@@ -143,7 +142,7 @@ export function SearchProfilesScreen() {
         keyExtractor={keyExtractor}
         renderItem={renderResult}
         ItemSeparatorComponent={renderSeparator}
-        ListEmptyComponent={renderEmpty}
+        ListEmptyComponent={emptyComponent}
       />
     </View>
   );
