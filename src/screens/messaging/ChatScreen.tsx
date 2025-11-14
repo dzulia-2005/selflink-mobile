@@ -16,7 +16,6 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
-  Image,
   StyleSheet,
   Text,
   TextInput,
@@ -24,7 +23,9 @@ import {
   View,
 } from 'react-native';
 import type { ListRenderItem } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
+import { ChatBubble } from '@components/messaging/ChatBubble';
 import { navigateToUserProfile } from '@navigation/helpers';
 import type { Message } from '@schemas/messaging';
 import {
@@ -327,10 +328,10 @@ export function ChatScreen() {
           ? String(senderId) === currentUserKey
           : senderId === currentUserId;
       return (
-        <MessageBubble
+        <ChatBubble
           message={item.message}
           isOwn={Boolean(isOwn)}
-          previousSenderId={item.previousSenderId}
+          showTimestamp
           onLongPress={confirmDeleteMessage}
           disableActions={Boolean(pendingDeleteId)}
         />
@@ -362,10 +363,10 @@ export function ChatScreen() {
       {typingIndicatorVisible && typingStatus ? (
         <TypingIndicator status={typingStatus} />
       ) : null}
-      <View style={styles.composer}>
+      <View style={styles.inputBar}>
         <TextInput
           style={styles.input}
-          placeholder="Message"
+          placeholder="Message..."
           value={input}
           onChangeText={handleInputChange}
           onBlur={() => {
@@ -378,119 +379,24 @@ export function ChatScreen() {
               typingTimeoutRef.current = null;
             }
           }}
-          placeholderTextColor={theme.palette.silver}
+          placeholderTextColor="#94A3B8"
           multiline
         />
         <TouchableOpacity
           onPress={handleSend}
-          style={[styles.sendButton, isSending && styles.sendButtonDisabled]}
-          disabled={isSending}
+          style={styles.sendButton}
+          disabled={isSending || !input.trim()}
         >
-          <Text style={styles.sendButtonText}>{isSending ? 'Sending…' : 'Send'}</Text>
+          <Ionicons
+            name="send"
+            size={20}
+            color={isSending || !input.trim() ? '#9CA3AF' : '#0f766e'}
+          />
         </TouchableOpacity>
       </View>
     </View>
   );
 }
-
-const MessageBubble = ({
-  message,
-  isOwn,
-  previousSenderId,
-  onLongPress,
-  disableActions,
-}: {
-  message: Message;
-  isOwn: boolean;
-  previousSenderId?: string | number;
-  onLongPress?: (message: Message) => void;
-  disableActions?: boolean;
-}) => {
-  const previousKey = previousSenderId == null ? null : String(previousSenderId);
-  const currentSenderKey = message.sender?.id != null ? String(message.sender.id) : null;
-  const isSenderChanged = previousKey !== currentSenderKey;
-  const containerStyle = [
-    styles.bubbleRow,
-    isOwn ? styles.bubbleRowOwn : styles.bubbleRowOther,
-    isSenderChanged ? styles.bubbleRowSeparated : styles.bubbleRowTight,
-  ];
-  const bubbleStyle = [
-    styles.messageBubble,
-    isOwn ? styles.bubbleOwn : styles.bubbleOther,
-  ];
-  const timestamp = formatTime(message.created_at);
-  const avatarLabel = getInitials(message.sender.name || message.sender.handle || '');
-  const avatarSource = message.sender.photo ? { uri: message.sender.photo } : null;
-  const showAvatar = !isOwn && isSenderChanged;
-
-  return (
-    <View style={containerStyle}>
-      {isOwn ? (
-        <View style={styles.bubbleRowOwnSpacer} />
-      ) : (
-        <View style={[styles.avatar, !showAvatar && styles.avatarHidden]}>
-          {avatarSource ? (
-            <Image source={avatarSource} style={styles.avatarImage} />
-          ) : (
-            <Text style={styles.avatarLabel}>{avatarLabel}</Text>
-          )}
-        </View>
-      )}
-      <TouchableOpacity
-        activeOpacity={0.85}
-        delayLongPress={250}
-        onLongPress={() => {
-          if (!disableActions) {
-            onLongPress?.(message);
-          }
-        }}
-        style={bubbleStyle}
-      >
-        {!isOwn && !!message.sender.name && (
-          <Text style={styles.sender}>{message.sender.name}</Text>
-        )}
-        <Text
-          style={[
-            styles.messageText,
-            isOwn ? styles.messageTextOwn : styles.messageTextOther,
-          ]}
-        >
-          {message.body}
-        </Text>
-        <View
-          style={[
-            styles.bubbleMeta,
-            isOwn ? styles.bubbleMetaOwn : styles.bubbleMetaOther,
-          ]}
-        >
-          <Text
-            style={[
-              styles.timestamp,
-              isOwn ? styles.timestampOwn : styles.timestampOther,
-            ]}
-          >
-            {timestamp}
-          </Text>
-        </View>
-      </TouchableOpacity>
-    </View>
-  );
-};
-
-const getInitials = (name: string) => {
-  if (!name) {
-    return '?';
-  }
-  const [first, second] = name.trim().split(' ');
-  const firstInitial = first?.charAt(0)?.toUpperCase() ?? '';
-  const secondInitial = second?.charAt(0)?.toUpperCase() ?? '';
-  return (firstInitial + secondInitial).slice(0, 2) || '?';
-};
-
-const formatTime = (dateString: string) => {
-  const date = new Date(dateString);
-  return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
-};
 
 const formatDateLabel = (dateString: string) => {
   const target = new Date(dateString);
@@ -539,159 +445,17 @@ const TypingIndicator = ({ status }: { status: ThreadTypingStatus }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.palette.pearl,
+    backgroundColor: '#F3F4F6',
   },
   listContent: {
-    paddingHorizontal: theme.spacing.md,
-    paddingTop: theme.spacing.lg,
-    paddingBottom: theme.spacing.xl * 2,
-    gap: theme.spacing.xs,
+    paddingVertical: 8,
   },
   listFooter: {
-    height: theme.spacing.lg,
-  },
-  composer: {
-    flexDirection: 'row',
-    padding: theme.spacing.sm,
-    margin: theme.spacing.sm,
-    borderRadius: theme.radii.md,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    gap: theme.spacing.sm,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 4,
-  },
-  input: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: theme.palette.platinum,
-    borderRadius: theme.radii.lg,
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: 12,
-    fontSize: 16,
-    backgroundColor: theme.palette.pearl,
-    maxHeight: 120,
-    textAlignVertical: 'top',
-  },
-  sendButton: {
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
-    justifyContent: 'center',
-    backgroundColor: theme.colors.primary,
-    borderRadius: theme.radii.md,
-  },
-  sendButtonText: {
-    color: '#fff',
-    fontWeight: '600',
-  },
-  sendButtonDisabled: {
-    opacity: 0.6,
+    height: 32,
   },
   headerLink: {
     color: '#2563EB',
     fontWeight: '600',
-  },
-  bubbleRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    paddingHorizontal: theme.spacing.sm,
-  },
-  bubbleRowOwn: {
-    justifyContent: 'flex-end',
-  },
-  bubbleRowOther: {
-    justifyContent: 'flex-start',
-  },
-  bubbleRowSeparated: {
-    marginTop: theme.spacing.sm,
-  },
-  bubbleRowTight: {
-    marginTop: theme.spacing.xs,
-  },
-  messageBubble: {
-    maxWidth: '78%',
-    borderRadius: theme.radii.lg,
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    elevation: 2,
-  },
-  bubbleOwn: {
-    backgroundColor: theme.colors.primary,
-    borderBottomRightRadius: theme.radii.sm,
-  },
-  bubbleOther: {
-    backgroundColor: '#fff',
-    borderBottomLeftRadius: theme.radii.sm,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: theme.palette.platinum,
-  },
-  messageText: {
-    fontSize: 16,
-    lineHeight: 22,
-  },
-  messageTextOwn: {
-    color: theme.text.inverted,
-  },
-  messageTextOther: {
-    color: theme.palette.graphite,
-  },
-  sender: {
-    fontWeight: '600',
-    marginBottom: 4,
-    color: theme.palette.graphite,
-  },
-  bubbleMeta: {
-    marginTop: 6,
-  },
-  bubbleMetaOwn: {
-    alignItems: 'flex-end',
-  },
-  bubbleMetaOther: {
-    alignItems: 'flex-start',
-  },
-  timestamp: {
-    fontSize: 12,
-  },
-  timestampOwn: {
-    color: 'rgba(255,255,255,0.7)',
-    textAlign: 'right',
-  },
-  timestampOther: {
-    color: theme.palette.silver,
-    textAlign: 'left',
-  },
-  avatar: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: theme.palette.platinum,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: theme.spacing.sm,
-  },
-  avatarHidden: {
-    opacity: 0,
-  },
-  avatarImage: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 16,
-  },
-  avatarLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: theme.palette.graphite,
-  },
-  bubbleRowOwnSpacer: {
-    width: 32,
-    marginRight: theme.spacing.sm,
   },
   centered: {
     flex: 1,
@@ -735,5 +499,30 @@ const styles = StyleSheet.create({
   typingText: {
     ...theme.typography.caption,
     color: theme.palette.graphite,
+  },
+  inputBar: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+    backgroundColor: '#FFFFFF',
+  },
+  input: {
+    flex: 1,
+    maxHeight: 120,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 999,
+    backgroundColor: '#F9FAFB',
+    fontSize: 15,
+    color: theme.palette.graphite,
+    textAlignVertical: 'top',
+  },
+  sendButton: {
+    marginLeft: 8,
+    padding: 10,
+    borderRadius: 999,
   },
 });
