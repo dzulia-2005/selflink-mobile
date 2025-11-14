@@ -77,6 +77,53 @@ export const mapThreadIdToClient = (
   return preciseToApproxThreadIdMap.get(key) ?? key;
 };
 
+const normalizeEntityId = <T extends { id?: string | number | null }>(
+  entity: T | null | undefined,
+): T | null | undefined => {
+  if (!entity || entity.id === null || entity.id === undefined) {
+    return entity ?? null;
+  }
+  const normalizedId =
+    typeof entity.id === 'string' ? entity.id : String(entity.id);
+  if (normalizedId === entity.id) {
+    return entity;
+  }
+  return {
+    ...entity,
+    id: normalizedId as T['id'],
+  };
+};
+
+const normalizeThreadMembers = (
+  members?: ThreadResponse['members'],
+): Thread['members'] => {
+  if (!Array.isArray(members)) {
+    return [];
+  }
+  return members.map((member) => {
+    const normalizedUser = normalizeEntityId(member.user);
+    if (normalizedUser === member.user) {
+      return member;
+    }
+    return {
+      ...member,
+      user: normalizedUser ?? member.user,
+    };
+  });
+};
+
+const normalizeParticipants = (
+  participants?: ThreadResponse['participants'],
+): Thread['participants'] => {
+  if (!Array.isArray(participants)) {
+    return [];
+  }
+  return participants.map((participant) => {
+    const normalizedParticipant = normalizeEntityId(participant);
+    return normalizedParticipant ?? participant;
+  });
+};
+
 async function requestWithPrecision<T>(config: AxiosRequestConfig): Promise<{
   parsed: T;
   precise: T;
@@ -114,28 +161,40 @@ const normalizeMessage = (
   approx: MessageResponse,
   precise?: MessageResponse,
 ): Message => {
-  const preciseId = precise?.id ?? approx.id;
-  const preciseThread = precise?.thread ?? approx.thread;
-  if (preciseThread !== undefined) {
+  const merged = precise ? { ...approx, ...precise } : approx;
+  const resolvedId = merged.id ?? approx.id;
+  const resolvedThread = merged.thread ?? approx.thread;
+  if (resolvedThread !== undefined) {
     const approxKey = toKey(approx.thread);
-    const preciseKey = toKey(preciseThread);
+    const preciseKey = toKey(resolvedThread);
     if (approxKey && preciseKey) {
       approxToPreciseThreadIdMap.set(approxKey, preciseKey);
       preciseToApproxThreadIdMap.set(preciseKey, approxKey);
     }
   }
+  const sender = normalizeEntityId(merged.sender ?? approx.sender);
   return {
     ...approx,
-    id: preciseId != null ? String(preciseId) : String(approx.id),
-    thread: preciseThread != null ? String(preciseThread) : String(approx.thread),
+    ...merged,
+    id: resolvedId != null ? String(resolvedId) : String(approx.id),
+    thread: resolvedThread != null ? String(resolvedThread) : String(approx.thread),
+    sender: sender ?? merged.sender ?? approx.sender,
   };
 };
 
 const normalizeThread = (approx: ThreadResponse, precise?: ThreadResponse): Thread => {
-  const resolvedId = precise?.id ?? approx.id;
+  const merged = precise ? { ...approx, ...precise } : approx;
+  const resolvedId = merged.id ?? approx.id;
   return {
     ...approx,
+    ...merged,
     id: resolvedId != null ? String(resolvedId) : String(approx.id),
+    members: normalizeThreadMembers(
+      precise?.members ?? approx.members ?? merged.members ?? [],
+    ),
+    participants: normalizeParticipants(
+      precise?.participants ?? approx.participants ?? merged.participants ?? [],
+    ),
   };
 };
 
