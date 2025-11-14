@@ -1,20 +1,43 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import {
+  RouteProp,
+  useFocusEffect,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
   ActivityIndicator,
   Alert,
   FlatList,
+  Image,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
-import { RouteProp, useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
-import { navigateToUserProfile } from '@navigation/helpers';
-import { useAuthStore } from '@store/authStore';
-import { useMessagingStore, type MessagingState } from '@store/messagingStore';
 import type { ListRenderItem } from 'react-native';
+
+import { navigateToUserProfile } from '@navigation/helpers';
 import type { Message } from '@schemas/messaging';
+import {
+  getTypingStatus,
+  sendTypingSignal,
+  type TypingStatus,
+} from '@services/api/threads';
+import { useAuthStore } from '@store/authStore';
+import {
+  useMessagingStore,
+  type MessagingState,
+  type ThreadTypingStatus,
+} from '@store/messagingStore';
 import { theme } from '@theme';
 
 interface RouteParams {
@@ -25,6 +48,21 @@ interface RouteParams {
 type ChatRoute = RouteProp<Record<'Chat', RouteParams>, 'Chat'>;
 
 const EMPTY_MESSAGES: Message[] = [];
+type ChatListItem =
+  | { kind: 'separator'; id: string; label: string }
+  | { kind: 'message'; id: string; message: Message; previousSenderId?: string | number };
+
+const mapTypingStatusResponse = (status: TypingStatus): ThreadTypingStatus | null => {
+  if (!status?.typing) {
+    return null;
+  }
+  return {
+    typing: true,
+    userId: status.userId != null ? String(status.userId) : undefined,
+    userName: status.userName ?? null,
+    userHandle: status.userHandle ?? null,
+  };
+};
 
 export function ChatScreen() {
   const navigation = useNavigation<any>();
@@ -40,6 +78,7 @@ export function ChatScreen() {
   const setActiveThread = useMessagingStore((state) => state.setActiveThread);
   const syncThreads = useMessagingStore((state) => state.syncThreads);
   const removeMessage = useMessagingStore((state) => state.removeMessage);
+  const setTypingStatus = useMessagingStore((state) => state.setTypingStatus);
   const threadKey = useMemo(() => String(threadId), [threadId]);
   const messages = useMessagingStore(
     useCallback(
@@ -47,12 +86,32 @@ export function ChatScreen() {
       [threadKey],
     ),
   );
+  const typingStatus = useMessagingStore(
+    useCallback(
+      (state: MessagingState) => state.typingByThread[threadKey] ?? null,
+      [threadKey],
+    ),
+  );
   const isLoading = useMessagingStore((state) => state.isLoadingMessages);
   const currentUserId = useAuthStore((state) => state.currentUser?.id);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const typingActiveRef = useRef(false);
+  const currentUserKey = currentUserId != null ? String(currentUserId) : null;
 
   useEffect(() => {
     loadThreadMessages(threadId).catch(() => undefined);
   }, [loadThreadMessages, threadId]);
+
+  const headerProfileButton = useCallback(() => {
+    if (!otherUserId) {
+      return null;
+    }
+    return (
+      <TouchableOpacity onPress={() => navigateToUserProfile(navigation, otherUserId)}>
+        <Text style={styles.headerLink}>Profile</Text>
+      </TouchableOpacity>
+    );
+  }, [navigation, otherUserId]);
 
   useLayoutEffect(() => {
     if (!otherUserId) {
@@ -60,13 +119,9 @@ export function ChatScreen() {
       return;
     }
     navigation.setOptions({
-      headerRight: () => (
-        <TouchableOpacity onPress={() => navigateToUserProfile(navigation, otherUserId)}>
-          <Text style={{ color: '#2563EB', fontWeight: '600' }}>Profile</Text>
-        </TouchableOpacity>
-      ),
+      headerRight: headerProfileButton,
     });
-  }, [navigation, otherUserId]);
+  }, [headerProfileButton, navigation, otherUserId]);
 
   useFocusEffect(
     useCallback(() => {
@@ -79,6 +134,84 @@ export function ChatScreen() {
     }, [markThreadRead, setActiveThread, syncThreads, threadKey]),
   );
 
+  const notifyTyping = useCallback(
+    async (active: boolean) => {
+      try {
+        await sendTypingSignal(threadId, { is_typing: active });
+      } catch (error) {
+        if (__DEV__) {
+          console.warn('ChatScreen: typing signal failed', error);
+        }
+      }
+    },
+    [threadId],
+  );
+
+  const scheduleTypingStop = useCallback(() => {
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    typingTimeoutRef.current = setTimeout(() => {
+      typingActiveRef.current = false;
+      notifyTyping(false).catch(() => undefined);
+    }, 4_000);
+  }, [notifyTyping]);
+
+  const handleInputChange = useCallback(
+    (text: string) => {
+      setInput(text);
+      if (!text.trim()) {
+        if (typingTimeoutRef.current) {
+          clearTimeout(typingTimeoutRef.current);
+          typingTimeoutRef.current = null;
+        }
+        if (typingActiveRef.current) {
+          typingActiveRef.current = false;
+          notifyTyping(false).catch(() => undefined);
+        }
+        return;
+      }
+      if (!typingActiveRef.current) {
+        typingActiveRef.current = true;
+        notifyTyping(true).catch(() => undefined);
+      }
+      scheduleTypingStop();
+    },
+    [notifyTyping, scheduleTypingStop],
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+    getTypingStatus(threadId)
+      .then((status) => {
+        if (cancelled) {
+          return;
+        }
+        setTypingStatus(threadKey, mapTypingStatusResponse(status));
+      })
+      .catch((error) => {
+        if (__DEV__) {
+          console.warn('ChatScreen: failed to fetch typing status', error);
+        }
+      });
+    return () => {
+      cancelled = true;
+      setTypingStatus(threadKey, null);
+    };
+  }, [setTypingStatus, threadId, threadKey]);
+
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+      if (typingActiveRef.current) {
+        typingActiveRef.current = false;
+        notifyTyping(false).catch(() => undefined);
+      }
+    };
+  }, [notifyTyping]);
+
   const handleSend = useCallback(async () => {
     if (!input.trim() || isSending) {
       return;
@@ -87,23 +220,59 @@ export function ChatScreen() {
     try {
       const payload = input.trim();
       if (__DEV__) {
-        console.log('[ChatScreen] sendMessage', { threadId, preview: payload.slice(0, 32) });
+        console.log('[ChatScreen] sendMessage', {
+          threadId,
+          preview: payload.slice(0, 32),
+        });
       }
       await sendMessage(threadId, payload);
       setInput('');
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+        typingTimeoutRef.current = null;
+      }
+      if (typingActiveRef.current) {
+        typingActiveRef.current = false;
+        notifyTyping(false).catch(() => undefined);
+      }
     } catch (error: unknown) {
       console.warn('ChatScreen: failed to send message', error);
       const detail =
         typeof error === 'object' && error && 'response' in error
-          ? (error as any).response?.data?.detail ?? ''
+          ? ((error as any).response?.data?.detail ?? '')
           : '';
       Alert.alert('Unable to send message', detail || 'Please try again.');
     } finally {
       setIsSending(false);
     }
-  }, [input, isSending, sendMessage, threadId]);
+  }, [input, isSending, notifyTyping, sendMessage, threadId]);
 
   const threadMessages = messages;
+  const chatItems = useMemo<ChatListItem[]>(() => {
+    const items: ChatListItem[] = [];
+    let lastLabel: string | null = null;
+    threadMessages.forEach((message, index) => {
+      const label = formatDateLabel(message.created_at);
+      if (label !== lastLabel) {
+        items.push({
+          kind: 'separator',
+          id: `sep-${label}-${index}-${message.id}`,
+          label,
+        });
+        lastLabel = label;
+      }
+      items.push({
+        kind: 'message',
+        id: String(message.id),
+        message,
+        previousSenderId: threadMessages[index - 1]?.sender.id,
+      });
+    });
+    return items;
+  }, [threadMessages]);
+  const typingIndicatorVisible =
+    Boolean(typingStatus?.typing) &&
+    (!typingStatus?.userId || typingStatus.userId !== currentUserKey);
 
   const confirmDeleteMessage = useCallback(
     (message: Message) => {
@@ -133,21 +302,27 @@ export function ChatScreen() {
     [pendingDeleteId, removeMessage, threadId],
   );
 
-  const renderMessage = useCallback<ListRenderItem<Message>>(
-    ({ item, index }) => {
-      const previousSenderId = threadMessages[index - 1]?.sender.id;
-      const isOwn = currentUserId === item.sender.id;
+  const renderItem = useCallback<ListRenderItem<ChatListItem>>(
+    ({ item }) => {
+      if (item.kind === 'separator') {
+        return <DateSeparator label={item.label} />;
+      }
+      const senderId = item.message.sender?.id;
+      const isOwn =
+        senderId != null && currentUserKey != null
+          ? String(senderId) === currentUserKey
+          : senderId === currentUserId;
       return (
         <MessageBubble
-          message={item}
-          isOwn={isOwn}
-          previousSenderId={previousSenderId}
+          message={item.message}
+          isOwn={Boolean(isOwn)}
+          previousSenderId={item.previousSenderId}
           onLongPress={confirmDeleteMessage}
           disableActions={Boolean(pendingDeleteId)}
         />
       );
     },
-    [confirmDeleteMessage, currentUserId, pendingDeleteId, threadMessages],
+    [confirmDeleteMessage, currentUserId, currentUserKey, pendingDeleteId],
   );
 
   if (isLoading && threadMessages.length === 0) {
@@ -161,20 +336,36 @@ export function ChatScreen() {
   return (
     <View style={styles.container}>
       <FlatList
-        data={threadMessages}
-        keyExtractor={(item) => String(item.id)}
-        renderItem={renderMessage}
+        data={chatItems}
+        keyExtractor={(item) => item.id}
+        renderItem={renderItem}
         contentContainerStyle={styles.listContent}
         inverted
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
+        ListFooterComponent={<View style={styles.listFooter} />}
       />
+      {typingIndicatorVisible && typingStatus ? (
+        <TypingIndicator status={typingStatus} />
+      ) : null}
       <View style={styles.composer}>
         <TextInput
           style={styles.input}
           placeholder="Message"
           value={input}
-          onChangeText={setInput}
+          onChangeText={handleInputChange}
+          onBlur={() => {
+            if (typingActiveRef.current) {
+              typingActiveRef.current = false;
+              notifyTyping(false).catch(() => undefined);
+            }
+            if (typingTimeoutRef.current) {
+              clearTimeout(typingTimeoutRef.current);
+              typingTimeoutRef.current = null;
+            }
+          }}
+          placeholderTextColor={theme.palette.silver}
+          multiline
         />
         <TouchableOpacity
           onPress={handleSend}
@@ -197,31 +388,42 @@ const MessageBubble = ({
 }: {
   message: Message;
   isOwn: boolean;
-  previousSenderId?: number;
+  previousSenderId?: string | number;
   onLongPress?: (message: Message) => void;
   disableActions?: boolean;
 }) => {
-  const isSenderChanged = previousSenderId !== message.sender.id;
+  const previousKey = previousSenderId == null ? null : String(previousSenderId);
+  const currentSenderKey = message.sender?.id != null ? String(message.sender.id) : null;
+  const isSenderChanged = previousKey !== currentSenderKey;
   const containerStyle = [
     styles.bubbleRow,
     isOwn ? styles.bubbleRowOwn : styles.bubbleRowOther,
     isSenderChanged ? styles.bubbleRowSeparated : styles.bubbleRowTight,
   ];
-  const bubbleStyle = [styles.messageBubble, isOwn ? styles.bubbleOwn : styles.bubbleOther];
-  const timestamp = formatTimestamp(message.created_at);
+  const bubbleStyle = [
+    styles.messageBubble,
+    isOwn ? styles.bubbleOwn : styles.bubbleOther,
+  ];
+  const timestamp = formatTime(message.created_at);
   const avatarLabel = getInitials(message.sender.name || message.sender.handle || '');
+  const avatarSource = message.sender.photo ? { uri: message.sender.photo } : null;
+  const showAvatar = !isOwn && isSenderChanged;
 
   return (
     <View style={containerStyle}>
       {isOwn ? (
         <View style={styles.bubbleRowOwnSpacer} />
       ) : (
-        <View style={[styles.avatar, !isSenderChanged && styles.avatarHidden]}>
-          <Text style={styles.avatarLabel}>{avatarLabel}</Text>
+        <View style={[styles.avatar, !showAvatar && styles.avatarHidden]}>
+          {avatarSource ? (
+            <Image source={avatarSource} style={styles.avatarImage} />
+          ) : (
+            <Text style={styles.avatarLabel}>{avatarLabel}</Text>
+          )}
         </View>
       )}
       <TouchableOpacity
-        activeOpacity={0.8}
+        activeOpacity={0.85}
         delayLongPress={250}
         onLongPress={() => {
           if (!disableActions) {
@@ -230,29 +432,94 @@ const MessageBubble = ({
         }}
         style={bubbleStyle}
       >
-        {!isOwn && <Text style={styles.sender}>{message.sender.name}</Text>}
-        <Text style={[styles.messageText, isOwn ? styles.messageTextOwn : styles.messageTextOther]}>
+        {!isOwn && !!message.sender.name && (
+          <Text style={styles.sender}>{message.sender.name}</Text>
+        )}
+        <Text
+          style={[
+            styles.messageText,
+            isOwn ? styles.messageTextOwn : styles.messageTextOther,
+          ]}
+        >
           {message.body}
         </Text>
-        <Text style={[styles.timestamp, isOwn ? styles.timestampOwn : styles.timestampOther]}>
-          {timestamp}
-        </Text>
+        <View
+          style={[
+            styles.bubbleMeta,
+            isOwn ? styles.bubbleMetaOwn : styles.bubbleMetaOther,
+          ]}
+        >
+          <Text
+            style={[
+              styles.timestamp,
+              isOwn ? styles.timestampOwn : styles.timestampOther,
+            ]}
+          >
+            {timestamp}
+          </Text>
+        </View>
       </TouchableOpacity>
     </View>
   );
 };
 
-const formatTimestamp = (dateString: string) => {
-  const date = new Date(dateString);
-  return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
-};
-
 const getInitials = (name: string) => {
-  if (!name) return '?';
+  if (!name) {
+    return '?';
+  }
   const [first, second] = name.trim().split(' ');
   const firstInitial = first?.charAt(0)?.toUpperCase() ?? '';
   const secondInitial = second?.charAt(0)?.toUpperCase() ?? '';
   return (firstInitial + secondInitial).slice(0, 2) || '?';
+};
+
+const formatTime = (dateString: string) => {
+  const date = new Date(dateString);
+  return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+};
+
+const formatDateLabel = (dateString: string) => {
+  const target = new Date(dateString);
+  const today = new Date();
+  const yesterday = new Date();
+  yesterday.setDate(today.getDate() - 1);
+  const isSameDay = (a: Date, b: Date) =>
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate();
+  if (isSameDay(target, today)) {
+    return 'Today';
+  }
+  if (isSameDay(target, yesterday)) {
+    return 'Yesterday';
+  }
+  return target.toLocaleDateString(undefined, {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+  });
+};
+
+const DateSeparator = ({ label }: { label: string }) => (
+  <View style={styles.dateSeparator}>
+    <View style={styles.dateSeparatorLine} />
+    <Text style={styles.dateSeparatorLabel}>{label}</Text>
+    <View style={styles.dateSeparatorLine} />
+  </View>
+);
+
+const TypingIndicator = ({ status }: { status: ThreadTypingStatus }) => {
+  const label = status.userName || status.userHandle || 'Someone';
+  return (
+    <View style={styles.typingIndicator}>
+      <View style={styles.typingDots}>
+        <View style={styles.typingDot} />
+        <View style={styles.typingDot} />
+        <View style={styles.typingDot} />
+      </View>
+      <Text style={styles.typingText}>{`${label} is typing…`}</Text>
+    </View>
+  );
 };
 
 const styles = StyleSheet.create({
@@ -262,9 +529,12 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: theme.spacing.md,
-    paddingTop: theme.spacing.xl,
-    paddingBottom: theme.spacing.lg,
+    paddingTop: theme.spacing.lg,
+    paddingBottom: theme.spacing.xl * 2,
     gap: theme.spacing.xs,
+  },
+  listFooter: {
+    height: theme.spacing.lg,
   },
   composer: {
     flexDirection: 'row',
@@ -284,11 +554,13 @@ const styles = StyleSheet.create({
     flex: 1,
     borderWidth: 1,
     borderColor: theme.palette.platinum,
-    borderRadius: theme.radii.md,
+    borderRadius: theme.radii.lg,
     paddingHorizontal: theme.spacing.md,
-    paddingVertical: 10,
+    paddingVertical: 12,
     fontSize: 16,
     backgroundColor: theme.palette.pearl,
+    maxHeight: 120,
+    textAlignVertical: 'top',
   },
   sendButton: {
     paddingHorizontal: theme.spacing.md,
@@ -303,6 +575,10 @@ const styles = StyleSheet.create({
   },
   sendButtonDisabled: {
     opacity: 0.6,
+  },
+  headerLink: {
+    color: '#2563EB',
+    fontWeight: '600',
   },
   bubbleRow: {
     flexDirection: 'row',
@@ -323,7 +599,7 @@ const styles = StyleSheet.create({
   },
   messageBubble: {
     maxWidth: '78%',
-    borderRadius: 20,
+    borderRadius: theme.radii.lg,
     paddingHorizontal: theme.spacing.md,
     paddingVertical: theme.spacing.sm,
     shadowColor: '#000',
@@ -334,11 +610,13 @@ const styles = StyleSheet.create({
   },
   bubbleOwn: {
     backgroundColor: theme.colors.primary,
-    borderBottomRightRadius: 6,
+    borderBottomRightRadius: theme.radii.sm,
   },
   bubbleOther: {
     backgroundColor: '#fff',
-    borderBottomLeftRadius: 6,
+    borderBottomLeftRadius: theme.radii.sm,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: theme.palette.platinum,
   },
   messageText: {
     fontSize: 16,
@@ -355,8 +633,16 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     color: theme.palette.graphite,
   },
-  timestamp: {
+  bubbleMeta: {
     marginTop: 6,
+  },
+  bubbleMetaOwn: {
+    alignItems: 'flex-end',
+  },
+  bubbleMetaOther: {
+    alignItems: 'flex-start',
+  },
+  timestamp: {
     fontSize: 12,
   },
   timestampOwn: {
@@ -379,6 +665,11 @@ const styles = StyleSheet.create({
   avatarHidden: {
     opacity: 0,
   },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 16,
+  },
   avatarLabel: {
     fontSize: 12,
     fontWeight: '600',
@@ -392,5 +683,43 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  dateSeparator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
+    marginVertical: theme.spacing.md,
+    paddingHorizontal: theme.spacing.md,
+  },
+  dateSeparatorLine: {
+    flex: 1,
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: theme.palette.platinum,
+  },
+  dateSeparatorLabel: {
+    ...theme.typography.caption,
+    color: theme.palette.graphite,
+  },
+  typingIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.lg,
+    paddingBottom: theme.spacing.xs,
+  },
+  typingDots: {
+    flexDirection: 'row',
+    gap: 4,
+  },
+  typingDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: theme.palette.graphite,
+    opacity: 0.4,
+  },
+  typingText: {
+    ...theme.typography.caption,
+    color: theme.palette.graphite,
   },
 });

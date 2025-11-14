@@ -1,7 +1,7 @@
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
+import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -217,100 +217,106 @@ export function MessagesScreen() {
       <SafeAreaView style={styles.safeArea}>
         <StatusBar style="light" />
         <MetalPanel glow>
-        <Text style={styles.heroTitle}>Messages</Text>
-        <Text style={styles.heroSubtitle}>
-          Inspired by Jobs’ obsession for detail, tempered by Linus’ clarity, aiming for
-          Musk-scale reach.
-        </Text>
-        <View style={styles.actionRow}>
-          <MetalButton
-            title={markingRead ? 'Marking…' : 'Mark as Read'}
-            onPress={handleMarkRead}
-            disabled={markingRead}
-          />
-          <MetalButton
-            title={leaving ? 'Leaving…' : 'Leave Thread'}
-            onPress={handleLeaveThread}
-            disabled={leaving}
-          />
-        </View>
-        {typingStatus?.typing && (
-          <Text style={styles.typingText}>
-            {typingStatus.userName ??
-              (typingStatus.userHandle ? `@${typingStatus.userHandle}` : 'Someone')}{' '}
-            is typing…
+          <Text style={styles.heroTitle}>Messages</Text>
+          <Text style={styles.heroSubtitle}>
+            Inspired by Jobs’ obsession for detail, tempered by Linus’ clarity, aiming for
+            Musk-scale reach.
           </Text>
-        )}
-      </MetalPanel>
+          <View style={styles.actionRow}>
+            <MetalButton
+              title={markingRead ? 'Marking…' : 'Mark as Read'}
+              onPress={handleMarkRead}
+              disabled={markingRead}
+            />
+            <MetalButton
+              title={leaving ? 'Leaving…' : 'Leave Thread'}
+              onPress={handleLeaveThread}
+              disabled={leaving}
+            />
+          </View>
+          {typingStatus?.typing && (
+            <Text style={styles.typingText}>
+              {typingStatus.userName ??
+                (typingStatus.userHandle
+                  ? `@${typingStatus.userHandle}`
+                  : 'Someone')}{' '}
+              is typing…
+            </Text>
+          )}
+        </MetalPanel>
 
         <FlatList
-        style={styles.list}
-        contentContainerStyle={styles.listContent}
-        data={messages}
-        inverted
-        keyExtractor={keyExtractor}
-        renderItem={({ item }) => <MessageBubble message={item} />}
-        onEndReachedThreshold={0.2}
-        onEndReached={() => {
-          if (hasMore && !loading && !refreshing) {
-            loadMore();
+          style={styles.list}
+          contentContainerStyle={styles.listContent}
+          data={messages}
+          inverted
+          keyExtractor={keyExtractor}
+          renderItem={({ item }) => <MessageBubble message={item} />}
+          onEndReachedThreshold={0.2}
+          onEndReached={() => {
+            if (hasMore && !loading && !refreshing) {
+              loadMore();
+            }
+          }}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={refresh}
+              tintColor="#fff"
+            />
           }
-        }}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor="#fff" />
-        }
-        ListEmptyComponent={
-          !loading ? (
-            <View style={styles.empty}>
-              <Text style={styles.emptyTitle}>No transmissions yet</Text>
-              <Text style={styles.emptyCopy}>
-                Start a conversation that feels crafted—not spammed.
-              </Text>
-            </View>
-          ) : null
-        }
-        ListFooterComponent={
-          loading ? (
-            <View style={styles.loader}>
-              <ActivityIndicator color={theme.palette.platinum} />
-            </View>
-          ) : null
-        }
-      />
+          ListEmptyComponent={
+            !loading ? (
+              <View style={styles.empty}>
+                <Text style={styles.emptyTitle}>No transmissions yet</Text>
+                <Text style={styles.emptyCopy}>
+                  Start a conversation that feels crafted—not spammed.
+                </Text>
+              </View>
+            ) : null
+          }
+          ListFooterComponent={
+            loading ? (
+              <View style={styles.loader}>
+                <ActivityIndicator color={theme.palette.platinum} />
+              </View>
+            ) : null
+          }
+        />
 
         <View style={styles.composer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Send a signal…"
-          placeholderTextColor={theme.palette.graphite}
-          value={composer.body}
-          onChangeText={(text) => {
-            updateComposer(text);
-            if (!composerTypingActiveRef.current) {
-              composerTypingActiveRef.current = true;
-              notifyTyping(true);
-            }
-            if (composerTimeoutRef.current) {
-              clearTimeout(composerTimeoutRef.current);
-            }
-            composerTimeoutRef.current = setTimeout(() => {
-              composerTypingActiveRef.current = false;
-              notifyTyping(false);
-            }, 5000);
-          }}
-          multiline
-        />
-        <MetalButton
-          title={composer.sending || typingSignal ? 'Sending…' : 'Send'}
-          onPress={async () => {
-            setTypingSignal(true);
-            await notifyTyping(true);
-            await sendMessage();
-            await notifyTyping(false);
-            setTypingSignal(false);
-          }}
-          disabled={composer.sending}
-        />
+          <TextInput
+            style={styles.input}
+            placeholder="Send a signal…"
+            placeholderTextColor={theme.palette.graphite}
+            value={composer.body}
+            onChangeText={(text) => {
+              updateComposer(text);
+              if (!composerTypingActiveRef.current) {
+                composerTypingActiveRef.current = true;
+                notifyTyping(true);
+              }
+              if (composerTimeoutRef.current) {
+                clearTimeout(composerTimeoutRef.current);
+              }
+              composerTimeoutRef.current = setTimeout(() => {
+                composerTypingActiveRef.current = false;
+                notifyTyping(false);
+              }, 5000);
+            }}
+            multiline
+          />
+          <MetalButton
+            title={composer.sending || typingSignal ? 'Sending…' : 'Send'}
+            onPress={async () => {
+              setTypingSignal(true);
+              await notifyTyping(true);
+              await sendMessage();
+              await notifyTyping(false);
+              setTypingSignal(false);
+            }}
+            disabled={composer.sending}
+          />
         </View>
       </SafeAreaView>
     </LinearGradient>

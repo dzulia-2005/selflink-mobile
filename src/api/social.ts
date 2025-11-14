@@ -1,7 +1,8 @@
 import { isAxiosError } from 'axios';
 
-import { apiClient } from './client';
 import type { Comment, Post, TimelineEntry } from '@schemas/social';
+
+import { apiClient } from './client';
 
 type QueryParams = Record<string, string | number | undefined>;
 
@@ -131,7 +132,10 @@ export async function addComment(postId: string, text: string): Promise<Comment>
   }
 }
 
-export async function getPostComments(postId: string | number, page?: number): Promise<Comment[]> {
+export async function getPostComments(
+  postId: string | number,
+  page?: number,
+): Promise<Comment[]> {
   const url = buildQuery('/comments/', {
     post: String(postId),
     page,

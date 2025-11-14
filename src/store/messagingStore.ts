@@ -3,11 +3,20 @@ import { create } from 'zustand';
 import * as messagingApi from '@api/messaging';
 import type { Message, Thread } from '@schemas/messaging';
 
+export type ThreadTypingStatus = {
+  typing: boolean;
+  userId?: string;
+  userName?: string | null;
+  userHandle?: string | null;
+};
+
 type MessagesByThread = Record<string, Message[]>;
 type UnreadMap = Record<string, number>;
 
 const sortThreadsByUpdatedAt = (threads: Thread[]) =>
-  [...threads].sort((a, b) => new Date(b.updated_at).valueOf() - new Date(a.updated_at).valueOf());
+  [...threads].sort(
+    (a, b) => new Date(b.updated_at).valueOf() - new Date(a.updated_at).valueOf(),
+  );
 
 const sortMessagesChronologically = (messages: Message[]) =>
   [...messages].sort(
@@ -19,7 +28,10 @@ const mergeMessagesChronologically = (
   incoming: Message[],
 ): { merged: Message[]; changed: boolean } => {
   if (!existing || existing.length === 0) {
-    return { merged: sortMessagesChronologically(incoming), changed: incoming.length > 0 };
+    return {
+      merged: sortMessagesChronologically(incoming),
+      changed: incoming.length > 0,
+    };
   }
   if (incoming.length === 0) {
     return { merged: existing, changed: false };
@@ -79,6 +91,13 @@ const normalizeThreadId = (threadId: string | number | null | undefined) => {
 const computeTotalUnread = (unreadByThread: UnreadMap) =>
   Object.values(unreadByThread).reduce((sum, value) => sum + Math.max(0, value), 0);
 
+const normalizeId = (value: unknown) => {
+  if (value === null || value === undefined) {
+    return null;
+  }
+  return String(value);
+};
+
 const sessionOwnsThread = (thread: Thread, sessionUserId: number | null) => {
   if (!sessionUserId) {
     return true;
@@ -86,14 +105,17 @@ const sessionOwnsThread = (thread: Thread, sessionUserId: number | null) => {
   if (!Array.isArray(thread.members)) {
     return true;
   }
+  const sessionKey = normalizeId(sessionUserId);
+  if (!sessionKey) {
+    return true;
+  }
   return thread.members.some((member) => {
-    const memberId =
-      typeof member?.user?.id === 'number'
-        ? member.user.id
-        : typeof (member as any)?.user_id === 'number'
-          ? (member as any)?.user_id
-          : undefined;
-    return memberId != null && String(memberId) === String(sessionUserId);
+    const memberCandidate =
+      (member as any)?.user?.id ??
+      (member as any)?.user_id ??
+      (member?.user ? (member.user as any).id : undefined);
+    const memberId = normalizeId(memberCandidate);
+    return memberId != null && memberId === sessionKey;
   });
 };
 
@@ -109,7 +131,9 @@ const buildThreadSnapshot = (
   const normalized = scopedThreads.map((thread) => {
     const key = String(thread.id);
     const serverUnread =
-      typeof thread.unread_count === 'number' ? Math.max(0, thread.unread_count) : undefined;
+      typeof thread.unread_count === 'number'
+        ? Math.max(0, thread.unread_count)
+        : undefined;
     const localUnread = fallbackUnread?.[key];
     if (serverUnread !== undefined || localUnread === undefined) {
       return serverUnread !== undefined && serverUnread !== (thread.unread_count ?? 0)
@@ -169,6 +193,7 @@ const initialState = {
   totalUnread: 0,
   activeThreadId: null as string | null,
   sessionUserId: null as number | null,
+  typingByThread: {} as Record<string, ThreadTypingStatus | undefined>,
   isLoadingThreads: false,
   isLoadingMessages: false,
   error: undefined as string | undefined,
@@ -191,6 +216,7 @@ export type MessagingState = typeof initialState & {
   setActiveThread: (threadId: string | null) => void;
   setSessionUserId: (userId: number | null) => void;
   recomputeTotalUnread: () => void;
+  setTypingStatus: (threadId: string, status: ThreadTypingStatus | null) => void;
   reset: () => void;
 };
 
@@ -218,7 +244,8 @@ export const useMessagingStore = create<MessagingState>((set, get) => ({
     const messagesByThread = omitKey(state.messagesByThread, threadKey);
     const unreadByThread = omitKey(state.unreadByThread, threadKey);
     const totalUnread = computeTotalUnread(unreadByThread);
-    const activeThreadId = state.activeThreadId === threadKey ? null : state.activeThreadId;
+    const activeThreadId =
+      state.activeThreadId === threadKey ? null : state.activeThreadId;
     set({
       threads,
       messagesByThread,
@@ -253,7 +280,9 @@ export const useMessagingStore = create<MessagingState>((set, get) => ({
       }
       return;
     }
-    const nextMessages = existingMessages.filter((message) => String(message.id) !== messageKey);
+    const nextMessages = existingMessages.filter(
+      (message) => String(message.id) !== messageKey,
+    );
     if (nextMessages.length === existingMessages.length) {
       return;
     }
@@ -316,7 +345,9 @@ export const useMessagingStore = create<MessagingState>((set, get) => ({
     }
     const key = String(thread.id);
     const serverUnread =
-      typeof thread.unread_count === 'number' ? Math.max(0, thread.unread_count) : undefined;
+      typeof thread.unread_count === 'number'
+        ? Math.max(0, thread.unread_count)
+        : undefined;
     const fallbackUnread = state.unreadByThread[key] ?? 0;
     const resolvedUnread = serverUnread ?? fallbackUnread;
     const normalizedThread =
@@ -346,7 +377,11 @@ export const useMessagingStore = create<MessagingState>((set, get) => ({
     try {
       const messages = await messagingApi.getThreadMessages(threadId);
       const state = get();
-      const messagesByThread = mergeMessagesForThread(state.messagesByThread, key, messages);
+      const messagesByThread = mergeMessagesForThread(
+        state.messagesByThread,
+        key,
+        messages,
+      );
       if (messagesByThread) {
         set({ messagesByThread });
       }
@@ -362,7 +397,11 @@ export const useMessagingStore = create<MessagingState>((set, get) => ({
       return;
     }
     const state = get();
-    const messagesByThread = mergeMessagesForThread(state.messagesByThread, key, messages);
+    const messagesByThread = mergeMessagesForThread(
+      state.messagesByThread,
+      key,
+      messages,
+    );
     if (messagesByThread) {
       set({ messagesByThread });
     }
@@ -395,12 +434,6 @@ export const useMessagingStore = create<MessagingState>((set, get) => ({
             id: String(message.id),
             thread: key,
           };
-    if (typeof __DEV__ !== 'undefined' && __DEV__) {
-      console.debug('messagingStore: appendMessage', {
-        threadId: key,
-        messageId: normalizedMessage.id,
-      });
-    }
     const state = get();
     const threadFromState = state.threads.find((thread) => String(thread.id) === key);
     const isActiveThread = state.activeThreadId === key;
@@ -418,8 +451,12 @@ export const useMessagingStore = create<MessagingState>((set, get) => ({
     );
     let messagesByThread = state.messagesByThread;
     let insertedNew = false;
+    let logged = false;
     if (duplicateIndex === -1) {
-      const nextMessages = sortMessagesChronologically([...existingMessages, normalizedMessage]);
+      const nextMessages = sortMessagesChronologically([
+        ...existingMessages,
+        normalizedMessage,
+      ]);
       messagesByThread = {
         ...messagesByThread,
         [key]: nextMessages,
@@ -440,7 +477,23 @@ export const useMessagingStore = create<MessagingState>((set, get) => ({
           ...messagesByThread,
           [key]: nextMessages,
         };
+        logged = true;
+      } else {
+        if (typeof __DEV__ !== 'undefined' && __DEV__) {
+          console.debug('messagingStore: appendMessage skip duplicate', {
+            threadId: key,
+            messageId: normalizedMessage.id,
+          });
+        }
+        return;
       }
+    }
+
+    if ((insertedNew || logged) && typeof __DEV__ !== 'undefined' && __DEV__) {
+      console.debug('messagingStore: appendMessage', {
+        threadId: key,
+        messageId: normalizedMessage.id,
+      });
     }
 
     const sessionUserId = state.sessionUserId;
@@ -511,7 +564,10 @@ export const useMessagingStore = create<MessagingState>((set, get) => ({
       return;
     }
     if (typeof __DEV__ !== 'undefined' && __DEV__) {
-      console.debug('messagingStore: markThreadRead', { threadId: key, sync: options?.sync !== false });
+      console.debug('messagingStore: markThreadRead', {
+        threadId: key,
+        sync: options?.sync !== false,
+      });
     }
     const state = get();
     if ((state.unreadByThread[key] ?? 0) !== 0) {
@@ -571,6 +627,25 @@ export const useMessagingStore = create<MessagingState>((set, get) => ({
     set((state) => ({
       totalUnread: computeTotalUnread(state.unreadByThread),
     }));
+  },
+  setTypingStatus(threadId, status) {
+    const key = normalizeThreadId(threadId);
+    if (!key) {
+      return;
+    }
+    set((state) => {
+      const current = state.typingByThread[key];
+      if (!status || !status.typing) {
+        if (!current) {
+          return state;
+        }
+        const nextTyping = { ...state.typingByThread };
+        delete nextTyping[key];
+        return { ...state, typingByThread: nextTyping };
+      }
+      const nextTyping = { ...state.typingByThread, [key]: status };
+      return { ...state, typingByThread: nextTyping };
+    });
   },
   reset() {
     set({ ...initialState });

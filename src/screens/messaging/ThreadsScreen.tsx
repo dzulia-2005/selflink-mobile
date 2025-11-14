@@ -1,7 +1,8 @@
+import { useNavigation } from '@react-navigation/native';
 import { useCallback, useEffect, useState } from 'react';
 import {
-  Alert,
   ActivityIndicator,
+  Alert,
   FlatList,
   Pressable,
   RefreshControl,
@@ -10,17 +11,16 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 
 import { navigateToUserProfile } from '@navigation/helpers';
+import type { Thread } from '@schemas/messaging';
+import { useAuthStore } from '@store/authStore';
 import {
   selectIsLoadingThreads,
   selectMessagingError,
   selectThreads,
   useMessagingStore,
 } from '@store/messagingStore';
-import { useAuthStore } from '@store/authStore';
-import type { Thread } from '@schemas/messaging';
 import { theme } from '@theme';
 
 export function ThreadsScreen() {
@@ -49,25 +49,29 @@ export function ThreadsScreen() {
       if (pendingThreadId) {
         return;
       }
-      Alert.alert('Delete conversation?', 'This removes the conversation from your inbox.', [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete conversation',
-          style: 'destructive',
-          onPress: () => {
-            const key = String(thread.id);
-            setPendingThreadId(key);
-            removeThread(thread.id)
-              .catch((error) => {
-                console.warn('ThreadsScreen: delete thread failed', error);
-                Alert.alert('Unable to delete conversation', 'Please try again.');
-              })
-              .finally(() => {
-                setPendingThreadId((current) => (current === key ? null : current));
-              });
+      Alert.alert(
+        'Delete conversation?',
+        'This removes the conversation from your inbox.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Delete conversation',
+            style: 'destructive',
+            onPress: () => {
+              const key = String(thread.id);
+              setPendingThreadId(key);
+              removeThread(thread.id)
+                .catch((err) => {
+                  console.warn('ThreadsScreen: delete thread failed', err);
+                  Alert.alert('Unable to delete conversation', 'Please try again.');
+                })
+                .finally(() => {
+                  setPendingThreadId((current) => (current === key ? null : current));
+                });
+            },
           },
-        },
-      ]);
+        ],
+      );
     },
     [pendingThreadId, removeThread],
   );
@@ -88,7 +92,12 @@ export function ThreadsScreen() {
         <View style={styles.cardWrapper}>
           <Pressable
             style={styles.threadCard}
-            onPress={() => navigation.navigate('Chat', { threadId: item.id, otherUserId: otherUser?.id })}
+            onPress={() =>
+              navigation.navigate('Chat', {
+                threadId: item.id,
+                otherUserId: otherUser?.id,
+              })
+            }
           >
             <View style={styles.cardMainRow}>
               <View style={[styles.avatar, isUnread && styles.avatarUnread]}>
@@ -115,14 +124,19 @@ export function ThreadsScreen() {
               </View>
               {isUnread ? (
                 <View style={styles.unreadPill}>
-                  <Text style={styles.unreadText}>{Math.min(item.unread_count ?? 0, 99)}</Text>
+                  <Text style={styles.unreadText}>
+                    {Math.min(item.unread_count ?? 0, 99)}
+                  </Text>
                 </View>
               ) : null}
             </View>
           </Pressable>
           <View style={styles.cardFooter}>
             {otherUser ? (
-              <TouchableOpacity style={styles.profileLink} onPress={() => openProfile(otherUser.id)}>
+              <TouchableOpacity
+                style={styles.profileLink}
+                onPress={() => openProfile(otherUser.id)}
+              >
                 <Text style={styles.profileLinkText}>View profile</Text>
               </TouchableOpacity>
             ) : (
@@ -138,7 +152,9 @@ export function ThreadsScreen() {
                   pendingThreadId === String(item.id) && styles.deleteLinkDisabledText,
                 ]}
               >
-                {pendingThreadId === String(item.id) ? 'Deleting…' : 'Delete conversation'}
+                {pendingThreadId === String(item.id)
+                  ? 'Deleting…'
+                  : 'Delete conversation'}
               </Text>
             </TouchableOpacity>
           </View>
@@ -149,6 +165,7 @@ export function ThreadsScreen() {
   );
 
   const keyExtractor = useCallback((item: Thread) => String(item.id), []);
+  const renderSeparator = useCallback(() => <View style={styles.separator} />, []);
 
   if (isLoading && threads.length === 0) {
     return (
@@ -172,7 +189,7 @@ export function ThreadsScreen() {
       data={threads}
       keyExtractor={keyExtractor}
       renderItem={renderThread}
-      ItemSeparatorComponent={() => <View style={styles.separator} />}
+      ItemSeparatorComponent={renderSeparator}
       contentContainerStyle={styles.listContent}
       refreshControl={
         <RefreshControl
@@ -194,7 +211,9 @@ export function ThreadsScreen() {
 }
 
 const getInitials = (value: string) => {
-  if (!value) return '?';
+  if (!value) {
+    return '?';
+  }
   const [first, second] = value.trim().split(/\s+/);
   const firstInitial = first?.charAt(0)?.toUpperCase() ?? '';
   const secondInitial = second?.charAt(0)?.toUpperCase() ?? '';

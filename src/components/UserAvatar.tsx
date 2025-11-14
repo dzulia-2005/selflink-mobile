@@ -18,11 +18,18 @@ export function UserAvatar({ uri, size = 48, label }: Props) {
     : '?';
 
   if (uri) {
-    return <Image source={{ uri }} style={[styles.avatar, { width: size, height: size, borderRadius: size / 2 }]} />;
+    return (
+      <Image
+        source={{ uri }}
+        style={[styles.avatar, { width: size, height: size, borderRadius: size / 2 }]}
+      />
+    );
   }
 
   return (
-    <View style={[styles.placeholder, { width: size, height: size, borderRadius: size / 2 }]}>
+    <View
+      style={[styles.placeholder, { width: size, height: size, borderRadius: size / 2 }]}
+    >
       <Text style={styles.placeholderLabel}>{initials}</Text>
     </View>
   );

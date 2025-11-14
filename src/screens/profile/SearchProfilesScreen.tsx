@@ -1,4 +1,5 @@
-import { useCallback, useState } from 'react';
+import { useNavigation } from '@react-navigation/native';
+import { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Button,
@@ -9,7 +10,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 
 import { followUser, searchUsers, unfollowUser, UserSummary } from '@api/users';
 import { UserAvatar } from '@components/UserAvatar';
@@ -41,6 +41,89 @@ export function SearchProfilesScreen() {
     }
   }, [query]);
 
+  const handleFollowToggle = useCallback(
+    async (user: UserSummary) => {
+      if (user.id === currentUserId) {
+        return;
+      }
+      const next = !user.is_following;
+      setResults((prev) =>
+        prev.map((candidate) =>
+          candidate.id === user.id ? { ...candidate, is_following: next } : candidate,
+        ),
+      );
+      try {
+        if (next) {
+          await followUser(user.id);
+        } else {
+          await unfollowUser(user.id);
+        }
+      } catch (err) {
+        console.warn('SearchProfiles: follow toggle failed', err);
+        setResults((prev) =>
+          prev.map((candidate) =>
+            candidate.id === user.id ? { ...candidate, is_following: !next } : candidate,
+          ),
+        );
+      }
+    },
+    [currentUserId],
+  );
+
+  const renderResult = useCallback(
+    ({ item }: { item: UserSummary }) => (
+      <View style={styles.resultRow}>
+        <TouchableOpacity
+          style={styles.userInfo}
+          onPress={() => navigation.navigate('UserProfile', { userId: item.id })}
+        >
+          <UserAvatar uri={item.photo} label={item.name || item.handle} size={40} />
+          <View style={styles.resultMeta}>
+            <Text style={styles.resultName}>
+              {item.name || item.handle || item.username}
+            </Text>
+            <Text style={styles.resultHandle}>@{item.handle || item.username}</Text>
+            <Text style={styles.resultCounts}>
+              Followers: {item.followers_count ?? 0} • Following:{' '}
+              {item.following_count ?? 0}
+            </Text>
+          </View>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[
+            styles.followButton,
+            item.id === currentUserId && styles.followButtonDisabled,
+          ]}
+          onPress={() => handleFollowToggle(item)}
+        >
+          <Text style={styles.followButtonText}>
+            {item.id === currentUserId
+              ? 'You'
+              : item.is_following
+                ? 'Following'
+                : 'Follow'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    ),
+    [currentUserId, handleFollowToggle, navigation],
+  );
+
+  const keyExtractor = useCallback((item: UserSummary) => String(item.id), []);
+
+  const renderSeparator = useCallback(() => <View style={styles.separator} />, []);
+
+  const renderEmpty = useMemo(() => {
+    if (isLoading || results.length > 0) {
+      return null;
+    }
+    return (
+      <View style={styles.empty}>
+        <Text>No results</Text>
+      </View>
+    );
+  }, [isLoading, results.length]);
+
   return (
     <View style={styles.container}>
       <View style={styles.formRow}>
@@ -57,71 +140,10 @@ export function SearchProfilesScreen() {
       {error ? <Text style={styles.error}>{error}</Text> : null}
       <FlatList
         data={results}
-        keyExtractor={(item) => String(item.id)}
-        renderItem={({ item }) => (
-          <View style={styles.resultRow}>
-            <TouchableOpacity
-              style={styles.userInfo}
-              onPress={() => navigation.navigate('UserProfile', { userId: item.id })}
-            >
-              <UserAvatar uri={item.photo} label={item.name || item.handle} size={40} />
-              <View style={styles.resultMeta}>
-                <Text style={styles.resultName}>{item.name || item.handle || item.username}</Text>
-                <Text style={styles.resultHandle}>@{item.handle || item.username}</Text>
-                <Text style={styles.resultCounts}>
-                  Followers: {item.followers_count ?? 0} • Following: {item.following_count ?? 0}
-                </Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.followButton,
-                item.id === currentUserId && styles.followButtonDisabled,
-              ]}
-              onPress={async () => {
-                if (item.id === currentUserId) {
-                  return;
-                }
-                const next = !item.is_following;
-                setResults((prev) =>
-                  prev.map((user) =>
-                    user.id === item.id ? { ...user, is_following: next } : user,
-                  ),
-                );
-                try {
-                  if (next) {
-                    await followUser(item.id);
-                  } else {
-                    await unfollowUser(item.id);
-                  }
-                } catch (err) {
-                  console.warn('SearchProfiles: follow toggle failed', err);
-                  setResults((prev) =>
-                    prev.map((user) =>
-                      user.id === item.id ? { ...user, is_following: !next } : user,
-                    ),
-                  );
-                }
-              }}
-            >
-              <Text style={styles.followButtonText}>
-                {item.id === currentUserId
-                  ? 'You'
-                  : item.is_following
-                    ? 'Following'
-                    : 'Follow'}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        )}
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
-        ListEmptyComponent={
-          !isLoading && results.length === 0 ? (
-            <View style={styles.empty}> 
-              <Text>No results</Text>
-            </View>
-          ) : null
-        }
+        keyExtractor={keyExtractor}
+        renderItem={renderResult}
+        ItemSeparatorComponent={renderSeparator}
+        ListEmptyComponent={renderEmpty}
       />
     </View>
   );

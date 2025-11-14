@@ -36,13 +36,16 @@ export function CommunityScreen() {
       <UserCard
         user={item}
         onToggleFollow={toggleFollow}
-        pending={Boolean(pendingFollows[item.id])}
+        pending={Boolean(pendingFollows[String(item.id)])}
       />
     ),
     [pendingFollows, toggleFollow],
   );
 
-  const keyExtractor = useCallback((item: { id: number }) => String(item.id), []);
+  const keyExtractor = useCallback(
+    (item: { id: string | number }) => String(item.id),
+    [],
+  );
 
   const ListEmpty = useCallback(() => {
     if (loading) {

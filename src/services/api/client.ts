@@ -1,6 +1,6 @@
 import { env } from '@config/env';
-import { buildUrl } from '@utils/url';
 import { parseJsonPreservingLargeInts } from '@utils/json';
+import { buildUrl } from '@utils/url';
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 

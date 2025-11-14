@@ -1,11 +1,11 @@
+import { useNavigation } from '@react-navigation/native';
 import { memo, useCallback, useState } from 'react';
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 
 import { followUser, unfollowUser } from '@api/users';
-import { useFeedStore } from '@store/feedStore';
-import { useAuthStore } from '@store/authStore';
 import type { Post } from '@schemas/social';
+import { useAuthStore } from '@store/authStore';
+import { useFeedStore } from '@store/feedStore';
 
 import { UserAvatar } from './UserAvatar';
 
@@ -87,7 +87,9 @@ function FeedPostCardComponent({ post }: Props) {
         <TouchableOpacity style={styles.meta} onPress={handleOpenProfile}>
           <Text style={styles.author}>{post.author.name}</Text>
           <Text style={styles.handle}>@{post.author.handle}</Text>
-          <Text style={styles.timestamp}>{new Date(post.created_at).toLocaleString()}</Text>
+          <Text style={styles.timestamp}>
+            {new Date(post.created_at).toLocaleString()}
+          </Text>
         </TouchableOpacity>
         {post.author.id !== currentUserId && (
           <TouchableOpacity

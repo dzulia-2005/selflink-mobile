@@ -1,3 +1,4 @@
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -8,13 +9,12 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 
-import { followUser, getUserProfile, unfollowUser } from '@api/users';
 import { getOrCreateDirectThread } from '@api/messaging';
+import { followUser, getUserProfile, unfollowUser } from '@api/users';
 import type { UserSummary } from '@api/users';
-import { useAuthStore } from '@store/authStore';
 import { UserAvatar } from '@components/UserAvatar';
+import { useAuthStore } from '@store/authStore';
 import { useMessagingStore } from '@store/messagingStore';
 
 interface RouteParams {
@@ -41,15 +41,21 @@ export function UserProfileScreen() {
     setError(undefined);
     getUserProfile(userId)
       .then((data) => {
-        if (!isMounted) return;
+        if (!isMounted) {
+          return;
+        }
         setProfile(data);
       })
       .catch((err) => {
-        if (!isMounted) return;
+        if (!isMounted) {
+          return;
+        }
         setError(err instanceof Error ? err.message : 'Unable to load user.');
       })
       .finally(() => {
-        if (isMounted) setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       });
     return () => {
       isMounted = false;
@@ -59,7 +65,9 @@ export function UserProfileScreen() {
   const isOwnProfile = profile?.id === currentUserId;
 
   const handleFollowToggle = useCallback(async () => {
-    if (!profile || isOwnProfile) return;
+    if (!profile || isOwnProfile) {
+      return;
+    }
     const nextState = !profile.is_following;
     setFollowPending(true);
     setProfile((prev) =>
@@ -113,7 +121,9 @@ export function UserProfileScreen() {
   );
 
   const handleMessage = useCallback(async () => {
-    if (!profile || isOwnProfile) return;
+    if (!profile || isOwnProfile) {
+      return;
+    }
     setMessagePending(true);
     try {
       const thread = await getOrCreateDirectThread(profile.id);
@@ -146,9 +156,15 @@ export function UserProfileScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <UserAvatar uri={profile.photo} label={profile.name || profile.handle} size={72} />
+        <UserAvatar
+          uri={profile.photo}
+          label={profile.name || profile.handle}
+          size={72}
+        />
         <View style={styles.headerText}>
-          <Text style={styles.name}>{profile.name || profile.handle || profile.username}</Text>
+          <Text style={styles.name}>
+            {profile.name || profile.handle || profile.username}
+          </Text>
           <Text style={styles.handle}>@{profile.handle || profile.username}</Text>
         </View>
       </View>

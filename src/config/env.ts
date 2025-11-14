@@ -15,7 +15,8 @@ const resolveRealtimeUrl = () => {
   try {
     const url = new URL(backendUrl);
     const defaultPort =
-      url.port || (url.protocol === 'https:' ? '443' : url.protocol === 'http:' ? '80' : '');
+      url.port ||
+      (url.protocol === 'https:' ? '443' : url.protocol === 'http:' ? '80' : '');
     const realtimePort = defaultPort === '8000' ? '8001' : defaultPort;
     url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
     url.port = realtimePort;

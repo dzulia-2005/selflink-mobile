@@ -1,6 +1,6 @@
+import { useNavigation } from '@react-navigation/native';
 import { useState } from 'react';
 import { Alert, Button, StyleSheet, TextInput, View } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 
 import { createPost } from '@api/social';
 
@@ -36,7 +36,11 @@ export function CreatePostScreen() {
         onChangeText={setContent}
         multiline
       />
-      <Button title={isSubmitting ? 'Posting…' : 'Post'} onPress={handleSubmit} disabled={isSubmitting} />
+      <Button
+        title={isSubmitting ? 'Posting…' : 'Post'}
+        onPress={handleSubmit}
+        disabled={isSubmitting}
+      />
     </View>
   );
 }

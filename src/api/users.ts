@@ -1,5 +1,11 @@
+import {
+  PersonalMapInput,
+  PersonalMapProfile,
+  ProfileUpdateInput,
+  User,
+} from '@schemas/user';
+
 import { apiClient } from './client';
-import { PersonalMapInput, PersonalMapProfile, ProfileUpdateInput, User } from '@schemas/user';
 
 export interface UserSummary {
   id: number;
@@ -76,7 +82,9 @@ export async function getPersonalMapProfile(): Promise<PersonalMapProfile> {
   return data;
 }
 
-export async function savePersonalMapProfile(payload: PersonalMapPayload): Promise<PersonalMapProfile> {
+export async function savePersonalMapProfile(
+  payload: PersonalMapPayload,
+): Promise<PersonalMapProfile> {
   const { avatarFile, ...rest } = payload;
   if (avatarFile) {
     const formData = new FormData();

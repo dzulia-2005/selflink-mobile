@@ -3,7 +3,11 @@ import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 import { env } from '@config/env';
 import { parseJsonPreservingLargeInts } from '@utils/json';
 
-const rawBaseUrl = (process.env.EXPO_PUBLIC_API_URL || env.backendUrl || 'http://localhost:8000').replace(/\/$/, '');
+const rawBaseUrl = (
+  process.env.EXPO_PUBLIC_API_URL ||
+  env.backendUrl ||
+  'http://localhost:8000'
+).replace(/\/$/, '');
 export const API_BASE_URL = `${rawBaseUrl}/api/v1`;
 
 type TokenProvider = () => string | null;
@@ -30,7 +34,7 @@ apiClient.defaults.transformResponse = [
       return null;
     }
     const contentType = headers?.['content-type'] ?? headers?.['Content-Type'] ?? '';
-    const looksJson = contentType.includes('application/json') || /^[\[{]/.test(trimmed);
+    const looksJson = contentType.includes('application/json') || /^[[{]/.test(trimmed);
     if (!looksJson) {
       return data;
     }

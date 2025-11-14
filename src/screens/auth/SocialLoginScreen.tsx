@@ -4,7 +4,9 @@ export function SocialLoginScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Social login</Text>
-      <Text style={styles.subtitle}>Connect Google, Facebook, or GitHub to continue. Coming soon.</Text>
+      <Text style={styles.subtitle}>
+        Connect Google, Facebook, or GitHub to continue. Coming soon.
+      </Text>
     </View>
   );
 }

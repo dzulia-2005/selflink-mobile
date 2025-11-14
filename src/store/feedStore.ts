@@ -60,7 +60,9 @@ export const useFeedStore = create<FeedState>((set, get) => ({
         nextUrl: response.nextUrl,
       });
     } catch (error) {
-      set({ error: error instanceof Error ? error.message : 'Unable to load more posts.' });
+      set({
+        error: error instanceof Error ? error.message : 'Unable to load more posts.',
+      });
     } finally {
       set({ isPaging: false });
     }

@@ -35,7 +35,7 @@ export function useUsersDirectory(options: Options = {}) {
   const [refreshing, setRefreshing] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-  const [pendingFollows, setPendingFollows] = useState<Record<number, boolean>>({});
+  const [pendingFollows, setPendingFollows] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search), 400);
@@ -112,22 +112,24 @@ export function useUsersDirectory(options: Options = {}) {
   }, [fetchPage, hasMore, loadingMore]);
 
   const toggleFollow = useCallback(
-    async (userId: number) => {
-      const target = users.find((user) => user.id === userId);
+    async (userId: number | string) => {
+      const userKey = String(userId);
+      const target = users.find((user) => String(user.id) === userKey);
       if (!target) {
         return;
       }
       const currentlyFollowing = Boolean(target.flags?.following);
-      setPendingFollows((prev) => ({ ...prev, [userId]: true }));
+      const numericId = Number(target.id ?? userId);
+      setPendingFollows((prev) => ({ ...prev, [userKey]: true }));
       try {
         if (currentlyFollowing) {
-          await unfollowUser(userId);
+          await unfollowUser(numericId);
         } else {
-          await followUser(userId);
+          await followUser(numericId);
         }
         setUsers((prev) =>
           prev.map((user) =>
-            user.id === userId
+            String(user.id) === userKey
               ? {
                   ...user,
                   flags: { ...user.flags, following: !currentlyFollowing },
@@ -138,7 +140,7 @@ export function useUsersDirectory(options: Options = {}) {
       } catch (error) {
         handleError(error, 'Action failed. Please try again.');
       } finally {
-        setPendingFollows((prev) => ({ ...prev, [userId]: false }));
+        setPendingFollows((prev) => ({ ...prev, [userKey]: false }));
       }
     },
     [handleError, users],

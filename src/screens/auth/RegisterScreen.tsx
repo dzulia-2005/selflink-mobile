@@ -1,3 +1,6 @@
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useCallback, useState } from 'react';
 import {
   Alert,
@@ -9,13 +12,10 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
+import type { AuthStackParamList } from '@navigation/types';
 import { useAuthStore } from '@store/authStore';
 import { theme } from '@theme';
-import type { AuthStackParamList } from '@navigation/types';
 
 type Navigation = NativeStackNavigationProp<AuthStackParamList, 'Register'>;
 
@@ -55,7 +55,9 @@ export function RegisterScreen() {
         <View style={styles.card}>
           <LinearGradient colors={theme.gradients.matrix} style={styles.cardAccent} />
           <Text style={styles.title}>Create your account</Text>
-          <Text style={styles.subtitle}>Define your handle and sync your personal matrix.</Text>
+          <Text style={styles.subtitle}>
+            Define your handle and sync your personal matrix.
+          </Text>
           <TextInput
             placeholder="Full name"
             placeholderTextColor={theme.text.muted}

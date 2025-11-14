@@ -1,3 +1,4 @@
+import { RouteProp, useRoute } from '@react-navigation/native';
 import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -9,11 +10,10 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { RouteProp, useRoute } from '@react-navigation/native';
 
 import * as socialApi from '@api/social';
-import { useFeedStore } from '@store/feedStore';
 import type { Comment, Post } from '@schemas/social';
+import { useFeedStore } from '@store/feedStore';
 
 interface RouteParams {
   postId: string;
@@ -135,7 +135,11 @@ export function PostDetailsScreen() {
           value={commentText}
           onChangeText={setCommentText}
         />
-        <Button title={submitting ? 'Sending…' : 'Send'} onPress={handleSubmit} disabled={submitting} />
+        <Button
+          title={submitting ? 'Sending…' : 'Send'}
+          onPress={handleSubmit}
+          disabled={submitting}
+        />
       </View>
     </View>
   );

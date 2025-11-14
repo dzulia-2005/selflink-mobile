@@ -50,20 +50,28 @@ export function InboxScreen() {
     [navigation],
   );
 
-  const authUserId = useMemo(() => Number(authUser?.id) || null, [authUser?.id]);
+  const authUserKey = useMemo(
+    () =>
+      authUser?.id !== undefined && authUser?.id !== null ? String(authUser.id) : null,
+    [authUser?.id],
+  );
+  const authUserNumeric = useMemo(
+    () => (authUserKey != null ? Number(authUserKey) : null),
+    [authUserKey],
+  );
   const filteredDirectory = useMemo(
     () =>
       directoryUsers.filter((candidate) =>
-        authUserId ? candidate.id !== authUserId : true,
+        authUserKey ? String(candidate.id) !== authUserKey : true,
       ),
-    [authUserId, directoryUsers],
+    [authUserKey, directoryUsers],
   );
   const selectedIds = useMemo(
     () =>
       selectedUsers
-        .map((user) => user.id)
-        .filter((id) => (authUserId ? id !== authUserId : true)),
-    [authUserId, selectedUsers],
+        .map((user) => Number(user.id))
+        .filter((id) => (authUserNumeric != null ? id !== authUserNumeric : true)),
+    [authUserNumeric, selectedUsers],
   );
 
   const handleCreateThread = useCallback(async () => {
@@ -105,18 +113,19 @@ export function InboxScreen() {
 
   const toggleUserSelection = useCallback(
     (user: UserProfile) => {
-      if (authUserId && user.id === authUserId) {
+      const userKey = String(user.id);
+      if (authUserKey && userKey === authUserKey) {
         return;
       }
       setSelectedUsers((prev) => {
-        const exists = prev.some((item) => item.id === user.id);
+        const exists = prev.some((item) => String(item.id) === userKey);
         if (exists) {
-          return prev.filter((item) => item.id !== user.id);
+          return prev.filter((item) => String(item.id) !== userKey);
         }
         return [...prev, user];
       });
     },
-    [authUserId],
+    [authUserKey],
   );
 
   return (
@@ -206,7 +215,8 @@ export function InboxScreen() {
                 <Text style={styles.helper}>No matches found.</Text>
               ) : (
                 filteredDirectory.map((user) => {
-                  const isSelected = selectedIds.includes(user.id);
+                  const numericId = Number(user.id);
+                  const isSelected = selectedIds.includes(numericId);
                   const initials =
                     user.name
                       ?.split(' ')

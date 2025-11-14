@@ -1,6 +1,6 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import { useCallback } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 
 import { UserAvatar } from '@components/UserAvatar';
 import { useAuthStore } from '@store/authStore';
@@ -25,14 +25,16 @@ export function ProfileScreen() {
   }
 
   return (
-    <LinearGradient colors={theme.gradients.appBackground} style={{ flex: 1 }}>
+    <LinearGradient colors={theme.gradients.appBackground} style={styles.screen}>
       <ScrollView contentContainerStyle={styles.container}>
         <LinearGradient colors={theme.gradients.card} style={styles.card}>
           <UserAvatar uri={currentUser.photo} label={currentUser.name} size={80} />
           <Text style={styles.name}>{currentUser.name}</Text>
           <Text style={styles.handle}>@{currentUser.handle}</Text>
           <Text style={styles.meta}>{currentUser.email}</Text>
-          {currentUser.birth_place ? <Text style={styles.meta}>{currentUser.birth_place}</Text> : null}
+          {currentUser.birth_place ? (
+            <Text style={styles.meta}>{currentUser.birth_place}</Text>
+          ) : null}
           <Text style={styles.sectionTitle}>Personal map</Text>
           {hasCompletedPersonalMap && personalMap ? (
             <View style={styles.mapGrid}>
@@ -45,10 +47,15 @@ export function ProfileScreen() {
             </View>
           ) : (
             <Text style={styles.meta}>
-              Complete your personal map to unlock mentor, matrix, and soul match insights.
+              Complete your personal map to unlock mentor, matrix, and soul match
+              insights.
             </Text>
           )}
-          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout} activeOpacity={0.9}>
+          <TouchableOpacity
+            style={styles.logoutButton}
+            onPress={handleLogout}
+            activeOpacity={0.9}
+          >
             <Text style={styles.logoutLabel}>Sign out</Text>
           </TouchableOpacity>
         </LinearGradient>
@@ -72,6 +79,9 @@ function InfoRow({ label, value }: InfoRowProps) {
 }
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+  },
   container: {
     padding: theme.spacing.xl,
     gap: theme.spacing.lg,

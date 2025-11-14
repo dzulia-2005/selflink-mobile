@@ -2,13 +2,14 @@ import { NavigationContainer, DarkTheme, DefaultTheme } from '@react-navigation/
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useColorScheme, ActivityIndicator, StyleSheet, View, Text } from 'react-native';
 
+import { useAuthHydration } from '@hooks/useAuthHydration';
+import { useMessagingSync } from '@hooks/useMessagingSync';
+import { PersonalMapScreen } from '@screens/onboarding/PersonalMapScreen';
+import { useAuthStore } from '@store/authStore';
+
 import { AuthNavigator } from './AuthNavigator';
 import { MainTabsNavigator } from './MainTabsNavigator';
 import type { OnboardingStackParamList, RootStackParamList } from './types';
-import { PersonalMapScreen } from '@screens/onboarding/PersonalMapScreen';
-import { useAuthStore } from '@store/authStore';
-import { useAuthHydration } from '@hooks/useAuthHydration';
-import { useMessagingSync } from '@hooks/useMessagingSync';
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 const OnboardingStack = createNativeStackNavigator<OnboardingStackParamList>();
@@ -41,19 +42,21 @@ export function RootNavigator() {
   const hasCompletedPersonalMap = useAuthStore((state) => state.hasCompletedPersonalMap);
 
   const isAuthenticated = Boolean(accessToken);
+  const needsOnboarding = isAuthenticated && !hasCompletedPersonalMap;
+  const shouldSyncMessaging = isHydrated && isAuthenticated && !needsOnboarding;
+  useMessagingSync(shouldSyncMessaging);
 
   if (!isHydrated) {
     return <SplashScreen />;
   }
 
-  const needsOnboarding = isAuthenticated && !hasCompletedPersonalMap;
-  useMessagingSync(isAuthenticated && !needsOnboarding);
-
   return (
     <NavigationContainer theme={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <RootStack.Navigator screenOptions={{ headerShown: false }}>
         {!isAuthenticated && <RootStack.Screen name="Auth" component={AuthNavigator} />}
-        {needsOnboarding && <RootStack.Screen name="Onboarding" component={OnboardingNavigator} />}
+        {needsOnboarding && (
+          <RootStack.Screen name="Onboarding" component={OnboardingNavigator} />
+        )}
         {isAuthenticated && !needsOnboarding && (
           <RootStack.Screen name="Main" component={MainTabsNavigator} />
         )}

@@ -63,7 +63,7 @@ export async function listThreads(params: ThreadQuery = {}): Promise<ThreadListR
   });
 }
 
-export async function getThread(id: number): Promise<Thread> {
+export async function getThread(id: number | string): Promise<Thread> {
   return apiClient.request<Thread>(`/api/v1/threads/${id}/`, { method: 'GET' });
 }
 
@@ -80,7 +80,7 @@ export async function createThread(payload: CreateThreadPayload): Promise<Thread
   });
 }
 
-export async function markThreadRead(id: number): Promise<void> {
+export async function markThreadRead(id: number | string): Promise<void> {
   await apiClient.request(`/api/v1/threads/${id}/read/`, { method: 'POST' });
 }
 
@@ -89,7 +89,7 @@ export type TypingPayload = {
 };
 
 export async function sendTypingSignal(
-  id: number,
+  id: number | string,
   payload: TypingPayload = { is_typing: true },
 ): Promise<void> {
   await apiClient.request(`/api/v1/threads/${id}/typing/`, {
@@ -100,7 +100,7 @@ export async function sendTypingSignal(
 
 export type TypingStatus = {
   typing: boolean;
-  userId?: number;
+  userId?: number | string;
   userName?: string | null;
   userHandle?: string | null;
 };
@@ -110,7 +110,7 @@ type TypingStatusResponse = {
   users?: MessageUser[];
 };
 
-export async function getTypingStatus(id: number): Promise<TypingStatus> {
+export async function getTypingStatus(id: number | string): Promise<TypingStatus> {
   const response = await apiClient.request<TypingStatusResponse>(
     `/api/v1/threads/${id}/typing/`,
     {
@@ -121,13 +121,13 @@ export async function getTypingStatus(id: number): Promise<TypingStatus> {
   const userId = user?.id ?? response.typing_user_ids[0];
   return {
     typing: response.typing_user_ids.length > 0,
-    userId,
+    userId: userId != null ? String(userId) : undefined,
     userName: user?.name ?? null,
     userHandle: user?.handle ?? null,
   };
 }
 
-export async function leaveThread(id: number): Promise<void> {
+export async function leaveThread(id: number | string): Promise<void> {
   await apiClient.request(`/api/v1/threads/${id}/leave/`, {
     method: 'POST',
   });

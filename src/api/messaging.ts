@@ -1,8 +1,9 @@
 import type { AxiosRequestConfig } from 'axios';
 
-import { apiClient } from './client';
 import type { CreateThreadPayload, Message, Thread } from '@schemas/messaging';
 import { parseJsonPreservingLargeInts } from '@utils/json';
+
+import { apiClient } from './client';
 
 type PaginatedList<T> = {
   results?: T[] | null;
@@ -66,7 +67,9 @@ const resolveThreadId = (threadId: string): string => {
   return approxToPreciseThreadIdMap.get(key) ?? key;
 };
 
-export const mapThreadIdToClient = (threadId: string | number | null | undefined): string | null => {
+export const mapThreadIdToClient = (
+  threadId: string | number | null | undefined,
+): string | null => {
   if (threadId === null || threadId === undefined) {
     return null;
   }
@@ -107,7 +110,10 @@ function extractResults<T>(payload: ListPayload<T> | null | undefined): T[] {
   return [];
 }
 
-const normalizeMessage = (approx: MessageResponse, precise?: MessageResponse): Message => {
+const normalizeMessage = (
+  approx: MessageResponse,
+  precise?: MessageResponse,
+): Message => {
   const preciseId = precise?.id ?? approx.id;
   const preciseThread = precise?.thread ?? approx.thread;
   if (preciseThread !== undefined) {
@@ -142,7 +148,10 @@ export async function getThreads(): Promise<Thread[]> {
   const approxThreads = extractResults(parsed);
   const preciseThreads = extractResults(precise);
   return approxThreads.map((thread, index) =>
-    normalizeThread(thread as ThreadResponse, preciseThreads[index] as ThreadResponse | undefined),
+    normalizeThread(
+      thread as ThreadResponse,
+      preciseThreads[index] as ThreadResponse | undefined,
+    ),
   );
 }
 
@@ -170,7 +179,9 @@ export async function getThreadMessages(
   });
   const approxMessages = extractResults(parsed);
   const preciseMessages = extractResults(precise);
-  return approxMessages.map((message, index) => normalizeMessage(message, preciseMessages[index]));
+  return approxMessages.map((message, index) =>
+    normalizeMessage(message, preciseMessages[index]),
+  );
 }
 
 export async function sendMessage(threadId: string, text: string): Promise<Message> {

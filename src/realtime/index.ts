@@ -157,11 +157,16 @@ export function connectRealtime(token: string, urlOverride?: string): RealtimeCo
       try {
         const payload = parseJsonPreservingLargeInts<RealtimePayload>(event.data);
         if (typeof __DEV__ !== 'undefined' && __DEV__) {
-          const type = typeof payload === 'object' ? (payload.type as string | undefined) : undefined;
+          const type =
+            typeof payload === 'object'
+              ? (payload.type as string | undefined)
+              : undefined;
           if (type && (type === 'message' || type === 'message:new')) {
             const payloadObj = payload as Record<string, unknown>;
-            const nested = (payloadObj.payload as Record<string, unknown> | undefined) ?? {};
-            const message = (nested.message as Record<string, unknown> | undefined) ?? nested;
+            const nested =
+              (payloadObj.payload as Record<string, unknown> | undefined) ?? {};
+            const message =
+              (nested.message as Record<string, unknown> | undefined) ?? nested;
             const threadId =
               payloadObj.thread_id ??
               payloadObj.thread ??
@@ -192,9 +197,12 @@ export function connectRealtime(token: string, urlOverride?: string): RealtimeCo
         event && typeof event === 'object' && 'message' in event
           ? String((event as { message?: string }).message)
           : undefined;
-      const code = typeof event === 'object' && 'code' in event ? (event as any).code : undefined;
+      const code =
+        typeof event === 'object' && 'code' in event ? (event as any).code : undefined;
       const reason =
-        typeof event === 'object' && 'reason' in event ? (event as any).reason : undefined;
+        typeof event === 'object' && 'reason' in event
+          ? (event as any).reason
+          : undefined;
       const logPayload = {
         url: urlString,
         type: event?.type,

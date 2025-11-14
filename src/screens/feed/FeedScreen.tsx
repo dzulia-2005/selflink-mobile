@@ -1,4 +1,5 @@
-import { useEffect, useLayoutEffect, useMemo } from 'react';
+import { useNavigation } from '@react-navigation/native';
+import { useCallback, useEffect, useLayoutEffect, useMemo } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -8,7 +9,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 
 import { FeedPostCard } from '@components/FeedPostCard';
 import { useFeedStore } from '@store/feedStore';
@@ -26,15 +26,42 @@ export function FeedScreen() {
     loadFeed().catch(() => undefined);
   }, [loadFeed]);
 
+  const headerAction = useCallback(() => {
+    return (
+      <TouchableOpacity onPress={() => navigation.navigate('SearchProfiles')}>
+        <Text style={styles.headerAction}>Search</Text>
+      </TouchableOpacity>
+    );
+  }, [navigation]);
+
   useLayoutEffect(() => {
     navigation.setOptions({
-      headerRight: () => (
-        <TouchableOpacity onPress={() => navigation.navigate('SearchProfiles')}>
-          <Text style={styles.headerAction}>Search</Text>
-        </TouchableOpacity>
-      ),
+      headerRight: headerAction,
     });
-  }, [navigation]);
+  }, [headerAction, navigation]);
+
+  const renderPost = useCallback(({ item }: { item: (typeof posts)[number] }) => {
+    return <FeedPostCard post={item} />;
+  }, []);
+
+  const renderSeparator = useCallback(() => <View style={styles.separator} />, []);
+
+  const renderEmpty = useCallback(() => {
+    if (isLoading) {
+      return null;
+    }
+    return (
+      <View style={styles.emptyState}>
+        <Text style={styles.emptyText}>No posts yet</Text>
+        <TouchableOpacity
+          style={styles.primaryButton}
+          onPress={() => navigation.navigate('CreatePost')}
+        >
+          <Text style={styles.primaryButtonLabel}>Create your first post</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }, [isLoading, navigation]);
 
   if (isLoading && posts.length === 0) {
     return (
@@ -52,29 +79,19 @@ export function FeedScreen() {
     );
   }
 
-  const renderEmpty = () =>
-    !isLoading ? (
-      <View style={styles.emptyState}>
-        <Text style={styles.emptyText}>No posts yet</Text>
-        <TouchableOpacity
-          style={styles.primaryButton}
-          onPress={() => navigation.navigate('CreatePost')}
-        >
-          <Text style={styles.primaryButtonLabel}>Create your first post</Text>
-        </TouchableOpacity>
-      </View>
-    ) : null;
-
   return (
-    <View style={{ flex: 1 }}>
+    <View style={styles.container}>
       <FlatList
         data={posts}
         keyExtractor={(item) => String(item.id)}
-        renderItem={({ item }) => <FeedPostCard post={item} />}
+        renderItem={renderPost}
         contentContainerStyle={styles.listContent}
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
+        ItemSeparatorComponent={renderSeparator}
         refreshControl={
-          <RefreshControl refreshing={isLoading && posts.length > 0} onRefresh={loadFeed} />
+          <RefreshControl
+            refreshing={isLoading && posts.length > 0}
+            onRefresh={loadFeed}
+          />
         }
         onEndReached={loadMore}
         onEndReachedThreshold={0.4}
@@ -94,6 +111,9 @@ export function FeedScreen() {
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   listContent: {
     padding: 16,
   },

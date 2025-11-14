@@ -1,3 +1,6 @@
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useCallback, useState } from 'react';
 import {
   Alert,
@@ -9,13 +12,10 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
+import type { AuthStackParamList } from '@navigation/types';
 import { useAuthStore } from '@store/authStore';
 import { theme } from '@theme';
-import type { AuthStackParamList } from '@navigation/types';
 
 type Navigation = NativeStackNavigationProp<AuthStackParamList, 'Login'>;
 

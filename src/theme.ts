@@ -13,6 +13,7 @@ const palette = {
   amethyst: '#7C3AED',
   rose: '#F472B6',
   ember: '#FB7185',
+  lime: '#22C55E',
 };
 
 const spacing = {
@@ -32,7 +33,24 @@ const typography = {
   subtitle: { fontSize: 18, fontWeight: '400' as const, letterSpacing: 0.3 },
   button: { fontSize: 16, fontWeight: '600' as const, letterSpacing: 0.4 },
   body: { fontSize: 16, fontWeight: '400' as const, lineHeight: 22 },
-  caption: { fontSize: 13, fontWeight: '400' as const, letterSpacing: 0.2, lineHeight: 18 },
+  caption: {
+    fontSize: 13,
+    fontWeight: '400' as const,
+    letterSpacing: 0.2,
+    lineHeight: 18,
+  },
+};
+
+const gradients = {
+  appBackground: ['#050818', '#020617'] as const,
+  card: ['#0E1528', '#121B33'] as const,
+  cta: ['#7C3AED', '#06B6D4'] as const,
+  accent: ['#0EA5E9', '#7C3AED'] as const,
+  matrix: ['#14B8A6', '#6366F1'] as const,
+  button: ['#7C3AED', '#4C1D95'] as const,
+  buttonActive: ['#8B5CF6', '#312E81'] as const,
+  buttonDisabled: ['#94A3B8', '#CBD5F5'] as const,
+  panel: ['#0F172A', '#1E293B'] as const,
 };
 
 export const theme = {
@@ -54,25 +72,21 @@ export const theme = {
     muted: palette.silver,
     inverted: palette.midnight,
   },
-  gradients: {
-    appBackground: ['#050818', '#020617'],
-    card: ['#0E1528', '#121B33'],
-    cta: ['#7C3AED', '#06B6D4'],
-    accent: ['#0EA5E9', '#7C3AED'],
-    matrix: ['#14B8A6', '#6366F1'],
-  },
+  gradients,
   spacing,
   radii: {
     sm: 10,
     md: 16,
     lg: 24,
     pill: 999,
+    full: 9999,
   },
   radius: {
     sm: 10,
     md: 16,
     lg: 24,
     pill: 999,
+    full: 9999,
   },
   typography,
   shadows: {

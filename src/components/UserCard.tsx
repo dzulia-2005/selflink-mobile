@@ -7,7 +7,7 @@ import { theme } from '@theme/index';
 
 type Props = {
   user: UserProfile & { flags?: Record<string, unknown> & { following?: boolean } };
-  onToggleFollow: (id: number) => void;
+  onToggleFollow: (id: number | string) => void;
   pending?: boolean;
 };
 

@@ -5,11 +5,10 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 import * as authApi from '@api/auth';
 import { apiClient, setAuthTokenProvider, setRefreshHandler } from '@api/client';
 import * as usersApi from '@api/users';
+import type { PersonalMapPayload } from '@api/users';
 import { LoginPayload, RegisterPayload } from '@schemas/auth';
 import { PersonalMapProfile, User } from '@schemas/user';
 import { useMessagingStore } from '@store/messagingStore';
-
-import type { PersonalMapPayload } from '@api/users';
 
 export type AuthStore = {
   accessToken: string | null;
@@ -60,7 +59,10 @@ const useAuthStore = create<AuthStore>()(
           set({ isAuthenticating: true, error: null });
           try {
             const authResponse = await authApi.login(payload);
-            await get().applySession(authResponse.token, authResponse.refreshToken ?? null);
+            await get().applySession(
+              authResponse.token,
+              authResponse.refreshToken ?? null,
+            );
             await get().fetchProfile();
           } catch (error) {
             const message = error instanceof Error ? error.message : 'Unable to login';
@@ -74,7 +76,10 @@ const useAuthStore = create<AuthStore>()(
           set({ isAuthenticating: true, error: null });
           try {
             const authResponse = await authApi.register(payload);
-            await get().applySession(authResponse.token, authResponse.refreshToken ?? null);
+            await get().applySession(
+              authResponse.token,
+              authResponse.refreshToken ?? null,
+            );
             await get().fetchProfile();
           } catch (error) {
             const message = error instanceof Error ? error.message : 'Unable to register';
@@ -134,7 +139,8 @@ const useAuthStore = create<AuthStore>()(
             });
             setMessagingSessionUser(user?.id ?? null);
           } catch (error) {
-            const message = error instanceof Error ? error.message : 'Unable to load profile';
+            const message =
+              error instanceof Error ? error.message : 'Unable to load profile';
             set({ error: message });
             throw error;
           }
@@ -199,9 +205,9 @@ if (persistApi?.hasHydrated?.()) {
 }
 
 export const hasAuthStoreHydrated = () => persistApi?.hasHydrated?.() ?? true;
-export const subscribeToAuthHydration: ((
-  callback: HydrationCallback,
-) => void | (() => void)) | undefined = persistApi?.onFinishHydration
+export const subscribeToAuthHydration:
+  | ((callback: HydrationCallback) => void | (() => void))
+  | undefined = persistApi?.onFinishHydration
   ? (callback) => persistApi.onFinishHydration(callback)
   : undefined;
 
