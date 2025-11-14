@@ -160,6 +160,25 @@ const buildThreadSnapshot = (
   };
 };
 
+const buildPlaceholderThread = (
+  threadKey: string,
+  message: Message,
+  unread: number,
+): Thread => ({
+  id: threadKey,
+  is_group: false,
+  title: message.sender?.name || message.sender?.handle || 'Conversation',
+  members: [],
+  participants: message.sender ? [message.sender] : [],
+  last_message: {
+    body: message.body,
+    created_at: message.created_at,
+  },
+  unread_count: unread,
+  created_at: message.created_at,
+  updated_at: message.created_at,
+});
+
 const applyUnreadToThread = (threads: Thread[], threadKey: string, unread: number) => {
   const targetIndex = threads.findIndex((thread) => String(thread.id) === threadKey);
   if (targetIndex === -1) {
@@ -435,16 +454,37 @@ export const useMessagingStore = create<MessagingState>((set, get) => ({
             thread: key,
           };
     const state = get();
-    const threadFromState = state.threads.find((thread) => String(thread.id) === key);
+    let threads = state.threads;
+    let threadFromState = threads.find((thread) => String(thread.id) === key);
+    const sessionUserId = state.sessionUserId;
     const isActiveThread = state.activeThreadId === key;
-    if (!threadFromState && !isActiveThread) {
+    const isOwnMessage =
+      sessionUserId != null &&
+      normalizedMessage.sender?.id != null &&
+      String(normalizedMessage.sender.id) === sessionUserId;
+    let unreadByThread = state.unreadByThread;
+    let unreadChanged = false;
+
+    if (!threadFromState) {
+      const placeholderUnread = isOwnMessage || isActiveThread ? 0 : 1;
+      const placeholder = buildPlaceholderThread(
+        key,
+        normalizedMessage,
+        placeholderUnread,
+      );
+      threads = sortThreadsByUpdatedAt([placeholder, ...threads]);
+      threadFromState = placeholder;
+      if (unreadByThread[key] !== placeholderUnread) {
+        unreadByThread = { ...unreadByThread, [key]: placeholderUnread };
+        unreadChanged = placeholderUnread !== (state.unreadByThread[key] ?? 0);
+      }
       if (state.sessionUserId != null) {
         get()
           .syncThreads()
           .catch(() => undefined);
       }
-      return;
     }
+
     const existingMessages = state.messagesByThread[key] ?? [];
     const duplicateIndex = existingMessages.findIndex(
       (item) => String(item.id) === normalizedMessage.id,
@@ -496,14 +536,7 @@ export const useMessagingStore = create<MessagingState>((set, get) => ({
       });
     }
 
-    const sessionUserId = state.sessionUserId;
-    const isOwnMessage =
-      sessionUserId != null &&
-      normalizedMessage.sender?.id != null &&
-      String(normalizedMessage.sender.id) === String(sessionUserId);
-    const currentUnread = state.unreadByThread[key] ?? 0;
-    let unreadByThread = state.unreadByThread;
-    let unreadChanged = false;
+    const currentUnread = unreadByThread[key] ?? 0;
     let nextUnread = currentUnread;
 
     if (isOwnMessage || isActiveThread) {
@@ -518,7 +551,6 @@ export const useMessagingStore = create<MessagingState>((set, get) => ({
       unreadChanged = true;
     }
 
-    let threads = state.threads;
     const targetIndex = threads.findIndex((thread) => String(thread.id) === key);
     if (targetIndex !== -1) {
       const thread = threads[targetIndex];
@@ -620,14 +652,16 @@ export const useMessagingStore = create<MessagingState>((set, get) => ({
     if (current === normalized) {
       return;
     }
-    if (current != null && current !== normalized) {
-      set({ ...initialState, sessionUserId: normalized });
-    } else {
-      set({ sessionUserId: normalized });
-    }
-    get()
-      .loadThreads()
-      .catch(() => undefined);
+    set({ ...initialState, sessionUserId: normalized });
+    const refreshData = async () => {
+      await get()
+        .loadThreads()
+        .catch(() => undefined);
+      await get()
+        .syncThreads()
+        .catch(() => undefined);
+    };
+    refreshData();
   },
   recomputeTotalUnread() {
     set((state) => ({

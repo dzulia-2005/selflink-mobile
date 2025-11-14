@@ -3,11 +3,16 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 import * as authApi from '@api/auth';
-import { apiClient, setAuthTokenProvider, setRefreshHandler } from '@api/client';
+import {
+  apiClient as restApiClient,
+  setAuthTokenProvider,
+  setRefreshHandler,
+} from '@api/client';
 import * as usersApi from '@api/users';
 import type { PersonalMapPayload } from '@api/users';
 import { LoginPayload, RegisterPayload } from '@schemas/auth';
 import { PersonalMapProfile, User } from '@schemas/user';
+import { apiClient as servicesApiClient } from '@services/api/client';
 import { useMessagingStore } from '@store/messagingStore';
 
 export type AuthStore = {
@@ -98,7 +103,7 @@ const useAuthStore = create<AuthStore>()(
             hasCompletedPersonalMap: false,
             error: null,
           });
-          delete apiClient.defaults.headers.common.Authorization;
+          delete restApiClient.defaults.headers.common.Authorization;
           resetMessagingStore();
           setMessagingSessionUser(null);
         },
@@ -157,9 +162,11 @@ const useAuthStore = create<AuthStore>()(
         async applySession(token: string | null, refreshToken: string | null) {
           set({ accessToken: token, refreshToken });
           if (token) {
-            apiClient.defaults.headers.common.Authorization = `Bearer ${token}`;
+            restApiClient.defaults.headers.common.Authorization = `Bearer ${token}`;
+            servicesApiClient.setToken(token);
           } else {
-            delete apiClient.defaults.headers.common.Authorization;
+            delete restApiClient.defaults.headers.common.Authorization;
+            servicesApiClient.setToken(null);
             resetMessagingStore();
             setMessagingSessionUser(null);
           }
@@ -186,9 +193,13 @@ type HydrationCallback = (state?: AuthStore, error?: unknown) => void;
 const runHydrationSideEffects = (state?: AuthStore) => {
   const snapshot = state ?? useAuthStore.getState();
   if (snapshot.accessToken) {
-    apiClient.defaults.headers.common.Authorization = `Bearer ${snapshot.accessToken}`;
+    restApiClient.defaults.headers.common.Authorization = `Bearer ${
+      snapshot.accessToken
+    }`;
+    servicesApiClient.setToken(snapshot.accessToken);
   } else {
-    delete apiClient.defaults.headers.common.Authorization;
+    delete restApiClient.defaults.headers.common.Authorization;
+    servicesApiClient.setToken(null);
   }
   if (snapshot.accessToken && !snapshot.currentUser) {
     useAuthStore
@@ -213,5 +224,7 @@ export const subscribeToAuthHydration:
 
 setAuthTokenProvider(() => useAuthStore.getState().accessToken);
 setRefreshHandler(() => useAuthStore.getState().refreshSession());
+servicesApiClient.setRefreshHandler(() => useAuthStore.getState().refreshSession());
+servicesApiClient.setToken(useAuthStore.getState().accessToken);
 
 export { useAuthStore };
