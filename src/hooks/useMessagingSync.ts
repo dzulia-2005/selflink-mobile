@@ -160,6 +160,13 @@ export function useMessagingSync(enabled: boolean) {
     return payload;
   }, []);
 
+  const coerceThreadIdForClient = useCallback((threadId: string | number | null | undefined) => {
+    if (threadId === null || threadId === undefined) {
+      return null;
+    }
+    return messagingApi.mapThreadIdToClient(threadId) ?? String(threadId);
+  }, []);
+
   const handleRealtimeMessage = useCallback(
     async (rawPayload: MessageEnvelope) => {
       const payload = normalizeEnvelope(rawPayload);
@@ -174,9 +181,21 @@ export function useMessagingSync(enabled: boolean) {
         return;
       }
 
-      appendMessage(nextMessage.thread, nextMessage);
+      const threadHint =
+        nextMessage.thread ??
+        payload.thread_id ??
+        payload.thread ??
+        payload.payload?.thread_id ??
+        payload.payload?.thread;
+      const resolvedThreadId = coerceThreadIdForClient(threadHint) ?? nextMessage.thread;
+      const messageForStore =
+        resolvedThreadId && nextMessage.thread !== resolvedThreadId
+          ? { ...nextMessage, thread: resolvedThreadId }
+          : nextMessage;
+
+      appendMessage(resolvedThreadId ?? nextMessage.thread, messageForStore);
     },
-    [activeThreadId, appendMessage, normalizeEnvelope, syncThreads],
+    [activeThreadId, appendMessage, coerceThreadIdForClient, normalizeEnvelope, syncThreads],
   );
 
   const handleRealtimePayload = useCallback(

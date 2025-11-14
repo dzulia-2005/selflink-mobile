@@ -12,7 +12,8 @@ type PaginatedList<T> = {
 
 type ListPayload<T> = T[] | PaginatedList<T>;
 
-const threadIdMap = new Map<string, string>();
+const approxToPreciseThreadIdMap = new Map<string, string>();
+const preciseToApproxThreadIdMap = new Map<string, string>();
 
 type MessageResponse = Omit<Message, 'id' | 'thread'> & {
   id: string | number;
@@ -43,7 +44,8 @@ const rememberThreadFromResponse = (approx: unknown, precise: unknown) => {
     const approxId = toKey(approx.id);
     const preciseId = toKey(precise.id);
     if (approxId && preciseId) {
-      threadIdMap.set(approxId, preciseId);
+      approxToPreciseThreadIdMap.set(approxId, preciseId);
+      preciseToApproxThreadIdMap.set(preciseId, approxId);
     }
     const approxResults = approx.results;
     const preciseResults = precise.results;
@@ -57,7 +59,15 @@ const rememberThreadFromResponse = (approx: unknown, precise: unknown) => {
 
 const resolveThreadId = (threadId: string | number): string => {
   const key = String(threadId);
-  return threadIdMap.get(key) ?? key;
+  return approxToPreciseThreadIdMap.get(key) ?? key;
+};
+
+export const mapThreadIdToClient = (threadId: string | number | null | undefined): string | null => {
+  if (threadId === null || threadId === undefined) {
+    return null;
+  }
+  const key = String(threadId);
+  return preciseToApproxThreadIdMap.get(key) ?? key;
 };
 
 async function requestWithPrecision<T>(config: AxiosRequestConfig): Promise<{
@@ -96,6 +106,14 @@ function extractResults<T>(payload: ListPayload<T> | null | undefined): T[] {
 const normalizeMessage = (approx: MessageResponse, precise?: MessageResponse): Message => {
   const preciseId = precise?.id ?? approx.id;
   const preciseThread = precise?.thread ?? approx.thread;
+  if (preciseThread !== undefined) {
+    const approxKey = toKey(approx.thread);
+    const preciseKey = toKey(preciseThread);
+    if (approxKey && preciseKey) {
+      approxToPreciseThreadIdMap.set(approxKey, preciseKey);
+      preciseToApproxThreadIdMap.set(preciseKey, approxKey);
+    }
+  }
   return {
     ...approx,
     id: preciseId != null ? String(preciseId) : String(approx.id),
