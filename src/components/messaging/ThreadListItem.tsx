@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import type { Thread } from '@types/messaging';
+import type { Thread } from '@schemas/messaging';
 import React, { memo, useMemo } from 'react';
 import {
   Image,
@@ -27,13 +27,13 @@ const ThreadListItemComponent: React.FC<Props> = ({
   const hasUnread = unread > 0;
 
   const otherMember = useMemo(() => {
-    const members = thread.members || [];
+    const members = Array.isArray(thread.members) ? thread.members : [];
     const sessionKey = currentUserId != null ? String(currentUserId) : null;
     if (!sessionKey) {
       return members[0];
     }
     return (
-      members.find((member) => {
+      members.find((member: Thread['members'][number]) => {
         const memberId = member?.user?.id;
         return memberId != null && String(memberId) !== sessionKey;
       }) ?? members[0]

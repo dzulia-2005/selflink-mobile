@@ -1,4 +1,4 @@
-import type { Message } from '@types/messaging';
+import type { Message } from '@schemas/messaging';
 import React, { memo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
