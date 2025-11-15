@@ -1,6 +1,8 @@
+import { Ionicons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useMemo } from 'react';
+import type { ColorValue } from 'react-native';
 
 import { CreatePostScreen } from '@screens/feed/CreatePostScreen';
 import { FeedScreen } from '@screens/feed/FeedScreen';
@@ -12,7 +14,7 @@ import { NotificationsScreen } from '@screens/notifications/NotificationsScreen'
 import { ProfileScreen } from '@screens/profile/ProfileScreen';
 import { SearchProfilesScreen } from '@screens/profile/SearchProfilesScreen';
 import { UserProfileScreen } from '@screens/profile/UserProfileScreen';
-import { selectTotalUnread, useMessagingStore } from '@store/messagingStore';
+import { useMessagingStore } from '@store/messagingStore';
 
 import type {
   MainTabsParamList,
@@ -21,10 +23,45 @@ import type {
   ProfileStackParamList,
 } from './types';
 
+const SELF_LINK_BLUE = '#2563EB';
+const SELF_LINK_GREEN = '#16a34a';
+const TAB_BAR_BG = '#020617';
+
+export const MESSAGE_BADGE_STYLE = {
+  minWidth: 20,
+  height: 20,
+  borderRadius: 10,
+  paddingHorizontal: 4,
+  alignItems: 'center',
+  justifyContent: 'center',
+  alignSelf: 'center',
+  backgroundColor: SELF_LINK_GREEN,
+};
+
 const Tab = createBottomTabNavigator<MainTabsParamList>();
 const FeedStack = createNativeStackNavigator<FeedStackParamList>();
 const MessagesStack = createNativeStackNavigator<MessagesStackParamList>();
 const ProfileStack = createNativeStackNavigator<ProfileStackParamList>();
+
+function getTabIconName(
+  routeName: string,
+  focused: boolean,
+): keyof typeof Ionicons.glyphMap {
+  switch (routeName) {
+    case 'Feed':
+      return focused ? 'home' : 'home-outline';
+    case 'Messages':
+      return focused ? 'chatbubble-ellipses' : 'chatbubble-ellipses-outline';
+    case 'Mentor':
+      return focused ? 'sparkles' : 'sparkles-outline';
+    case 'Notifications':
+      return focused ? 'notifications' : 'notifications-outline';
+    case 'Profile':
+      return focused ? 'person' : 'person-outline';
+    default:
+      return focused ? 'ellipse' : 'ellipse-outline';
+  }
+}
 
 function FeedStackNavigator() {
   return (
@@ -98,7 +135,7 @@ function ProfileStackNavigator() {
 }
 
 export function MainTabsNavigator() {
-  const totalUnread = useMessagingStore(selectTotalUnread);
+  const totalUnread = useMessagingStore((state) => state.totalUnread);
   const messagesOptions = useMemo(() => {
     const badge =
       totalUnread > 0 ? (totalUnread > 99 ? '99+' : String(totalUnread)) : undefined;
@@ -110,7 +147,30 @@ export function MainTabsNavigator() {
   }, [totalUnread]);
 
   return (
-    <Tab.Navigator screenOptions={{ headerShown: false }}>
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        headerShown: false,
+        tabBarActiveTintColor: SELF_LINK_GREEN,
+        tabBarInactiveTintColor: '#9CA3AF',
+        tabBarStyle: {
+          backgroundColor: TAB_BAR_BG,
+          borderTopWidth: 0,
+          elevation: 20,
+          shadowColor: SELF_LINK_BLUE,
+          shadowOpacity: 0.25,
+          height: 64,
+          paddingBottom: 8,
+          paddingTop: 6,
+        },
+        tabBarLabelStyle: {
+          fontSize: 11,
+        },
+        tabBarIcon: ({ color, size, focused }) => {
+          const iconName = getTabIconName(route.name, focused);
+          return <Ionicons name={iconName} size={size} color={color as ColorValue} />;
+        },
+      })}
+    >
       <Tab.Screen name="Feed" component={FeedStackNavigator} />
       <Tab.Screen
         name="Messages"
@@ -123,16 +183,3 @@ export function MainTabsNavigator() {
     </Tab.Navigator>
   );
 }
-
-const MESSAGE_BADGE_STYLE = {
-  backgroundColor: '#16a34a',
-  color: '#fff',
-  fontSize: 11,
-  fontWeight: '700' as const,
-  minWidth: 18,
-  height: 18,
-  lineHeight: 16,
-  borderRadius: 9,
-  paddingHorizontal: 4,
-  textAlign: 'center' as const,
-};
