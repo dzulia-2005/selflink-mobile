@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useMemo } from 'react';
-import type { ColorValue } from 'react-native';
+import type { ColorValue, StyleProp, TextStyle } from 'react-native';
 
 import { CreatePostScreen } from '@screens/feed/CreatePostScreen';
 import { FeedScreen } from '@screens/feed/FeedScreen';
@@ -27,14 +27,16 @@ const SELF_LINK_BLUE = '#2563EB';
 const SELF_LINK_GREEN = '#16a34a';
 const TAB_BAR_BG = '#020617';
 
-export const MESSAGE_BADGE_STYLE = {
+export const MESSAGE_BADGE_STYLE: StyleProp<TextStyle> = {
   minWidth: 20,
   height: 20,
   borderRadius: 10,
   paddingHorizontal: 4,
-  alignItems: 'center',
-  justifyContent: 'center',
-  alignSelf: 'center',
+  lineHeight: 20,
+  textAlign: 'center',
+  fontSize: 12,
+  fontWeight: '700',
+  color: '#fff',
   backgroundColor: SELF_LINK_GREEN,
 };
 

@@ -296,9 +296,7 @@ export function ChatScreen() {
     ({ item, index }) => {
       const senderId = item.sender?.id != null ? String(item.sender.id) : null;
       const isOwn =
-        senderId != null && currentUserKey != null
-          ? senderId === currentUserKey
-          : senderId === currentUserId;
+        senderId != null && currentUserKey != null ? senderId === currentUserKey : false;
       const previous = messages[index - 1];
       const next = messages[index + 1];
       const currentSenderKey =
@@ -328,7 +326,7 @@ export function ChatScreen() {
         />
       );
     },
-    [confirmDeleteMessage, currentUserId, currentUserKey, messages, pendingDeleteId],
+    [confirmDeleteMessage, currentUserKey, messages, pendingDeleteId],
   );
 
   if (isLoading && messages.length === 0) {

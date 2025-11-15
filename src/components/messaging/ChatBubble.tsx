@@ -1,8 +1,7 @@
-import React, { memo } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import React, { memo } from 'react';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import type { Message } from '@schemas/messaging';
 
@@ -52,7 +51,9 @@ const ChatBubbleComponent: React.FC<Props> = ({
   );
 
   return (
-    <View style={[styles.container, isOwn ? styles.containerRight : styles.containerLeft]}>
+    <View
+      style={[styles.container, isOwn ? styles.containerRight : styles.containerLeft]}
+    >
       <TouchableOpacity
         activeOpacity={0.85}
         delayLongPress={250}
