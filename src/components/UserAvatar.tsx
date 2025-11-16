@@ -1,5 +1,7 @@
 import { Image, StyleSheet, Text, View } from 'react-native';
 
+import { normalizeAvatarUrl } from '@utils/avatar';
+
 type Props = {
   uri?: string | null;
   size?: number;
@@ -7,6 +9,11 @@ type Props = {
 };
 
 export function UserAvatar({ uri, size = 48, label }: Props) {
+  const resolvedUri = normalizeAvatarUrl(uri);
+  if (__DEV__) {
+    console.debug('UserAvatar: resolved avatar uri', { raw: uri, uri: resolvedUri });
+  }
+
   const initials = label
     ? label
         .split(' ')
@@ -17,10 +24,10 @@ export function UserAvatar({ uri, size = 48, label }: Props) {
         .toUpperCase()
     : '?';
 
-  if (uri) {
+  if (resolvedUri) {
     return (
       <Image
-        source={{ uri }}
+        source={{ uri: resolvedUri }}
         style={[styles.avatar, { width: size, height: size, borderRadius: size / 2 }]}
       />
     );

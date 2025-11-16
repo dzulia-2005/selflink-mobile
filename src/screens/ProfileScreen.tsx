@@ -16,16 +16,23 @@ import { MetalPanel } from '@components/MetalPanel';
 import { MetalToast } from '@components/MetalToast';
 import { AuthUser } from '@context/AuthContext';
 import { useAuth } from '@hooks/useAuth';
+import { useAvatarPicker } from '@hooks/useAvatarPicker';
+import { uploadPersonalMapAvatar } from '@services/api/user';
+import { useAuthStore } from '@store/authStore';
 import { theme } from '@theme/index';
+import { normalizeAvatarUrl } from '@utils/avatar';
 
 export function ProfileScreen() {
-  const { user, signOut, updateProfile, refreshProfile } = useAuth();
+  const { user, signOut, updateProfile, refreshProfile, setUser } = useAuth();
   const [name, setName] = useState(user?.name ?? '');
   const [avatarUrl, setAvatarUrl] = useState(user?.avatarUrl ?? '');
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [toast, setToast] = useState<{ message: string; tone: 'info' | 'error' } | null>(
     null,
   );
+  const { pickImage, isPicking } = useAvatarPicker();
+  const normalizedAvatarUrl = normalizeAvatarUrl(avatarUrl);
 
   const initials = useMemo(() => {
     if (name) {
@@ -77,6 +84,53 @@ export function ProfileScreen() {
     refreshProfile,
   ]);
 
+  const handleChangeAvatar = useCallback(async () => {
+    if (isUploadingPhoto || isPicking) {
+      return;
+    }
+    console.debug('[ProfileScreen] change avatar: opening picker');
+    const asset = await pickImage();
+    if (!asset) {
+      console.debug('[ProfileScreen] change avatar: picker cancelled');
+      return;
+    }
+    setIsUploadingPhoto(true);
+    try {
+      console.debug('[ProfileScreen] change avatar: uploading asset', asset.uri);
+      setAvatarUrl(asset.uri);
+      if (user) {
+        setUser({ ...user, avatarUrl: asset.uri });
+      }
+      const updated = await uploadPersonalMapAvatar({
+        uri: asset.uri,
+        name: asset.name,
+        type: asset.type,
+      });
+      console.debug('[ProfileScreen] change avatar: upload success', updated.avatarUrl);
+      setAvatarUrl(updated.avatarUrl ?? asset.uri);
+      setUser(updated);
+      await refreshProfile();
+      console.debug('[ProfileScreen] change avatar: profile refreshed');
+      await useAuthStore
+        .getState()
+        .fetchProfile()
+        .then(() => {
+          if (__DEV__) {
+            console.debug('ProfileScreen: auth store profile refreshed after avatar');
+          }
+        })
+        .catch((error) => {
+          console.warn('ProfileScreen: failed to refresh auth store profile', error);
+        });
+      setToast({ message: 'Photo updated.', tone: 'info' });
+    } catch (error) {
+      console.warn('ProfileScreen: failed to update avatar', error);
+      setToast({ message: 'Could not update photo. Please try again.', tone: 'error' });
+    } finally {
+      setIsUploadingPhoto(false);
+    }
+  }, [isPicking, isUploadingPhoto, pickImage, refreshProfile, setToast, setUser, user]);
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar style="light" />
@@ -91,14 +145,21 @@ export function ProfileScreen() {
 
         <MetalPanel glow>
           <View style={styles.headerRow}>
-            <View style={styles.avatarWrapper}>
-              {avatarUrl ? (
-                <Image source={{ uri: avatarUrl }} style={styles.avatar} />
-              ) : (
-                <View style={styles.avatarFallback}>
-                  <Text style={styles.avatarInitials}>{initials}</Text>
-                </View>
-              )}
+            <View style={styles.avatarColumn}>
+              <View style={styles.avatarWrapper}>
+                {normalizedAvatarUrl ? (
+                  <Image source={{ uri: normalizedAvatarUrl }} style={styles.avatar} />
+                ) : (
+                  <View style={styles.avatarFallback}>
+                    <Text style={styles.avatarInitials}>{initials}</Text>
+                  </View>
+                )}
+              </View>
+              <MetalButton
+                title={isUploadingPhoto ? 'Updating photo…' : 'Change photo'}
+                onPress={handleChangeAvatar}
+                disabled={isUploadingPhoto || isPicking}
+              />
             </View>
             <View style={styles.meta}>
               <Text style={styles.label}>Display Name</Text>
@@ -161,6 +222,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: theme.spacing.lg,
     alignItems: 'center',
+  },
+  avatarColumn: {
+    alignItems: 'center',
+    gap: theme.spacing.sm,
   },
   avatarWrapper: {
     width: 88,

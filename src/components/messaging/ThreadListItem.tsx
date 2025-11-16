@@ -3,6 +3,7 @@ import React, { memo, useMemo } from 'react';
 import { Image, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import type { Thread } from '@schemas/messaging';
+import { normalizeAvatarUrl } from '@utils/avatar';
 
 type Props = {
   thread: Thread;
@@ -36,7 +37,7 @@ const ThreadListItemComponent: React.FC<Props> = ({
 
   const user = otherMember?.user;
   const displayName = user?.name || user?.handle || thread.title || 'Unknown user';
-  const avatarUrl = user?.photo || '';
+  const avatarUrl = normalizeAvatarUrl(user?.photo || undefined);
   const isOnline = Boolean(user?.flags?.online);
   const lastMessage = thread.last_message?.body || 'No messages yet';
   const timeLabel = formatTime(thread.updated_at || thread.created_at);

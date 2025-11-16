@@ -1,8 +1,10 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
+import { savePersonalMapProfile } from '@api/users';
 import { UserAvatar } from '@components/UserAvatar';
+import { useAvatarPicker } from '@hooks/useAvatarPicker';
 import { useAuthStore } from '@store/authStore';
 import { theme } from '@theme';
 
@@ -11,10 +13,49 @@ export function ProfileScreen() {
   const personalMap = useAuthStore((state) => state.personalMap);
   const hasCompletedPersonalMap = useAuthStore((state) => state.hasCompletedPersonalMap);
   const logout = useAuthStore((state) => state.logout);
+  const [isUpdatingPhoto, setIsUpdatingPhoto] = useState(false);
+  const { pickImage, isPicking } = useAvatarPicker();
+  const fetchProfile = useAuthStore((state) => state.fetchProfile);
 
   const handleLogout = useCallback(async () => {
     await logout();
   }, [logout]);
+
+  const handleChangePhoto = useCallback(async () => {
+    if (isUpdatingPhoto || isPicking) {
+      return;
+    }
+    console.debug('[ProfileHome] change avatar: opening picker');
+    const asset = await pickImage();
+    if (!asset) {
+      console.debug('[ProfileHome] change avatar: picker cancelled');
+      return;
+    }
+    setIsUpdatingPhoto(true);
+    try {
+      console.debug('[ProfileHome] change avatar: uploading asset', asset.uri);
+      await savePersonalMapProfile({
+        avatarFile: {
+          uri: asset.uri,
+          name: asset.name ?? 'avatar.jpg',
+          type: asset.type ?? 'image/jpeg',
+        },
+      });
+      console.debug('[ProfileHome] change avatar: upload success');
+      await fetchProfile();
+      if (__DEV__) {
+        const refreshed = useAuthStore.getState().currentUser;
+        console.debug('[ProfileHome] change avatar: store refreshed', {
+          photo: refreshed?.photo,
+        });
+      }
+      console.debug('[ProfileHome] change avatar: profile refreshed');
+    } catch (error) {
+      console.warn('ProfileScreen: failed to upload avatar', error);
+    } finally {
+      setIsUpdatingPhoto(false);
+    }
+  }, [fetchProfile, isPicking, isUpdatingPhoto, pickImage]);
 
   if (!currentUser) {
     return (
@@ -29,6 +70,19 @@ export function ProfileScreen() {
       <ScrollView contentContainerStyle={styles.container}>
         <LinearGradient colors={theme.gradients.card} style={styles.card}>
           <UserAvatar uri={currentUser.photo} label={currentUser.name} size={80} />
+          <TouchableOpacity
+            style={[
+              styles.editPhotoButton,
+              (isUpdatingPhoto || isPicking) && styles.editPhotoButtonDisabled,
+            ]}
+            onPress={handleChangePhoto}
+            disabled={isUpdatingPhoto || isPicking}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.editPhotoLabel}>
+              {isUpdatingPhoto ? 'Updating photo…' : 'Change photo'}
+            </Text>
+          </TouchableOpacity>
           <Text style={styles.name}>{currentUser.name}</Text>
           <Text style={styles.handle}>@{currentUser.handle}</Text>
           <Text style={styles.meta}>{currentUser.email}</Text>
@@ -92,6 +146,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: theme.spacing.md,
     ...theme.shadows.card,
+  },
+  editPhotoButton: {
+    marginTop: theme.spacing.xs,
+    paddingVertical: theme.spacing.xs,
+    paddingHorizontal: theme.spacing.md,
+    borderRadius: theme.radii.pill,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
+    backgroundColor: 'rgba(15, 23, 42, 0.4)',
+  },
+  editPhotoButtonDisabled: {
+    opacity: 0.6,
+  },
+  editPhotoLabel: {
+    color: theme.text.primary,
+    fontWeight: '600',
   },
   name: {
     ...theme.typography.headingL,

@@ -31,6 +31,7 @@ export type AuthStore = {
   savePersonalMap: (payload: PersonalMapPayload) => Promise<PersonalMapProfile>;
   setError: (message: string | null) => void;
   applySession: (token: string | null, refreshToken: string | null) => Promise<void>;
+  setCurrentUser: (user: User | null) => void;
 };
 
 const resetMessagingStore = () => {
@@ -95,10 +96,10 @@ const useAuthStore = create<AuthStore>()(
           }
         },
         async logout() {
+          get().setCurrentUser(null);
           set({
             accessToken: null,
             refreshToken: null,
-            currentUser: null,
             personalMap: null,
             hasCompletedPersonalMap: false,
             error: null,
@@ -137,12 +138,11 @@ const useAuthStore = create<AuthStore>()(
               authApi.me(),
               usersApi.getPersonalMapProfile().catch(() => null),
             ]);
+            get().setCurrentUser(user);
             set({
-              currentUser: user,
               personalMap,
               hasCompletedPersonalMap: Boolean(personalMap?.is_complete),
             });
-            setMessagingSessionUser(user?.id ?? null);
           } catch (error) {
             const message =
               error instanceof Error ? error.message : 'Unable to load profile';
@@ -158,6 +158,13 @@ const useAuthStore = create<AuthStore>()(
         },
         setError(message) {
           set({ error: message });
+        },
+        setCurrentUser(user) {
+          set({ currentUser: user });
+          setMessagingSessionUser(user?.id ?? null);
+          if (__DEV__) {
+            console.debug('authStore: currentUser updated', { photo: user?.photo });
+          }
         },
         async applySession(token: string | null, refreshToken: string | null) {
           set({ accessToken: token, refreshToken });

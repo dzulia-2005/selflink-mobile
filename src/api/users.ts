@@ -94,6 +94,11 @@ export async function savePersonalMapProfile(
       }
       formData.append(key, String(value));
     });
+    if (__DEV__) {
+      console.debug('userApi: savePersonalMapProfile uploading avatar_image', {
+        uri: avatarFile.uri,
+      });
+    }
     formData.append('avatar_image', {
       uri: avatarFile.uri,
       name: avatarFile.name,

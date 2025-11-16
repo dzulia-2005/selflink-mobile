@@ -90,3 +90,31 @@ export async function updateCurrentUser(
     body: payload,
   });
 }
+
+export type AvatarUploadPayload = {
+  uri: string;
+  name?: string;
+  type?: string;
+};
+
+export async function uploadPersonalMapAvatar(
+  payload: AvatarUploadPayload,
+): Promise<AuthUser> {
+  const form = new FormData();
+  form.append('avatar_image', {
+    uri: payload.uri,
+    name: payload.name ?? 'avatar.jpg',
+    type: payload.type ?? 'image/jpeg',
+  } as any);
+
+  await apiClient.request('/me/profile/', {
+    method: 'PATCH',
+    body: form,
+  });
+
+  const user = await fetchCurrentUser();
+  if (__DEV__) {
+    console.debug('userApi: /users/me/ response', { photo: user?.avatarUrl, raw: user });
+  }
+  return user;
+}

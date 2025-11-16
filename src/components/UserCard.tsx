@@ -4,6 +4,7 @@ import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { MetalPanel } from '@components/MetalPanel';
 import type { UserProfile } from '@services/api/user';
 import { theme } from '@theme/index';
+import { normalizeAvatarUrl } from '@utils/avatar';
 
 type Props = {
   user: UserProfile & { flags?: Record<string, unknown> & { following?: boolean } };
@@ -35,7 +36,7 @@ export const UserCard = memo(function UserCard({
     <MetalPanel glow={following}>
       <View style={styles.row}>
         {user.photo ? (
-          <Image source={{ uri: user.photo }} style={styles.avatar} />
+          <Image source={{ uri: normalizeAvatarUrl(user.photo) }} style={styles.avatar} />
         ) : (
           <View style={styles.avatarPlaceholder}>
             <Text style={styles.initials}>{initials}</Text>
