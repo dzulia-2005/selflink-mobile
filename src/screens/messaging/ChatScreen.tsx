@@ -114,10 +114,25 @@ export function ChatScreen() {
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const typingActiveRef = useRef(false);
   const currentUserKey = currentUserId != null ? String(currentUserId) : null;
+  const listRef = useRef<FlatList<Message> | null>(null);
+
+  const sortedMessages = useMemo(() => {
+    return [...messages].sort((a, b) => {
+      const timeA = a.created_at ? new Date(a.created_at).getTime() : 0;
+      const timeB = b.created_at ? new Date(b.created_at).getTime() : 0;
+      return timeA - timeB;
+    });
+  }, [messages]);
 
   useEffect(() => {
     loadThreadMessages(threadId).catch(() => undefined);
   }, [loadThreadMessages, threadId]);
+
+  useEffect(() => {
+    if (listRef.current && sortedMessages.length > 0) {
+      listRef.current.scrollToEnd({ animated: true });
+    }
+  }, [sortedMessages.length]);
 
   const headerProfileButton = useCallback(() => {
     if (!otherUserId) {
@@ -297,8 +312,8 @@ export function ChatScreen() {
       const senderId = item.sender?.id != null ? String(item.sender.id) : null;
       const isOwn =
         senderId != null && currentUserKey != null ? senderId === currentUserKey : false;
-      const previous = messages[index - 1];
-      const next = messages[index + 1];
+      const previous = sortedMessages[index - 1];
+      const next = sortedMessages[index + 1];
       const currentSenderKey =
         senderId ?? (item.sender?.id != null ? String(item.sender.id) : null);
       const prevSenderKey =
@@ -326,7 +341,7 @@ export function ChatScreen() {
         />
       );
     },
-    [confirmDeleteMessage, currentUserKey, messages, pendingDeleteId],
+    [confirmDeleteMessage, currentUserKey, pendingDeleteId, sortedMessages],
   );
 
   if (isLoading && messages.length === 0) {
@@ -340,11 +355,11 @@ export function ChatScreen() {
   return (
     <View style={styles.container}>
       <FlatList
-        data={messages}
+        ref={listRef}
+        data={sortedMessages}
         keyExtractor={(item) => String(item.id)}
         renderItem={renderMessage}
         contentContainerStyle={styles.listContent}
-        inverted
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         ListFooterComponent={<View style={styles.listFooter} />}
