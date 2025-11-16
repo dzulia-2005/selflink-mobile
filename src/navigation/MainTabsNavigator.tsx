@@ -2,8 +2,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useMemo } from 'react';
-import { Platform } from 'react-native';
+import { StyleSheet } from 'react-native';
 import type { ColorValue, StyleProp, TextStyle } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CommunityScreen } from '@screens/CommunityScreen';
 import { CreatePostScreen } from '@screens/feed/CreatePostScreen';
@@ -30,6 +31,8 @@ import type {
 } from './types';
 
 const SELF_LINK_GREEN = '#16a34a';
+const TAB_BAR_BG = '#020617';
+const TAB_BAR_BORDER = '#1E1B4B';
 
 export const MESSAGE_BADGE_STYLE: StyleProp<TextStyle> = {
   minWidth: 20,
@@ -164,6 +167,9 @@ function ProfileStackNavigator() {
 }
 
 export function MainTabsNavigator() {
+  const insets = useSafeAreaInsets();
+  const safeBottom = Math.max(insets.bottom, 12);
+  const tabHeight = 56 + safeBottom;
   const totalUnread = useMessagingStore((state) => state.totalUnread);
   const messagesOptions = useMemo(() => {
     const badge =
@@ -182,17 +188,12 @@ export function MainTabsNavigator() {
         tabBarActiveTintColor: SELF_LINK_GREEN,
         tabBarInactiveTintColor: '#9CA3AF',
         tabBarStyle: {
-          position: 'absolute',
-          backgroundColor: 'transparent',
-          borderTopWidth: 0,
-          borderTopColor: 'transparent',
-          elevation: 0,
-          shadowOpacity: 0,
-          height: 64,
-          marginHorizontal: 16,
-          marginBottom: Platform.OS === 'android' ? 20 : 0,
-          paddingBottom: 8,
-          paddingTop: 6,
+          backgroundColor: TAB_BAR_BG,
+          borderTopColor: TAB_BAR_BORDER,
+          borderTopWidth: StyleSheet.hairlineWidth,
+          height: tabHeight,
+          paddingBottom: safeBottom,
+          paddingTop: 8,
         },
         tabBarLabelStyle: {
           fontSize: 11,

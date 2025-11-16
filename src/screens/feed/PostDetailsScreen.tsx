@@ -10,6 +10,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import * as socialApi from '@api/social';
 import type { Comment, Post } from '@schemas/social';
@@ -31,6 +32,7 @@ export function PostDetailsScreen() {
   const [submitting, setSubmitting] = useState(false);
   const [commentText, setCommentText] = useState('');
   const addCommentToStore = useFeedStore((state) => state.addComment);
+  const insets = useSafeAreaInsets();
   const postId = route.params?.postId ?? post?.id;
 
   const fetchPost = useCallback(async () => {
@@ -128,18 +130,25 @@ export function PostDetailsScreen() {
         />
       )}
 
-      <View style={styles.composer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Write a comment"
-          value={commentText}
-          onChangeText={setCommentText}
-        />
-        <Button
-          title={submitting ? 'Sending…' : 'Send'}
-          onPress={handleSubmit}
-          disabled={submitting}
-        />
+      <View
+        style={[
+          styles.composerBar,
+          { paddingBottom: Math.max(insets.bottom, 16) },
+        ]}
+      >
+        <View style={styles.composer}>
+          <TextInput
+            style={styles.input}
+            placeholder="Write a comment"
+            value={commentText}
+            onChangeText={setCommentText}
+          />
+          <Button
+            title={submitting ? 'Sending…' : 'Send'}
+            onPress={handleSubmit}
+            disabled={submitting}
+          />
+        </View>
       </View>
     </View>
   );
@@ -175,10 +184,18 @@ const styles = StyleSheet.create({
   commentAuthor: {
     fontWeight: '500',
   },
+  composerBar: {
+    marginTop: 12,
+    marginHorizontal: -16,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    backgroundColor: '#0B1120',
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderColor: '#1F2937',
+  },
   composer: {
     flexDirection: 'row',
     gap: 8,
-    marginTop: 12,
   },
   input: {
     flex: 1,
