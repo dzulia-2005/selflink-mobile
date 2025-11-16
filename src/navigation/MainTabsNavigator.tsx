@@ -5,16 +5,21 @@ import { useMemo } from 'react';
 import { Platform } from 'react-native';
 import type { ColorValue, StyleProp, TextStyle } from 'react-native';
 
+import { CommunityScreen } from '@screens/CommunityScreen';
 import { CreatePostScreen } from '@screens/feed/CreatePostScreen';
 import { FeedScreen } from '@screens/feed/FeedScreen';
 import { PostDetailsScreen } from '@screens/feed/PostDetailsScreen';
+import { InboxScreen } from '@screens/InboxScreen';
 import { MentorHomeScreen } from '@screens/mentor/MentorHomeScreen';
 import { ChatScreen } from '@screens/messaging/ChatScreen';
 import { ThreadsScreen } from '@screens/messaging/ThreadsScreen';
 import { NotificationsScreen } from '@screens/notifications/NotificationsScreen';
+import { PaymentsScreen } from '@screens/PaymentsScreen';
 import { ProfileScreen } from '@screens/profile/ProfileScreen';
 import { SearchProfilesScreen } from '@screens/profile/SearchProfilesScreen';
 import { UserProfileScreen } from '@screens/profile/UserProfileScreen';
+import { SoulMatchScreen } from '@screens/SoulMatchScreen';
+import { WalletLedgerScreen } from '@screens/WalletLedgerScreen';
 import { useMessagingStore } from '@store/messagingStore';
 
 import type {
@@ -55,6 +60,16 @@ function getTabIconName(
       return focused ? 'chatbubble-ellipses' : 'chatbubble-ellipses-outline';
     case 'Mentor':
       return focused ? 'sparkles' : 'sparkles-outline';
+    case 'SoulMatch':
+      return focused ? 'heart' : 'heart-outline';
+    case 'Payments':
+      return focused ? 'card' : 'card-outline';
+    case 'WalletLedger':
+      return focused ? 'wallet' : 'wallet-outline';
+    case 'Community':
+      return focused ? 'people' : 'people-outline';
+    case 'Inbox':
+      return focused ? 'mail-unread' : 'mail-unread-outline';
     case 'Notifications':
       return focused ? 'notifications' : 'notifications-outline';
     case 'Profile':
@@ -192,6 +207,11 @@ export function MainTabsNavigator() {
         options={messagesOptions}
       />
       <Tab.Screen name="Mentor" component={MentorHomeScreen} />
+      <Tab.Screen name="SoulMatch" component={SoulMatchScreen} />
+      <Tab.Screen name="Payments" component={PaymentsScreen} />
+      <Tab.Screen name="WalletLedger" component={WalletLedgerScreen} />
+      <Tab.Screen name="Community" component={CommunityScreen} />
+      <Tab.Screen name="Inbox" component={InboxScreen} />
       <Tab.Screen name="Notifications" component={NotificationsScreen} />
       <Tab.Screen name="Profile" component={ProfileStackNavigator} />
     </Tab.Navigator>

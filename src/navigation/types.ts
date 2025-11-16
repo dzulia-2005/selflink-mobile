@@ -39,6 +39,11 @@ export type MainTabsParamList = {
   Feed: NavigatorScreenParams<FeedStackParamList> | undefined;
   Messages: NavigatorScreenParams<MessagesStackParamList> | undefined;
   Mentor: undefined;
+  SoulMatch: undefined;
+  Payments: undefined;
+  WalletLedger: undefined;
   Notifications: undefined;
   Profile: NavigatorScreenParams<ProfileStackParamList> | undefined;
+  Community: undefined;
+  Inbox: undefined;
 };
