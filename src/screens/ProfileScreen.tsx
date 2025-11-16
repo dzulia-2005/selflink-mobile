@@ -18,9 +18,9 @@ import { AuthUser } from '@context/AuthContext';
 import { useAuth } from '@hooks/useAuth';
 import { useAvatarPicker } from '@hooks/useAvatarPicker';
 import { uploadPersonalMapAvatar } from '@services/api/user';
+import { useAuthStore } from '@store/authStore';
 import { theme } from '@theme/index';
 import { normalizeAvatarUrl } from '@utils/avatar';
-import { useAuthStore } from '@store/authStore';
 
 export function ProfileScreen() {
   const { user, signOut, updateProfile, refreshProfile, setUser } = useAuth();
