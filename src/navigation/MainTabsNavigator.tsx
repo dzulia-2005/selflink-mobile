@@ -5,10 +5,10 @@ import { useMemo } from 'react';
 import { Platform } from 'react-native';
 import type { ColorValue, StyleProp, TextStyle } from 'react-native';
 
+import { CommunityScreen } from '@screens/CommunityScreen';
 import { CreatePostScreen } from '@screens/feed/CreatePostScreen';
 import { FeedScreen } from '@screens/feed/FeedScreen';
 import { PostDetailsScreen } from '@screens/feed/PostDetailsScreen';
-import { CommunityScreen } from '@screens/CommunityScreen';
 import { InboxScreen } from '@screens/InboxScreen';
 import { MentorHomeScreen } from '@screens/mentor/MentorHomeScreen';
 import { ChatScreen } from '@screens/messaging/ChatScreen';
@@ -17,8 +17,8 @@ import { NotificationsScreen } from '@screens/notifications/NotificationsScreen'
 import { PaymentsScreen } from '@screens/PaymentsScreen';
 import { ProfileScreen } from '@screens/profile/ProfileScreen';
 import { SearchProfilesScreen } from '@screens/profile/SearchProfilesScreen';
-import { SoulMatchScreen } from '@screens/SoulMatchScreen';
 import { UserProfileScreen } from '@screens/profile/UserProfileScreen';
+import { SoulMatchScreen } from '@screens/SoulMatchScreen';
 import { WalletLedgerScreen } from '@screens/WalletLedgerScreen';
 import { useMessagingStore } from '@store/messagingStore';
 
