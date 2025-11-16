@@ -85,12 +85,15 @@ export function ProfileScreen() {
     if (isUploadingPhoto || isPicking) {
       return;
     }
+    console.debug('[ProfileScreen] change avatar: opening picker');
     const asset = await pickImage();
     if (!asset) {
+      console.debug('[ProfileScreen] change avatar: picker cancelled');
       return;
     }
     setIsUploadingPhoto(true);
     try {
+      console.debug('[ProfileScreen] change avatar: uploading asset', asset.uri);
       setAvatarUrl(asset.uri);
       if (user) {
         setUser({ ...user, avatarUrl: asset.uri });
@@ -100,9 +103,11 @@ export function ProfileScreen() {
         name: asset.name,
         type: asset.type,
       });
+      console.debug('[ProfileScreen] change avatar: upload success', updated.avatarUrl);
       setAvatarUrl(updated.avatarUrl ?? asset.uri);
       setUser(updated);
       await refreshProfile();
+      console.debug('[ProfileScreen] change avatar: profile refreshed');
       setToast({ message: 'Photo updated.', tone: 'info' });
     } catch (error) {
       console.warn('ProfileScreen: failed to update avatar', error);

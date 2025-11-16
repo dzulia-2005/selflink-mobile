@@ -25,12 +25,15 @@ export function ProfileScreen() {
     if (isUpdatingPhoto || isPicking) {
       return;
     }
+    console.debug('[ProfileHome] change avatar: opening picker');
     const asset = await pickImage();
     if (!asset) {
+      console.debug('[ProfileHome] change avatar: picker cancelled');
       return;
     }
     setIsUpdatingPhoto(true);
     try {
+      console.debug('[ProfileHome] change avatar: uploading asset', asset.uri);
       await savePersonalMapProfile({
         avatarFile: {
           uri: asset.uri,
@@ -38,7 +41,9 @@ export function ProfileScreen() {
           type: asset.type ?? 'image/jpeg',
         },
       });
+      console.debug('[ProfileHome] change avatar: upload success');
       await fetchProfile();
+      console.debug('[ProfileHome] change avatar: profile refreshed');
     } catch (error) {
       console.warn('ProfileScreen: failed to upload avatar', error);
     } finally {

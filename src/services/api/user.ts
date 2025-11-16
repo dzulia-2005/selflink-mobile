@@ -107,7 +107,7 @@ export async function uploadPersonalMapAvatar(
     type: payload.type ?? 'image/jpeg',
   } as any);
 
-  await apiClient.request('/api/v1/me/profile/', {
+  await apiClient.request('/me/profile/', {
     method: 'PATCH',
     body: form,
   });
