@@ -131,10 +131,7 @@ export function PostDetailsScreen() {
       )}
 
       <View
-        style={[
-          styles.composerBar,
-          { paddingBottom: Math.max(insets.bottom, 16) },
-        ]}
+        style={[styles.composerBar, { paddingBottom: Math.max(insets.bottom, 16) }]}
       >
         <View style={styles.composer}>
           <TextInput
