@@ -3,6 +3,7 @@ import { memo, useCallback, useState } from 'react';
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { followUser, unfollowUser } from '@api/users';
+import { PostContent } from '@components/PostContent';
 import type { Post } from '@schemas/social';
 import { useAuthStore } from '@store/authStore';
 import { useFeedStore } from '@store/feedStore';
@@ -104,22 +105,35 @@ function FeedPostCardComponent({ post }: Props) {
         )}
       </View>
 
-      <TouchableOpacity onPress={handleOpenDetails} activeOpacity={0.7}>
-        <Text style={styles.content}>{post.text}</Text>
+      <TouchableOpacity onPress={handleOpenDetails} activeOpacity={0.92}>
+        <View style={styles.body}>
+          <PostContent text={post.text} media={post.media} />
+        </View>
       </TouchableOpacity>
+
+      <View style={styles.divider} />
 
       <View style={styles.footer}>
         <TouchableOpacity
           onPress={handleLikeToggle}
           accessibilityRole="button"
           disabled={likePending}
-          style={likePending ? styles.likeDisabled : undefined}
+          style={[
+            styles.actionPill,
+            post.liked && styles.actionPillActive,
+            likePending && styles.likeDisabled,
+          ]}
         >
           <Text style={styles.actionText}>
             {post.liked ? 'Unlike' : 'Like'} • {post.like_count}
           </Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={handleOpenDetails} accessibilityRole="button">
+        <TouchableOpacity
+          onPress={handleOpenDetails}
+          accessibilityRole="button"
+          style={styles.actionPill}
+          activeOpacity={0.85}
+        >
           <Text style={styles.actionText}>Comments • {post.comment_count}</Text>
         </TouchableOpacity>
       </View>
@@ -131,14 +145,22 @@ export const FeedPostCard = memo(FeedPostCardComponent);
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#101828',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
+    backgroundColor: '#0B1120',
+    borderRadius: 24,
+    padding: 18,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(148,163,184,0.12)',
+    shadowColor: '#000000',
+    shadowOpacity: 0.35,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 12 },
+    elevation: 6,
   },
   header: {
     flexDirection: 'row',
     gap: 12,
+    alignItems: 'center',
   },
   meta: {
     flex: 1,
@@ -146,6 +168,7 @@ const styles = StyleSheet.create({
   author: {
     fontWeight: '600',
     color: '#F8FAFC',
+    fontSize: 16,
   },
   handle: {
     color: '#94A3B8',
@@ -157,28 +180,52 @@ const styles = StyleSheet.create({
   },
   followButton: {
     borderWidth: 1,
-    borderColor: '#475569',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
+    borderColor: '#38BDF8',
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 999,
     alignSelf: 'center',
+    backgroundColor: 'rgba(56,189,248,0.12)',
   },
   followButtonText: {
     color: '#E2E8F0',
     fontSize: 12,
+    fontWeight: '600',
   },
-  content: {
-    marginTop: 12,
-    color: '#E2E8F0',
+  body: {
+    marginTop: 14,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: 'rgba(148,163,184,0.18)',
+    marginTop: 16,
   },
   footer: {
-    marginTop: 12,
+    marginTop: 16,
     flexDirection: 'row',
     justifyContent: 'space-between',
+    gap: 12,
+  },
+  actionPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 999,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(96,165,250,0.4)',
+    backgroundColor: 'rgba(96,165,250,0.08)',
+    flex: 1,
+    justifyContent: 'center',
+  },
+  actionPillActive: {
+    borderColor: '#38BDF8',
+    backgroundColor: 'rgba(56,189,248,0.18)',
   },
   actionText: {
     color: '#60A5FA',
-    fontWeight: '500',
+    fontWeight: '600',
+    textAlign: 'center',
   },
   likeDisabled: {
     opacity: 0.6,

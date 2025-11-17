@@ -15,6 +15,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import * as socialApi from '@api/social';
 import { MarkdownText } from '@components/markdown/MarkdownText';
+import { PostContent } from '@components/PostContent';
+import { UserAvatar } from '@components/UserAvatar';
 import { useToast } from '@context/ToastContext';
 import { useImagePicker, type PickedImage } from '@hooks/useImagePicker';
 import type { Comment, Post } from '@schemas/social';
@@ -150,8 +152,21 @@ export function PostDetailsScreen() {
         <ActivityIndicator />
       ) : (
         <View style={styles.postBlock}>
-          <Text style={styles.postAuthor}>{post?.author.name}</Text>
-          <Text style={styles.postContent}>{post?.text}</Text>
+          <View style={styles.postHeader}>
+            <UserAvatar uri={post?.author.photo} label={post?.author.name} size={48} />
+            <View style={styles.postMeta}>
+              <Text style={styles.postAuthor}>{post?.author.name}</Text>
+              <Text style={styles.postHandle}>
+                {post ? `@${post.author.handle}` : ''}
+              </Text>
+              <Text style={styles.postTimestamp}>
+                {post ? new Date(post.created_at).toLocaleString() : ''}
+              </Text>
+            </View>
+          </View>
+          <View style={styles.postBody}>
+            <PostContent text={post?.text} media={post?.media} />
+          </View>
         </View>
       )}
 
@@ -253,16 +268,42 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   postBlock: {
-    paddingBottom: 16,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderColor: '#CBD5F5',
+    padding: 18,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(148,163,184,0.12)',
+    backgroundColor: '#0B1120',
     marginBottom: 16,
+    shadowColor: '#000',
+    shadowOpacity: 0.35,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 6,
+  },
+  postHeader: {
+    flexDirection: 'row',
+    gap: 12,
+    alignItems: 'center',
+  },
+  postMeta: {
+    flex: 1,
   },
   postAuthor: {
     fontWeight: '600',
+    color: '#F8FAFC',
+    fontSize: 18,
   },
-  postContent: {
-    marginTop: 8,
+  postHandle: {
+    color: '#94A3B8',
+    fontSize: 13,
+  },
+  postTimestamp: {
+    color: '#94A3B8',
+    fontSize: 12,
+    marginTop: 2,
+  },
+  postBody: {
+    marginTop: 14,
   },
   comment: {
     paddingVertical: 8,
