@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 
 import * as socialApi from '@api/social';
+import type { AddCommentPayload } from '@api/social';
 import type { Comment, Post } from '@schemas/social';
 
 interface FeedState {
@@ -13,7 +14,7 @@ interface FeedState {
   loadMore: () => Promise<void>;
   likePost: (postId: string) => Promise<void>;
   unlikePost: (postId: string) => Promise<void>;
-  addComment: (postId: string, text: string) => Promise<Comment>;
+  addComment: (postId: string, payload: AddCommentPayload) => Promise<Comment>;
 }
 
 export const useFeedStore = create<FeedState>((set, get) => ({
@@ -99,13 +100,17 @@ export const useFeedStore = create<FeedState>((set, get) => ({
       throw error;
     }
   },
-  async addComment(postId, text) {
-    const trimmed = text.trim();
-    if (!trimmed) {
-      throw new Error('Comment text is required.');
+  async addComment(postId, payload) {
+    const trimmed = payload.body?.trim() ?? '';
+    const normalizedPayload: AddCommentPayload = {
+      ...payload,
+      body: trimmed,
+    };
+    if (!trimmed && !payload.image) {
+      throw new Error('Write a comment or attach a photo.');
     }
     try {
-      const comment = await socialApi.addComment(postId, trimmed);
+      const comment = await socialApi.addComment(postId, normalizedPayload);
       set({
         posts: get().posts.map((post) =>
           String(post.id) === String(postId)

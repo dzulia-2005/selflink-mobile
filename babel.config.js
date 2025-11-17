@@ -9,7 +9,7 @@ module.exports = function (api) {
           '@api': './src/api',
           '@components': './src/components',
           '@screens': './src/screens',
-          '@theme': './src/theme.ts',
+          '@theme': './src/theme',
           '@navigation': './src/navigation',
           '@lib': './src/lib',
           '@realtime': './src/realtime',

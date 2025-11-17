@@ -39,14 +39,17 @@ export interface Comment {
   id: Identifier;
   post: Identifier;
   author: User;
-  text: string;
+  body: string;
+  text?: string;
+  image_url?: string | null;
   parent: number | null;
   created_at: string;
 }
 
 export interface CommentInput {
   post: Identifier;
-  text: string;
+  body: string;
+  text?: string;
   parent?: Identifier | null;
 }
 

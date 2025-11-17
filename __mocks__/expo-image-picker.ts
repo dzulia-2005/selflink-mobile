@@ -5,8 +5,10 @@ const defaultPermission = {
   expires: 'never' as const,
 };
 
-export const MediaType = {
-  IMAGE: 'images',
+export const MediaTypeOptions = {
+  All: 'all',
+  Images: 'images',
+  Videos: 'videos',
 } as const;
 
 export const requestMediaLibraryPermissionsAsync = jest.fn(async () => defaultPermission);
@@ -17,7 +19,7 @@ export const launchImageLibraryAsync = jest.fn(async () => ({
 }));
 
 export default {
-  MediaType,
+  MediaTypeOptions,
   requestMediaLibraryPermissionsAsync,
   launchImageLibraryAsync,
 };
