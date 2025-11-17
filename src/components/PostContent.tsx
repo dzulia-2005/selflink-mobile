@@ -1,4 +1,4 @@
-import type { MediaAsset } from '@types/social';
+import type { MediaAsset } from '@schemas/social';
 import { memo, useMemo } from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 

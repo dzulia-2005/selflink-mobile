@@ -1,12 +1,22 @@
-import type { MediaAsset } from '@types/social';
+import type { MediaAsset } from '@schemas/social';
 
 import { resolveBackendUrl } from './backendUrl';
 
-type MediaLike = Pick<MediaAsset, 's3_key' | 'meta'> & {
+type MediaMeta =
+  | MediaAsset['meta']
+  | string
+  | {
+      url?: string | null;
+      urls?: Record<string, unknown> | null;
+    }
+  | null;
+
+type MediaLike = Pick<MediaAsset, 's3_key'> & {
+  meta?: MediaMeta;
   url?: string | null;
 };
 
-const pickMetaUrl = (value: MediaLike['meta']): string | undefined => {
+const pickMetaUrl = (value: MediaMeta): string | undefined => {
   if (!value) {
     return undefined;
   }
@@ -36,6 +46,6 @@ export function resolveMediaUrl(media?: MediaLike | null): string | undefined {
   if (!media) {
     return undefined;
   }
-  const candidate = media.url ?? pickMetaUrl(media.meta) ?? media.s3_key;
+  const candidate = media.url ?? pickMetaUrl(media.meta ?? null) ?? media.s3_key;
   return resolveBackendUrl(candidate);
 }
