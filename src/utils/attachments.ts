@@ -46,7 +46,7 @@ export function buildAttachments({
     .flatMap((source, index) => collectLegacyImages(source, String(index)))
     .forEach((legacy) => attachments.push(legacy));
 
-  return attachments;
+  return dedupeAttachments(attachments);
 }
 
 export function collectLegacyImages(source: unknown, prefix = 'legacy'): Attachment[] {
@@ -106,4 +106,18 @@ const extractDirectUrl = (value: Record<string, unknown>): string | undefined =>
     return value.default;
   }
   return undefined;
+};
+
+const dedupeAttachments = (attachments: Attachment[]): Attachment[] => {
+  if (attachments.length <= 1) {
+    return attachments;
+  }
+  const seen = new Set<string>();
+  return attachments.filter((attachment) => {
+    if (seen.has(attachment.uri)) {
+      return false;
+    }
+    seen.add(attachment.uri);
+    return true;
+  });
 };

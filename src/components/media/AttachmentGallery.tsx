@@ -78,53 +78,65 @@ const styles = StyleSheet.create({
 const posterStyles = StyleSheet.create({
   single: {
     width: '100%',
-    minHeight: 240,
+    minHeight: 200,
+    maxHeight: 260,
   },
   pair: {
     width: '48%',
-    minHeight: 180,
+    minHeight: 160,
+    maxHeight: 210,
   },
   hero: {
     width: '100%',
-    minHeight: 220,
+    minHeight: 190,
+    maxHeight: 240,
   },
   support: {
     width: '48%',
-    minHeight: 140,
+    minHeight: 130,
+    maxHeight: 190,
   },
   quad: {
     width: '48%',
-    minHeight: 160,
+    minHeight: 130,
+    maxHeight: 180,
   },
   masonry: {
     width: '31%',
-    minHeight: 120,
+    minHeight: 110,
+    maxHeight: 160,
   },
 });
 
 const compactStyles = StyleSheet.create({
   single: {
     width: '100%',
-    minHeight: 180,
+    minHeight: 150,
+    maxHeight: 200,
   },
   pair: {
     width: '48%',
-    minHeight: 140,
+    minHeight: 130,
+    maxHeight: 170,
   },
   hero: {
     width: '100%',
-    minHeight: 160,
+    minHeight: 150,
+    maxHeight: 190,
   },
   support: {
     width: '48%',
-    minHeight: 120,
+    minHeight: 110,
+    maxHeight: 150,
   },
   quad: {
     width: '48%',
-    minHeight: 130,
+    minHeight: 110,
+    maxHeight: 150,
   },
   masonry: {
     width: '31%',
-    minHeight: 110,
+    minHeight: 100,
+    maxHeight: 140,
   },
 });
