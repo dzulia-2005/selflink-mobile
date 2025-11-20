@@ -23,7 +23,9 @@ export function SoulMatchScreen() {
 
         <MetalPanel glow>
           <Text style={styles.panelTitle}>Recommendations</Text>
-          <Text style={styles.cardText}>Browse suggested matches sorted by compatibility.</Text>
+          <Text style={styles.cardText}>
+            Browse suggested matches sorted by compatibility.
+          </Text>
           <MetalButton
             title="View Recommendations"
             onPress={() => navigation.navigate('SoulMatchRecommendations')}

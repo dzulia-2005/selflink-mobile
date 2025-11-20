@@ -1,3 +1,5 @@
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useCallback, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -5,11 +7,9 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-nati
 import { savePersonalMapProfile } from '@api/users';
 import { UserAvatar } from '@components/UserAvatar';
 import { useAvatarPicker } from '@hooks/useAvatarPicker';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { ProfileStackParamList } from '@navigation/types';
 import { useAuthStore } from '@store/authStore';
 import { theme } from '@theme';
-import { ProfileStackParamList } from '@navigation/types';
 
 export function ProfileScreen() {
   const currentUser = useAuthStore((state) => state.currentUser);

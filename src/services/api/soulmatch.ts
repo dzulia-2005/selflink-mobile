@@ -1,5 +1,5 @@
-import { apiClient } from '@services/api/client';
 import { SoulmatchResult } from '@schemas/soulmatch';
+import { apiClient } from '@services/api/client';
 
 export async function fetchRecommendations(): Promise<SoulmatchResult[]> {
   return apiClient.request<SoulmatchResult[]>('/api/v1/soulmatch/recommendations/', {

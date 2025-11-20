@@ -1,5 +1,4 @@
 import { apiClient } from '@services/api/client';
-import { NatalChart } from '@schemas/astro';
 
 export type MentorProfile = {
   id?: number;
@@ -111,6 +110,8 @@ export async function fetchDailyMentor(): Promise<DailyMentorResponse> {
   return apiClient.request('/api/v1/mentor/daily/', { method: 'GET' });
 }
 
-export async function fetchSoulmatchMentor(userId: number): Promise<SoulmatchMentorResponse> {
+export async function fetchSoulmatchMentor(
+  userId: number,
+): Promise<SoulmatchMentorResponse> {
   return apiClient.request(`/api/v1/mentor/soulmatch/${userId}/`, { method: 'GET' });
 }

@@ -1,6 +1,6 @@
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { MetalButton } from '@components/MetalButton';
@@ -8,8 +8,8 @@ import { MetalPanel } from '@components/MetalPanel';
 import { LoadingView } from '@components/StateViews';
 import { useToast } from '@context/ToastContext';
 import { SoulMatchStackParamList } from '@navigation/types';
-import { fetchSoulmatchMentor, fetchSoulmatchWith } from '@services/api/soulmatch';
 import { SoulmatchResult } from '@schemas/soulmatch';
+import { fetchSoulmatchMentor, fetchSoulmatchWith } from '@services/api/soulmatch';
 import { theme } from '@theme/index';
 
 type Route = RouteProp<SoulMatchStackParamList, 'SoulMatchDetail'>;
@@ -27,7 +27,7 @@ export function SoulMatchDetailsScreen() {
 
   const title = useMemo(() => displayName || 'SoulMatch', [displayName]);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     if (!userId) {
       setLoading(false);
       return;
@@ -38,32 +38,42 @@ export function SoulMatchDetailsScreen() {
       setData(result);
     } catch (error) {
       console.error('Soulmatch details failed', error);
-      toast.push({ message: 'Unable to load match details.', tone: 'error', duration: 4000 });
+      toast.push({
+        message: 'Unable to load match details.',
+        tone: 'error',
+        duration: 4000,
+      });
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast, userId]);
 
   useEffect(() => {
     navigation.setOptions?.({ title });
     load().catch(() => undefined);
-  }, [navigation, title]);
+  }, [load, navigation, title]);
 
-  const loadMentor = async () => {
-    if (!userId) return;
+  const loadMentor = useCallback(async () => {
+    if (!userId) {
+      return;
+    }
     try {
       const result = await fetchSoulmatchMentor(userId);
       setMentorText(result.mentor_text ?? '');
       setData((prev: SoulmatchResult | null) =>
         prev
-          ? { ...prev, tags: result.tags ?? prev.tags, components: result.components ?? prev.components }
+          ? {
+              ...prev,
+              tags: result.tags ?? prev.tags,
+              components: result.components ?? prev.components,
+            }
           : result,
       );
     } catch (error) {
       console.error('Soulmatch mentor failed', error);
       toast.push({ message: 'Mentor is unavailable. Try again later.', tone: 'error' });
     }
-  };
+  }, [toast, userId]);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -84,7 +94,12 @@ export function SoulMatchDetailsScreen() {
     );
   }
 
-  const components = data.components || { astro: 0, matrix: 0, psychology: 0, lifestyle: 0 };
+  const components = data.components || {
+    astro: 0,
+    matrix: 0,
+    psychology: 0,
+    lifestyle: 0,
+  };
 
   return (
     <ScrollView

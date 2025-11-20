@@ -1,22 +1,16 @@
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useCallback, useEffect, useState } from 'react';
-import {
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { AstroWheel } from '@components/astro/AstroWheel';
 import { MetalButton } from '@components/MetalButton';
 import { MetalPanel } from '@components/MetalPanel';
-import { AstroWheel } from '@components/astro/AstroWheel';
 import { ErrorView, LoadingView } from '@components/StateViews';
 import { MentorStackParamList } from '@navigation/types';
-import { getMyNatalChart } from '@services/api/astro';
 import { NatalChart, PlanetPosition } from '@schemas/astro';
+import { getMyNatalChart } from '@services/api/astro';
 import { theme } from '@theme/index';
 
 type PlacementRowProps = {
@@ -79,10 +73,7 @@ export function NatalChartScreen() {
   if (error) {
     return (
       <SafeAreaView style={styles.safeArea}>
-        <ErrorView
-          message={error}
-          onRetry={() => navigation.navigate('BirthData')}
-        />
+        <ErrorView message={error} onRetry={() => navigation.navigate('BirthData')} />
       </SafeAreaView>
     );
   }
@@ -115,8 +106,8 @@ export function NatalChartScreen() {
       >
         <Text style={styles.headline}>My Natal Chart</Text>
         <Text style={styles.subtitle}>
-          Sun, Moon, and Ascendant define your core identity roadmap. Refresh anytime after
-          updating birth data.
+          Sun, Moon, and Ascendant define your core identity roadmap. Refresh anytime
+          after updating birth data.
         </Text>
 
         <MetalPanel glow>
@@ -125,7 +116,11 @@ export function NatalChartScreen() {
           <PlacementRow label="Moon" data={planets.moon} />
           <PlacementRow
             label="Ascendant"
-            data={houses['1'] ? { lon: houses['1'].cusp_lon, sign: houses['1'].sign } : undefined}
+            data={
+              houses['1']
+                ? { lon: houses['1'].cusp_lon, sign: houses['1'].sign }
+                : undefined
+            }
           />
         </MetalPanel>
 

@@ -44,8 +44,22 @@ export function AstroWheel({ planets, houses, size = 280 }: WheelProps) {
   return (
     <Svg width={size} height={size}>
       <G>
-        <Circle cx={center} cy={center} r={outerRadius} stroke="#CBD5E1" strokeWidth={2} fill="none" />
-        <Circle cx={center} cy={center} r={innerRadius} stroke="#1E293B" strokeWidth={2} fill="none" />
+        <Circle
+          cx={center}
+          cy={center}
+          r={outerRadius}
+          stroke="#CBD5E1"
+          strokeWidth={2}
+          fill="none"
+        />
+        <Circle
+          cx={center}
+          cy={center}
+          r={innerRadius}
+          stroke="#1E293B"
+          strokeWidth={2}
+          fill="none"
+        />
 
         {ZODIAC_SIGNS.map((sign, index) => {
           const startDeg = index * 30;

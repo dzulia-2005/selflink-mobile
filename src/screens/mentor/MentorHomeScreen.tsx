@@ -39,7 +39,10 @@ export function MentorHomeScreen() {
           title="Natal Mentor"
           onPress={() => navigation.navigate('NatalMentor')}
         />
-        <MetalButton title="Daily Mentor" onPress={() => navigation.navigate('DailyMentor')} />
+        <MetalButton
+          title="Daily Mentor"
+          onPress={() => navigation.navigate('DailyMentor')}
+        />
       </MetalPanel>
     </View>
   );

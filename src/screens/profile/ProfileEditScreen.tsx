@@ -13,24 +13,47 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { updateMyProfile } from '@api/users';
 import { MetalButton } from '@components/MetalButton';
 import { MetalPanel } from '@components/MetalPanel';
 import { useToast } from '@context/ToastContext';
-import { updateMyProfile } from '@api/users';
-import { fetchProfileSettings, updateProfileSettings } from '@services/api/profile';
-import { useAuthStore } from '@store/authStore';
 import { ProfileStackParamList } from '@navigation/types';
 import { ProfileSettings } from '@schemas/profile';
+import { fetchProfileSettings, updateProfileSettings } from '@services/api/profile';
+import { useAuthStore } from '@store/authStore';
 import { theme } from '@theme/index';
 
 type Nav = NativeStackNavigationProp<ProfileStackParamList, 'ProfileEdit'>;
 
 const GENDERS = ['male', 'female', 'non_binary', 'other', 'prefer_not_to_say'];
-const ORIENTATIONS = ['hetero', 'homo', 'bi', 'pan', 'asexual', 'other', 'prefer_not_to_say'];
+const ORIENTATIONS = [
+  'hetero',
+  'homo',
+  'bi',
+  'pan',
+  'asexual',
+  'other',
+  'prefer_not_to_say',
+];
 const REL_GOALS = ['casual', 'long_term', 'marriage', 'unsure'];
 const ATTACHMENTS = ['secure', 'anxious', 'avoidant', 'mixed'];
-const VALUES = ['growth', 'freedom', 'connection', 'security', 'adventure', 'family', 'career'];
-const LIFESTYLE = ['remote_work', 'travel', 'fitness', 'nightlife', 'early_riser', 'spirituality'];
+const VALUES = [
+  'growth',
+  'freedom',
+  'connection',
+  'security',
+  'adventure',
+  'family',
+  'career',
+];
+const LIFESTYLE = [
+  'remote_work',
+  'travel',
+  'fitness',
+  'nightlife',
+  'early_riser',
+  'spirituality',
+];
 const LOVE_LANG = ['words', 'quality_time', 'acts', 'gifts', 'touch'];
 
 export function ProfileEditScreen() {
@@ -56,10 +79,15 @@ export function ProfileEditScreen() {
       })
       .catch((error) => {
         console.error('ProfileEditScreen: failed to load profile settings', error);
-        toast.push({ message: 'Unable to load profile details.', tone: 'error' });
+        toast.push({
+          message: 'Unable to load profile details.',
+          tone: 'error',
+        });
       })
       .finally(() => {
-        if (mounted) setLoadingProfile(false);
+        if (mounted) {
+          setLoadingProfile(false);
+        }
       });
     return () => {
       mounted = false;
@@ -69,7 +97,9 @@ export function ProfileEditScreen() {
   const toggleListValue = useCallback((key: keyof ProfileSettings, value: string) => {
     setProfileSettings((prev: ProfileSettings) => {
       const list = Array.isArray(prev[key]) ? (prev[key] as string[]) : [];
-      const next = list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
+      const next = list.includes(value)
+        ? list.filter((v) => v !== value)
+        : [...list, value];
       return { ...prev, [key]: next };
     });
   }, []);
@@ -79,7 +109,9 @@ export function ProfileEditScreen() {
   }, []);
 
   const handleSave = useCallback(async () => {
-    if (saving) return;
+    if (saving) {
+      return;
+    }
     setSaving(true);
     try {
       const updated = await updateMyProfile({
@@ -90,15 +122,33 @@ export function ProfileEditScreen() {
       });
       setCurrentUser(updated);
       await updateProfileSettings(profileSettings);
-      toast.push({ message: 'Profile updated', tone: 'info', duration: 3000 });
+      toast.push({
+        message: 'Profile updated',
+        tone: 'info',
+        duration: 3000,
+      });
       navigation.goBack();
     } catch (error) {
       console.error('ProfileEditScreen: update failed', error);
-      toast.push({ message: 'Could not update profile. Try again.', tone: 'error', duration: 5000 });
+      toast.push({
+        message: 'Could not update profile. Try again.',
+        tone: 'error',
+        duration: 5000,
+      });
     } finally {
       setSaving(false);
     }
-  }, [bio, birthPlace, locale, name, navigation, profileSettings, saving, setCurrentUser, toast]);
+  }, [
+    bio,
+    birthPlace,
+    locale,
+    name,
+    navigation,
+    profileSettings,
+    saving,
+    setCurrentUser,
+    toast,
+  ]);
 
   const renderChips = (
     options: string[],

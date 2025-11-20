@@ -1,5 +1,5 @@
-import { apiClient } from '@services/api/client';
 import { ProfileSettings } from '@schemas/profile';
+import { apiClient } from '@services/api/client';
 
 export async function fetchProfileSettings(): Promise<ProfileSettings> {
   return apiClient.request<ProfileSettings>('/api/v1/profile/me/', { method: 'GET' });

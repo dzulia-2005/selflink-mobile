@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { MetalButton } from '@components/MetalButton';
@@ -16,40 +16,43 @@ export function DailyMentorScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  const load = async (forceRefresh = false) => {
-    setLoading(true);
-    try {
-      const todayKey = new Date().toISOString().slice(0, 10);
-      if (!forceRefresh) {
-        const cached = await AsyncStorage.getItem('daily-mentor');
-        if (cached) {
-          const parsed = JSON.parse(cached) as { date?: string; messages?: string[] };
-          if (parsed.date === todayKey && parsed.messages) {
-            setMessages(parsed.messages);
-            setDate(parsed.date);
-            setLoading(false);
-            return;
+  const load = useCallback(
+    async (forceRefresh = false) => {
+      setLoading(true);
+      try {
+        const todayKey = new Date().toISOString().slice(0, 10);
+        if (!forceRefresh) {
+          const cached = await AsyncStorage.getItem('daily-mentor');
+          if (cached) {
+            const parsed = JSON.parse(cached) as { date?: string; messages?: string[] };
+            if (parsed.date === todayKey && parsed.messages) {
+              setMessages(parsed.messages);
+              setDate(parsed.date);
+              setLoading(false);
+              return;
+            }
           }
         }
+        const result = await fetchDailyMentor();
+        setMessages(result.messages || []);
+        setDate(result.date);
+        await AsyncStorage.setItem(
+          'daily-mentor',
+          JSON.stringify({ date: result.date, messages: result.messages }),
+        );
+      } catch (error) {
+        console.error('Daily mentor failed', error);
+        toast.push({ message: 'Unable to load daily guidance.', tone: 'error' });
+      } finally {
+        setLoading(false);
       }
-      const result = await fetchDailyMentor();
-      setMessages(result.messages || []);
-      setDate(result.date);
-      await AsyncStorage.setItem(
-        'daily-mentor',
-        JSON.stringify({ date: result.date, messages: result.messages }),
-      );
-    } catch (error) {
-      console.error('Daily mentor failed', error);
-      toast.push({ message: 'Unable to load daily guidance.', tone: 'error' });
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+    [toast],
+  );
 
   useEffect(() => {
     load().catch(() => undefined);
-  }, []);
+  }, [load]);
 
   const onRefresh = async () => {
     setRefreshing(true);

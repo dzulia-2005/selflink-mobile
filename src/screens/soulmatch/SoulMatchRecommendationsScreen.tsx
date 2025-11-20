@@ -16,8 +16,8 @@ import { MetalPanel } from '@components/MetalPanel';
 import { UserAvatar } from '@components/UserAvatar';
 import { useToast } from '@context/ToastContext';
 import { SoulMatchStackParamList } from '@navigation/types';
-import { fetchRecommendations } from '@services/api/soulmatch';
 import { SoulmatchResult } from '@schemas/soulmatch';
+import { fetchRecommendations } from '@services/api/soulmatch';
 import { theme } from '@theme/index';
 
 type Nav = NativeStackNavigationProp<SoulMatchStackParamList>;
@@ -36,7 +36,11 @@ export function SoulMatchRecommendationsScreen() {
       setItems(data);
     } catch (error) {
       console.error('SoulMatch recommendations failed', error);
-      toast.push({ message: 'Unable to load recommendations.', tone: 'error', duration: 4000 });
+      toast.push({
+        message: 'Unable to load recommendations.',
+        tone: 'error',
+        duration: 4000,
+      });
     } finally {
       setLoading(false);
     }
@@ -101,7 +105,11 @@ export function SoulMatchRecommendationsScreen() {
         contentContainerStyle={styles.listContent}
         renderItem={renderItem}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#fff" />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#fff"
+          />
         }
         ListEmptyComponent={
           <EmptyState

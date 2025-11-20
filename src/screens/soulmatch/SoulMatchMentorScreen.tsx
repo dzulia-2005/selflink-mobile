@@ -1,6 +1,6 @@
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { MetalButton } from '@components/MetalButton';
@@ -25,7 +25,7 @@ export function SoulMatchMentorScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
       const result = await fetchSoulmatchMentor(userId);
@@ -38,12 +38,12 @@ export function SoulMatchMentorScreen() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast, userId]);
 
   useEffect(() => {
     navigation.setOptions?.({ title: displayName || 'SoulMatch Mentor' });
     load().catch(() => undefined);
-  }, [displayName, navigation]);
+  }, [displayName, load, navigation]);
 
   const onRefresh = async () => {
     setRefreshing(true);

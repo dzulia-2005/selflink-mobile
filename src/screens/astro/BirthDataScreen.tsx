@@ -15,8 +15,8 @@ import { MetalButton } from '@components/MetalButton';
 import { MetalPanel } from '@components/MetalPanel';
 import { useToast } from '@context/ToastContext';
 import { MentorStackParamList } from '@navigation/types';
-import { createOrUpdateNatalChart } from '@services/api/astro';
 import { BirthDataPayload } from '@schemas/astro';
+import { createOrUpdateNatalChart } from '@services/api/astro';
 import { theme } from '@theme/index';
 
 const TIMEZONE_FALLBACK = 'UTC';
@@ -91,8 +91,8 @@ export function BirthDataScreen() {
         <ScrollView contentContainerStyle={styles.content}>
           <Text style={styles.headline}>Birth Data</Text>
           <Text style={styles.subtitle}>
-            Precise birth details help us compute your Ascendant and houses. Exact time and
-            timezone improve accuracy.
+            Precise birth details help us compute your Ascendant and houses. Exact time
+            and timezone improve accuracy.
           </Text>
 
           <MetalPanel glow>
