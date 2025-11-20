@@ -3,9 +3,9 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useEffect, useMemo, useState } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { LoadingOverlay } from '@components/LoadingOverlay';
 import { MetalButton } from '@components/MetalButton';
 import { MetalPanel } from '@components/MetalPanel';
+import { LoadingView } from '@components/StateViews';
 import { useToast } from '@context/ToastContext';
 import { SoulMatchStackParamList } from '@navigation/types';
 import { fetchSoulmatchMentor, fetchSoulmatchWith } from '@services/api/soulmatch';
@@ -72,7 +72,7 @@ export function SoulMatchDetailsScreen() {
   };
 
   if (loading) {
-    return <LoadingOverlay label="Loading SoulMatch…" />;
+    return <LoadingView message="Loading SoulMatch…" />;
   }
 
   if (!data) {

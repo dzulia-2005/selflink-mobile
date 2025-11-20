@@ -10,11 +10,10 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { ErrorState } from '@components/ErrorState';
-import { LoadingOverlay } from '@components/LoadingOverlay';
 import { MetalButton } from '@components/MetalButton';
 import { MetalPanel } from '@components/MetalPanel';
 import { AstroWheel } from '@components/astro/AstroWheel';
+import { ErrorView, LoadingView } from '@components/StateViews';
 import { MentorStackParamList } from '@navigation/types';
 import { getMyNatalChart } from '@services/api/astro';
 import { NatalChart, PlanetPosition } from '@schemas/astro';
@@ -74,13 +73,13 @@ export function NatalChartScreen() {
   }, [loadChart]);
 
   if (loading) {
-    return <LoadingOverlay label="Loading your natal chart…" />;
+    return <LoadingView message="Loading your natal chart…" />;
   }
 
   if (error) {
     return (
       <SafeAreaView style={styles.safeArea}>
-        <ErrorState
+        <ErrorView
           message={error}
           onRetry={() => navigation.navigate('BirthData')}
         />
@@ -91,7 +90,7 @@ export function NatalChartScreen() {
   if (!chart) {
     return (
       <SafeAreaView style={styles.safeArea}>
-        <ErrorState
+        <ErrorView
           message="No natal chart yet."
           onRetry={() => navigation.navigate('BirthData')}
         />

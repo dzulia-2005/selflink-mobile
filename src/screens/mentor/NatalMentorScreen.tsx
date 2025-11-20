@@ -1,9 +1,10 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { LoadingOverlay } from '@components/LoadingOverlay';
 import { MetalButton } from '@components/MetalButton';
 import { MetalPanel } from '@components/MetalPanel';
+import { LoadingView } from '@components/StateViews';
 import { useToast } from '@context/ToastContext';
 import { fetchNatalMentor } from '@services/api/mentor';
 import { theme } from '@theme/index';
@@ -13,11 +14,23 @@ export function NatalMentorScreen() {
   const [mentorText, setMentorText] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const load = async () => {
+  const load = async (forceRefresh = false) => {
     setLoading(true);
     try {
+      if (!forceRefresh) {
+        const cached = await AsyncStorage.getItem('natal-mentor');
+        if (cached) {
+          const parsed = JSON.parse(cached) as { mentor_text?: string };
+          if (parsed.mentor_text) {
+            setMentorText(parsed.mentor_text);
+            setLoading(false);
+            return;
+          }
+        }
+      }
       const result = await fetchNatalMentor();
       setMentorText(result.mentor_text);
+      await AsyncStorage.setItem('natal-mentor', JSON.stringify(result));
     } catch (error) {
       console.error('Natal mentor failed', error);
       toast.push({ message: 'Unable to load natal mentor.', tone: 'error' });
@@ -31,7 +44,7 @@ export function NatalMentorScreen() {
   }, []);
 
   if (loading) {
-    return <LoadingOverlay label="Calling your natal mentor…" />;
+    return <LoadingView message="Calling your natal mentor…" />;
   }
 
   return (
@@ -46,8 +59,8 @@ export function NatalMentorScreen() {
           <Text style={styles.body}>{mentorText}</Text>
         ) : (
           <View style={styles.centered}>
-            <Text style={styles.subtitle}>No reading yet. Try again.</Text>
-            <MetalButton title="Retry" onPress={load} />
+          <Text style={styles.subtitle}>No reading yet. Try again.</Text>
+            <MetalButton title="Retry" onPress={() => load(true)} />
           </View>
         )}
       </MetalPanel>
