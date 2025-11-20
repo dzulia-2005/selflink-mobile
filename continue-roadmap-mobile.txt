@@ -1,0 +1,291 @@
+SELF-LINK MOBILE ROADMAP
+========================
+This roadmap describes the mobile app implementation for:
+1. Astrology (Swiss results from backend)
+2. SoulMatch (compatibility UI)
+3. AI Mentor (LLaMA-based mentor UI)
+
+The app will use:
+- React Native (Expo)
+- Secure Auth
+- Clean modular screens
+- Reusable components
+- API integration for backend endpoints
+
+============================================================
+MILESTONE A — PROJECT SETUP & CORE ARCHITECTURE
+============================================================
+
+------------------------------------------------------------
+ISSUE A1 — Initialize Mobile Project
+------------------------------------------------------------
+Goal:
+Create the foundation for SelfLink mobile app.
+
+Tasks:
+1. Create new Expo project (if not created).
+2. Install libraries:
+   - react-navigation
+   - axios
+   - zustand (or redux)
+   - react-native-svg (for charts)
+   - expo-location
+   - expo-secure-store (for JWT)
+3. Create folder structure:
+/src
+  /components
+  /screens
+  /navigation
+  /services
+  /stores
+  /assets
+
+Definition of Done:
+- App runs with basic navigation working.
+
+------------------------------------------------------------
+ISSUE A2 — Authentication Screens & Secure Storage
+------------------------------------------------------------
+Goal:
+Implement login/register and secure token storage.
+
+Tasks:
+1. Create Screens:
+   - LoginScreen
+   - RegisterScreen
+   - WelcomeScreen
+2. API:
+   - POST /api/auth/login/
+   - POST /api/auth/register/
+3. Store tokens in SecureStore.
+4. Global state:
+   - useAuthStore with fields: user, token, login(), logout()
+
+Definition of Done:
+User can register, login, and stay logged in after app restart.
+
+============================================================
+MILESTONE B — ASTROLOGY MODULE (MOBILE)
+============================================================
+
+------------------------------------------------------------
+ISSUE B1 — Birth Data Form (Mobile)
+------------------------------------------------------------
+Goal:
+Allow user to enter birth details that backend needs for Swiss Ephemeris.
+
+Tasks:
+1. Screen: BirthDataScreen
+2. Fields:
+   - Date picker
+   - Time picker
+   - Location picker (use Google Places API or custom input)
+3. On submit:
+   - POST /api/astro/natal/
+4. Navigate to NatalChartScreen.
+
+Definition of Done:
+User can submit birth data and create their chart.
+
+------------------------------------------------------------
+ISSUE B2 — Display Natal Chart (Mobile)
+------------------------------------------------------------
+Goal:
+Display planetary positions returned by backend.
+
+Tasks:
+1. Screen: NatalChartScreen
+2. Fetch:
+   GET /api/astro/natal/me/
+3. Show data as:
+   - List of planets with sign & degrees
+   - Basic visualization wheel (using react-native-svg)
+4. Component:
+   components/AstroWheel.jsx
+
+Definition of Done:
+Chart renders with planet positions + signs visually.
+
+------------------------------------------------------------
+ISSUE B3 — Zodiac Wheel & Houses Visualization
+------------------------------------------------------------
+Goal:
+Add visual zodiac circle.
+
+Tasks:
+1. Use SVG to draw:
+   - 360° circle
+   - 12 house sectors
+   - Planet glyphs positioned at angles
+2. Utility:
+   utils/astroCoordinates.js
+   - convert degrees -> x/y coordinates
+
+Definition of Done:
+Interactive zodiac wheel shows houses + planets.
+
+============================================================
+MILESTONE C — SOULMATCH MODULE (MOBILE)
+============================================================
+
+------------------------------------------------------------
+ISSUE C1 — SoulMatch User Cards
+------------------------------------------------------------
+Goal:
+Display list of recommended matches.
+
+Tasks:
+1. Screen: SoulMatchRecommendationsScreen
+2. Fetch:
+   GET /api/soulmatch/recommendations/
+3. Render list of cards:
+   - avatar
+   - name
+   - score badge
+   - short description
+4. On card press → navigate to SoulMatchDetailsScreen.
+
+Definition of Done:
+User sees list of compatible people sorted by score.
+
+------------------------------------------------------------
+ISSUE C2 — SoulMatch Detail Page (Compatibility Profile)
+------------------------------------------------------------
+Goal:
+Show compatibility score + AI Mentor explanation.
+
+Tasks:
+1. Screen: SoulMatchDetailsScreen
+2. Load:
+   GET /api/soulmatch/with/<user_id>/
+   GET /api/mentor/soulmatch/<user_id>/
+3. Show:
+   - Score (0–100)
+   - Components: astro, matrix, psychology, lifestyle
+   - Tags (e.g. "intense", "harmonious")
+   - AI explanation (generated text)
+4. UI sections:
+   - "Core Connection"
+   - "Strengths"
+   - "Challenges"
+   - "Advice"
+
+Definition of Done:
+User sees detailed compatibility breakdown and AI mentor insights.
+
+============================================================
+MILESTONE D — AI MENTOR MODULE (MOBILE)
+============================================================
+
+------------------------------------------------------------
+ISSUE D1 — Mentor Home Screen
+------------------------------------------------------------
+Goal:
+Central hub for all AI mentor features.
+
+Tasks:
+1. Screen: MentorHomeScreen
+2. Buttons:
+   - "My Natal Mentor"
+   - "Daily Guidance"
+   - "SoulMatch Mentor"
+3. Simple card layout.
+
+Definition of Done:
+Mentor home screen functional.
+
+------------------------------------------------------------
+ISSUE D2 — Natal Mentor (AI Interpretation)
+------------------------------------------------------------
+Goal:
+Show personalized natal chart interpretation.
+
+Tasks:
+1. Screen: NatalMentorScreen
+2. Fetch:
+   POST /api/mentor/natal/
+3. Display:
+   - Long mentor message
+   - Sections: personality, relationships, career, challenges
+
+Definition of Done:
+User sees natal AI mentor text.
+
+------------------------------------------------------------
+ISSUE D3 — Daily Mentor (Daily Guidance)
+------------------------------------------------------------
+Goal:
+Provide daily short suggestions.
+
+Tasks:
+1. Screen: DailyMentorScreen
+2. Fetch:
+   GET /api/mentor/daily/
+3. Display:
+   - Today's date
+   - 3–5 short bullet suggestions
+4. Add “Refresh” button.
+
+Definition of Done:
+User receives daily mentor guidance.
+
+------------------------------------------------------------
+ISSUE D4 — SoulMatch Mentor via LLaMA
+------------------------------------------------------------
+Goal:
+Provide deep relational advice using SoulMatch + natal charts.
+
+Tasks:
+1. Screen: SoulMatchMentorScreen
+2. Fetch:
+   GET /api/mentor/soulmatch/<user_id>/
+3. Display:
+   - Score
+   - Tags
+   - AI text
+   - Sections: core connection, strengths, challenges, advice
+
+Definition of Done:
+AI mentor text fully displayed for SoulMatch.
+
+============================================================
+MILESTONE E — UI/UX ENHANCEMENTS
+============================================================
+
+------------------------------------------------------------
+ISSUE E1 — Add gradient backgrounds & animations
+------------------------------------------------------------
+Goal:
+Modern UI matching SelfLink brand.
+
+Tasks:
+1. Add gradient backgrounds.
+2. Add smooth transitions between screens.
+3. Add micro animations (fade-in / slide-up).
+
+Definition of Done:
+App looks polished and professional.
+
+------------------------------------------------------------
+ISSUE E2 — Add User Settings & Edit Profile
+------------------------------------------------------------
+Goal:
+Allow user to update their data.
+
+Tasks:
+1. Screen: SettingsScreen
+2. Edit:
+   - name
+   - gender
+   - orientation
+   - values
+   - lifestyle
+   - love languages
+3. Save via PUT /api/profile/me/
+
+Definition of Done:
+User can edit and save profile.
+
+============================================================
+END OF MOBILE ROADMAP
+============================================================

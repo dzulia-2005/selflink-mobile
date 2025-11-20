@@ -12,6 +12,8 @@ import { FeedScreen } from '@screens/feed/FeedScreen';
 import { PostDetailsScreen } from '@screens/feed/PostDetailsScreen';
 import { InboxScreen } from '@screens/InboxScreen';
 import { MentorHomeScreen } from '@screens/mentor/MentorHomeScreen';
+import { BirthDataScreen } from '@screens/astro/BirthDataScreen';
+import { NatalChartScreen } from '@screens/astro/NatalChartScreen';
 import { ChatScreen } from '@screens/messaging/ChatScreen';
 import { ThreadsScreen } from '@screens/messaging/ThreadsScreen';
 import { NotificationsScreen } from '@screens/notifications/NotificationsScreen';
@@ -28,6 +30,7 @@ import type {
   FeedStackParamList,
   MessagesStackParamList,
   ProfileStackParamList,
+  MentorStackParamList,
 } from './types';
 
 const SELF_LINK_GREEN = '#16a34a';
@@ -51,6 +54,7 @@ const Tab = createBottomTabNavigator<MainTabsParamList>();
 const FeedStack = createNativeStackNavigator<FeedStackParamList>();
 const MessagesStack = createNativeStackNavigator<MessagesStackParamList>();
 const ProfileStack = createNativeStackNavigator<ProfileStackParamList>();
+const MentorStack = createNativeStackNavigator<MentorStackParamList>();
 
 function getTabIconName(
   routeName: string,
@@ -166,6 +170,28 @@ function ProfileStackNavigator() {
   );
 }
 
+function MentorStackNavigator() {
+  return (
+    <MentorStack.Navigator>
+      <MentorStack.Screen
+        name="MentorHome"
+        component={MentorHomeScreen}
+        options={{ headerShown: false }}
+      />
+      <MentorStack.Screen
+        name="BirthData"
+        component={BirthDataScreen}
+        options={{ title: 'Birth Data' }}
+      />
+      <MentorStack.Screen
+        name="NatalChart"
+        component={NatalChartScreen}
+        options={{ title: 'Natal Chart' }}
+      />
+    </MentorStack.Navigator>
+  );
+}
+
 export function MainTabsNavigator() {
   const insets = useSafeAreaInsets();
   const safeBottom = Math.max(insets.bottom, 12);
@@ -207,7 +233,7 @@ export function MainTabsNavigator() {
         component={MessagesStackNavigator}
         options={messagesOptions}
       />
-      <Tab.Screen name="Mentor" component={MentorHomeScreen} />
+      <Tab.Screen name="Mentor" component={MentorStackNavigator} />
       <Tab.Screen name="SoulMatch" component={SoulMatchScreen} />
       <Tab.Screen name="Payments" component={PaymentsScreen} />
       <Tab.Screen name="WalletLedger" component={WalletLedgerScreen} />

@@ -35,10 +35,16 @@ export type ProfileStackParamList = {
   UserProfile: { userId: number };
 };
 
+export type MentorStackParamList = {
+  MentorHome: undefined;
+  BirthData: undefined;
+  NatalChart: undefined;
+};
+
 export type MainTabsParamList = {
   Feed: NavigatorScreenParams<FeedStackParamList> | undefined;
   Messages: NavigatorScreenParams<MessagesStackParamList> | undefined;
-  Mentor: undefined;
+  Mentor: NavigatorScreenParams<MentorStackParamList> | undefined;
   SoulMatch: undefined;
   Payments: undefined;
   WalletLedger: undefined;
