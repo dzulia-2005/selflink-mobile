@@ -1,4 +1,5 @@
 import { apiClient } from '@services/api/client';
+import { NatalChart } from '@schemas/astro';
 
 export type MentorProfile = {
   id?: number;
@@ -82,4 +83,34 @@ export async function patchMentorProfile(
 
 export async function deleteMentorProfile(id: number): Promise<void> {
   await apiClient.request(`/api/v1/mentor/profile/${id}/`, { method: 'DELETE' });
+}
+
+export type NatalMentorResponse = {
+  mentor_text: string;
+  generated_at?: string;
+};
+
+export type DailyMentorResponse = {
+  date: string;
+  messages: string[];
+};
+
+export type SoulmatchMentorResponse = {
+  user_id: number;
+  score: number;
+  components: Record<string, number>;
+  tags: string[];
+  mentor_text: string;
+};
+
+export async function fetchNatalMentor(): Promise<NatalMentorResponse> {
+  return apiClient.request('/api/v1/mentor/natal/', { method: 'POST' });
+}
+
+export async function fetchDailyMentor(): Promise<DailyMentorResponse> {
+  return apiClient.request('/api/v1/mentor/daily/', { method: 'GET' });
+}
+
+export async function fetchSoulmatchMentor(userId: number): Promise<SoulmatchMentorResponse> {
+  return apiClient.request(`/api/v1/mentor/soulmatch/${userId}/`, { method: 'GET' });
 }

@@ -32,6 +32,15 @@ export function MentorHomeScreen() {
           onPress={() => navigation.navigate('NatalChart')}
         />
       </MetalPanel>
+
+      <MetalPanel>
+        <Text style={styles.cardTitle}>AI Mentor Readings</Text>
+        <MetalButton
+          title="Natal Mentor"
+          onPress={() => navigation.navigate('NatalMentor')}
+        />
+        <MetalButton title="Daily Mentor" onPress={() => navigation.navigate('DailyMentor')} />
+      </MetalPanel>
     </View>
   );
 }

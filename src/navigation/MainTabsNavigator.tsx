@@ -14,6 +14,8 @@ import { InboxScreen } from '@screens/InboxScreen';
 import { MentorHomeScreen } from '@screens/mentor/MentorHomeScreen';
 import { BirthDataScreen } from '@screens/astro/BirthDataScreen';
 import { NatalChartScreen } from '@screens/astro/NatalChartScreen';
+import { DailyMentorScreen } from '@screens/mentor/DailyMentorScreen';
+import { NatalMentorScreen } from '@screens/mentor/NatalMentorScreen';
 import { SoulMatchRecommendationsScreen } from '@screens/soulmatch/SoulMatchRecommendationsScreen';
 import { SoulMatchDetailsScreen } from '@screens/soulmatch/SoulMatchDetailsScreen';
 import { ChatScreen } from '@screens/messaging/ChatScreen';
@@ -191,6 +193,16 @@ function MentorStackNavigator() {
         name="NatalChart"
         component={NatalChartScreen}
         options={{ title: 'Natal Chart' }}
+      />
+      <MentorStack.Screen
+        name="NatalMentor"
+        component={NatalMentorScreen}
+        options={{ title: 'Natal Mentor' }}
+      />
+      <MentorStack.Screen
+        name="DailyMentor"
+        component={DailyMentorScreen}
+        options={{ title: 'Daily Mentor' }}
       />
     </MentorStack.Navigator>
   );

@@ -39,6 +39,8 @@ export type MentorStackParamList = {
   MentorHome: undefined;
   BirthData: undefined;
   NatalChart: undefined;
+  NatalMentor: undefined;
+  DailyMentor: undefined;
 };
 
 export type SoulMatchStackParamList = {
