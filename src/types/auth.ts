@@ -18,15 +18,9 @@ export interface LoginPayload {
 export interface RegisterPayload {
   email: string;
   password: string;
-  name: string;
   handle?: string;
+  name?: string;
   intention?: string;
-  first_name?: string;
-  last_name?: string;
-  birth_date?: string;
-  birth_time?: string;
-  birth_place_city?: string;
-  birth_place_country?: string;
 }
 
 export interface RefreshResponse {

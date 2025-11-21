@@ -14,16 +14,10 @@ type Credentials = {
 };
 
 export type RegisterPayload = Credentials & {
-  name?: string;
   handle?: string;
+  name?: string;
   fullName?: string;
   intention?: string;
-  first_name?: string;
-  last_name?: string;
-  birth_date?: string;
-  birth_time?: string;
-  birth_place_city?: string;
-  birth_place_country?: string;
 };
 
 const MOCK_USER_NAME = 'Selflink Explorer';
@@ -64,10 +58,18 @@ export async function loginWithPassword(
 
 export async function registerUser(payload: RegisterPayload): Promise<LoginResponse> {
   try {
+    const { email, password, handle, name, fullName, intention } = payload;
     const result = await apiClient.request<LoginResponse>('/api/v1/auth/register/', {
       method: 'POST',
       auth: false,
-      body: payload,
+      body: {
+        email,
+        password,
+        handle,
+        name,
+        fullName,
+        intention,
+      },
     });
 
     if (!result?.token) {

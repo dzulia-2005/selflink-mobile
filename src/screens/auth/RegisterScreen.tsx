@@ -22,33 +22,16 @@ type Navigation = NativeStackNavigationProp<AuthStackParamList, 'Register'>;
 
 export function RegisterScreen() {
   const navigation = useNavigation<Navigation>();
-  const [name, setName] = useState('');
   const [handle, setHandle] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [birthDate, setBirthDate] = useState('');
-  const [birthTime, setBirthTime] = useState('');
-  const [birthCity, setBirthCity] = useState('');
-  const [birthCountry, setBirthCountry] = useState('');
   const register = useAuthStore((state) => state.register);
   const isAuthenticating = useAuthStore((state) => state.isAuthenticating);
   const error = useAuthStore((state) => state.error);
   const setError = useAuthStore((state) => state.setError);
 
   const handleSubmit = useCallback(async () => {
-    if (
-      !name ||
-      !email ||
-      !password ||
-      !firstName ||
-      !lastName ||
-      !birthDate ||
-      !birthTime ||
-      !birthCity ||
-      !birthCountry
-    ) {
+    if (!email || !password || !handle) {
       Alert.alert('Missing info', 'Please fill all required fields.');
       return;
     }
@@ -56,28 +39,14 @@ export function RegisterScreen() {
       await register({
         email,
         password,
-        name,
         handle: handle || undefined,
-        first_name: firstName,
-        last_name: lastName,
-        birth_date: birthDate,
-        birth_time: birthTime,
-        birth_place_city: birthCity,
-        birth_place_country: birthCountry,
       });
     } catch (err) {
       console.warn('register failed', err);
     }
   }, [
-    birthCity,
-    birthCountry,
-    birthDate,
-    birthTime,
     email,
-    firstName,
     handle,
-    lastName,
-    name,
     password,
     register,
   ]);
@@ -103,18 +72,6 @@ export function RegisterScreen() {
             <Text style={styles.subtitle}>
               Define your handle and sync your personal matrix.
             </Text>
-            <TextInput
-              placeholder="Full name"
-              placeholderTextColor={theme.text.muted}
-              style={styles.input}
-              value={name}
-              onChangeText={(text) => {
-                setName(text);
-                if (error) {
-                  setError(null);
-                }
-              }}
-            />
             <TextInput
               placeholder="Handle"
               placeholderTextColor={theme.text.muted}
@@ -150,78 +107,6 @@ export function RegisterScreen() {
               value={password}
               onChangeText={(text) => {
                 setPassword(text);
-                if (error) {
-                  setError(null);
-                }
-              }}
-            />
-            <TextInput
-              placeholder="First name"
-              placeholderTextColor={theme.text.muted}
-              style={styles.input}
-              value={firstName}
-              onChangeText={(text) => {
-                setFirstName(text);
-                if (error) {
-                  setError(null);
-                }
-              }}
-            />
-            <TextInput
-              placeholder="Last name"
-              placeholderTextColor={theme.text.muted}
-              style={styles.input}
-              value={lastName}
-              onChangeText={(text) => {
-                setLastName(text);
-                if (error) {
-                  setError(null);
-                }
-              }}
-            />
-            <TextInput
-              placeholder="Birth date (YYYY-MM-DD)"
-              placeholderTextColor={theme.text.muted}
-              style={styles.input}
-              value={birthDate}
-              onChangeText={(text) => {
-                setBirthDate(text);
-                if (error) {
-                  setError(null);
-                }
-              }}
-            />
-            <TextInput
-              placeholder="Birth time (HH:MM, 24h)"
-              placeholderTextColor={theme.text.muted}
-              style={styles.input}
-              value={birthTime}
-              onChangeText={(text) => {
-                setBirthTime(text);
-                if (error) {
-                  setError(null);
-                }
-              }}
-            />
-            <TextInput
-              placeholder="Birth city"
-              placeholderTextColor={theme.text.muted}
-              style={styles.input}
-              value={birthCity}
-              onChangeText={(text) => {
-                setBirthCity(text);
-                if (error) {
-                  setError(null);
-                }
-              }}
-            />
-            <TextInput
-              placeholder="Birth country"
-              placeholderTextColor={theme.text.muted}
-              style={styles.input}
-              value={birthCountry}
-              onChangeText={(text) => {
-                setBirthCountry(text);
                 if (error) {
                   setError(null);
                 }

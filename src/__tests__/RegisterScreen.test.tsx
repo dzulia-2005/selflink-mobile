@@ -50,17 +50,8 @@ describe('RegisterScreen', () => {
 
     const { getByPlaceholderText, getByText } = renderScreen();
 
-    fireEvent.changeText(getByPlaceholderText('Display Name'), 'Steve');
     fireEvent.changeText(getByPlaceholderText('Handle'), 'steve');
     fireEvent.changeText(getByPlaceholderText('Email'), 'jobs@apple.com');
-    fireEvent.changeText(getByPlaceholderText('First name'), 'Steve');
-    fireEvent.changeText(getByPlaceholderText('Last name'), 'Jobs');
-    fireEvent.changeText(getByPlaceholderText('Birth date (YYYY-MM-DD)'), '1955-02-24');
-    fireEvent.changeText(getByPlaceholderText('Birth time (HH:MM, 24h)'), '07:15');
-    fireEvent.changeText(getByPlaceholderText('Birth city'), 'San Francisco');
-    fireEvent.changeText(getByPlaceholderText('Birth country'), 'USA');
-    fireEvent.changeText(getByPlaceholderText('Full Name'), 'Steve Jobs');
-    fireEvent.changeText(getByPlaceholderText('Intention'), 'Connect');
     fireEvent.changeText(getByPlaceholderText('Password'), 'password');
     fireEvent.changeText(getByPlaceholderText('Confirm Password'), 'password');
 
@@ -68,18 +59,9 @@ describe('RegisterScreen', () => {
 
     await waitFor(() => expect(mockRegisterUser).toHaveBeenCalled());
     expect(mockRegisterUser).toHaveBeenCalledWith({
-      name: 'Steve',
       email: 'jobs@apple.com',
       password: 'password',
       handle: 'steve',
-      fullName: 'Steve Jobs',
-      intention: 'Connect',
-      first_name: 'Steve',
-      last_name: 'Jobs',
-      birth_date: '1955-02-24',
-      birth_time: '07:15',
-      birth_place_city: 'San Francisco',
-      birth_place_country: 'USA',
     });
     expect(mockSignIn).toHaveBeenCalledWith({
       token: 'abc',
@@ -99,14 +81,6 @@ describe('RegisterScreen', () => {
 
     fireEvent.changeText(getByPlaceholderText('Handle'), 'steve');
     fireEvent.changeText(getByPlaceholderText('Email'), 'jobs@apple.com');
-    fireEvent.changeText(getByPlaceholderText('First name'), 'Steve');
-    fireEvent.changeText(getByPlaceholderText('Last name'), 'Jobs');
-    fireEvent.changeText(getByPlaceholderText('Birth date (YYYY-MM-DD)'), '1955-02-24');
-    fireEvent.changeText(getByPlaceholderText('Birth time (HH:MM, 24h)'), '07:15');
-    fireEvent.changeText(getByPlaceholderText('Birth city'), 'San Francisco');
-    fireEvent.changeText(getByPlaceholderText('Birth country'), 'USA');
-    fireEvent.changeText(getByPlaceholderText('Full Name'), 'Steve Jobs');
-    fireEvent.changeText(getByPlaceholderText('Intention'), 'Connect');
     fireEvent.changeText(getByPlaceholderText('Password'), 'password');
     fireEvent.changeText(getByPlaceholderText('Confirm Password'), 'password');
 
