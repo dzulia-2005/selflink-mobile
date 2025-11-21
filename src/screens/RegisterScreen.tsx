@@ -3,10 +3,10 @@ import { useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
-  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -104,7 +104,11 @@ export function RegisterScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.flex}
       >
-        <View style={styles.content}>
+        <ScrollView
+          contentContainerStyle={styles.content}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
           <Text style={styles.headline}>Create Your Selflink Account</Text>
           <Text style={styles.subtitle}>
             Metallic gradients, rounded edges, and a thoughtful experience from the first
@@ -131,59 +135,59 @@ export function RegisterScreen() {
             <TextInput
               placeholder="Email"
               placeholderTextColor={theme.palette.silver}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            value={email}
-            onChangeText={setEmail}
-            style={styles.input}
-          />
-          <TextInput
-            placeholder="First name"
-            placeholderTextColor={theme.palette.silver}
-            value={firstName}
-            onChangeText={setFirstName}
-            style={styles.input}
-          />
-          <TextInput
-            placeholder="Last name"
-            placeholderTextColor={theme.palette.silver}
-            value={lastName}
-            onChangeText={setLastName}
-            style={styles.input}
-          />
-          <TextInput
-            placeholder="Birth date (YYYY-MM-DD)"
-            placeholderTextColor={theme.palette.silver}
-            value={birthDate}
-            onChangeText={setBirthDate}
-            style={styles.input}
-          />
-          <TextInput
-            placeholder="Birth time (HH:MM, 24h)"
-            placeholderTextColor={theme.palette.silver}
-            value={birthTime}
-            onChangeText={setBirthTime}
-            style={styles.input}
-          />
-          <TextInput
-            placeholder="Birth city"
-            placeholderTextColor={theme.palette.silver}
-            value={birthCity}
-            onChangeText={setBirthCity}
-            style={styles.input}
-          />
-          <TextInput
-            placeholder="Birth country"
-            placeholderTextColor={theme.palette.silver}
-            value={birthCountry}
-            onChangeText={setBirthCountry}
-            style={styles.input}
-          />
-          <TextInput
-            placeholder="Full Name"
-            placeholderTextColor={theme.palette.silver}
-            value={fullName}
-            onChangeText={setFullName}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              value={email}
+              onChangeText={setEmail}
+              style={styles.input}
+            />
+            <TextInput
+              placeholder="First name"
+              placeholderTextColor={theme.palette.silver}
+              value={firstName}
+              onChangeText={setFirstName}
+              style={styles.input}
+            />
+            <TextInput
+              placeholder="Last name"
+              placeholderTextColor={theme.palette.silver}
+              value={lastName}
+              onChangeText={setLastName}
+              style={styles.input}
+            />
+            <TextInput
+              placeholder="Birth date (YYYY-MM-DD)"
+              placeholderTextColor={theme.palette.silver}
+              value={birthDate}
+              onChangeText={setBirthDate}
+              style={styles.input}
+            />
+            <TextInput
+              placeholder="Birth time (HH:MM, 24h)"
+              placeholderTextColor={theme.palette.silver}
+              value={birthTime}
+              onChangeText={setBirthTime}
+              style={styles.input}
+            />
+            <TextInput
+              placeholder="Birth city"
+              placeholderTextColor={theme.palette.silver}
+              value={birthCity}
+              onChangeText={setBirthCity}
+              style={styles.input}
+            />
+            <TextInput
+              placeholder="Birth country"
+              placeholderTextColor={theme.palette.silver}
+              value={birthCountry}
+              onChangeText={setBirthCountry}
+              style={styles.input}
+            />
+            <TextInput
+              placeholder="Full Name"
+              placeholderTextColor={theme.palette.silver}
+              value={fullName}
+              onChangeText={setFullName}
               style={styles.input}
             />
             <TextInput
@@ -214,7 +218,7 @@ export function RegisterScreen() {
               onPress={handleRegister}
             />
           </MetalPanel>
-        </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -229,11 +233,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    flex: 1,
+    paddingVertical: theme.spacing.xl,
     paddingHorizontal: theme.spacing.lg,
-    paddingTop: theme.spacing.xl,
     gap: theme.spacing.lg,
-    justifyContent: 'center',
+    paddingBottom: theme.spacing.xl * 2,
   },
   headline: {
     color: theme.palette.platinum,

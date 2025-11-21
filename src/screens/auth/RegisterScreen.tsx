@@ -6,6 +6,7 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -91,158 +92,164 @@ export function RegisterScreen() {
         style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        <View style={styles.card}>
-          <LinearGradient colors={theme.gradients.matrix} style={styles.cardAccent} />
-          <Text style={styles.title}>Create your account</Text>
-          <Text style={styles.subtitle}>
-            Define your handle and sync your personal matrix.
-          </Text>
-          <TextInput
-            placeholder="Full name"
-            placeholderTextColor={theme.text.muted}
-            style={styles.input}
-            value={name}
-            onChangeText={(text) => {
-              setName(text);
-              if (error) {
-                setError(null);
-              }
-            }}
-          />
-          <TextInput
-            placeholder="Handle"
-            placeholderTextColor={theme.text.muted}
-            autoCapitalize="none"
-            style={styles.input}
-            value={handle}
-            onChangeText={(text) => {
-              setHandle(text);
-              if (error) {
-                setError(null);
-              }
-            }}
-          />
-          <TextInput
-            placeholder="Email"
-            placeholderTextColor={theme.text.muted}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            style={styles.input}
-            value={email}
-            onChangeText={(text) => {
-              setEmail(text);
-              if (error) {
-                setError(null);
-              }
-            }}
-          />
-          <TextInput
-            placeholder="Password"
-            placeholderTextColor={theme.text.muted}
-            secureTextEntry
-            style={styles.input}
-            value={password}
-            onChangeText={(text) => {
-              setPassword(text);
-              if (error) {
-                setError(null);
-              }
-            }}
-          />
-          <TextInput
-            placeholder="First name"
-            placeholderTextColor={theme.text.muted}
-            style={styles.input}
-            value={firstName}
-            onChangeText={(text) => {
-              setFirstName(text);
-              if (error) {
-                setError(null);
-              }
-            }}
-          />
-          <TextInput
-            placeholder="Last name"
-            placeholderTextColor={theme.text.muted}
-            style={styles.input}
-            value={lastName}
-            onChangeText={(text) => {
-              setLastName(text);
-              if (error) {
-                setError(null);
-              }
-            }}
-          />
-          <TextInput
-            placeholder="Birth date (YYYY-MM-DD)"
-            placeholderTextColor={theme.text.muted}
-            style={styles.input}
-            value={birthDate}
-            onChangeText={(text) => {
-              setBirthDate(text);
-              if (error) {
-                setError(null);
-              }
-            }}
-          />
-          <TextInput
-            placeholder="Birth time (HH:MM, 24h)"
-            placeholderTextColor={theme.text.muted}
-            style={styles.input}
-            value={birthTime}
-            onChangeText={(text) => {
-              setBirthTime(text);
-              if (error) {
-                setError(null);
-              }
-            }}
-          />
-          <TextInput
-            placeholder="Birth city"
-            placeholderTextColor={theme.text.muted}
-            style={styles.input}
-            value={birthCity}
-            onChangeText={(text) => {
-              setBirthCity(text);
-              if (error) {
-                setError(null);
-              }
-            }}
-          />
-          <TextInput
-            placeholder="Birth country"
-            placeholderTextColor={theme.text.muted}
-            style={styles.input}
-            value={birthCountry}
-            onChangeText={(text) => {
-              setBirthCountry(text);
-              if (error) {
-                setError(null);
-              }
-            }}
-          />
-          {error ? <Text style={styles.errorText}>{error}</Text> : null}
-          <TouchableOpacity
-            style={styles.buttonWrapper}
-            onPress={handleSubmit}
-            disabled={isAuthenticating}
-            activeOpacity={0.9}
-          >
-            <LinearGradient
-              colors={theme.gradients.cta}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={[styles.button, isAuthenticating && styles.buttonDisabled]}
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.card}>
+            <LinearGradient colors={theme.gradients.matrix} style={styles.cardAccent} />
+            <Text style={styles.title}>Create your account</Text>
+            <Text style={styles.subtitle}>
+              Define your handle and sync your personal matrix.
+            </Text>
+            <TextInput
+              placeholder="Full name"
+              placeholderTextColor={theme.text.muted}
+              style={styles.input}
+              value={name}
+              onChangeText={(text) => {
+                setName(text);
+                if (error) {
+                  setError(null);
+                }
+              }}
+            />
+            <TextInput
+              placeholder="Handle"
+              placeholderTextColor={theme.text.muted}
+              autoCapitalize="none"
+              style={styles.input}
+              value={handle}
+              onChangeText={(text) => {
+                setHandle(text);
+                if (error) {
+                  setError(null);
+                }
+              }}
+            />
+            <TextInput
+              placeholder="Email"
+              placeholderTextColor={theme.text.muted}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              style={styles.input}
+              value={email}
+              onChangeText={(text) => {
+                setEmail(text);
+                if (error) {
+                  setError(null);
+                }
+              }}
+            />
+            <TextInput
+              placeholder="Password"
+              placeholderTextColor={theme.text.muted}
+              secureTextEntry
+              style={styles.input}
+              value={password}
+              onChangeText={(text) => {
+                setPassword(text);
+                if (error) {
+                  setError(null);
+                }
+              }}
+            />
+            <TextInput
+              placeholder="First name"
+              placeholderTextColor={theme.text.muted}
+              style={styles.input}
+              value={firstName}
+              onChangeText={(text) => {
+                setFirstName(text);
+                if (error) {
+                  setError(null);
+                }
+              }}
+            />
+            <TextInput
+              placeholder="Last name"
+              placeholderTextColor={theme.text.muted}
+              style={styles.input}
+              value={lastName}
+              onChangeText={(text) => {
+                setLastName(text);
+                if (error) {
+                  setError(null);
+                }
+              }}
+            />
+            <TextInput
+              placeholder="Birth date (YYYY-MM-DD)"
+              placeholderTextColor={theme.text.muted}
+              style={styles.input}
+              value={birthDate}
+              onChangeText={(text) => {
+                setBirthDate(text);
+                if (error) {
+                  setError(null);
+                }
+              }}
+            />
+            <TextInput
+              placeholder="Birth time (HH:MM, 24h)"
+              placeholderTextColor={theme.text.muted}
+              style={styles.input}
+              value={birthTime}
+              onChangeText={(text) => {
+                setBirthTime(text);
+                if (error) {
+                  setError(null);
+                }
+              }}
+            />
+            <TextInput
+              placeholder="Birth city"
+              placeholderTextColor={theme.text.muted}
+              style={styles.input}
+              value={birthCity}
+              onChangeText={(text) => {
+                setBirthCity(text);
+                if (error) {
+                  setError(null);
+                }
+              }}
+            />
+            <TextInput
+              placeholder="Birth country"
+              placeholderTextColor={theme.text.muted}
+              style={styles.input}
+              value={birthCountry}
+              onChangeText={(text) => {
+                setBirthCountry(text);
+                if (error) {
+                  setError(null);
+                }
+              }}
+            />
+            {error ? <Text style={styles.errorText}>{error}</Text> : null}
+            <TouchableOpacity
+              style={styles.buttonWrapper}
+              onPress={handleSubmit}
+              disabled={isAuthenticating}
+              activeOpacity={0.9}
             >
-              <Text style={styles.buttonLabel}>
-                {isAuthenticating ? 'Creating…' : 'Create account'}
-              </Text>
-            </LinearGradient>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.footerLink} onPress={handleNavigateLogin}>
-            <Text style={styles.footerText}>Already have an account? Sign in</Text>
-          </TouchableOpacity>
-        </View>
+              <LinearGradient
+                colors={theme.gradients.cta}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={[styles.button, isAuthenticating && styles.buttonDisabled]}
+              >
+                <Text style={styles.buttonLabel}>
+                  {isAuthenticating ? 'Creating…' : 'Create account'}
+                </Text>
+              </LinearGradient>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.footerLink} onPress={handleNavigateLogin}>
+              <Text style={styles.footerText}>Already have an account? Sign in</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </LinearGradient>
   );
@@ -254,8 +261,11 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    justifyContent: 'center',
-    padding: theme.spacing.xl,
+  },
+  scrollContent: {
+    paddingHorizontal: theme.spacing.xl,
+    paddingVertical: theme.spacing.xl,
+    paddingBottom: theme.spacing.xl * 2,
   },
   card: {
     backgroundColor: theme.colors.surface,
