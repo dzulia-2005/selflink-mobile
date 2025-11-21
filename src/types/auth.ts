@@ -18,8 +18,8 @@ export interface LoginPayload {
 export interface RegisterPayload {
   email: string;
   password: string;
+  name: string;
   handle?: string;
-  name?: string;
   intention?: string;
 }
 

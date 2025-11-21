@@ -20,6 +20,7 @@ import { theme } from '@theme/index';
 export function RegisterScreen() {
   const { signIn } = useAuth();
   const toast = useToast();
+  const [name, setName] = useState('');
   const [handle, setHandle] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -30,7 +31,7 @@ export function RegisterScreen() {
     if (isSubmitting) {
       return;
     }
-    if (!email || !password || !confirmPassword || !handle) {
+    if (!email || !password || !confirmPassword || !handle || !name) {
       toast.push({
         message: 'Please fill out all required fields.',
         tone: 'error',
@@ -50,6 +51,7 @@ export function RegisterScreen() {
     try {
       setIsSubmitting(true);
       const result = await registerUser({
+        name,
         email,
         password,
         handle,
@@ -88,6 +90,13 @@ export function RegisterScreen() {
 
           <MetalPanel glow>
             <Text style={styles.panelTitle}>Sign Up</Text>
+            <TextInput
+              placeholder="Display Name"
+              placeholderTextColor={theme.palette.silver}
+              value={name}
+              onChangeText={setName}
+              style={styles.input}
+            />
             <TextInput
               placeholder="Handle"
               placeholderTextColor={theme.palette.silver}

@@ -15,7 +15,7 @@ type Credentials = {
 
 export type RegisterPayload = Credentials & {
   handle?: string;
-  name?: string;
+  name: string;
   fullName?: string;
   intention?: string;
 };

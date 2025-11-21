@@ -22,6 +22,7 @@ type Navigation = NativeStackNavigationProp<AuthStackParamList, 'Register'>;
 
 export function RegisterScreen() {
   const navigation = useNavigation<Navigation>();
+  const [name, setName] = useState('');
   const [handle, setHandle] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -31,7 +32,7 @@ export function RegisterScreen() {
   const setError = useAuthStore((state) => state.setError);
 
   const handleSubmit = useCallback(async () => {
-    if (!email || !password || !handle) {
+    if (!name || !email || !password || !handle) {
       Alert.alert('Missing info', 'Please fill all required fields.');
       return;
     }
@@ -39,12 +40,14 @@ export function RegisterScreen() {
       await register({
         email,
         password,
+        name,
         handle: handle || undefined,
       });
     } catch (err) {
       console.warn('register failed', err);
     }
   }, [
+    name,
     email,
     handle,
     password,
@@ -72,6 +75,18 @@ export function RegisterScreen() {
             <Text style={styles.subtitle}>
               Define your handle and sync your personal matrix.
             </Text>
+            <TextInput
+              placeholder="Full name"
+              placeholderTextColor={theme.text.muted}
+              style={styles.input}
+              value={name}
+              onChangeText={(text) => {
+                setName(text);
+                if (error) {
+                  setError(null);
+                }
+              }}
+            />
             <TextInput
               placeholder="Handle"
               placeholderTextColor={theme.text.muted}

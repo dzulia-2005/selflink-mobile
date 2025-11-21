@@ -50,6 +50,7 @@ describe('RegisterScreen', () => {
 
     const { getByPlaceholderText, getByText } = renderScreen();
 
+    fireEvent.changeText(getByPlaceholderText('Display Name'), 'Steve');
     fireEvent.changeText(getByPlaceholderText('Handle'), 'steve');
     fireEvent.changeText(getByPlaceholderText('Email'), 'jobs@apple.com');
     fireEvent.changeText(getByPlaceholderText('Password'), 'password');
@@ -59,6 +60,7 @@ describe('RegisterScreen', () => {
 
     await waitFor(() => expect(mockRegisterUser).toHaveBeenCalled());
     expect(mockRegisterUser).toHaveBeenCalledWith({
+      name: 'Steve',
       email: 'jobs@apple.com',
       password: 'password',
       handle: 'steve',
@@ -79,6 +81,7 @@ describe('RegisterScreen', () => {
 
     const { getByPlaceholderText, getByText } = renderScreen();
 
+    fireEvent.changeText(getByPlaceholderText('Display Name'), 'Steve');
     fireEvent.changeText(getByPlaceholderText('Handle'), 'steve');
     fireEvent.changeText(getByPlaceholderText('Email'), 'jobs@apple.com');
     fireEvent.changeText(getByPlaceholderText('Password'), 'password');
