@@ -91,9 +91,14 @@ export async function savePersonalMapProfile(
   payload: PersonalMapPayload,
 ): Promise<PersonalMapProfile> {
   const { avatarFile, ...rest } = payload;
+  const body = {
+    ...rest,
+    birth_place_city: (rest as any).birth_place_city ?? (rest as any).birth_city,
+    birth_place_country: (rest as any).birth_place_country ?? (rest as any).birth_country,
+  };
   if (avatarFile) {
     const formData = new FormData();
-    Object.entries(rest).forEach(([key, value]) => {
+    Object.entries(body).forEach(([key, value]) => {
       if (value === undefined || value === null) {
         return;
       }
@@ -114,7 +119,7 @@ export async function savePersonalMapProfile(
     });
     return data;
   }
-  const { data } = await apiClient.patch<PersonalMapProfile>('/me/profile/', rest);
+  const { data } = await apiClient.patch<PersonalMapProfile>('/me/profile/', body);
   return data;
 }
 

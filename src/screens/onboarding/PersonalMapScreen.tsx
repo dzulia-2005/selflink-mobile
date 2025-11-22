@@ -17,6 +17,8 @@ import { useAuthStore } from '@store/authStore';
 import { theme } from '@theme';
 
 const initialFormState = {
+  first_name: '',
+  last_name: '',
   birth_date: '',
   birth_time: '',
   birth_place_country: '',
@@ -29,6 +31,7 @@ export function PersonalMapScreen() {
   const navigation =
     useNavigation<NativeStackNavigationProp<OnboardingStackParamList, 'PersonalMap'>>();
   const personalMap = useAuthStore((state) => state.personalMap);
+  const currentUser = useAuthStore((state) => state.currentUser);
   const savePersonalMap = useAuthStore((state) => state.savePersonalMap);
   const hasCompletedPersonalMap = useAuthStore((state) => state.hasCompletedPersonalMap);
   const setHasCompleted = useAuthStore.setState;
@@ -37,18 +40,31 @@ export function PersonalMapScreen() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (personalMap) {
-      setForm({
-        birth_date: personalMap.birth_date ?? '',
-        birth_time: personalMap.birth_time ?? '',
-        birth_place_country: personalMap.birth_place_country ?? '',
-        birth_place_city: personalMap.birth_place_city ?? '',
-      });
-    }
-  }, [personalMap]);
+    const splitName = (name?: string | null) => {
+      if (!name) return { first: '', last: '' };
+      const parts = name.trim().split(/\s+/);
+      return { first: parts[0] ?? '', last: parts.slice(1).join(' ') || '' };
+    };
+
+    const nameParts = personalMap
+      ? { first: personalMap.first_name ?? '', last: personalMap.last_name ?? '' }
+      : splitName(currentUser?.name);
+
+    setForm((prev) => ({
+      ...prev,
+      first_name: nameParts.first,
+      last_name: nameParts.last,
+      birth_date: personalMap?.birth_date ?? prev.birth_date,
+      birth_time: personalMap?.birth_time ?? prev.birth_time,
+      birth_place_country: personalMap?.birth_place_country ?? prev.birth_place_country,
+      birth_place_city: personalMap?.birth_place_city ?? prev.birth_place_city,
+    }));
+  }, [currentUser?.name, personalMap]);
 
   const isValid = useMemo(() => {
     return (
+      form.first_name.trim().length > 0 &&
+      form.last_name.trim().length > 0 &&
       form.birth_date.trim().length > 0 &&
       form.birth_time.trim().length > 0 &&
       form.birth_place_country.trim().length > 0 &&
@@ -79,11 +95,15 @@ export function PersonalMapScreen() {
       setErrors(nextErrors);
       return;
     }
+
+    const normalizedTime =
+      form.birth_time.length === 5 && timeOk ? `${form.birth_time}:00` : form.birth_time;
+
     setSubmitting(true);
     try {
       const profile = await savePersonalMap({
         ...form,
-        birth_time: form.birth_time,
+        birth_time: normalizedTime,
       });
       Alert.alert(
         'Profile updated',
