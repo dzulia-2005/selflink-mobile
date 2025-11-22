@@ -16,8 +16,8 @@ import { MetalPanel } from '@components/MetalPanel';
 import { useToast } from '@context/ToastContext';
 import { MentorStackParamList } from '@navigation/types';
 import { BirthDataPayload } from '@schemas/astro';
-import { useAuthStore } from '@store/authStore';
 import { createOrUpdateNatalChart } from '@services/api/astro';
+import { useAuthStore } from '@store/authStore';
 import { theme } from '@theme/index';
 
 export function BirthDataScreen() {
@@ -54,7 +54,10 @@ export function BirthDataScreen() {
       if (!birthPlace) {
         return { city: '', country: '' };
       }
-      const parts = birthPlace.split(',').map((part) => part.trim()).filter(Boolean);
+      const parts = birthPlace
+        .split(',')
+        .map((part) => part.trim())
+        .filter(Boolean);
       return {
         city: parts[0] ?? '',
         country: parts[1] ?? '',
@@ -74,7 +77,12 @@ export function BirthDataScreen() {
     setCountry(resolvedCountry || '');
     setDateOfBirth(resolvedDate || '');
     setTimeOfBirth(resolvedTime ? resolvedTime.slice(0, 5) : '');
-  }, [currentUser?.birth_date, currentUser?.birth_place, currentUser?.birth_time, personalMap]);
+  }, [
+    currentUser?.birth_date,
+    currentUser?.birth_place,
+    currentUser?.birth_time,
+    personalMap,
+  ]);
 
   const hasStoredBirth = useMemo(() => {
     return Boolean(dateOfBirth && timeOfBirth && city && country);
@@ -171,7 +179,9 @@ export function BirthDataScreen() {
                 now.
               </Text>
               <MetalButton
-                title={isSubmitting ? 'Using registration data…' : 'Use registration data'}
+                title={
+                  isSubmitting ? 'Using registration data…' : 'Use registration data'
+                }
                 onPress={handleUseRegistrationData}
                 disabled={isSubmitting}
               />

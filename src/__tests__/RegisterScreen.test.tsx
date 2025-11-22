@@ -64,6 +64,7 @@ describe('RegisterScreen', () => {
       email: 'jobs@apple.com',
       password: 'password',
       handle: 'steve',
+      username: 'steve',
     });
     expect(mockSignIn).toHaveBeenCalledWith({
       token: 'abc',

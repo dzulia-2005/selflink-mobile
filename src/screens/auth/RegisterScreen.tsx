@@ -47,13 +47,7 @@ export function RegisterScreen() {
     } catch (err) {
       console.warn('register failed', err);
     }
-  }, [
-    name,
-    email,
-    handle,
-    password,
-    register,
-  ]);
+  }, [name, email, handle, password, register]);
 
   const handleNavigateLogin = useCallback(() => {
     navigation.goBack();

@@ -41,7 +41,9 @@ export function PersonalMapScreen() {
 
   useEffect(() => {
     const splitName = (name?: string | null) => {
-      if (!name) return { first: '', last: '' };
+      if (!name) {
+        return { first: '', last: '' };
+      }
       const parts = name.trim().split(/\s+/);
       return { first: parts[0] ?? '', last: parts.slice(1).join(' ') || '' };
     };
@@ -101,7 +103,7 @@ export function PersonalMapScreen() {
 
     setSubmitting(true);
     try {
-      const profile = await savePersonalMap({
+      await savePersonalMap({
         ...form,
         birth_time: normalizedTime,
       });
