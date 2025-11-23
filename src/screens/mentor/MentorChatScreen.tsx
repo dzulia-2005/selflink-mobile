@@ -3,8 +3,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   RefreshControl,
   StyleSheet,
   Text,
@@ -13,7 +15,9 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import * as Clipboard from 'expo-clipboard';
 
+import { MentorMessageContent } from '@components/chat/MentorMessageContent';
 import { useToast } from '@context/ToastContext';
 import {
   fetchMentorHistory,
@@ -21,10 +25,13 @@ import {
   type MentorHistoryMessage,
 } from '@services/api/mentorSessions';
 import { useAuthStore } from '@store/authStore';
+import { chatTheme } from '@theme/chat';
 import { theme } from '@theme/index';
 
 type ChatMessage = Omit<MentorHistoryMessage, 'id'> & { id: string };
 
+// Chat layout lives here; mentor content rendering is in
+// @components/chat/MentorMessageContent and bubble/theme tokens in @theme/chat.
 const sortMessages = (messages: ChatMessage[]) =>
   [...messages].sort(
     (a, b) => new Date(a.created_at).valueOf() - new Date(b.created_at).valueOf(),
@@ -60,13 +67,23 @@ export function MentorChatScreen() {
   const currentUser = useAuthStore((state) => state.currentUser);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
+  const [inputHeight, setInputHeight] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
+  const [awaitingReply, setAwaitingReply] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [sendError, setSendError] = useState<string | null>(null);
+  const [lastFailedMessage, setLastFailedMessage] = useState<string | null>(null);
   const [shouldScrollToEnd, setShouldScrollToEnd] = useState(false);
   const listRef = useRef<FlatList<ChatMessage> | null>(null);
+
+  const scrollToBottom = useCallback(() => {
+    if (listRef.current) {
+      listRef.current.scrollToEnd({ animated: true });
+    }
+  }, []);
 
   const loadHistory = useCallback(
     async (
@@ -113,12 +130,19 @@ export function MentorChatScreen() {
 
   useEffect(() => {
     if (shouldScrollToEnd && listRef.current && messages.length > 0) {
-      requestAnimationFrame(() => {
-        listRef.current?.scrollToEnd({ animated: true });
-      });
+      requestAnimationFrame(scrollToBottom);
       setShouldScrollToEnd(false);
     }
-  }, [messages.length, shouldScrollToEnd]);
+  }, [messages.length, scrollToBottom, shouldScrollToEnd]);
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener('keyboardDidShow', () => {
+      setShouldScrollToEnd(true);
+    });
+    return () => {
+      showSub.remove();
+    };
+  }, []);
 
   const handleRefresh = useCallback(() => {
     setRefreshing(true);
@@ -132,78 +156,121 @@ export function MentorChatScreen() {
     loadHistory(nextCursor, 'append').catch(() => undefined);
   }, [isLoading, loadHistory, loadingMore, nextCursor]);
 
-  const handleSend = useCallback(async () => {
-    const trimmed = input.trim();
-    if (!trimmed || isSending) {
-      return;
-    }
-    const userLanguage =
-      currentUser?.settings?.language ||
-      (currentUser?.locale ? currentUser.locale.split('-')[0] : undefined);
-    const now = new Date().toISOString();
-    const optimisticUser: ChatMessage = {
-      id: `local-user-${Date.now()}`,
-      session_id: 0,
-      role: 'user',
-      content: trimmed,
-      meta: null,
-      created_at: now,
-    };
-    setMessages((current) => sortMessages([...current, optimisticUser]));
-    setInput('');
-    setIsSending(true);
-    setShouldScrollToEnd(true);
+  const handleCopy = useCallback(
+    async (text: string) => {
+      try {
+        await Clipboard.setStringAsync(text);
+        toast.push({ message: 'Copied to clipboard', tone: 'info', duration: 1500 });
+      } catch (error) {
+        console.warn('MentorChatScreen: copy failed', error);
+        toast.push({ message: 'Unable to copy right now.', tone: 'error' });
+      }
+    },
+    [toast],
+  );
 
-    try {
-      const response = await sendMentorChat({
-        message: trimmed,
-        mode: 'default',
-        language: userLanguage || undefined,
-      });
-      const sessionId = response.session_id;
-      const userMessage: ChatMessage = {
-        id: String(response.user_message_id ?? optimisticUser.id),
-        session_id: sessionId,
+  const sendMessage = useCallback(
+    async (overrideText?: string) => {
+      const trimmed = (overrideText ?? input).trim();
+      if (!trimmed || isSending) {
+        return;
+      }
+      const userLanguage =
+        currentUser?.settings?.language ||
+        (currentUser?.locale ? currentUser.locale.split('-')[0] : undefined);
+      const now = new Date().toISOString();
+      const optimisticUser: ChatMessage = {
+        id: `local-user-${Date.now()}`,
+        session_id: 0,
         role: 'user',
         content: trimmed,
-        meta: response.meta?.user_flags ?? null,
+        meta: null,
         created_at: now,
       };
-      const mentorMessage: ChatMessage = {
-        id: String(response.mentor_message_id ?? `mentor-${Date.now()}`),
-        session_id: sessionId,
-        role: 'mentor',
-        content: response.mentor_reply,
-        meta: response.meta?.mentor_flags ?? null,
-        created_at: new Date().toISOString(),
-      };
-
-      setMessages((current) =>
-        mergeMessages(
-          current.filter((msg) => msg.id !== optimisticUser.id),
-          [userMessage, mentorMessage],
-        ),
-      );
+      setMessages((current) => sortMessages([...current, optimisticUser]));
+      setInput('');
+      setInputHeight(0);
+      setIsSending(true);
+      setAwaitingReply(true);
+      setSendError(null);
+      setLastFailedMessage(null);
       setShouldScrollToEnd(true);
-    } catch (error) {
-      console.error('MentorChatScreen: failed to send mentor chat', error);
-      toast.push({ message: 'Unable to send message to your mentor.', tone: 'error' });
-      setMessages((current) => current.filter((msg) => msg.id !== optimisticUser.id));
-      setInput(trimmed);
-    } finally {
-      setIsSending(false);
+
+      try {
+        const response = await sendMentorChat({
+          message: trimmed,
+          mode: 'default',
+          language: userLanguage || undefined,
+        });
+        const sessionId = response.session_id;
+        const userMessage: ChatMessage = {
+          id: String(response.user_message_id ?? optimisticUser.id),
+          session_id: sessionId,
+          role: 'user',
+          content: trimmed,
+          meta: response.meta?.user_flags ?? null,
+          created_at: now,
+        };
+        const mentorMessage: ChatMessage = {
+          id: String(response.mentor_message_id ?? `mentor-${Date.now()}`),
+          session_id: sessionId,
+          role: 'mentor',
+          content: response.mentor_reply,
+          meta: response.meta?.mentor_flags ?? null,
+          created_at: new Date().toISOString(),
+        };
+
+        setMessages((current) =>
+          mergeMessages(
+            current.filter((msg) => msg.id !== optimisticUser.id),
+            [userMessage, mentorMessage],
+          ),
+        );
+        setShouldScrollToEnd(true);
+      } catch (error) {
+        console.error('MentorChatScreen: failed to send mentor chat', error);
+        setMessages((current) => current.filter((msg) => msg.id !== optimisticUser.id));
+        setInput(trimmed);
+        setSendError('Mentor is temporarily unavailable. Please try again.');
+        setLastFailedMessage(trimmed);
+      } finally {
+        setIsSending(false);
+        setAwaitingReply(false);
+      }
+    },
+    [currentUser?.locale, currentUser?.settings?.language, input, isSending],
+  );
+
+  const handleSend = useCallback(() => {
+    void sendMessage();
+  }, [sendMessage]);
+
+  const handleResend = useCallback(() => {
+    if (!lastFailedMessage) {
+      return;
     }
-  }, [input, isSending, toast]);
+    void sendMessage(lastFailedMessage);
+  }, [lastFailedMessage, sendMessage]);
 
   const renderMessage = useCallback(
     ({ item, index }: { item: ChatMessage; index: number }) => {
       const previous = messages[index - 1];
       const showSessionDivider = !previous || previous.session_id !== item.session_id;
       const isUser = item.role === 'user';
+      const marginTop =
+        previous && previous.role === item.role
+          ? chatTheme.spacing.xs
+          : chatTheme.spacing.md;
       const sessionLabel =
         item.session_id && item.session_id > 0
           ? `Session #${item.session_id}`
           : 'New session';
+      const onLongPress =
+        !isUser && item.content
+          ? () => {
+              handleCopy(item.content);
+            }
+          : undefined;
       return (
         <View>
           {showSessionDivider ? (
@@ -213,42 +280,82 @@ export function MentorChatScreen() {
             style={[
               styles.messageRow,
               isUser ? styles.messageRowRight : styles.messageRowLeft,
+              { marginTop },
             ]}
           >
-            <View
-              style={[
-                styles.bubble,
-                isUser ? styles.userBubble : styles.mentorBubble,
-                item.role === 'mentor' ? styles.mentorShadow : null,
-              ]}
-            >
-              <Text style={isUser ? styles.userText : styles.mentorText}>{item.content}</Text>
-              <Text style={styles.timestamp}>{formatTime(item.created_at)}</Text>
-            </View>
+            <Pressable delayLongPress={350} onLongPress={onLongPress}>
+              <View
+                style={[
+                  styles.bubble,
+                  isUser ? styles.userBubble : styles.mentorBubble,
+                  item.role === 'mentor' ? styles.mentorShadow : null,
+                ]}
+              >
+                {item.role === 'mentor' ? (
+                  <MentorMessageContent text={item.content} collapsibleLines={12} />
+                ) : (
+                  <Text style={styles.userText}>{item.content}</Text>
+                )}
+                <Text
+                  style={[
+                    styles.timestamp,
+                    isUser ? styles.timestampUser : styles.timestampMentor,
+                  ]}
+                >
+                  {formatTime(item.created_at)}
+                </Text>
+              </View>
+            </Pressable>
           </View>
         </View>
       );
     },
-    [messages],
+    [handleCopy, messages],
   );
 
   const footer = useMemo(() => {
-    if (loadingMore) {
-      return (
-        <View style={styles.footer}>
-          <ActivityIndicator color={theme.palette.platinum} />
-        </View>
-      );
-    }
-    if (!nextCursor) {
-      return <View style={styles.footer} />;
-    }
     return (
-      <TouchableOpacity style={styles.loadMore} onPress={handleLoadMore}>
-        <Text style={styles.loadMoreText}>Load earlier messages</Text>
-      </TouchableOpacity>
+      <View style={styles.footer}>
+        {awaitingReply ? (
+          <View style={[styles.messageRow, styles.messageRowLeft, styles.typingRow]}>
+            <View style={[styles.bubble, styles.mentorBubble, styles.typingBubble]}>
+              <ActivityIndicator size="small" color={chatTheme.bubble.mentor.text} />
+              <Text style={styles.typingText}>Mentor is typing…</Text>
+            </View>
+          </View>
+        ) : null}
+
+        {sendError ? (
+          <View style={styles.errorRow}>
+            <Text style={styles.errorText}>{sendError}</Text>
+            {lastFailedMessage ? (
+              <TouchableOpacity onPress={handleResend} style={styles.resendButton}>
+                <Text style={styles.resendText}>Resend</Text>
+              </TouchableOpacity>
+            ) : null}
+          </View>
+        ) : null}
+
+        {loadingMore ? (
+          <ActivityIndicator color={theme.palette.platinum} />
+        ) : nextCursor ? (
+          <TouchableOpacity style={styles.loadMore} onPress={handleLoadMore}>
+            <Text style={styles.loadMoreText}>Load earlier messages</Text>
+          </TouchableOpacity>
+        ) : (
+          <View style={styles.footerSpacer} />
+        )}
+      </View>
     );
-  }, [handleLoadMore, loadingMore, nextCursor]);
+  }, [
+    awaitingReply,
+    handleLoadMore,
+    handleResend,
+    lastFailedMessage,
+    loadingMore,
+    nextCursor,
+    sendError,
+  ]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -263,6 +370,7 @@ export function MentorChatScreen() {
             Share anything on your mind. Sessions stay grouped, and the mentor replies even
             when the LLM is warming up.
           </Text>
+          <Text style={styles.tip}>Tip: long-press mentor messages to copy text.</Text>
         </View>
 
         <View style={styles.listContainer}>
@@ -303,24 +411,40 @@ export function MentorChatScreen() {
 
         <View style={styles.inputBar}>
           <TextInput
-            style={styles.input}
+            style={[
+              styles.input,
+              {
+                height: Math.max(42, Math.min(inputHeight || 0, 160)),
+              },
+            ]}
             placeholder="Tell your mentor what you feel…"
-            placeholderTextColor={theme.palette.silver}
+            placeholderTextColor={chatTheme.input.placeholder}
             value={input}
             onChangeText={setInput}
+            onContentSizeChange={(event) =>
+              setInputHeight(event.nativeEvent.contentSize.height)
+            }
             editable={!isSending}
             multiline
           />
           <TouchableOpacity
             style={styles.sendButton}
             onPress={handleSend}
-            disabled={!input.trim() || isSending}
+            disabled={!input.trim() || isSending || awaitingReply}
           >
-            <Ionicons
-              name="send"
-              size={20}
-              color={!input.trim() || isSending ? theme.palette.silver : theme.palette.lime}
-            />
+            {isSending ? (
+              <ActivityIndicator size="small" color={theme.palette.lime} />
+            ) : (
+              <Ionicons
+                name="send"
+                size={20}
+                color={
+                  !input.trim() || awaitingReply
+                    ? chatTheme.input.placeholder
+                    : theme.palette.lime
+                }
+              />
+            )}
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
@@ -331,7 +455,7 @@ export function MentorChatScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: theme.palette.midnight,
+    backgroundColor: chatTheme.background,
   },
   flex: {
     flex: 1,
@@ -350,6 +474,10 @@ const styles = StyleSheet.create({
     color: theme.palette.silver,
     ...theme.typography.body,
   },
+  tip: {
+    color: chatTheme.bubble.mentor.timestamp,
+    ...theme.typography.caption,
+  },
   listContainer: {
     flex: 1,
   },
@@ -360,8 +488,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: theme.spacing.lg,
-    paddingBottom: theme.spacing.md,
-    gap: theme.spacing.sm,
+    paddingBottom: 140,
   },
   emptyContent: {
     flex: 1,
@@ -370,7 +497,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.lg,
   },
   messageRow: {
-    marginVertical: 2,
+    marginVertical: 0,
   },
   messageRowLeft: {
     alignItems: 'flex-start',
@@ -379,20 +506,21 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   bubble: {
-    maxWidth: '85%',
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
-    borderRadius: theme.radii.lg,
+    maxWidth: chatTheme.bubble.maxWidth,
+    paddingHorizontal: chatTheme.spacing.md,
+    paddingVertical: chatTheme.spacing.sm,
+    borderRadius: chatTheme.bubble.radius,
+    gap: 8,
   },
   userBubble: {
-    backgroundColor: theme.palette.azure + '22',
+    backgroundColor: chatTheme.bubble.user.background,
     borderWidth: 1,
-    borderColor: theme.palette.azure + '55',
-    borderBottomRightRadius: theme.radii.sm,
+    borderColor: chatTheme.bubble.user.border,
+    borderBottomRightRadius: chatTheme.bubble.radius / 2,
   },
   mentorBubble: {
-    backgroundColor: theme.palette.obsidian,
-    borderBottomLeftRadius: theme.radii.sm,
+    backgroundColor: chatTheme.bubble.mentor.background,
+    borderBottomLeftRadius: chatTheme.bubble.radius / 2,
   },
   mentorShadow: {
     shadowColor: '#000',
@@ -402,18 +530,24 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   userText: {
-    color: theme.palette.platinum,
-    ...theme.typography.body,
+    color: chatTheme.bubble.user.text,
+    ...chatTheme.typography.body,
   },
   mentorText: {
-    color: theme.palette.pearl,
-    ...theme.typography.body,
+    color: chatTheme.bubble.mentor.text,
+    ...chatTheme.typography.body,
   },
   timestamp: {
-    color: theme.palette.silver,
-    ...theme.typography.caption,
+    color: chatTheme.bubble.user.timestamp,
+    ...chatTheme.typography.timestamp,
     marginTop: 4,
     textAlign: 'right',
+  },
+  timestampUser: {
+    color: chatTheme.bubble.user.timestamp,
+  },
+  timestampMentor: {
+    color: chatTheme.bubble.mentor.timestamp,
   },
   sessionLabel: {
     color: theme.palette.silver,
@@ -423,6 +557,7 @@ const styles = StyleSheet.create({
   },
   footer: {
     paddingVertical: theme.spacing.sm,
+    gap: chatTheme.spacing.sm,
   },
   loadMore: {
     alignSelf: 'center',
@@ -435,6 +570,44 @@ const styles = StyleSheet.create({
   loadMoreText: {
     color: theme.palette.platinum,
     ...theme.typography.caption,
+  },
+  footerSpacer: {
+    height: chatTheme.spacing.md,
+  },
+  typingRow: {
+    marginTop: chatTheme.spacing.sm,
+  },
+  typingBubble: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: chatTheme.spacing.sm,
+  },
+  typingText: {
+    color: chatTheme.bubble.mentor.text,
+    ...chatTheme.typography.body,
+  },
+  errorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: chatTheme.spacing.sm,
+    paddingHorizontal: theme.spacing.lg,
+  },
+  errorText: {
+    color: theme.palette.ember,
+    ...theme.typography.caption,
+    flex: 1,
+  },
+  resendButton: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: theme.radii.pill,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: theme.palette.ember,
+  },
+  resendText: {
+    color: theme.palette.ember,
+    fontWeight: '700',
+    fontSize: 12,
   },
   emptyState: {
     alignItems: 'center',
@@ -456,24 +629,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.lg,
     paddingVertical: theme.spacing.sm,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: theme.palette.titanium,
+    borderTopColor: chatTheme.input.border,
     backgroundColor: theme.palette.charcoal,
     gap: theme.spacing.sm,
   },
   input: {
     flex: 1,
-    maxHeight: 140,
+    maxHeight: 160,
     paddingHorizontal: theme.spacing.md,
     paddingVertical: theme.spacing.sm,
     borderRadius: theme.radii.lg,
-    backgroundColor: theme.palette.obsidian,
-    color: theme.palette.platinum,
-    ...theme.typography.body,
+    backgroundColor: chatTheme.input.background,
+    color: chatTheme.input.text,
+    ...chatTheme.typography.body,
     textAlignVertical: 'top',
   },
   sendButton: {
     padding: theme.spacing.sm,
     borderRadius: theme.radii.full,
-    backgroundColor: theme.palette.obsidian,
+    backgroundColor: chatTheme.input.background,
   },
 });

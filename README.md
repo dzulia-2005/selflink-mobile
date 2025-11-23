@@ -58,6 +58,9 @@ src/
 - `src/services/api/media.ts` offers list + CRUD helpers for `/api/v1/media/` and `/api/v1/media/{id}/`, keeping uploads/metadata updates consistent across clients.
 - `src/services/api/mentor.ts` exposes CRUD helpers for `/api/v1/mentor/profile/` so mentor personalization can be managed from mobile or desktop with the same code.
 - `src/services/api/mentorSessions.ts` wraps `/api/v1/mentor/chat/` and `/api/v1/mentor/history/` so mentor chat, replies, and history stay in sync across clients.
+- Mentor chat UI lives in `src/screens/mentor/MentorChatScreen.tsx`; mentor rich-text rendering sits in
+  `src/components/chat/MentorMessageContent.tsx`, and chat visual tokens (bubbles, spacing, typography) are centralized in
+  `src/theme/chat.ts`.
 - `src/services/api/mentorTasks.ts` centralizes `/api/v1/mentor/tasks/`, `/api/v1/mentor/tasks/{id}/`, and `/api/v1/mentor/tasks/today/` calls so daily task queues use shared code.
 - `src/services/api/messages.ts` provides list + CRUD helpers for `/api/v1/messages/` so chats and inbox features rely on a single shared wrapper.
 - `src/services/api/moderationAdminReports.ts` lets moderators list and manage `/api/v1/moderation/admin/reports/` entries (full CRUD) from any client.
