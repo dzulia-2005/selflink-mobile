@@ -20,6 +20,7 @@ import {
   sendMentorChat,
   type MentorHistoryMessage,
 } from '@services/api/mentorSessions';
+import { useAuthStore } from '@store/authStore';
 import { theme } from '@theme/index';
 
 type ChatMessage = Omit<MentorHistoryMessage, 'id'> & { id: string };
@@ -56,6 +57,7 @@ const formatTime = (value: string) => {
 
 export function MentorChatScreen() {
   const toast = useToast();
+  const currentUser = useAuthStore((state) => state.currentUser);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -135,6 +137,9 @@ export function MentorChatScreen() {
     if (!trimmed || isSending) {
       return;
     }
+    const userLanguage =
+      currentUser?.settings?.language ||
+      (currentUser?.locale ? currentUser.locale.split('-')[0] : undefined);
     const now = new Date().toISOString();
     const optimisticUser: ChatMessage = {
       id: `local-user-${Date.now()}`,
@@ -153,7 +158,7 @@ export function MentorChatScreen() {
       const response = await sendMentorChat({
         message: trimmed,
         mode: 'default',
-        language: 'en',
+        language: userLanguage || undefined,
       });
       const sessionId = response.session_id;
       const userMessage: ChatMessage = {
