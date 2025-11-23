@@ -41,7 +41,8 @@ describe('MentorMessageContent', () => {
     );
 
     expect(queryByText('Line 12')).toBeNull();
-    fireEvent.press(getByText('Show more'));
-    expect(getByText('Line 12')).toBeTruthy();
+    const toggle = getByText('Show more');
+    fireEvent.press(toggle);
+    expect(getByText('Show less')).toBeTruthy();
   });
 });

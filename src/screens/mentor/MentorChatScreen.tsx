@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -359,95 +360,90 @@ export function MentorChatScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={styles.flex}
-        keyboardVerticalOffset={12}
-      >
-        <View style={styles.header}>
-          <Text style={styles.title}>AI Mentor</Text>
-          <Text style={styles.subtitle}>
-            Share anything on your mind. Sessions stay grouped, and the mentor replies even
-            when the LLM is warming up.
-          </Text>
-          <Text style={styles.tip}>Tip: long-press mentor messages to copy text.</Text>
-        </View>
-
-        <View style={styles.listContainer}>
-          {isLoading ? (
-            <View style={styles.loader}>
-              <ActivityIndicator color={theme.palette.platinum} />
-            </View>
-          ) : (
-            <FlatList
-              ref={listRef}
-              data={messages}
-              keyExtractor={(item) => item.id}
-              renderItem={renderMessage}
-              contentContainerStyle={
-                messages.length === 0 ? styles.emptyContent : styles.listContent
-              }
-              ListEmptyComponent={
-                <View style={styles.emptyState}>
-                  <Text style={styles.emptyTitle}>Start a new conversation</Text>
-                  <Text style={styles.emptySubtitle}>
-                    Your mentor will remember the session ID for this chat.
-                  </Text>
-                </View>
-              }
-              ListFooterComponent={footer}
-              refreshControl={
-                <RefreshControl
-                  refreshing={refreshing}
-                  onRefresh={handleRefresh}
-                  tintColor={theme.palette.platinum}
-                />
-              }
-              keyboardShouldPersistTaps="handled"
-              showsVerticalScrollIndicator={false}
-            />
-          )}
-        </View>
-
-        <View style={styles.inputBar}>
-          <TextInput
-            style={[
-              styles.input,
-              {
-                height: Math.max(42, Math.min(inputHeight || 0, 160)),
-              },
-            ]}
-            placeholder="Tell your mentor what you feel…"
-            placeholderTextColor={chatTheme.input.placeholder}
-            value={input}
-            onChangeText={setInput}
-            onContentSizeChange={(event) =>
-              setInputHeight(event.nativeEvent.contentSize.height)
-            }
-            editable={!isSending}
-            multiline
-          />
-          <TouchableOpacity
-            style={styles.sendButton}
-            onPress={handleSend}
-            disabled={!input.trim() || isSending || awaitingReply}
-          >
-            {isSending ? (
-              <ActivityIndicator size="small" color={theme.palette.lime} />
+      <LinearGradient colors={chatTheme.backgroundGradient} style={styles.gradient}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={styles.flex}
+          keyboardVerticalOffset={12}
+        >
+          <View style={styles.listContainer}>
+            {isLoading ? (
+              <View style={styles.loader}>
+                <ActivityIndicator color={theme.palette.platinum} />
+              </View>
             ) : (
-              <Ionicons
-                name="send"
-                size={20}
-                color={
-                  !input.trim() || awaitingReply
-                    ? chatTheme.input.placeholder
-                    : theme.palette.lime
+              <FlatList
+                ref={listRef}
+                data={messages}
+                keyExtractor={(item) => item.id}
+                renderItem={renderMessage}
+                contentContainerStyle={
+                  messages.length === 0 ? styles.emptyContent : styles.listContent
                 }
+                ListEmptyComponent={
+                  <View style={styles.emptyState}>
+                    <Text style={styles.emptyTitle}>Start a new conversation</Text>
+                    <Text style={styles.emptySubtitle}>
+                      Your mentor will remember the session ID for this chat.
+                    </Text>
+                  </View>
+                }
+                ListFooterComponent={footer}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={handleRefresh}
+                    tintColor={theme.palette.platinum}
+                  />
+                }
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}
               />
             )}
-          </TouchableOpacity>
-        </View>
-      </KeyboardAvoidingView>
+          </View>
+
+          <View style={styles.inputWrapper}>
+            <View style={styles.inputBar}>
+              <TextInput
+                style={[
+                  styles.input,
+                  {
+                    height: Math.max(48, Math.min(inputHeight || 0, 160)),
+                  },
+                ]}
+                placeholder="Ask your SelfLink Mentor…"
+                placeholderTextColor={chatTheme.input.placeholder}
+                value={input}
+                onChangeText={setInput}
+                onContentSizeChange={(event) =>
+                  setInputHeight(event.nativeEvent.contentSize.height)
+                }
+                editable={!isSending}
+                multiline
+              />
+              <TouchableOpacity
+                style={styles.sendButton}
+                onPress={handleSend}
+                disabled={!input.trim() || isSending || awaitingReply}
+              >
+                {isSending ? (
+                  <ActivityIndicator size="small" color={theme.palette.pearl} />
+                ) : (
+                  <Ionicons
+                    name="send"
+                    size={18}
+                    color={
+                      !input.trim() || awaitingReply
+                        ? chatTheme.input.placeholder
+                        : theme.palette.pearl
+                    }
+                  />
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </LinearGradient>
     </SafeAreaView>
   );
 }
@@ -457,26 +453,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: chatTheme.background,
   },
-  flex: {
+  gradient: {
     flex: 1,
   },
-  header: {
-    paddingHorizontal: theme.spacing.lg,
-    paddingTop: theme.spacing.lg,
-    paddingBottom: theme.spacing.sm,
-    gap: theme.spacing.xs,
-  },
-  title: {
-    color: theme.palette.platinum,
-    ...theme.typography.headingL,
-  },
-  subtitle: {
-    color: theme.palette.silver,
-    ...theme.typography.body,
-  },
-  tip: {
-    color: chatTheme.bubble.mentor.timestamp,
-    ...theme.typography.caption,
+  flex: {
+    flex: 1,
   },
   listContainer: {
     flex: 1,
@@ -489,6 +470,7 @@ const styles = StyleSheet.create({
   listContent: {
     paddingHorizontal: theme.spacing.lg,
     paddingBottom: 140,
+    paddingTop: theme.spacing.md - 4,
   },
   emptyContent: {
     flex: 1,
@@ -517,17 +499,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: chatTheme.bubble.user.border,
     borderBottomRightRadius: chatTheme.bubble.radius / 2,
+    borderTopRightRadius: chatTheme.bubble.radius / 2,
   },
   mentorBubble: {
     backgroundColor: chatTheme.bubble.mentor.background,
     borderBottomLeftRadius: chatTheme.bubble.radius / 2,
+    borderTopLeftRadius: chatTheme.bubble.radius / 2,
   },
   mentorShadow: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 8,
-    elevation: 6,
+    ...(chatTheme.bubble.mentor.shadow || {}),
   },
   userText: {
     color: chatTheme.bubble.user.text,
@@ -623,15 +603,21 @@ const styles = StyleSheet.create({
     ...theme.typography.body,
     textAlign: 'center',
   },
+  inputWrapper: {
+    paddingHorizontal: theme.spacing.lg,
+    paddingBottom: theme.spacing.md,
+  },
   inputBar: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    paddingHorizontal: theme.spacing.lg,
+    paddingHorizontal: theme.spacing.md,
     paddingVertical: theme.spacing.sm,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: chatTheme.input.border,
-    backgroundColor: theme.palette.charcoal,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: chatTheme.input.border,
+    backgroundColor: chatTheme.input.background,
     gap: theme.spacing.sm,
+    borderRadius: 18,
+    ...chatTheme.input.shadow,
   },
   input: {
     flex: 1,
@@ -647,6 +633,10 @@ const styles = StyleSheet.create({
   sendButton: {
     padding: theme.spacing.sm,
     borderRadius: theme.radii.full,
-    backgroundColor: chatTheme.input.background,
+    backgroundColor: theme.palette.glow,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 40,
+    height: 40,
   },
 });

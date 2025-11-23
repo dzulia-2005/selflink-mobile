@@ -89,11 +89,6 @@ export type NatalMentorResponse = {
   generated_at?: string;
 };
 
-export type DailyMentorResponse = {
-  date: string;
-  messages: string[];
-};
-
 export type SoulmatchMentorResponse = {
   user_id: number;
   score: number;
@@ -106,12 +101,60 @@ export async function fetchNatalMentor(): Promise<NatalMentorResponse> {
   return apiClient.request('/api/v1/mentor/natal/', { method: 'POST' });
 }
 
-export async function fetchDailyMentor(): Promise<DailyMentorResponse> {
-  return apiClient.request('/api/v1/mentor/daily/', { method: 'GET' });
-}
-
 export async function fetchSoulmatchMentor(
   userId: number,
 ): Promise<SoulmatchMentorResponse> {
   return apiClient.request(`/api/v1/mentor/soulmatch/${userId}/`, { method: 'GET' });
+}
+
+export type DailyMentorEntryPayload = {
+  text: string;
+  date?: string;
+  language?: string | null;
+};
+
+export type DailyMentorEntryResponse = {
+  session_id: number;
+  date: string;
+  reply: string;
+  entry?: string;
+  language?: string | null;
+};
+
+export type DailyMentorHistoryItem = {
+  session_id: number;
+  date: string;
+  entry_preview: string;
+  reply_preview: string;
+};
+
+export type DailyMentorHistoryResponse = {
+  results: DailyMentorHistoryItem[];
+};
+
+export type DailyMentorSession = {
+  session_id: number;
+  date: string;
+  entry: string;
+  reply: string;
+  language?: string | null;
+};
+
+export async function createDailyMentorEntry(
+  payload: DailyMentorEntryPayload,
+): Promise<DailyMentorEntryResponse> {
+  return apiClient.request('/api/v1/mentor/daily/entry/', { method: 'POST', body: payload });
+}
+
+export async function fetchDailyMentorHistory(
+  limit = 7,
+): Promise<DailyMentorHistoryResponse> {
+  const path = `/api/v1/mentor/daily/history/?limit=${limit}`;
+  return apiClient.request(path, { method: 'GET' });
+}
+
+export async function fetchDailyMentorSession(
+  sessionId: number | string,
+): Promise<DailyMentorSession> {
+  return apiClient.request(`/api/v1/mentor/daily/session/${sessionId}/`, { method: 'GET' });
 }
