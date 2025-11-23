@@ -28,6 +28,7 @@ import {
 import { useAuthStore } from '@store/authStore';
 import { chatTheme } from '@theme/chat';
 import { theme } from '@theme/index';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type ChatMessage = Omit<MentorHistoryMessage, 'id'> & { id: string };
 
@@ -65,6 +66,7 @@ const formatTime = (value: string) => {
 
 export function MentorChatScreen() {
   const toast = useToast();
+  const insets = useSafeAreaInsets();
   const currentUser = useAuthStore((state) => state.currentUser);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
@@ -362,9 +364,9 @@ export function MentorChatScreen() {
     <SafeAreaView style={styles.safeArea}>
       <LinearGradient colors={chatTheme.backgroundGradient} style={styles.gradient}>
         <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.flex}
-          keyboardVerticalOffset={12}
+          keyboardVerticalOffset={insets.top + 12}
         >
           <View style={styles.listContainer}>
             {isLoading ? (
@@ -374,11 +376,14 @@ export function MentorChatScreen() {
             ) : (
               <FlatList
                 ref={listRef}
+                style={styles.list}
                 data={messages}
                 keyExtractor={(item) => item.id}
                 renderItem={renderMessage}
                 contentContainerStyle={
-                  messages.length === 0 ? styles.emptyContent : styles.listContent
+                  messages.length === 0
+                    ? styles.emptyContent
+                    : [styles.listContent, { paddingBottom: 160 + insets.bottom }]
                 }
                 ListEmptyComponent={
                   <View style={styles.emptyState}>
@@ -402,7 +407,7 @@ export function MentorChatScreen() {
             )}
           </View>
 
-          <View style={styles.inputWrapper}>
+          <View style={[styles.inputWrapper, { paddingBottom: theme.spacing.md + insets.bottom }]}>
             <View style={styles.inputBar}>
               <TextInput
                 style={[
@@ -460,6 +465,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   listContainer: {
+    flex: 1,
+  },
+  list: {
     flex: 1,
   },
   loader: {

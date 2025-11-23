@@ -3,14 +3,16 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  RefreshControl,
-  ScrollView,
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useToast } from '@context/ToastContext';
 import {
@@ -34,6 +36,7 @@ export function DailyMentorScreen() {
   const navigation =
     useNavigation<NativeStackNavigationProp<MentorStackParamList, 'DailyMentor'>>();
   const currentUser = useAuthStore((state) => state.currentUser);
+  const insets = useSafeAreaInsets();
 
   const [entry, setEntry] = useState('');
   const [entryDate, setEntryDate] = useState(todayString());
@@ -117,18 +120,30 @@ export function DailyMentorScreen() {
     [navigation],
   );
 
-  return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.content}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-          tintColor={theme.palette.platinum}
-        />
-      }
-    >
+  const renderHistoryItem = useCallback(
+    ({ item }: { item: DailyMentorHistoryItem }) => (
+      <TouchableOpacity
+        key={item.session_id}
+        style={styles.historyItem}
+        onPress={() => openSession(item.session_id)}
+      >
+        <View style={styles.historyTopRow}>
+          <Text style={styles.historyDate}>{item.date}</Text>
+          <Text style={styles.historySession}>#{item.session_id}</Text>
+        </View>
+        <Text style={styles.historyPreview} numberOfLines={2}>
+          {item.entry_preview}
+        </Text>
+        <Text style={styles.historyReply} numberOfLines={2}>
+          {item.reply_preview}
+        </Text>
+      </TouchableOpacity>
+    ),
+    [openSession],
+  );
+
+  const headerComponent = (
+    <View style={styles.content}>
       <View style={styles.headerBlock}>
         <View style={styles.pill}>
           <Text style={styles.pillText}>Daily Mentor</Text>
@@ -146,6 +161,7 @@ export function DailyMentorScreen() {
           placeholder="What happened today?"
           placeholderTextColor={theme.palette.silver}
           multiline
+          scrollEnabled
           value={entry}
           onChangeText={setEntry}
           textAlignVertical="top"
@@ -198,44 +214,52 @@ export function DailyMentorScreen() {
         ) : null}
       </View>
 
-      <View style={styles.card}>
-        <View style={styles.historyHeader}>
-          <Text style={styles.sectionLabel}>Recent entries</Text>
-          <TouchableOpacity onPress={onRefresh}>
-            <Text style={styles.refreshText}>Refresh</Text>
-          </TouchableOpacity>
-        </View>
-
-        {historyLoading ? (
-          <View style={styles.centered}>
-            <ActivityIndicator color={theme.palette.platinum} />
-          </View>
-        ) : history.length === 0 ? (
-          <Text style={styles.subtitle}>No entries yet. Your first note will show here.</Text>
-        ) : (
-          <View style={styles.historyList}>
-            {history.map((item) => (
-              <TouchableOpacity
-                key={item.session_id}
-                style={styles.historyItem}
-                onPress={() => openSession(item.session_id)}
-              >
-                <View style={styles.historyTopRow}>
-                  <Text style={styles.historyDate}>{item.date}</Text>
-                  <Text style={styles.historySession}>#{item.session_id}</Text>
-                </View>
-                <Text style={styles.historyPreview} numberOfLines={2}>
-                  {item.entry_preview}
-                </Text>
-                <Text style={styles.historyReply} numberOfLines={2}>
-                  {item.reply_preview}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
+      <View style={styles.historyHeaderRow}>
+        <Text style={styles.sectionLabel}>Recent entries</Text>
+        <TouchableOpacity onPress={onRefresh}>
+          <Text style={styles.refreshText}>Refresh</Text>
+        </TouchableOpacity>
       </View>
-    </ScrollView>
+      {historyLoading ? (
+        <View style={[styles.historyPlaceholder, styles.centered]}>
+          <ActivityIndicator color={theme.palette.platinum} />
+        </View>
+      ) : history.length === 0 ? (
+        <View style={styles.historyPlaceholder}>
+          <Text style={styles.subtitle}>No entries yet. Your first note will show here.</Text>
+        </View>
+      ) : null}
+    </View>
+  );
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.flex}
+        keyboardVerticalOffset={insets.top + 12}
+      >
+        <FlatList
+          data={history}
+          keyExtractor={(item) => String(item.session_id)}
+          renderItem={renderHistoryItem}
+          ListHeaderComponent={headerComponent}
+          contentContainerStyle={[
+            styles.listContent,
+            { paddingBottom: theme.spacing.xl + insets.bottom },
+          ]}
+          ItemSeparatorComponent={() => <View style={{ height: theme.spacing.sm }} />}
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          ListFooterComponent={
+            historyLoading && history.length === 0 ? null : (
+              <View style={{ height: theme.spacing.md }} />
+            )
+          }
+          showsVerticalScrollIndicator={false}
+        />
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
@@ -244,10 +268,15 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#0F0A14',
   },
+  flex: {
+    flex: 1,
+  },
   content: {
     padding: theme.spacing.lg,
     gap: theme.spacing.lg,
-    paddingBottom: theme.spacing.xl,
+  },
+  listContent: {
+    paddingTop: 0,
   },
   headerBlock: {
     gap: theme.spacing.sm,
@@ -288,6 +317,7 @@ const styles = StyleSheet.create({
   },
   input: {
     minHeight: 140,
+    maxHeight: 200,
     borderRadius: theme.radii.md,
     backgroundColor: 'rgba(148, 163, 184, 0.12)',
     borderWidth: StyleSheet.hairlineWidth,
@@ -388,6 +418,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+  },
+  historyHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: theme.spacing.lg,
+    marginTop: -theme.spacing.sm,
+  },
+  historyPlaceholder: {
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.md,
+    gap: theme.spacing.xs,
   },
   refreshText: {
     color: theme.palette.silver,

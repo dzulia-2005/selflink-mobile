@@ -1,6 +1,15 @@
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useToast } from '@context/ToastContext';
 import { fetchDailyMentorSession, type DailyMentorSession } from '@services/api/mentor';
@@ -12,6 +21,7 @@ type RouteProps = RouteProp<MentorStackParamList, 'DailyMentorEntry'>;
 export function DailyMentorEntryScreen() {
   const { params } = useRoute<RouteProps>();
   const toast = useToast();
+  const insets = useSafeAreaInsets();
 
   const [session, setSession] = useState<DailyMentorSession | null>(null);
   const [loading, setLoading] = useState(true);
@@ -33,53 +43,78 @@ export function DailyMentorEntryScreen() {
     loadSession().catch(() => undefined);
   }, [loadSession]);
 
-  if (loading) {
-    return (
-      <View style={[styles.container, styles.centered]}>
-        <ActivityIndicator color={theme.palette.platinum} />
-      </View>
-    );
-  }
+  const content = () => {
+    if (loading) {
+      return (
+        <View style={[styles.container, styles.centered]}>
+          <ActivityIndicator color={theme.palette.platinum} />
+        </View>
+      );
+    }
 
-  if (!session) {
+    if (!session) {
+      return (
+        <View style={[styles.container, styles.centered]}>
+          <Text style={styles.subtitle}>Entry not found.</Text>
+        </View>
+      );
+    }
+
     return (
-      <View style={[styles.container, styles.centered]}>
-        <Text style={styles.subtitle}>Entry not found.</Text>
-      </View>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={[
+          styles.content,
+          { paddingBottom: theme.spacing.xl + insets.bottom },
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.topRow}>
+          <View>
+            <Text style={styles.title}>{session.date}</Text>
+            <Text style={styles.subtitle}>Session #{session.session_id}</Text>
+          </View>
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.sectionLabel}>Your note</Text>
+          <Text style={styles.body}>{session.entry}</Text>
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.sectionLabel}>Mentor&apos;s reply</Text>
+          {session.reply
+            .split('\n')
+            .filter(Boolean)
+            .map((line, idx) => (
+              <View style={styles.bulletRow} key={`${session.session_id}-detail-${idx}`}>
+                <Text style={styles.bullet}>•</Text>
+                <Text style={styles.body}>{line.trim()}</Text>
+              </View>
+            ))}
+        </View>
+      </ScrollView>
     );
-  }
+  };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <View style={styles.topRow}>
-        <View>
-          <Text style={styles.title}>{session.date}</Text>
-          <Text style={styles.subtitle}>Session #{session.session_id}</Text>
-        </View>
-      </View>
-
-      <View style={styles.card}>
-        <Text style={styles.sectionLabel}>Your note</Text>
-        <Text style={styles.body}>{session.entry}</Text>
-      </View>
-
-      <View style={styles.card}>
-        <Text style={styles.sectionLabel}>Mentor&apos;s reply</Text>
-        {session.reply
-          .split('\n')
-          .filter(Boolean)
-          .map((line, idx) => (
-            <View style={styles.bulletRow} key={`${session.session_id}-detail-${idx}`}>
-              <Text style={styles.bullet}>•</Text>
-              <Text style={styles.body}>{line.trim()}</Text>
-            </View>
-          ))}
-      </View>
-    </ScrollView>
+    <SafeAreaView style={styles.flex}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.flex}
+        keyboardVerticalOffset={insets.top + 12}
+      >
+        {content()}
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  flex: {
+    flex: 1,
+    backgroundColor: '#0F0A14',
+  },
   container: {
     flex: 1,
     backgroundColor: '#0F0A14',
