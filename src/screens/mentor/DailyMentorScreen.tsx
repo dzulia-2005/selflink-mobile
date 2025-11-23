@@ -101,7 +101,7 @@ export function DailyMentorScreen() {
         const filtered = current.filter((item) => item.session_id !== response.session_id);
         return [historyItem, ...filtered].slice(0, 7);
       });
-      toast.push({ message: 'Reflection saved', tone: 'success', duration: 1200 });
+      toast.push({ message: 'Reflection saved', tone: 'info', duration: 1200 });
     } catch (error) {
       console.error('DailyMentorScreen: failed to submit entry', error);
       toast.push({ message: 'Could not save your entry. Please try again.', tone: 'error' });

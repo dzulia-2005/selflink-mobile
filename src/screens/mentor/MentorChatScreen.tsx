@@ -496,7 +496,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   bubble: {
-    maxWidth: chatTheme.bubble.maxWidth,
+    maxWidth: chatTheme.bubble.maxWidth as `${number}%`,
     paddingHorizontal: chatTheme.spacing.md,
     paddingVertical: chatTheme.spacing.sm,
     borderRadius: chatTheme.bubble.radius,
