@@ -16,13 +16,15 @@ import { MetalButton } from '@components/MetalButton';
 import { MetalPanel } from '@components/MetalPanel';
 import { useToast } from '@context/ToastContext';
 import { useAuth } from '@hooks/useAuth';
-import { AuthStackParamList } from '@navigation/AppNavigator';
+import type { AuthStackParamList } from '@navigation/types';
 import { loginWithPassword } from '@services/api/auth';
 import { theme } from '@theme/index';
 
+type LoginScreenNavigation = NativeStackNavigationProp<AuthStackParamList, 'Login'>;
+
 export function LoginScreen() {
   const { signIn } = useAuth();
-  const navigation = useNavigation<NativeStackNavigationProp<AuthStackParamList>>();
+  const navigation = useNavigation<LoginScreenNavigation>();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);

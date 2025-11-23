@@ -1,5 +1,5 @@
+import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useMemo, useState } from 'react';
 import {
@@ -16,12 +16,14 @@ import { MetalButton } from '@components/MetalButton';
 import { MetalPanel } from '@components/MetalPanel';
 import { useToast } from '@context/ToastContext';
 import { usePaymentsCatalog } from '@hooks/usePaymentsCatalog';
-import { RootStackParamList } from '@navigation/AppNavigator';
+import type { MainTabsParamList } from '@navigation/types';
 import { createStripeCheckoutSession } from '@services/api/payments';
 import { theme } from '@theme/index';
 
+type PaymentsNavigation = BottomTabNavigationProp<MainTabsParamList, 'Payments'>;
+
 export function PaymentsScreen() {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation = useNavigation<PaymentsNavigation>();
   const { gifts, plans, activeSubscription, loading, refresh } = usePaymentsCatalog();
   const toast = useToast();
   const [launchingCheckout, setLaunchingCheckout] = useState(false);

@@ -1,5 +1,5 @@
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import { NavigatorScreenParams, useNavigation } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useMemo, useState } from 'react';
 import {
@@ -21,12 +21,17 @@ import { useToast } from '@context/ToastContext';
 import { useAuth } from '@hooks/useAuth';
 import { useThreads } from '@hooks/useThreads';
 import { useUsersDirectory } from '@hooks/useUsersDirectory';
-import { RootStackParamList } from '@navigation/AppNavigator';
+import type {
+  MainTabsParamList,
+  MessagesStackParamList,
+} from '@navigation/types';
 import type { UserProfile } from '@services/api/user';
 import { theme } from '@theme/index';
 
+type InboxNavigation = BottomTabNavigationProp<MainTabsParamList, 'Inbox'>;
+
 export function InboxScreen() {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation = useNavigation<InboxNavigation>();
   const toast = useToast();
   const { user: authUser } = useAuth();
   const { threads, loading, refreshing, loadMore, hasMore, refresh, createThread } =
@@ -45,7 +50,11 @@ export function InboxScreen() {
 
   const openThread = useCallback(
     (threadId: number) => {
-      navigation.navigate('Messages', { threadId });
+      const params: NavigatorScreenParams<MessagesStackParamList> = {
+        screen: 'Chat',
+        params: { threadId: String(threadId) },
+      };
+      navigation.navigate('Messages', params);
     },
     [navigation],
   );

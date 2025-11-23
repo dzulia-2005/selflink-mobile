@@ -21,7 +21,7 @@ import { env } from '@config/env';
 import { useToast } from '@context/ToastContext';
 import { useAuth } from '@hooks/useAuth';
 import { useMessages } from '@hooks/useMessages';
-import { RootStackParamList } from '@navigation/AppNavigator';
+import type { MessagesStackParamList } from '@navigation/types';
 import {
   getTypingStatus,
   leaveThread,
@@ -31,7 +31,8 @@ import {
 } from '@services/api/threads';
 import { theme } from '@theme';
 
-type MessagesRoute = RouteProp<RootStackParamList, 'Messages'>;
+type MessagesRoute = RouteProp<MessagesStackParamList, 'Chat'>;
+type MessagesNavigation = NativeStackNavigationProp<MessagesStackParamList, 'Chat'>;
 
 const isUnauthorizedError = (error: unknown) => {
   if (!error || typeof error !== 'object') {
@@ -53,10 +54,10 @@ const logTypingWarning = (label: string, error: unknown) => {
 
 export function MessagesScreen() {
   const route = useRoute<MessagesRoute>();
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation = useNavigation<MessagesNavigation>();
   const toast = useToast();
   const { token } = useAuth();
-  const threadId = route.params.threadId;
+  const threadId = Number(route.params.threadId);
   const [markingRead, setMarkingRead] = useState(false);
   const [typingSignal, setTypingSignal] = useState(false);
   const [typingStatus, setTypingStatus] = useState<TypingStatus | null>(null);

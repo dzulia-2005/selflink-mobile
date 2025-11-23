@@ -1,5 +1,5 @@
+import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useState } from 'react';
 import {
@@ -20,11 +20,13 @@ import { StatusPill } from '@components/StatusPill';
 import { useToast } from '@context/ToastContext';
 import { useAuth } from '@hooks/useAuth';
 import { useBackendHealth } from '@hooks/useBackendHealth';
-import { RootStackParamList } from '@navigation/AppNavigator';
+import type { MainTabsParamList } from '@navigation/types';
 import { theme } from '@theme/index';
 
+type HomeNavigation = BottomTabNavigationProp<MainTabsParamList>;
+
 export function HomeScreen() {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation = useNavigation<HomeNavigation>();
   const { status, error, refresh } = useBackendHealth();
   const { user, signOut, profileError, refreshProfile } = useAuth();
   const toast = useToast();

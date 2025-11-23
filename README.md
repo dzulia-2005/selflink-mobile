@@ -44,7 +44,7 @@ src/
 - `src/hooks/useAuth.ts` provides easy access to `signIn`, `signOut`, and auth state.
 - `src/screens/LoginScreen.tsx` offers a metallic-themed sign-in form that hits `/api/v1/auth/login/`, falling back to a mock token for local dev.
 - `src/screens/RegisterScreen.tsx` collects the backend-required payload (email, handle, name, password, optional full name/intention) and reuses the toast/auth flows before routing new users into the app.
-- `AppNavigator` now gates access: unauthenticated users see Login; signed-in users reach Home/Mentor/SoulMatch/Payments and can sign out directly from the Home welcome panel.
+- `RootNavigator` now gates access: unauthenticated users see the Auth stack; signed-in users flow through onboarding (if needed) and then land in the tabbed experience (Feed, Messages, Mentor, SoulMatch, Payments, etc.).
 - Home’s welcome panel shows the active user and exposes a Sign Out CTA, making it easy to switch accounts during testing.
 - `src/services/api/user.ts` handles `/api/v1/users/*` (list/detail/follow/followers) plus the `/api/v1/users/me/` hydration flow used by AuthContext.
 - Auth automatically refreshes expired access tokens via `/api/v1/auth/token/refresh/`, and falling back to logout if the refresh token is invalid.
