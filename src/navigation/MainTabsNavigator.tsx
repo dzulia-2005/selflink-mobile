@@ -2,17 +2,18 @@ import { Ionicons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useMemo } from 'react';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import type { ColorValue, StyleProp, TextStyle } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { BirthDataScreen } from '@screens/astro/BirthDataScreen';
-import { NatalChartScreen } from '@screens/astro/NatalChartScreen';
 import { CommunityScreen } from '@screens/CommunityScreen';
 import { CreatePostScreen } from '@screens/feed/CreatePostScreen';
 import { FeedScreen } from '@screens/feed/FeedScreen';
 import { PostDetailsScreen } from '@screens/feed/PostDetailsScreen';
 import { InboxScreen } from '@screens/InboxScreen';
+import { BirthDataScreen } from '@screens/astro/BirthDataScreen';
+import { NatalChartScreen } from '@screens/astro/NatalChartScreen';
 import { DailyMentorEntryScreen } from '@screens/mentor/DailyMentorEntryScreen';
 import { DailyMentorScreen } from '@screens/mentor/DailyMentorScreen';
 import { MentorChatScreen } from '@screens/mentor/MentorChatScreen';
@@ -45,6 +46,8 @@ import type {
 const SELF_LINK_GREEN = '#16a34a';
 const TAB_BAR_BG = '#020617';
 const TAB_BAR_BORDER = '#1E1B4B';
+
+// const HIDDEN_TAB_OPTIONS = { tabBarButton: () => null };
 
 export const MESSAGE_BADGE_STYLE: StyleProp<TextStyle> = {
   minWidth: 20,
@@ -110,12 +113,16 @@ const createTabBarIcon =
   };
 
 function FeedStackNavigator() {
+  const insets = useSafeAreaInsets();
+
   return (
     <FeedStack.Navigator>
       <FeedStack.Screen
         name="FeedHome"
         component={FeedScreen}
-        options={{ headerTitle: 'Feed' }}
+        options={{
+          header: () => <TopBar title="Feed" rightLabel="Search" />,
+        }}
       />
       <FeedStack.Screen
         name="PostDetails"
@@ -147,7 +154,7 @@ function MessagesStackNavigator() {
       <MessagesStack.Screen
         name="Threads"
         component={ThreadsScreen}
-        options={{ headerShown: false }}
+        options={{ header: () => <TopBar title="Messages" /> }}
       />
       <MessagesStack.Screen
         name="Chat"
@@ -254,6 +261,65 @@ function SoulMatchStackNavigator() {
   );
 }
 
+type TopBarProps = {
+  title: string;
+  rightLabel?: string;
+};
+
+function TopBar({ title, rightLabel }: TopBarProps) {
+  const insets = useSafeAreaInsets();
+
+  return (
+    <SafeAreaView
+      style={{
+        backgroundColor: '#fff',
+        paddingTop: insets.top,
+      }}
+    >
+      <TabBarTop
+        title={title}
+        rightLabel={rightLabel}
+        topPadding={Math.max(insets.top, 8)}
+      />
+    </SafeAreaView>
+  );
+}
+
+type TabBarTopProps = {
+  title: string;
+  rightLabel?: string;
+  topPadding: number;
+};
+
+function TabBarTop({ title, rightLabel, topPadding }: TabBarTopProps) {
+  const navigation = useNavigation<any>();
+
+  return (
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        paddingBottom: 10,
+        paddingTop: topPadding > 12 ? 12 : topPadding,
+        backgroundColor: '#fff',
+      }}
+    >
+      <Text style={{ fontSize: 22, fontWeight: '700', color: '#0F172A' }}>{title}</Text>
+      {rightLabel ? (
+        <TouchableOpacity onPress={() => navigation.navigate('SearchProfiles')}>
+          <Text style={{ color: '#2563EB', fontSize: 16, fontWeight: '600' }}>
+            {rightLabel}
+          </Text>
+        </TouchableOpacity>
+      ) : (
+        <View style={{ width: 40 }} />
+      )}
+    </View>
+  );
+}
+
 export function MainTabsNavigator() {
   const insets = useSafeAreaInsets();
   const safeBottom = Math.max(insets.bottom, 12);
@@ -299,10 +365,18 @@ export function MainTabsNavigator() {
       <Tab.Screen name="SoulMatch" component={SoulMatchStackNavigator} />
       <Tab.Screen name="Payments" component={PaymentsScreen} />
       <Tab.Screen name="WalletLedger" component={WalletLedgerScreen} />
-      <Tab.Screen name="Community" component={CommunityScreen} />
-      <Tab.Screen name="Inbox" component={InboxScreen} />
-      <Tab.Screen name="Notifications" component={NotificationsScreen} />
       <Tab.Screen name="Profile" component={ProfileStackNavigator} />
+      {/* <Tab.Screen
+        name="Community"
+        component={CommunityScreen}
+        options={HIDDEN_TAB_OPTIONS}
+      />
+      <Tab.Screen name="Inbox" component={InboxScreen} options={HIDDEN_TAB_OPTIONS} />
+      <Tab.Screen
+        name="Notifications"
+        component={NotificationsScreen}
+        options={HIDDEN_TAB_OPTIONS}
+      /> */}
     </Tab.Navigator>
   );
 }
