@@ -141,15 +141,12 @@ export function BirthLocationMapModal({
                 showsCompass={false}
                 showsUserLocation={false}
                 onMapReady={() => setMapReady(true)}
-                onError={() =>
-                  setMapError(
-                    'We couldn’t load the map. Please check your internet connection and try again.',
-                  )
-                }
               >
                 {markerCoord ? (
                   <Marker coordinate={markerCoord}>
-                    <Animated.View style={{ transform: [{ scale: bounce }] }}>
+                    <Animated.View
+                      style={[styles.markerBounce, { transform: [{ scale: bounce }] }]}
+                    >
                       <Ionicons name="pin" size={32} color={theme.palette.azure} />
                     </Animated.View>
                   </Marker>
@@ -160,12 +157,13 @@ export function BirthLocationMapModal({
 
           <View style={styles.summaryCard}>
             <Ionicons name="location" size={16} color={theme.palette.azure} />
-            <View style={{ flex: 1 }}>
+            <View style={styles.summaryContent}>
               <Text style={styles.summaryTitle}>Location selected</Text>
               <Text style={styles.summaryText}>{locationLabel}</Text>
               {markerCoord ? (
                 <Text style={styles.summaryCoords}>
-                  Lat {markerCoord.latitude.toFixed(4)}, Lon {markerCoord.longitude.toFixed(4)}
+                  Lat {markerCoord.latitude.toFixed(4)}, Lon{' '}
+                  {markerCoord.longitude.toFixed(4)}
                 </Text>
               ) : null}
             </View>
@@ -176,10 +174,7 @@ export function BirthLocationMapModal({
               colors={theme.gradients.cta}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
-              style={[
-                styles.primaryButton,
-                !markerCoord && { opacity: 0.5 },
-              ]}
+              style={[styles.primaryButton, !markerCoord && styles.primaryButtonDisabled]}
             >
               <TouchableOpacity
                 style={styles.primaryButtonContent}
@@ -292,12 +287,18 @@ const styles = StyleSheet.create({
     color: theme.palette.titanium,
     ...theme.typography.caption,
   },
+  summaryContent: {
+    flex: 1,
+  },
   footer: {
     marginTop: theme.spacing.md,
     gap: theme.spacing.xs,
   },
   primaryButton: {
     borderRadius: theme.radii.lg,
+  },
+  primaryButtonDisabled: {
+    opacity: 0.5,
   },
   primaryButtonContent: {
     alignItems: 'center',
@@ -321,4 +322,5 @@ const styles = StyleSheet.create({
     ...theme.typography.caption,
     textAlign: 'center',
   },
+  markerBounce: {},
 });

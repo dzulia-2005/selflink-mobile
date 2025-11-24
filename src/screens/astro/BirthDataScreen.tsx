@@ -14,9 +14,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { BirthLocationMapModal } from '@components/astro/BirthLocationMapModal';
 import { MetalButton } from '@components/MetalButton';
 import { MetalPanel } from '@components/MetalPanel';
-import { BirthLocationMapModal } from '@components/astro/BirthLocationMapModal';
 import { useToast } from '@context/ToastContext';
 import { MentorStackParamList } from '@navigation/types';
 import { BirthDataPayload } from '@schemas/astro';
@@ -79,9 +79,7 @@ export function BirthDataScreen() {
     const resolvedDate = personalMap?.birth_date || currentUser?.birth_date || '';
     const resolvedTime = personalMap?.birth_time || currentUser?.birth_time || '';
     const resolvedLatitude =
-      typeof personalMap?.birth_latitude === 'number'
-        ? personalMap.birth_latitude
-        : null;
+      typeof personalMap?.birth_latitude === 'number' ? personalMap.birth_latitude : null;
     const resolvedLongitude =
       typeof personalMap?.birth_longitude === 'number'
         ? personalMap.birth_longitude
@@ -133,7 +131,6 @@ export function BirthDataScreen() {
   const handleClearCoordinate = () => {
     setLatitude(null);
     setLongitude(null);
-    setDraftCoordinate(null);
   };
 
   const handleUseRegistrationData = async () => {
@@ -300,7 +297,11 @@ export function BirthDataScreen() {
                   style={styles.mapButton}
                   activeOpacity={0.9}
                 >
-                  <Ionicons name="location-outline" size={18} color={theme.palette.azure} />
+                  <Ionicons
+                    name="location-outline"
+                    size={18}
+                    color={theme.palette.azure}
+                  />
                   <Text style={styles.mapButtonLabel}>Choose on Map</Text>
                 </TouchableOpacity>
                 {hasSelectedCoordinate ? (
@@ -319,7 +320,7 @@ export function BirthDataScreen() {
                     name="pin"
                     size={14}
                     color={theme.palette.azure}
-                    style={{ marginTop: 1 }}
+                    style={styles.selectedIcon}
                   />
                   <Text style={styles.selectedSummaryText}>
                     Selected on map:{' '}
@@ -443,5 +444,8 @@ const styles = StyleSheet.create({
   selectedSummaryText: {
     color: theme.palette.silver,
     ...theme.typography.caption,
+  },
+  selectedIcon: {
+    marginTop: 1,
   },
 });
