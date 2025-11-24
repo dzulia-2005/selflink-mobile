@@ -1,9 +1,9 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useEffect, useMemo, useState } from 'react';
 import {
   KeyboardAvoidingView,
-  Modal,
   Platform,
   ScrollView,
   StyleSheet,
@@ -12,11 +12,11 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import MapView, { MapPressEvent, Marker } from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { MetalButton } from '@components/MetalButton';
 import { MetalPanel } from '@components/MetalPanel';
+import { BirthLocationMapModal } from '@components/astro/BirthLocationMapModal';
 import { useToast } from '@context/ToastContext';
 import { MentorStackParamList } from '@navigation/types';
 import { BirthDataPayload } from '@schemas/astro';
@@ -40,10 +40,6 @@ export function BirthDataScreen() {
   const [latitude, setLatitude] = useState<number | null>(null);
   const [longitude, setLongitude] = useState<number | null>(null);
   const [mapVisible, setMapVisible] = useState(false);
-  const [draftCoordinate, setDraftCoordinate] = useState<{
-    latitude: number;
-    longitude: number;
-  } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mode, setMode] = useState<'choice' | 'form'>('choice');
 
@@ -125,35 +121,12 @@ export function BirthDataScreen() {
     [latitude, longitude],
   );
 
-  const mapRegion = useMemo(() => {
-    const lat = draftCoordinate?.latitude ?? latitude ?? 0;
-    const lon = draftCoordinate?.longitude ?? longitude ?? 0;
-    const hasPoint = Boolean(draftCoordinate || hasSelectedCoordinate);
-    return {
-      latitude: lat,
-      longitude: lon,
-      latitudeDelta: hasPoint ? 4 : 60,
-      longitudeDelta: hasPoint ? 4 : 60,
-    };
-  }, [draftCoordinate, hasSelectedCoordinate, latitude, longitude]);
-
-  const handleMapPress = (event: MapPressEvent) => {
-    const { latitude: lat, longitude: lng } = event.nativeEvent.coordinate;
-    setDraftCoordinate({ latitude: lat, longitude: lng });
-  };
-
   const handleOpenMap = () => {
-    setDraftCoordinate(
-      latitude !== null && longitude !== null ? { latitude, longitude } : null,
-    );
     setMapVisible(true);
   };
 
   const handleConfirmMap = () => {
-    if (draftCoordinate) {
-      setLatitude(draftCoordinate.latitude);
-      setLongitude(draftCoordinate.longitude);
-    }
+    toast.push({ message: 'Birth location saved.', tone: 'info', duration: 2000 });
     setMapVisible(false);
   };
 
@@ -321,14 +294,15 @@ export function BirthDataScreen() {
                 style={styles.input}
               />
 
-              <Text style={styles.panelTitle}>Map location (optional but preferred)</Text>
-              <View style={styles.mapRow}>
-                <Text style={styles.coordLabel}>
-                  Lat: {latitude !== null ? latitude.toFixed(4) : '--'}
-                </Text>
-                <Text style={styles.coordLabel}>
-                  Lon: {longitude !== null ? longitude.toFixed(4) : '--'}
-                </Text>
+              <View style={styles.mapCtaRow}>
+                <TouchableOpacity
+                  onPress={handleOpenMap}
+                  style={styles.mapButton}
+                  activeOpacity={0.9}
+                >
+                  <Ionicons name="location-outline" size={18} color={theme.palette.azure} />
+                  <Text style={styles.mapButtonLabel}>Choose on Map</Text>
+                </TouchableOpacity>
                 {hasSelectedCoordinate ? (
                   <TouchableOpacity
                     style={styles.clearLink}
@@ -339,7 +313,22 @@ export function BirthDataScreen() {
                   </TouchableOpacity>
                 ) : null}
               </View>
-              <MetalButton title="Choose on map" onPress={handleOpenMap} />
+              {hasSelectedCoordinate ? (
+                <View style={styles.selectedSummary}>
+                  <Ionicons
+                    name="pin"
+                    size={14}
+                    color={theme.palette.azure}
+                    style={{ marginTop: 1 }}
+                  />
+                  <Text style={styles.selectedSummaryText}>
+                    Selected on map:{' '}
+                    {city && country
+                      ? `near ${city}, ${country}`
+                      : `${latitude?.toFixed(4)}, ${longitude?.toFixed(4)}`}
+                  </Text>
+                </View>
+              ) : null}
 
               <MetalButton
                 title={isSubmitting ? 'Submitting…' : 'Save & Generate Chart'}
@@ -354,19 +343,18 @@ export function BirthDataScreen() {
           ) : null}
         </ScrollView>
       </KeyboardAvoidingView>
-      <MapPickerModal
+      <BirthLocationMapModal
         visible={mapVisible}
-        onClose={() => setMapVisible(false)}
-        onConfirm={handleConfirmMap}
-        onMapPress={handleMapPress}
-        initialRegion={mapRegion}
-        marker={
-          draftCoordinate
-            ? draftCoordinate
-            : hasSelectedCoordinate && latitude !== null && longitude !== null
-              ? { latitude, longitude }
-              : null
-        }
+        initialLatitude={latitude}
+        initialLongitude={longitude}
+        city={city}
+        country={country}
+        onCancel={() => setMapVisible(false)}
+        onConfirm={(coord) => {
+          setLatitude(coord.latitude);
+          setLongitude(coord.longitude);
+          handleConfirmMap();
+        }}
       />
     </SafeAreaView>
   );
@@ -404,24 +392,6 @@ const styles = StyleSheet.create({
     ...theme.typography.body,
     marginBottom: theme.spacing.md,
   },
-  mapRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.sm,
-    marginBottom: theme.spacing.sm,
-  },
-  coordLabel: {
-    color: theme.palette.titanium,
-    ...theme.typography.caption,
-  },
-  clearLink: {
-    marginLeft: 'auto',
-  },
-  clearLabel: {
-    color: theme.palette.rose,
-    ...theme.typography.caption,
-    fontWeight: '700',
-  },
   input: {
     borderRadius: theme.radii.md,
     paddingVertical: theme.spacing.sm,
@@ -435,84 +405,43 @@ const styles = StyleSheet.create({
     ...theme.typography.caption,
     marginTop: theme.spacing.sm,
   },
-  modalBackdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    justifyContent: 'center',
-    padding: theme.spacing.lg,
-  },
-  modalCard: {
-    backgroundColor: '#0F0A14',
-    borderRadius: theme.radii.lg,
-    padding: theme.spacing.md,
-    gap: theme.spacing.md,
-  },
-  modalHeader: {
+  mapCtaRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-  },
-  modalTitle: {
-    color: theme.palette.platinum,
-    ...theme.typography.subtitle,
-  },
-  map: {
-    height: 320,
-    borderRadius: theme.radii.md,
-  },
-  modalButtons: {
-    flexDirection: 'row',
     gap: theme.spacing.sm,
-    flexWrap: 'wrap',
+    marginTop: theme.spacing.xs,
+  },
+  mapButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.xs,
+    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.md,
+    borderRadius: theme.radii.md,
+    borderWidth: 1,
+    borderColor: theme.palette.azure,
+    backgroundColor: 'rgba(37, 99, 235, 0.08)',
+  },
+  mapButtonLabel: {
+    color: theme.palette.azure,
+    ...theme.typography.button,
+  },
+  clearLink: {
+    marginLeft: 'auto',
+  },
+  clearLabel: {
+    color: theme.palette.rose,
+    ...theme.typography.caption,
+    fontWeight: '700',
+  },
+  selectedSummary: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.xs,
+    marginTop: theme.spacing.xs,
+  },
+  selectedSummaryText: {
+    color: theme.palette.silver,
+    ...theme.typography.caption,
   },
 });
-
-function MapPickerModal({
-  visible,
-  onClose,
-  onConfirm,
-  onMapPress,
-  initialRegion,
-  marker,
-}: {
-  visible: boolean;
-  onClose: () => void;
-  onConfirm: () => void;
-  onMapPress: (event: MapPressEvent) => void;
-  initialRegion: {
-    latitude: number;
-    longitude: number;
-    latitudeDelta: number;
-    longitudeDelta: number;
-  };
-  marker: { latitude: number; longitude: number } | null;
-}) {
-  return (
-    <Modal transparent visible={visible} animationType="fade" onRequestClose={onClose}>
-      <View style={styles.modalBackdrop}>
-        <View style={styles.modalCard}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Select birth location</Text>
-            <TouchableOpacity onPress={onClose} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-              <Text style={styles.clearLabel}>Close</Text>
-            </TouchableOpacity>
-          </View>
-          <MapView
-            style={styles.map}
-            key={`${initialRegion.latitude}-${initialRegion.longitude}-${initialRegion.latitudeDelta}-${initialRegion.longitudeDelta}`}
-            initialRegion={initialRegion}
-            onPress={onMapPress}
-            showsCompass={false}
-            showsUserLocation={false}
-          >
-            {marker ? <Marker coordinate={marker} /> : null}
-          </MapView>
-          <View style={styles.modalButtons}>
-            <MetalButton title="Use this location" onPress={onConfirm} />
-            <MetalButton title="Cancel" onPress={onClose} />
-          </View>
-        </View>
-      </View>
-    </Modal>
-  );
-}
