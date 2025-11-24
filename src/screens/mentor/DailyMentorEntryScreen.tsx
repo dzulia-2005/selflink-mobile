@@ -78,20 +78,23 @@ export function DailyMentorEntryScreen() {
 
         <View style={styles.card}>
           <Text style={styles.sectionLabel}>Your note</Text>
-          <Text style={styles.body}>{session.entry}</Text>
+          <Text style={styles.body}>{session.entry ?? 'No entry text available.'}</Text>
         </View>
 
         <View style={styles.card}>
           <Text style={styles.sectionLabel}>Mentor&apos;s reply</Text>
-          {session.reply
-            .split('\n')
-            .filter(Boolean)
-            .map((line, idx) => (
-              <View style={styles.bulletRow} key={`${session.session_id}-detail-${idx}`}>
-                <Text style={styles.bullet}>•</Text>
-                <Text style={styles.body}>{line.trim()}</Text>
-              </View>
-            ))}
+          {(typeof session.reply === 'string'
+            ? session.reply.split(/\r?\n/).filter(Boolean)
+            : []
+          ).map((line, idx) => (
+            <View style={styles.bulletRow} key={`${session.session_id}-detail-${idx}`}>
+              <Text style={styles.bullet}>•</Text>
+              <Text style={styles.body}>{line.trim()}</Text>
+            </View>
+          ))}
+          {!session.reply ? (
+            <Text style={styles.body}>Reply not available yet.</Text>
+          ) : null}
         </View>
       </ScrollView>
     );
