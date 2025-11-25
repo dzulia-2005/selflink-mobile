@@ -3,9 +3,11 @@ import Svg, { Circle, G, Line, Text as SvgText } from 'react-native-svg';
 import { degreesToXY } from '@utils/astroCoordinates';
 
 type WheelProps = {
-  planets: Record<string, { lon: number; sign?: string }> | undefined;
+  planets?: Record<string, { lon: number; sign?: string }>;
   houses?: Record<string, { cusp_lon: number; sign?: string }>;
   size?: number;
+  selectedPlanet?: string | null;
+  onSelectPlanet?: (planet: string) => void;
 };
 
 const ZODIAC_SIGNS = [
@@ -23,7 +25,7 @@ const ZODIAC_SIGNS = [
   'Pisces',
 ];
 
-const PLANET_COLORS: Record<string, string> = {
+export const PLANET_COLORS: Record<string, string> = {
   sun: '#F59E0B',
   moon: '#E5E7EB',
   mercury: '#10B981',
@@ -36,10 +38,16 @@ const PLANET_COLORS: Record<string, string> = {
   pluto: '#78716C',
 };
 
-export function AstroWheel({ planets, houses, size = 280 }: WheelProps) {
+export function AstroWheel({
+  planets,
+  houses,
+  size = 280,
+  selectedPlanet,
+  onSelectPlanet,
+}: WheelProps) {
   const center = size / 2;
-  const outerRadius = center - 8;
-  const innerRadius = outerRadius - 22;
+  const outerRadius = center - 6;
+  const innerRadius = outerRadius - 24;
 
   return (
     <Svg width={size} height={size}>
@@ -61,23 +69,23 @@ export function AstroWheel({ planets, houses, size = 280 }: WheelProps) {
           fill="none"
         />
 
-        {ZODIAC_SIGNS.map((sign, index) => {
-          const startDeg = index * 30;
-          const { x, y } = degreesToXY(startDeg + 15, outerRadius - 8, center, center);
-          const label = sign.slice(0, 3).toUpperCase();
-          return (
-            <SvgText
-              key={sign}
-              x={x}
-              y={y}
-              fill="#CBD5E1"
-              fontSize="10"
-              fontWeight="600"
-              textAnchor="middle"
-              alignmentBaseline="middle"
-            >
-              {label}
-            </SvgText>
+          {ZODIAC_SIGNS.map((sign, index) => {
+            const startDeg = index * 30;
+            const { x, y } = degreesToXY(startDeg + 15, outerRadius - 8, center, center);
+            const label = sign.slice(0, 3).toUpperCase();
+            return (
+              <SvgText
+                key={sign}
+                x={x}
+                y={y}
+                fill="#E2E8F0"
+                fontSize="12"
+                fontWeight="700"
+                textAnchor="middle"
+                alignmentBaseline="middle"
+              >
+                {label}
+              </SvgText>
           );
         })}
 
@@ -102,7 +110,7 @@ export function AstroWheel({ planets, houses, size = 280 }: WheelProps) {
                       x={labelPoint.x}
                       y={labelPoint.y}
                       fill="#94A3B8"
-                      fontSize="8"
+                      fontSize="9"
                       textAnchor="middle"
                       alignmentBaseline="middle"
                     >
@@ -119,14 +127,28 @@ export function AstroWheel({ planets, houses, size = 280 }: WheelProps) {
             const deg = placement.lon % 360;
             const point = degreesToXY(deg, innerRadius - 10, center, center);
             const color = PLANET_COLORS[name.toLowerCase()] ?? '#F8FAFC';
+            const isSelected =
+              selectedPlanet?.toLowerCase() === name.toLowerCase() ||
+              selectedPlanet === name;
             return (
-              <G key={name}>
-                <Circle cx={point.x} cy={point.y} r={5} fill={color} />
+              <G
+                key={name}
+                onPress={() => onSelectPlanet?.(name)}
+                opacity={isSelected ? 1 : 0.9}
+              >
+                <Circle
+                  cx={point.x}
+                  cy={point.y}
+                  r={isSelected ? 7 : 5}
+                  fill={color}
+                  stroke={isSelected ? '#0EA5E9' : 'none'}
+                  strokeWidth={isSelected ? 1.5 : 0}
+                />
                 <SvgText
                   x={point.x}
                   y={point.y - 10}
                   fill="#E2E8F0"
-                  fontSize="8"
+                  fontSize={isSelected ? '10' : '8'}
                   fontWeight="600"
                   textAnchor="middle"
                 >

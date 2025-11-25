@@ -27,9 +27,23 @@ export type HousePosition = {
   sign?: string;
 };
 
+export type Aspect = {
+  aspect?: string;
+  type?: string;
+  name?: string;
+  planet1?: string;
+  planet2?: string;
+  p1?: string;
+  p2?: string;
+  orb?: number;
+  orb_deg?: number;
+  angle?: number;
+  [key: string]: unknown;
+};
+
 export type NatalChart = {
   planets: Record<string, PlanetPosition>;
   houses: Record<string, HousePosition>;
-  aspects: Array<Record<string, unknown>>;
+  aspects?: Aspect[];
   calculated_at?: string;
 };
