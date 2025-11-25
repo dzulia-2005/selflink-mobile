@@ -4,6 +4,7 @@ import { memo, useCallback, useRef, useState } from 'react';
 import {
   Alert,
   Animated,
+  Pressable as RNPressable,
   Pressable,
   StyleSheet,
   Text,
@@ -24,6 +25,8 @@ import { UserAvatar } from './UserAvatar';
 interface Props {
   post: Post;
 }
+
+const AnimatedPressable = Animated.createAnimatedComponent(RNPressable);
 
 function FeedPostCardComponent({ post }: Props) {
   const navigation = useNavigation<any>();
@@ -120,7 +123,7 @@ function FeedPostCardComponent({ post }: Props) {
 
   return (
     <Animated.View style={[styles.wrapper, entrance.style]}>
-      <Pressable
+      <AnimatedPressable
         onPressIn={pressAnim.onPressIn}
         onPressOut={pressAnim.onPressOut}
         style={[styles.card, pressAnim.style]}
@@ -213,7 +216,7 @@ function FeedPostCardComponent({ post }: Props) {
         >
           <Text style={styles.heartIcon}>♥</Text>
         </Animated.View>
-      </Pressable>
+      </AnimatedPressable>
     </Animated.View>
   );
 }
