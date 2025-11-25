@@ -54,14 +54,14 @@ function SoulMatchFeedCardComponent({ data }: Props) {
                   const avatarSource =
                     profile.avatarUrl && profile.avatarUrl.length > 0
                       ? { uri: profile.avatarUrl }
-                      : undefined;
+                      : null;
                   return (
                     <View key={profile.id} style={styles.profile}>
                       <View style={styles.avatarRing}>
                         {avatarSource ? (
                           <Image source={avatarSource} style={styles.avatarImage} />
                         ) : (
-                          <UserAvatar uri={avatarSource?.uri} label={label} size={AVATAR_SIZE} />
+                          <UserAvatar uri={undefined} label={label} size={AVATAR_SIZE} />
                         )}
                       </View>
                       <Text style={styles.profileName} numberOfLines={1}>

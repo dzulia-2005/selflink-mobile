@@ -140,7 +140,12 @@ const toFeedItem = (entry: any, index: number): FeedItem | null => {
                   : null;
             return { id: profile.id, name, avatarUrl, score };
           })
-          .filter((p): p is NonNullable<typeof p> => Boolean(p))
+          .filter(
+            (
+              profile: any,
+            ): profile is { id: number; name: string; avatarUrl: string | null; score: number | null } =>
+              Boolean(profile),
+          )
       : [];
     const id = asIdentifier((entry as any).id) ?? `soulmatch_${index}`;
     return { type: 'soulmatch_reco', id, soulmatch: { title, subtitle, cta, profiles } };

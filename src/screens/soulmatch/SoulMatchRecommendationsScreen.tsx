@@ -245,7 +245,6 @@ const styles = StyleSheet.create({
   },
   scorePillText: {
     color: theme.palette.pearl,
-    fontWeight: '700',
     ...theme.typography.caption,
   },
   progressRow: {
@@ -256,6 +255,5 @@ const styles = StyleSheet.create({
   scoreValue: {
     color: theme.palette.pearl,
     ...theme.typography.caption,
-    fontWeight: '700',
   },
 });

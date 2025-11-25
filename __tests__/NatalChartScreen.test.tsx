@@ -11,10 +11,9 @@ jest.mock('@services/api/astro', () => ({
   createOrUpdateNatalChart: jest.fn(),
 }));
 jest.mock('@react-navigation/native', () => {
-  const ReactMock = require('react');
   return {
     useNavigation: () => ({ navigate: jest.fn(), goBack: jest.fn() }),
-    NavigationContainer: ({ children }: { children: ReactMock.ReactNode }) => (
+    NavigationContainer: ({ children }: { children: React.ReactNode }) => (
       <>{children}</>
     ),
   };

@@ -1,11 +1,11 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
-import { Animated, StyleSheet, View } from 'react-native';
+import { Animated, StyleSheet, View, type DimensionValue } from 'react-native';
 
 import { useShimmer } from '@hooks/useShimmer';
 
 type Props = {
-  width: number | string;
+  width: DimensionValue;
   height: number;
   borderRadius?: number;
 };
