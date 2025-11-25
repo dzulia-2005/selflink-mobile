@@ -13,16 +13,19 @@ import {
 import { FeedPostCard } from '@components/FeedPostCard';
 import { MatrixFeedCard } from '@components/MatrixFeedCard';
 import { MentorFeedCard } from '@components/MentorFeedCard';
-import type { FeedItem } from '@schemas/feed';
+import { SoulMatchFeedCard } from '@components/SoulMatchFeedCard';
+import type { FeedItem, FeedMode } from '@schemas/feed';
 import { useFeedStore } from '@store/feedStore';
 
 export function FeedScreen() {
   const navigation = useNavigation<any>();
-  const items = useFeedStore((state) => state.items);
-  const isLoading = useFeedStore((state) => state.isLoading);
-  const error = useFeedStore((state) => state.error);
+  const currentMode = useFeedStore((state) => state.currentMode);
+  const items = useFeedStore((state) => state.itemsByMode[state.currentMode]);
+  const isLoading = useFeedStore((state) => state.isLoadingByMode[state.currentMode]);
+  const error = useFeedStore((state) => state.errorByMode[state.currentMode]);
   const loadFeed = useFeedStore((state) => state.loadFeed);
   const loadMore = useFeedStore((state) => state.loadMore);
+  const setMode = useFeedStore((state) => state.setMode);
   const showFab = useMemo(
     () => items.some((item) => item.type === 'post'),
     [items],
@@ -46,6 +49,16 @@ export function FeedScreen() {
     });
   }, [headerAction, navigation]);
 
+  const handleModeChange = useCallback(
+    (mode: FeedMode) => {
+      if (mode === currentMode) {
+        return;
+      }
+      setMode(mode);
+    },
+    [currentMode, setMode],
+  );
+
   const renderItem = useCallback(({ item }: { item: FeedItem }) => {
     switch (item.type) {
       case 'post':
@@ -54,6 +67,8 @@ export function FeedScreen() {
         return <MentorFeedCard data={item.mentor} />;
       case 'matrix_insight':
         return <MatrixFeedCard data={item.matrix} />;
+      case 'soulmatch_reco':
+        return <SoulMatchFeedCard data={item.soulmatch} />;
       default:
         return null;
     }
@@ -96,6 +111,23 @@ export function FeedScreen() {
 
   return (
     <View style={styles.container}>
+      <View style={styles.modeSwitch}>
+        {(['for_you', 'following'] as FeedMode[]).map((mode) => {
+          const active = mode === currentMode;
+          return (
+            <TouchableOpacity
+              key={mode}
+              style={[styles.modeButton, active && styles.modeButtonActive]}
+              onPress={() => handleModeChange(mode)}
+              activeOpacity={0.85}
+            >
+              <Text style={[styles.modeLabel, active && styles.modeLabelActive]}>
+                {mode === 'for_you' ? 'For You' : 'Following'}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
       <FlatList
         data={items}
         keyExtractor={(item) => `${item.type}-${item.id}`}
@@ -131,6 +163,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: 16,
+    paddingTop: 8,
   },
   separator: {
     height: 12,
@@ -182,5 +215,31 @@ const styles = StyleSheet.create({
     marginRight: 12,
     color: '#2563EB',
     fontWeight: '600',
+  },
+  modeSwitch: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    gap: 8,
+  },
+  modeButton: {
+    flex: 1,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    paddingVertical: 10,
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+  },
+  modeButtonActive: {
+    backgroundColor: '#2563EB',
+    borderColor: '#2563EB',
+  },
+  modeLabel: {
+    color: '#1F2937',
+    fontWeight: '700',
+  },
+  modeLabelActive: {
+    color: '#fff',
   },
 });

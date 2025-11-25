@@ -7,7 +7,9 @@ import { apiClient } from './client';
 
 type QueryParams = Record<string, string | number | undefined>;
 
-const FEED_ENDPOINT = '/feed/home/';
+const FEED_HOME_ENDPOINT = '/feed/home/';
+const FEED_FOR_YOU_ENDPOINT = '/feed/for_you/';
+const FEED_FOLLOWING_ENDPOINT = '/feed/following/';
 
 const buildQuery = (path: string, params?: QueryParams) => {
   if (!params) {
@@ -92,6 +94,57 @@ const toFeedItem = (entry: any, index: number): FeedItem | null => {
     const id = asIdentifier((entry as any).id) ?? `matrix_${index}`;
     return { type: 'matrix_insight', id, matrix };
   }
+  if (type === 'soulmatch_reco') {
+    const payload = (entry as any).soulmatch;
+    if (!payload || typeof payload !== 'object') {
+      return null;
+    }
+    const title =
+      typeof payload.title === 'string' && payload.title.length > 0
+        ? payload.title
+        : 'SoulMatch recommendations';
+    const subtitle =
+      typeof payload.subtitle === 'string' && payload.subtitle.length > 0
+        ? payload.subtitle
+        : undefined;
+    const cta =
+      typeof payload.cta === 'string' && payload.cta.length > 0
+        ? payload.cta
+        : 'View matches';
+    const profiles = Array.isArray(payload.profiles)
+      ? payload.profiles
+          .map((profile: any) => {
+            if (!profile || typeof profile !== 'object') {
+              return null;
+            }
+            if (typeof profile.id !== 'number') {
+              return null;
+            }
+            const name =
+              typeof profile.name === 'string' && profile.name.length > 0
+                ? profile.name
+                : `User ${profile.id}`;
+            const avatarUrl =
+              typeof profile.avatar === 'string'
+                ? profile.avatar
+                : typeof profile.avatar_url === 'string'
+                  ? profile.avatar_url
+                  : typeof profile.avatarUrl === 'string'
+                    ? profile.avatarUrl
+                    : null;
+            const score =
+              typeof profile.score === 'number'
+                ? profile.score
+                : typeof profile.compatibility === 'number'
+                  ? profile.compatibility
+                  : null;
+            return { id: profile.id, name, avatarUrl, score };
+          })
+          .filter((p): p is NonNullable<typeof p> => Boolean(p))
+      : [];
+    const id = asIdentifier((entry as any).id) ?? `soulmatch_${index}`;
+    return { type: 'soulmatch_reco', id, soulmatch: { title, subtitle, cta, profiles } };
+  }
   if (type === 'post') {
     return toPostItem(entry, index);
   }
@@ -131,14 +184,26 @@ const extractNext = (data: unknown): string | null => {
   return null;
 };
 
-export async function getFeed(nextUrl?: string): Promise<FeedResponse> {
-  const url = nextUrl ?? FEED_ENDPOINT;
+const fetchFeed = async (endpoint: string, nextUrl?: string): Promise<FeedResponse> => {
+  const url = nextUrl ?? endpoint;
   const { data } = await apiClient.get<unknown>(url);
 
   return {
     items: extractItems(data),
     nextUrl: extractNext(data),
   };
+};
+
+export async function getFeed(nextUrl?: string): Promise<FeedResponse> {
+  return fetchFeed(FEED_HOME_ENDPOINT, nextUrl);
+}
+
+export async function getForYouFeed(nextUrl?: string): Promise<FeedResponse> {
+  return fetchFeed(FEED_FOR_YOU_ENDPOINT, nextUrl);
+}
+
+export async function getFollowingFeed(nextUrl?: string): Promise<FeedResponse> {
+  return fetchFeed(FEED_FOLLOWING_ENDPOINT, nextUrl);
 }
 
 export async function getPost(postId: string | number): Promise<Post> {

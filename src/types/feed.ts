@@ -12,6 +12,22 @@ export type MatrixInsightCard = {
   cta?: string;
 };
 
+export type SoulMatchProfileSummary = {
+  id: number;
+  name: string;
+  avatarUrl?: string | null;
+  score?: number | null;
+};
+
+export type SoulMatchFeedCard = {
+  title: string;
+  subtitle?: string;
+  cta?: string;
+  profiles: SoulMatchProfileSummary[];
+};
+
+export type FeedMode = 'for_you' | 'following';
+
 export type PostFeedItem = {
   type: 'post';
   id: Identifier;
@@ -30,7 +46,17 @@ export type MatrixInsightFeedItem = {
   matrix: MatrixInsightCard;
 };
 
-export type FeedItem = PostFeedItem | MentorInsightFeedItem | MatrixInsightFeedItem;
+export type SoulMatchFeedItem = {
+  type: 'soulmatch_reco';
+  id: Identifier;
+  soulmatch: SoulMatchFeedCard;
+};
+
+export type FeedItem =
+  | PostFeedItem
+  | MentorInsightFeedItem
+  | MatrixInsightFeedItem
+  | SoulMatchFeedItem;
 
 export interface FeedResponse {
   items: FeedItem[];

@@ -4,6 +4,7 @@ import React from 'react';
 jest.mock('react-native-markdown-display', () => 'Markdown');
 
 import { FeedScreen } from '@screens/feed/FeedScreen';
+import type { FeedItem } from '@schemas/feed';
 
 let mockState: any;
 const mockLoadFeed = jest.fn().mockResolvedValue(undefined);
@@ -11,6 +12,9 @@ const mockLoadMore = jest.fn();
 const mockAddComment = jest.fn();
 const mockLikePost = jest.fn();
 const mockUnlikePost = jest.fn();
+const mockSetMode = jest.fn((mode) => {
+  mockState.currentMode = mode;
+});
 
 const mockNavigate = jest.fn();
 const mockParentNavigate = jest.fn();
@@ -32,13 +36,15 @@ jest.mock('@store/feedStore', () => ({
   useFeedStore: (selector: any) =>
     selector(
       mockState || {
-        items: [],
-        isLoading: false,
-        isPaging: false,
-        nextUrl: null,
-        error: undefined,
+        currentMode: 'for_you',
+        itemsByMode: { for_you: [], following: [] },
+        nextByMode: { for_you: null, following: null },
+        isLoadingByMode: { for_you: false, following: false },
+        isPagingByMode: { for_you: false, following: false },
+        errorByMode: { for_you: undefined, following: undefined },
         loadFeed: mockLoadFeed,
         loadMore: mockLoadMore,
+        setMode: mockSetMode,
         addComment: mockAddComment,
         likePost: mockLikePost,
         unlikePost: mockUnlikePost,
@@ -62,7 +68,7 @@ const baseAuthor = {
   updated_at: '2024-01-01T00:00:00Z',
 };
 
-const postItem = {
+const postItem: FeedItem = {
   type: 'post' as const,
   id: 'post-1',
   post: {
@@ -79,7 +85,7 @@ const postItem = {
   },
 };
 
-const mentorItem = {
+const mentorItem: FeedItem = {
   type: 'mentor_insight' as const,
   id: 'mentor-1',
   mentor: {
@@ -89,7 +95,7 @@ const mentorItem = {
   },
 };
 
-const matrixItem = {
+const matrixItem: FeedItem = {
   type: 'matrix_insight' as const,
   id: 'matrix-1',
   matrix: {
@@ -99,17 +105,36 @@ const matrixItem = {
   },
 };
 
+const soulMatchItem: FeedItem = {
+  type: 'soulmatch_reco',
+  id: 'soulmatch-1',
+  soulmatch: {
+    title: 'New SoulMatch connections',
+    subtitle: 'You have high compatibility today',
+    cta: 'View matches',
+    profiles: [
+      { id: 99, name: 'Alex', avatarUrl: null, score: 92 },
+      { id: 42, name: 'Gio', avatarUrl: null, score: 88 },
+    ],
+  },
+};
+
 describe('FeedScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockState = {
-      items: [],
-      isLoading: false,
-      isPaging: false,
-      nextUrl: null,
-      error: undefined,
+      currentMode: 'for_you' as const,
+      itemsByMode: { for_you: [], following: [] } as Record<
+        'for_you' | 'following',
+        FeedItem[]
+      >,
+      nextByMode: { for_you: null, following: null },
+      isLoadingByMode: { for_you: false, following: false },
+      isPagingByMode: { for_you: false, following: false },
+      errorByMode: { for_you: undefined, following: undefined },
       loadFeed: mockLoadFeed,
       loadMore: mockLoadMore,
+      setMode: mockSetMode,
       addComment: mockAddComment,
       likePost: mockLikePost,
       unlikePost: mockUnlikePost,
@@ -117,7 +142,7 @@ describe('FeedScreen', () => {
   });
 
   it('renders mixed feed items', () => {
-    mockState.items = [postItem, mentorItem, matrixItem];
+    mockState.itemsByMode.for_you = [postItem, mentorItem, matrixItem, soulMatchItem];
     const { getByText } = render(<FeedScreen />);
 
     expect(getByText('Alice')).toBeTruthy();
@@ -125,10 +150,12 @@ describe('FeedScreen', () => {
     expect(getByText("Today's insight")).toBeTruthy();
     expect(getByText('Matrix Insight')).toBeTruthy();
     expect(getByText('Matrix line of the day')).toBeTruthy();
+    expect(getByText('SoulMatch')).toBeTruthy();
+    expect(getByText('New SoulMatch connections')).toBeTruthy();
   });
 
   it('navigates via mentor and matrix CTAs', () => {
-    mockState.items = [mentorItem, matrixItem];
+    mockState.itemsByMode.for_you = [mentorItem, matrixItem, soulMatchItem];
     const { getByText } = render(<FeedScreen />);
 
     fireEvent.press(getByText('Open mentor'));
@@ -138,5 +165,19 @@ describe('FeedScreen', () => {
     expect(mockParentNavigate).toHaveBeenCalledWith('SoulMatch', {
       screen: 'SoulMatchHome',
     });
+
+    fireEvent.press(getByText('View matches'));
+    expect(mockParentNavigate).toHaveBeenCalledWith('SoulMatch', {
+      screen: 'SoulMatchRecommendations',
+    });
+  });
+
+  it('switches feed mode via toggle', () => {
+    mockState.itemsByMode.for_you = [postItem];
+    mockState.currentMode = 'for_you';
+    const { getByText } = render(<FeedScreen />);
+
+    fireEvent.press(getByText('Following'));
+    expect(mockSetMode).toHaveBeenCalledWith('following');
   });
 });

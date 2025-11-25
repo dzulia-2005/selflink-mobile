@@ -2,48 +2,90 @@ import { create } from 'zustand';
 
 import * as socialApi from '@api/social';
 import type { AddCommentPayload } from '@api/social';
-import type { FeedItem } from '@schemas/feed';
+import type { FeedItem, FeedMode } from '@schemas/feed';
 import type { Comment } from '@schemas/social';
 
 interface FeedState {
-  items: FeedItem[];
-  isLoading: boolean;
-  isPaging: boolean;
-  error?: string;
-  nextUrl: string | null;
+  currentMode: FeedMode;
+  itemsByMode: Record<FeedMode, FeedItem[]>;
+  nextByMode: Record<FeedMode, string | null>;
+  isLoadingByMode: Record<FeedMode, boolean>;
+  isPagingByMode: Record<FeedMode, boolean>;
+  errorByMode: Record<FeedMode, string | undefined>;
   loadFeed: () => Promise<void>;
   loadMore: () => Promise<void>;
+  setMode: (mode: FeedMode) => void;
   likePost: (postId: string) => Promise<void>;
   unlikePost: (postId: string) => Promise<void>;
   addComment: (postId: string, payload: AddCommentPayload) => Promise<Comment>;
 }
 
+const MODES: FeedMode[] = ['for_you', 'following'];
+
+const emptyByMode = <T,>(value: T): Record<FeedMode, T> => ({
+  for_you: value,
+  following: value,
+});
+
+const updateItemsAcrossModes = (
+  itemsByMode: Record<FeedMode, FeedItem[]>,
+  updater: (item: FeedItem) => FeedItem,
+): Record<FeedMode, FeedItem[]> =>
+  MODES.reduce((acc, mode) => {
+    acc[mode] = itemsByMode[mode].map(updater);
+    return acc;
+  }, {} as Record<FeedMode, FeedItem[]>);
+
 export const useFeedStore = create<FeedState>((set, get) => ({
-  items: [],
-  isLoading: false,
-  isPaging: false,
-  error: undefined,
-  nextUrl: null,
+  currentMode: 'for_you',
+  itemsByMode: emptyByMode<FeedItem[]>([]),
+  nextByMode: emptyByMode<string | null>(null),
+  isLoadingByMode: emptyByMode<boolean>(false),
+  isPagingByMode: emptyByMode<boolean>(false),
+  errorByMode: emptyByMode<string | undefined>(undefined),
   async loadFeed() {
-    set({ isLoading: true, error: undefined });
+    const mode = get().currentMode;
+    set((state) => ({
+      isLoadingByMode: { ...state.isLoadingByMode, [mode]: true },
+      errorByMode: { ...state.errorByMode, [mode]: undefined },
+    }));
     try {
-      const response = await socialApi.getFeed();
-      set({ items: response.items, nextUrl: response.nextUrl });
+      const fetcher =
+        mode === 'following' ? socialApi.getFollowingFeed : socialApi.getForYouFeed;
+      const response = await fetcher();
+      set((state) => ({
+        itemsByMode: { ...state.itemsByMode, [mode]: response.items },
+        nextByMode: { ...state.nextByMode, [mode]: response.nextUrl },
+      }));
     } catch (error) {
-      set({ error: error instanceof Error ? error.message : 'Unable to load feed.' });
+      set((state) => ({
+        errorByMode: {
+          ...state.errorByMode,
+          [mode]: error instanceof Error ? error.message : 'Unable to load feed.',
+        },
+      }));
     } finally {
-      set({ isLoading: false });
+      set((state) => ({
+        isLoadingByMode: { ...state.isLoadingByMode, [mode]: false },
+      }));
     }
   },
   async loadMore() {
-    const { nextUrl, items, isPaging } = get();
-    if (!nextUrl || isPaging) {
+    const mode = get().currentMode;
+    const { nextByMode, itemsByMode, isPagingByMode } = get();
+    const nextUrl = nextByMode[mode];
+    if (!nextUrl || isPagingByMode[mode]) {
       return;
     }
-    set({ isPaging: true, error: undefined });
+    set((state) => ({
+      isPagingByMode: { ...state.isPagingByMode, [mode]: true },
+      errorByMode: { ...state.errorByMode, [mode]: undefined },
+    }));
     try {
-      const response = await socialApi.getFeed(nextUrl);
-      const existingKeys = new Set(items.map((item) => `${item.type}:${item.id}`));
+      const fetcher =
+        mode === 'following' ? socialApi.getFollowingFeed : socialApi.getForYouFeed;
+      const response = await fetcher(nextUrl);
+      const existingKeys = new Set(itemsByMode[mode].map((item) => `${item.type}:${item.id}`));
       const incoming = response.items.filter((item) => {
         const key = `${item.type}:${item.id}`;
         if (existingKeys.has(key)) {
@@ -53,53 +95,79 @@ export const useFeedStore = create<FeedState>((set, get) => ({
         return true;
       });
       set({
-        items: items.concat(incoming),
-        nextUrl: response.nextUrl,
+        itemsByMode: {
+          ...itemsByMode,
+          [mode]: itemsByMode[mode].concat(incoming),
+        },
+        nextByMode: { ...nextByMode, [mode]: response.nextUrl },
       });
     } catch (error) {
-      set({
-        error: error instanceof Error ? error.message : 'Unable to load more feed items.',
-      });
+      set((state) => ({
+        errorByMode: {
+          ...state.errorByMode,
+          [mode]:
+            error instanceof Error ? error.message : 'Unable to load more feed items.',
+        },
+      }));
     } finally {
-      set({ isPaging: false });
+      set((state) => ({
+        isPagingByMode: { ...state.isPagingByMode, [mode]: false },
+      }));
+    }
+  },
+  setMode(mode) {
+    set((state) => ({
+      currentMode: mode,
+    }));
+    const state = get();
+    if (!state.itemsByMode[mode].length && !state.isLoadingByMode[mode]) {
+      // Fire and forget; caller can await loadFeed if needed.
+      state.loadFeed().catch(() => undefined);
     }
   },
   async likePost(postId) {
-    const previousItems = get().items;
-    set({
-      items: previousItems.map((item) =>
-        item.type === 'post' && String(item.post.id) === String(postId)
-          ? { ...item, post: { ...item.post, liked: true, like_count: item.post.like_count + 1 } }
-          : item,
-      ),
-    });
+    const previousItems = get().itemsByMode;
+    const updated = updateItemsAcrossModes(previousItems, (item) =>
+      item.type === 'post' && String(item.post.id) === String(postId)
+        ? { ...item, post: { ...item.post, liked: true, like_count: item.post.like_count + 1 } }
+        : item,
+    );
+    set({ itemsByMode: updated });
     try {
       await socialApi.likePost(postId);
     } catch (error) {
-      set({ items: previousItems, error: 'Unable to like post.' });
+      set((state) => ({
+        itemsByMode: previousItems,
+        errorByMode: { ...state.errorByMode, [state.currentMode]: 'Unable to like post.' },
+      }));
       throw error;
     }
   },
   async unlikePost(postId) {
-    const previousItems = get().items;
-    set({
-      items: previousItems.map((item) =>
-        item.type === 'post' && String(item.post.id) === String(postId)
-          ? {
-              ...item,
-              post: {
-                ...item.post,
-                liked: false,
-                like_count: Math.max(0, item.post.like_count - 1),
-              },
-            }
-          : item,
-      ),
-    });
+    const previousItems = get().itemsByMode;
+    const updated = updateItemsAcrossModes(previousItems, (item) =>
+      item.type === 'post' && String(item.post.id) === String(postId)
+        ? {
+            ...item,
+            post: {
+              ...item.post,
+              liked: false,
+              like_count: Math.max(0, item.post.like_count - 1),
+            },
+          }
+        : item,
+    );
+    set({ itemsByMode: updated });
     try {
       await socialApi.unlikePost(postId);
     } catch (error) {
-      set({ items: previousItems, error: 'Unable to unlike post.' });
+      set((state) => ({
+        itemsByMode: previousItems,
+        errorByMode: {
+          ...state.errorByMode,
+          [state.currentMode]: 'Unable to unlike post.',
+        },
+      }));
       throw error;
     }
   },
@@ -117,16 +185,22 @@ export const useFeedStore = create<FeedState>((set, get) => ({
     }
     try {
       const comment = await socialApi.addComment(postId, normalizedPayload);
-      set({
-        items: get().items.map((item) =>
+      set((state) => ({
+        itemsByMode: updateItemsAcrossModes(state.itemsByMode, (item) =>
           item.type === 'post' && String(item.post.id) === String(postId)
             ? { ...item, post: { ...item.post, comment_count: item.post.comment_count + 1 } }
             : item,
         ),
-      });
+      }));
       return comment;
     } catch (error) {
-      set({ error: error instanceof Error ? error.message : 'Unable to add comment.' });
+      set((state) => ({
+        errorByMode: {
+          ...state.errorByMode,
+          [state.currentMode]:
+            error instanceof Error ? error.message : 'Unable to add comment.',
+        },
+      }));
       throw error;
     }
   },
