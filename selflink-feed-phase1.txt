@@ -1,0 +1,211 @@
+Goal:
+Refactor the SelfLink feed into a more flexible, extensible system that can mix multiple item types (posts, mentor insights, matrix insights, etc.) in a single unified feed. In Phase 1, we will:
+- Keep the existing post-based feed working.
+- Introduce a generic feed item structure with a "type" field.
+- Add basic (even stubbed) mentor/matrix items to the feed response.
+- Update the mobile app FeedScreen to render feed items based on type, not just raw posts.
+
+This is a backend + mobile coordinated change. Do not break existing behavior for posts; extend it.
+
+Context:
+The project consists of:
+- selflink-backend: Django/DRF backend
+- selflink-mobile: React Native / Expo mobile app
+
+There is already:
+- A Timeline/feed mechanism on the backend (apps/feed/*, apps/social/*).
+- A FeedScreen on mobile that loads and renders a list of posts from a feed endpoint (e.g. /api/v1/feed/home/).
+- Mentor, matrix, and soulmatch services on the backend that we will later integrate more deeply into the feed.
+
+Phase 1 is about introducing a generic feed item model/serializer and updating the mobile UI to support multiple item types, even if some types are simple stubs for now.
+
+Repositories and probable key locations (adjust based on actual code):
+Backend:
+- apps/feed/views.py
+- apps/feed/serializers.py
+- apps/feed/services.py (timeline/fanout logic)
+- apps/social/models.py, apps/social/serializers.py
+- apps/mentor/services/*.py, apps/mentor/views.py
+- apps/astro/services/*.py
+- apps/matrix/services.py
+- core/urls.py, apps/feed/urls.py
+
+Mobile:
+- src/screens/feed/FeedScreen.tsx (or similar)
+- src/components/feed/PostCard.tsx (or similar)
+- src/stores/feedStore.ts (or equivalent Zustand store)
+- src/api/social.ts or src/api/feed.ts for feed requests
+- src/navigation/MainTabsNavigator.tsx, RootNavigator.tsx
+
+You should inspect the repo to locate the exact files and adapt accordingly.
+
+High-level requirements for Phase 1:
+
+1) Backend: generic feed item structure
+- The feed endpoint (likely /api/v1/feed/home/) must return a list of items, where each item has a "type" field and a type-specific payload.
+- For Phase 1, we only need:
+  - type = "post": a regular social post, using the existing post serializer.
+  - Optionally, one or two stub types like:
+    - type = "mentor_insight"
+    - type = "matrix_insight"
+- The exact response structure should look like:
+
+  {
+    "items": [
+      {
+        "type": "post",
+        "id": 123,
+        "post": { ... existing post serializer output ... }
+      },
+      {
+        "type": "mentor_insight",
+        "id": "mentor_2025-11-25",
+        "mentor": {
+          "title": "Today’s insight",
+          "subtitle": "Short text from mentor or a placeholder",
+          "cta": "Open mentor"
+        }
+      },
+      {
+        "type": "matrix_insight",
+        "id": "matrix_2025-11-25",
+          "matrix": {
+            "title": "Today’s matrix line",
+            "subtitle": "Short text or placeholder",
+            "cta": "View matrix"
+          }
+      }
+    ],
+    "next": "cursor_or_null"
+  }
+
+- The "id" field for non-post items can be any deterministic or unique string; for posts it should remain the post id.
+
+2) Backend: feed composition logic
+- Add a "composer" layer for the feed, where we can build an ordered list of feed items.
+- This can live in a new module such as apps/feed/services/composer.py or similar.
+- Responsibilities of the composer in Phase 1:
+  - Fetch post-based timeline items for the user (existing logic).
+  - Wrap each post into a feed item dict with type="post".
+  - Optionally insert 1–2 "mentor_insight" and/or "matrix_insight" items into the list per page of results.
+    - For Phase 1 these extra items can be static or minimally dynamic (e.g. using existing mentor/matrix services in a simple way).
+- The ordering rules for Phase 1 can be very simple:
+  - Sort posts primarily by recency (existing timeline behavior).
+  - Insert non-post items at fixed positions (for example, after the 3rd post, after the 10th post), or at the beginning of the feed once.
+
+3) Backend: serializer and view changes
+- Create a new serializer or response schema that represents a list of generic feed items.
+- Update the feed view (e.g. FeedHomeView) to use the composer service and return:
+
+  {
+    "items": [...],
+    "next": ...
+  }
+
+- Ensure pagination is still supported:
+  - The "next" field can be a cursor, page number, or null, consistent with current code.
+- Do not break existing clients that still expect plain post lists if they exist; if necessary, add a new endpoint /api/v1/feed/home2/ and wire the mobile app to that. If no external clients depend on the old format, you can upgrade the main endpoint.
+
+4) Mobile: typed FeedItem model and renderer
+- On the mobile side, define a TypeScript union type for feed items, something like:
+
+  export type FeedItem =
+    | { type: 'post'; id: number; post: Post }
+    | { type: 'mentor_insight'; id: string; mentor: MentorCardData }
+    | { type: 'matrix_insight'; id: string; matrix: MatrixCardData };
+
+- Adjust the feed store (e.g. src/stores/feedStore.ts) and API layer (src/api/social.ts or src/api/feed.ts) to parse the backend response into an array of FeedItem.
+- Implement a FeedItemRenderer component or a renderItem switch in FeedScreen that:
+  - Renders <PostCard post={item.post} /> when type === 'post'.
+  - Renders <MentorFeedCard data={item.mentor} /> when type === 'mentor_insight'.
+  - Renders <MatrixFeedCard data={item.matrix} /> when type === 'matrix_insight'.
+- For Phase 1, MentorFeedCard and MatrixFeedCard can be simple cards with:
+  - title text
+  - subtitle text
+  - CTA button that navigates to the corresponding screen (Mentor, Matrix)
+  - styling consistent with the rest of the app.
+
+5) Mobile: keep existing UX behavior
+- Keep infinite scrolling behavior intact:
+  - onEndReached should load the next page using the "next" cursor from the backend.
+- Keep pull-to-refresh support:
+  - Refresh should reset the feed to the first page.
+- Ensure that error handling, loading states, and skeleton loaders still work as expected.
+
+6) Non-goals for Phase 1
+- Do not implement full ranking logic based on matrix or soulmatch yet.
+- Do not deeply integrate soulmatch items into the feed yet; that can come in a later phase.
+- Do not introduce breaking changes to other endpoints or unrelated screens.
+- Do not add complex animations; only adapt basic layout for new card types.
+
+Constraints:
+- Do not remove or break the existing post model, post serializer, or basic timeline logic.
+- Avoid changing database schema in Phase 1 unless absolutely necessary; use existing models.
+- Maintain backward compatibility where reasonable, or clearly isolate new behavior into a new endpoint.
+- Keep the response shape stable and explicit: items array + next cursor.
+
+Step-by-step tasks for backend (selflink-backend):
+
+1) Inspect current feed endpoint(s) and timeline implementation:
+   - Identify the main feed view(s) that the mobile app calls.
+   - Identify serializers and services used for timeline generation.
+
+2) Implement a feed composer:
+   - Create a new service module (e.g. apps/feed/services/composer.py).
+   - Implement a function like compose_feed(user, cursor=None, limit=20) that returns:
+     - items: list of feed item dicts
+     - next_cursor: cursor or None
+   - Wrap existing post timeline items into type="post" feed items.
+   - Add minimal stub entries for type="mentor_insight" and type="matrix_insight" (hardcoded title/subtitle/cta for now is acceptable).
+
+3) Implement a feed serializer:
+   - If needed, create a serializer that can validate/structure feed items with a "type" field and nested data.
+   - Or, if easier, return a Response with a manually constructed JSON structure as long as it is consistent and tested.
+
+4) Update the feed view:
+   - Use the composer to populate the feed response.
+   - Add "items" and "next" to the response.
+   - Ensure authentication, permissions, and pagination behavior remain correct.
+
+5) Add backend tests:
+   - Test that a feed request returns both post items and, when applicable, at least one mentor_insight or matrix_insight item.
+   - Test cursor-based pagination to ensure "next" works properly.
+   - Test that existing posts are serialized as before inside the "post" field.
+
+Step-by-step tasks for mobile (selflink-mobile):
+
+1) Introduce FeedItem type:
+   - Create or update a TypeScript type for FeedItem in a shared types file (e.g. src/types/feed.ts).
+   - Reflect the backend contract: type, id, and nested objects.
+
+2) Update API client:
+   - In the feed API module (e.g. src/api/feed.ts or src/api/social.ts), parse the response into FeedItem[] and a "next" cursor.
+   - Ensure type narrowing is correct and handle unknown types safely (log or ignore).
+
+3) Update feed store:
+   - Adjust the Zustand feedStore (or equivalent) to store an array of FeedItem instead of raw posts.
+   - Implement actions: fetchFirstPage, fetchNextPage, refresh.
+
+4) Update FeedScreen:
+   - Use FlatList<FeedItem> and implement a renderItem that renders based on item.type.
+   - Make sure onEndReached uses "next" properly.
+   - Ensure pull-to-refresh works.
+
+5) Implement MentorFeedCard and MatrixFeedCard:
+   - Add components under src/components/feed/ (e.g. MentorFeedCard.tsx, MatrixFeedCard.tsx).
+   - Simple layout:
+     - title, subtitle, CTA button.
+     - onPress navigates to Mentor main screen or Matrix screen.
+   - Style them to match existing SelfLink design.
+
+6) Add mobile tests:
+   - If Jest/RTL is present, add tests for:
+     - parsing feed items from API.
+     - rendering correct card components per type.
+     - basic interaction (pressing CTA navigates correctly).
+
+Final expected outcome of Phase 1:
+- The feed endpoint returns a structured list of feed items with a "type" field and nested data.
+- The mobile FeedScreen understands and renders different item types.
+- The existing post feed behavior still works as before (posts appear in feed with correct data and actions).
+- The groundwork is laid for future phases where SoulMatch, AI-based ranking, and more advanced insights can be integrated as additional feed item types.

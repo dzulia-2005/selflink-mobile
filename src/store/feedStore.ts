@@ -2,10 +2,11 @@ import { create } from 'zustand';
 
 import * as socialApi from '@api/social';
 import type { AddCommentPayload } from '@api/social';
-import type { Comment, Post } from '@schemas/social';
+import type { FeedItem } from '@schemas/feed';
+import type { Comment } from '@schemas/social';
 
 interface FeedState {
-  posts: Post[];
+  items: FeedItem[];
   isLoading: boolean;
   isPaging: boolean;
   error?: string;
@@ -18,7 +19,7 @@ interface FeedState {
 }
 
 export const useFeedStore = create<FeedState>((set, get) => ({
-  posts: [],
+  items: [],
   isLoading: false,
   isPaging: false,
   error: undefined,
@@ -27,8 +28,7 @@ export const useFeedStore = create<FeedState>((set, get) => ({
     set({ isLoading: true, error: undefined });
     try {
       const response = await socialApi.getFeed();
-      const posts = response.results.map((entry) => entry.post);
-      set({ posts, nextUrl: response.nextUrl });
+      set({ items: response.items, nextUrl: response.nextUrl });
     } catch (error) {
       set({ error: error instanceof Error ? error.message : 'Unable to load feed.' });
     } finally {
@@ -36,67 +36,70 @@ export const useFeedStore = create<FeedState>((set, get) => ({
     }
   },
   async loadMore() {
-    const { nextUrl, posts, isPaging } = get();
+    const { nextUrl, items, isPaging } = get();
     if (!nextUrl || isPaging) {
       return;
     }
     set({ isPaging: true, error: undefined });
     try {
       const response = await socialApi.getFeed(nextUrl);
-      if (!response.results.length) {
-        set({ nextUrl: response.nextUrl });
-        return;
-      }
-      const incoming = response.results
-        .map((entry) => entry.post)
-        .filter(
-          (post) => !posts.some((existing) => String(existing.id) === String(post.id)),
-        );
-      if (!incoming.length) {
-        set({ nextUrl: response.nextUrl });
-        return;
-      }
+      const existingKeys = new Set(items.map((item) => `${item.type}:${item.id}`));
+      const incoming = response.items.filter((item) => {
+        const key = `${item.type}:${item.id}`;
+        if (existingKeys.has(key)) {
+          return false;
+        }
+        existingKeys.add(key);
+        return true;
+      });
       set({
-        posts: posts.concat(incoming),
+        items: items.concat(incoming),
         nextUrl: response.nextUrl,
       });
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : 'Unable to load more posts.',
+        error: error instanceof Error ? error.message : 'Unable to load more feed items.',
       });
     } finally {
       set({ isPaging: false });
     }
   },
   async likePost(postId) {
-    const previousPosts = get().posts;
+    const previousItems = get().items;
     set({
-      posts: previousPosts.map((post) =>
-        String(post.id) === String(postId)
-          ? { ...post, liked: true, like_count: post.like_count + 1 }
-          : post,
+      items: previousItems.map((item) =>
+        item.type === 'post' && String(item.post.id) === String(postId)
+          ? { ...item, post: { ...item.post, liked: true, like_count: item.post.like_count + 1 } }
+          : item,
       ),
     });
     try {
       await socialApi.likePost(postId);
     } catch (error) {
-      set({ posts: previousPosts, error: 'Unable to like post.' });
+      set({ items: previousItems, error: 'Unable to like post.' });
       throw error;
     }
   },
   async unlikePost(postId) {
-    const previousPosts = get().posts;
+    const previousItems = get().items;
     set({
-      posts: previousPosts.map((post) =>
-        String(post.id) === String(postId)
-          ? { ...post, liked: false, like_count: Math.max(0, post.like_count - 1) }
-          : post,
+      items: previousItems.map((item) =>
+        item.type === 'post' && String(item.post.id) === String(postId)
+          ? {
+              ...item,
+              post: {
+                ...item.post,
+                liked: false,
+                like_count: Math.max(0, item.post.like_count - 1),
+              },
+            }
+          : item,
       ),
     });
     try {
       await socialApi.unlikePost(postId);
     } catch (error) {
-      set({ posts: previousPosts, error: 'Unable to unlike post.' });
+      set({ items: previousItems, error: 'Unable to unlike post.' });
       throw error;
     }
   },
@@ -115,10 +118,10 @@ export const useFeedStore = create<FeedState>((set, get) => ({
     try {
       const comment = await socialApi.addComment(postId, normalizedPayload);
       set({
-        posts: get().posts.map((post) =>
-          String(post.id) === String(postId)
-            ? { ...post, comment_count: post.comment_count + 1 }
-            : post,
+        items: get().items.map((item) =>
+          item.type === 'post' && String(item.post.id) === String(postId)
+            ? { ...item, post: { ...item.post, comment_count: item.post.comment_count + 1 } }
+            : item,
         ),
       });
       return comment;

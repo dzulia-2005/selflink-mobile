@@ -1,6 +1,7 @@
 import { isAxiosError } from 'axios';
 
-import type { Comment, Post, TimelineEntry } from '@schemas/social';
+import type { FeedItem, FeedResponse } from '@schemas/feed';
+import type { Comment, Post } from '@schemas/social';
 
 import { apiClient } from './client';
 
@@ -23,29 +24,120 @@ const buildQuery = (path: string, params?: QueryParams) => {
   return query ? `${path}?${query}` : path;
 };
 
-export interface FeedResponse {
-  results: TimelineEntry[];
-  nextUrl: string | null;
-}
+const asIdentifier = (value: unknown): string | null => {
+  if (typeof value === 'string' && value.length > 0) {
+    return value;
+  }
+  if (typeof value === 'number') {
+    return String(value);
+  }
+  return null;
+};
+
+const normalizeInsight = (input: any): { title: string; subtitle?: string; cta?: string } | null => {
+  if (!input || typeof input !== 'object') {
+    return null;
+  }
+  const title = 'title' in input && typeof (input as any).title === 'string'
+    ? (input as any).title
+    : null;
+  const subtitle =
+    'subtitle' in input && typeof (input as any).subtitle === 'string'
+      ? (input as any).subtitle
+      : undefined;
+  const cta =
+    'cta' in input && typeof (input as any).cta === 'string'
+      ? (input as any).cta
+      : undefined;
+  if (!title) {
+    return null;
+  }
+  return { title, subtitle, cta };
+};
+
+const toPostItem = (entry: any, index: number): FeedItem | null => {
+  const post = entry?.post ?? entry;
+  if (!post || typeof post !== 'object') {
+    return null;
+  }
+  const id = asIdentifier(entry?.id ?? post?.id ?? index);
+  if (!id) {
+    return null;
+  }
+  return {
+    type: 'post',
+    id,
+    post,
+  };
+};
+
+const toFeedItem = (entry: any, index: number): FeedItem | null => {
+  if (!entry || typeof entry !== 'object') {
+    return null;
+  }
+  const type = (entry as any).type;
+  if (type === 'mentor_insight') {
+    const mentor = normalizeInsight((entry as any).mentor);
+    if (!mentor) {
+      return null;
+    }
+    const id = asIdentifier((entry as any).id) ?? `mentor_${index}`;
+    return { type: 'mentor_insight', id, mentor };
+  }
+  if (type === 'matrix_insight') {
+    const matrix = normalizeInsight((entry as any).matrix);
+    if (!matrix) {
+      return null;
+    }
+    const id = asIdentifier((entry as any).id) ?? `matrix_${index}`;
+    return { type: 'matrix_insight', id, matrix };
+  }
+  if (type === 'post') {
+    return toPostItem(entry, index);
+  }
+  if ('post' in entry) {
+    return toPostItem(entry, index);
+  }
+  if ('text' in entry || 'author' in entry) {
+    return toPostItem(entry, index);
+  }
+  return null;
+};
+
+const extractItems = (data: unknown): FeedItem[] => {
+  let candidates: any[] = [];
+  if (Array.isArray(data)) {
+    candidates = data;
+  } else if (data && typeof data === 'object') {
+    const payload = data as any;
+    if (Array.isArray(payload.items)) {
+      candidates = payload.items;
+    } else if (Array.isArray(payload.results)) {
+      candidates = payload.results;
+    }
+  }
+  return candidates
+    .map((entry, index) => toFeedItem(entry, index))
+    .filter((item): item is FeedItem => Boolean(item));
+};
+
+const extractNext = (data: unknown): string | null => {
+  if (data && typeof data === 'object' && 'next' in data) {
+    const next = (data as any).next;
+    if (typeof next === 'string' || next === null) {
+      return next;
+    }
+  }
+  return null;
+};
 
 export async function getFeed(nextUrl?: string): Promise<FeedResponse> {
   const url = nextUrl ?? FEED_ENDPOINT;
   const { data } = await apiClient.get<unknown>(url);
 
-  const entries: TimelineEntry[] = Array.isArray(data)
-    ? data
-    : Array.isArray((data as any)?.results)
-      ? ((data as { results: TimelineEntry[] }).results ?? [])
-      : [];
-
-  const next =
-    (typeof data === 'object' && data !== null && 'next' in data
-      ? (data as { next?: string | null }).next
-      : null) ?? null;
-
   return {
-    results: entries,
-    nextUrl: next,
+    items: extractItems(data),
+    nextUrl: extractNext(data),
   };
 }
 

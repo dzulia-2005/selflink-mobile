@@ -11,16 +11,22 @@ import {
 } from 'react-native';
 
 import { FeedPostCard } from '@components/FeedPostCard';
+import { MatrixFeedCard } from '@components/MatrixFeedCard';
+import { MentorFeedCard } from '@components/MentorFeedCard';
+import type { FeedItem } from '@schemas/feed';
 import { useFeedStore } from '@store/feedStore';
 
 export function FeedScreen() {
   const navigation = useNavigation<any>();
-  const posts = useFeedStore((state) => state.posts);
+  const items = useFeedStore((state) => state.items);
   const isLoading = useFeedStore((state) => state.isLoading);
   const error = useFeedStore((state) => state.error);
   const loadFeed = useFeedStore((state) => state.loadFeed);
   const loadMore = useFeedStore((state) => state.loadMore);
-  const showFab = useMemo(() => posts.length > 0, [posts.length]);
+  const showFab = useMemo(
+    () => items.some((item) => item.type === 'post'),
+    [items],
+  );
 
   useEffect(() => {
     loadFeed().catch(() => undefined);
@@ -40,8 +46,17 @@ export function FeedScreen() {
     });
   }, [headerAction, navigation]);
 
-  const renderPost = useCallback(({ item }: { item: (typeof posts)[number] }) => {
-    return <FeedPostCard post={item} />;
+  const renderItem = useCallback(({ item }: { item: FeedItem }) => {
+    switch (item.type) {
+      case 'post':
+        return <FeedPostCard post={item.post} />;
+      case 'mentor_insight':
+        return <MentorFeedCard data={item.mentor} />;
+      case 'matrix_insight':
+        return <MatrixFeedCard data={item.matrix} />;
+      default:
+        return null;
+    }
   }, []);
 
   const renderSeparator = useCallback(() => <View style={styles.separator} />, []);
@@ -63,7 +78,7 @@ export function FeedScreen() {
     );
   }, [isLoading, navigation]);
 
-  if (isLoading && posts.length === 0) {
+  if (isLoading && items.length === 0) {
     return (
       <View style={styles.centered}>
         <ActivityIndicator />
@@ -71,7 +86,7 @@ export function FeedScreen() {
     );
   }
 
-  if (error && posts.length === 0) {
+  if (error && items.length === 0) {
     return (
       <View style={styles.centered}>
         <Text>{error}</Text>
@@ -82,14 +97,14 @@ export function FeedScreen() {
   return (
     <View style={styles.container}>
       <FlatList
-        data={posts}
-        keyExtractor={(item) => String(item.id)}
-        renderItem={renderPost}
+        data={items}
+        keyExtractor={(item) => `${item.type}-${item.id}`}
+        renderItem={renderItem}
         contentContainerStyle={styles.listContent}
         ItemSeparatorComponent={renderSeparator}
         refreshControl={
           <RefreshControl
-            refreshing={isLoading && posts.length > 0}
+            refreshing={isLoading && items.length > 0}
             onRefresh={loadFeed}
           />
         }
