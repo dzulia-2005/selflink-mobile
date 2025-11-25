@@ -47,6 +47,11 @@ const gradients = {
   cta: ['#7C3AED', '#06B6D4'] as const,
   accent: ['#0EA5E9', '#7C3AED'] as const,
   matrix: ['#14B8A6', '#6366F1'] as const,
+  nebulaPurple: ['#5A2E98', '#9B4EFF'] as const,
+  cosmicBlue: ['#1B2B66', '#3B4FFF'] as const,
+  matrixGlow: ['#00FFA3', '#06D19A'] as const,
+  soulPink: ['#FF6BAA', '#FF3FA4'] as const,
+  mentorGold: ['#FFD86B', '#FFB55A'] as const,
   button: ['#7C3AED', '#4C1D95'] as const,
   buttonActive: ['#8B5CF6', '#312E81'] as const,
   buttonDisabled: ['#94A3B8', '#CBD5F5'] as const,
@@ -78,6 +83,7 @@ export const theme = {
     sm: 10,
     md: 16,
     lg: 24,
+    xl: 28,
     pill: 999,
     full: 9999,
   },
@@ -85,6 +91,7 @@ export const theme = {
     sm: 10,
     md: 16,
     lg: 24,
+    xl: 28,
     pill: 999,
     full: 9999,
   },
@@ -104,6 +111,20 @@ export const theme = {
       shadowRadius: 14,
       elevation: 6,
     },
+    cosmic: {
+      shadowColor: '#5A2E98',
+      shadowOffset: { width: 0, height: 14 },
+      shadowOpacity: 0.45,
+      shadowRadius: 32,
+      elevation: 14,
+    },
+    soft: {
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 6 },
+      shadowOpacity: 0.18,
+      shadowRadius: 16,
+      elevation: 8,
+    },
   },
   shadow: {
     panel: {
@@ -120,6 +141,19 @@ export const theme = {
       shadowRadius: 12,
       elevation: 8,
     },
+    soft: {
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 6 },
+      shadowOpacity: 0.16,
+      shadowRadius: 14,
+      elevation: 8,
+    },
+  },
+  rhythm: {
+    cardMargin: 14,
+    cardRadius: 20,
+    verticalRhythm: 12,
+    cosmicPadding: 18,
   },
 };
 

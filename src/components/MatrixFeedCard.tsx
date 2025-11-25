@@ -1,8 +1,11 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { memo, useCallback } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import type { MatrixInsightCard } from '@schemas/feed';
+import { theme } from '@theme';
+import { useEntranceAnimation, usePressScaleAnimation } from '../styles/animations';
 
 type Props = {
   data: MatrixInsightCard;
@@ -11,6 +14,8 @@ type Props = {
 function MatrixFeedCardComponent({ data }: Props) {
   const navigation = useNavigation<any>();
   const tabNavigation = navigation.getParent();
+  const entrance = useEntranceAnimation();
+  const pressAnim = usePressScaleAnimation(0.985);
 
   const handlePress = useCallback(() => {
     const params = { screen: 'SoulMatchHome' };
@@ -22,31 +27,52 @@ function MatrixFeedCardComponent({ data }: Props) {
   }, [navigation, tabNavigation]);
 
   return (
-    <View style={styles.card}>
-      <Text style={styles.label}>Matrix Insight</Text>
-      <Text style={styles.title}>{data.title}</Text>
-      {data.subtitle ? <Text style={styles.subtitle}>{data.subtitle}</Text> : null}
-      <TouchableOpacity style={styles.ctaButton} onPress={handlePress} activeOpacity={0.9}>
-        <Text style={styles.ctaText}>{data.cta ?? 'View matrix'}</Text>
-      </TouchableOpacity>
-    </View>
+    <Animated.View style={[styles.wrapper, entrance.style]}>
+      <Animated.View style={[styles.card, pressAnim.style]}>
+        <LinearGradient
+          colors={theme.gradients.matrixGlow}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.border}
+        >
+          <View style={styles.inner}>
+            <View style={styles.orb} />
+            <Text style={styles.label}>Matrix Insight</Text>
+            <Text style={styles.title}>{data.title}</Text>
+            {data.subtitle ? <Text style={styles.subtitle}>{data.subtitle}</Text> : null}
+            <TouchableOpacity style={styles.ctaButton} onPress={handlePress} activeOpacity={0.9}>
+              <Text style={styles.ctaText}>{data.cta ?? 'View matrix'}</Text>
+            </TouchableOpacity>
+          </View>
+        </LinearGradient>
+      </Animated.View>
+    </Animated.View>
   );
 }
 
 export const MatrixFeedCard = memo(MatrixFeedCardComponent);
 
 const styles = StyleSheet.create({
+  wrapper: {
+    marginBottom: 16,
+  },
   card: {
-    backgroundColor: '#0B1120',
     borderRadius: 20,
-    padding: 18,
-    borderWidth: 1,
-    borderColor: 'rgba(34,197,94,0.35)',
-    shadowColor: '#000000',
-    shadowOpacity: 0.3,
-    shadowRadius: 18,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOpacity: 0.25,
+    shadowRadius: 16,
     shadowOffset: { width: 0, height: 10 },
-    elevation: 5,
+    elevation: 6,
+  },
+  border: {
+    padding: 1.5,
+    borderRadius: 20,
+  },
+  inner: {
+    backgroundColor: '#07111F',
+    borderRadius: 18,
+    padding: 18,
   },
   label: {
     color: '#22C55E',
@@ -65,6 +91,17 @@ const styles = StyleSheet.create({
     color: '#94A3B8',
     marginTop: 4,
     lineHeight: 20,
+  },
+  orb: {
+    position: 'absolute',
+    right: 16,
+    top: 12,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: 'rgba(34,197,94,0.16)',
+    borderWidth: 1,
+    borderColor: 'rgba(34,197,94,0.35)',
   },
   ctaButton: {
     marginTop: 14,

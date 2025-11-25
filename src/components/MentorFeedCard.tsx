@@ -1,8 +1,11 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { memo, useCallback } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import type { MentorInsightCard } from '@schemas/feed';
+import { theme } from '@theme';
+import { useEntranceAnimation, usePressScaleAnimation } from '../styles/animations';
 
 type Props = {
   data: MentorInsightCard;
@@ -11,6 +14,8 @@ type Props = {
 function MentorFeedCardComponent({ data }: Props) {
   const navigation = useNavigation<any>();
   const tabNavigation = navigation.getParent();
+  const entrance = useEntranceAnimation();
+  const pressAnim = usePressScaleAnimation(0.985);
 
   const handlePress = useCallback(() => {
     const params = { screen: 'MentorHome' };
@@ -22,38 +27,63 @@ function MentorFeedCardComponent({ data }: Props) {
   }, [navigation, tabNavigation]);
 
   return (
-    <View style={styles.card}>
-      <Text style={styles.label}>Mentor Insight</Text>
-      <Text style={styles.title}>{data.title}</Text>
-      {data.subtitle ? <Text style={styles.subtitle}>{data.subtitle}</Text> : null}
-      <TouchableOpacity style={styles.ctaButton} onPress={handlePress} activeOpacity={0.9}>
-        <Text style={styles.ctaText}>{data.cta ?? 'Open mentor'}</Text>
-      </TouchableOpacity>
-    </View>
+    <Animated.View style={[styles.wrapper, entrance.style]}>
+      <Animated.View style={[styles.card, pressAnim.style]}>
+        <LinearGradient
+          colors={theme.gradients.mentorGold}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.border}
+        >
+          <View style={styles.inner}>
+            <View style={styles.sparkleRow}>
+              <View style={styles.spark} />
+              <Text style={styles.label}>Mentor Insight</Text>
+              <View style={styles.spark} />
+            </View>
+            <Text style={styles.title}>{data.title}</Text>
+            {data.subtitle ? <Text style={styles.subtitle}>{data.subtitle}</Text> : null}
+            <TouchableOpacity style={styles.ctaButton} onPress={handlePress} activeOpacity={0.9}>
+              <Text style={styles.ctaText}>{data.cta ?? 'Open mentor'}</Text>
+            </TouchableOpacity>
+          </View>
+        </LinearGradient>
+      </Animated.View>
+    </Animated.View>
   );
 }
 
 export const MentorFeedCard = memo(MentorFeedCardComponent);
 
 const styles = StyleSheet.create({
+  wrapper: {
+    marginBottom: 16,
+  },
   card: {
-    backgroundColor: '#0B1120',
     borderRadius: 20,
-    padding: 18,
-    borderWidth: 1,
-    borderColor: 'rgba(56,189,248,0.35)',
-    shadowColor: '#000000',
-    shadowOpacity: 0.3,
-    shadowRadius: 18,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOpacity: 0.25,
+    shadowRadius: 16,
     shadowOffset: { width: 0, height: 10 },
-    elevation: 5,
+    elevation: 6,
+  },
+  border: {
+    padding: 1.5,
+    borderRadius: 20,
+  },
+  inner: {
+    backgroundColor: '#0B1120',
+    borderRadius: 18,
+    padding: 18,
   },
   label: {
-    color: '#38BDF8',
+    color: '#FCD34D',
     fontWeight: '700',
     fontSize: 12,
     letterSpacing: 0.5,
     textTransform: 'uppercase',
+    textAlign: 'center',
   },
   title: {
     color: '#E2E8F0',
@@ -66,9 +96,22 @@ const styles = StyleSheet.create({
     marginTop: 4,
     lineHeight: 20,
   },
+  sparkleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginBottom: 6,
+  },
+  spark: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: 'rgba(252,211,77,0.6)',
+  },
   ctaButton: {
     marginTop: 14,
-    backgroundColor: '#38BDF8',
+    backgroundColor: '#FBBF24',
     paddingVertical: 10,
     borderRadius: 12,
     alignItems: 'center',

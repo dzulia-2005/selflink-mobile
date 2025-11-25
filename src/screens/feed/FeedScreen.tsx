@@ -1,7 +1,8 @@
 import { useNavigation } from '@react-navigation/native';
-import { useCallback, useEffect, useLayoutEffect, useMemo } from 'react';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
+  Animated,
   FlatList,
   RefreshControl,
   StyleSheet,
@@ -14,18 +15,27 @@ import { FeedPostCard } from '@components/FeedPostCard';
 import { MatrixFeedCard } from '@components/MatrixFeedCard';
 import { MentorFeedCard } from '@components/MentorFeedCard';
 import { SoulMatchFeedCard } from '@components/SoulMatchFeedCard';
+import { InsightSkeleton } from '@components/skeleton/InsightSkeleton';
+import { PostSkeleton } from '@components/skeleton/PostSkeleton';
+import { SoulMatchSkeleton } from '@components/skeleton/SoulMatchSkeleton';
 import type { FeedItem, FeedMode } from '@schemas/feed';
 import { useFeedStore } from '@store/feedStore';
+import { theme } from '@theme';
 
 export function FeedScreen() {
   const navigation = useNavigation<any>();
   const currentMode = useFeedStore((state) => state.currentMode);
   const items = useFeedStore((state) => state.itemsByMode[state.currentMode]);
   const isLoading = useFeedStore((state) => state.isLoadingByMode[state.currentMode]);
+  const isPaging = useFeedStore((state) => state.isPagingByMode[state.currentMode]);
   const error = useFeedStore((state) => state.errorByMode[state.currentMode]);
   const loadFeed = useFeedStore((state) => state.loadFeed);
   const loadMore = useFeedStore((state) => state.loadMore);
   const setMode = useFeedStore((state) => state.setMode);
+  const listRef = useRef<FlatList<FeedItem>>(null);
+  const scrollOffsets = useRef<Record<FeedMode, number>>({ for_you: 0, following: 0 });
+  const indicator = useRef(new Animated.Value(currentMode === 'for_you' ? 0 : 1)).current;
+  const [segmentWidth, setSegmentWidth] = useState(0);
   const showFab = useMemo(
     () => items.some((item) => item.type === 'post'),
     [items],
@@ -34,6 +44,18 @@ export function FeedScreen() {
   useEffect(() => {
     loadFeed().catch(() => undefined);
   }, [loadFeed]);
+
+  useEffect(() => {
+    Animated.timing(indicator, {
+      toValue: currentMode === 'for_you' ? 0 : 1,
+      duration: 220,
+      useNativeDriver: true,
+    }).start();
+    const offset = scrollOffsets.current[currentMode] ?? 0;
+    requestAnimationFrame(() => {
+      listRef.current?.scrollToOffset({ offset, animated: false });
+    });
+  }, [currentMode, indicator]);
 
   const headerAction = useCallback(() => {
     return (
@@ -93,25 +115,73 @@ export function FeedScreen() {
     );
   }, [isLoading, navigation]);
 
-  if (isLoading && items.length === 0) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator />
-      </View>
-    );
-  }
+  const showInitialSkeleton = isLoading && items.length === 0;
 
-  if (error && items.length === 0) {
+  const renderSkeletons = useCallback(() => {
     return (
-      <View style={styles.centered}>
-        <Text>{error}</Text>
+      <View style={styles.skeletonList}>
+        {Array.from({ length: 4 }).map((_, index) => (
+          <PostSkeleton key={`post-skel-${index}`} hasMedia={index % 2 === 0} />
+        ))}
+        <InsightSkeleton />
+        <SoulMatchSkeleton />
       </View>
     );
-  }
+  }, []);
+
+  const renderFooter = useCallback(() => {
+    if (!isPaging) {
+      return null;
+    }
+    return (
+      <View style={styles.footerSkeletons}>
+        <PostSkeleton hasMedia={false} />
+      </View>
+    );
+  }, [isPaging]);
+
+  const errorContent =
+    error && items.length === 0 ? (
+      <View style={styles.errorState}>
+        <LinearGradient
+          colors={theme.gradients.nebulaPurple}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.errorCard}
+        >
+          <Text style={styles.errorTitle}>We lost the signal</Text>
+          <Text style={styles.errorSubtitle}>{error}</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={() => loadFeed()}>
+            <Text style={styles.retryLabel}>Retry</Text>
+          </TouchableOpacity>
+        </LinearGradient>
+      </View>
+    ) : null;
 
   return (
-    <View style={styles.container}>
-      <View style={styles.modeSwitch}>
+    <LinearGradient colors={theme.gradients.appBackground} style={styles.container}>
+      <View
+        style={styles.modeSwitch}
+        onLayout={(event) => setSegmentWidth(event.nativeEvent.layout.width / 2)}
+      >
+        <View style={styles.modeTrack} pointerEvents="none">
+          <Animated.View
+            style={[
+              styles.modeIndicator,
+              {
+                width: segmentWidth || '50%',
+                transform: [
+                  {
+                    translateX: indicator.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [0, segmentWidth || 0],
+                    }),
+                  },
+                ],
+              },
+            ]}
+          />
+        </View>
         {(['for_you', 'following'] as FeedMode[]).map((mode) => {
           const active = mode === currentMode;
           return (
@@ -128,22 +198,36 @@ export function FeedScreen() {
           );
         })}
       </View>
-      <FlatList
-        data={items}
-        keyExtractor={(item) => `${item.type}-${item.id}`}
-        renderItem={renderItem}
-        contentContainerStyle={styles.listContent}
-        ItemSeparatorComponent={renderSeparator}
-        refreshControl={
-          <RefreshControl
-            refreshing={isLoading && items.length > 0}
-            onRefresh={loadFeed}
-          />
-        }
-        onEndReached={loadMore}
-        onEndReachedThreshold={0.4}
-        ListEmptyComponent={renderEmpty}
-      />
+      {showInitialSkeleton ? (
+        renderSkeletons()
+      ) : errorContent ? (
+        errorContent
+      ) : (
+        <FlatList
+          ref={listRef}
+          data={items}
+          keyExtractor={(item) => `${item.type}-${item.id}`}
+          renderItem={renderItem}
+          contentContainerStyle={styles.listContent}
+          ItemSeparatorComponent={renderSeparator}
+          refreshControl={
+            <RefreshControl
+              refreshing={isLoading && items.length > 0}
+              onRefresh={loadFeed}
+              tintColor="#9B4EFF"
+              colors={['#9B4EFF', '#0EA5E9']}
+            />
+          }
+          onEndReached={loadMore}
+          onEndReachedThreshold={0.4}
+          ListEmptyComponent={renderEmpty}
+          ListFooterComponent={renderFooter}
+          onScroll={(event) => {
+            scrollOffsets.current[currentMode] = event.nativeEvent.contentOffset.y;
+          }}
+          scrollEventThrottle={16}
+        />
+      )}
       {showFab ? (
         <TouchableOpacity
           style={styles.fab}
@@ -153,13 +237,14 @@ export function FeedScreen() {
           <Text style={styles.fabText}>+</Text>
         </TouchableOpacity>
       ) : null}
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingTop: 6,
   },
   listContent: {
     padding: 16,
@@ -222,6 +307,23 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     gap: 8,
   },
+  modeTrack: {
+    position: 'absolute',
+    left: 16,
+    right: 16,
+    top: 10,
+    bottom: 10,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.04)',
+    overflow: 'hidden',
+  },
+  modeIndicator: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    borderRadius: 14,
+    backgroundColor: 'rgba(124,58,237,0.18)',
+  },
   modeButton: {
     flex: 1,
     borderRadius: 12,
@@ -241,5 +343,41 @@ const styles = StyleSheet.create({
   },
   modeLabelActive: {
     color: '#fff',
+  },
+  skeletonList: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+  },
+  footerSkeletons: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  errorState: {
+    padding: 16,
+  },
+  errorCard: {
+    borderRadius: 20,
+    padding: 18,
+  },
+  errorTitle: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 6,
+  },
+  errorSubtitle: {
+    color: '#E2E8F0',
+    marginBottom: 12,
+  },
+  retryButton: {
+    backgroundColor: '#0EA5E9',
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    alignSelf: 'flex-start',
+  },
+  retryLabel: {
+    color: '#0B1120',
+    fontWeight: '700',
   },
 });

@@ -1,12 +1,23 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
-import { memo, useCallback, useState } from 'react';
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { memo, useCallback, useRef, useState } from 'react';
+import {
+  Alert,
+  Animated,
+  Pressable,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 import { followUser, unfollowUser } from '@api/users';
 import { PostContent } from '@components/PostContent';
 import type { Post } from '@schemas/social';
 import { useAuthStore } from '@store/authStore';
 import { useFeedStore } from '@store/feedStore';
+import { theme } from '@theme';
+import { useEntranceAnimation, usePressScaleAnimation } from '../styles/animations';
 
 import { UserAvatar } from './UserAvatar';
 
@@ -19,6 +30,9 @@ function FeedPostCardComponent({ post }: Props) {
   const currentUserId = useAuthStore((state) => state.currentUser?.id);
   const likePost = useFeedStore((state) => state.likePost);
   const unlikePost = useFeedStore((state) => state.unlikePost);
+  const entrance = useEntranceAnimation();
+  const pressAnim = usePressScaleAnimation(0.985);
+  const heartScale = useRef(new Animated.Value(0)).current;
   const [followPending, setFollowPending] = useState(false);
   const [likePending, setLikePending] = useState(false);
   const [isFollowing, setIsFollowing] = useState(() => {
@@ -71,102 +85,164 @@ function FeedPostCardComponent({ post }: Props) {
     }
   }, [currentUserId, isFollowing, post.author.id, followPending]);
 
+  const lastTap = useRef(0);
+
+  const triggerHeart = useCallback(() => {
+    heartScale.setValue(0);
+    Animated.spring(heartScale, {
+      toValue: 1,
+      useNativeDriver: true,
+      friction: 4,
+      tension: 90,
+    }).start(() => heartScale.setValue(0));
+  }, [heartScale]);
+
   const handleOpenDetails = useCallback(() => {
     navigation.navigate('PostDetails', { postId: post.id, post });
   }, [navigation, post]);
+
+  const handleBodyPress = useCallback(() => {
+    const now = Date.now();
+    if (now - lastTap.current < 300) {
+      triggerHeart();
+      if (!post.liked) {
+        handleLikeToggle().catch(() => undefined);
+      }
+    } else {
+      handleOpenDetails();
+    }
+    lastTap.current = now;
+  }, [handleLikeToggle, handleOpenDetails, post.liked, triggerHeart]);
 
   const handleOpenProfile = useCallback(() => {
     navigation.navigate('UserProfile', { userId: post.author.id });
   }, [navigation, post.author.id]);
 
   return (
-    <View style={styles.card}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={handleOpenProfile}>
-          <UserAvatar uri={post.author.photo} label={post.author.name} size={40} />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.meta} onPress={handleOpenProfile}>
-          <Text style={styles.author}>{post.author.name}</Text>
-          <Text style={styles.handle}>@{post.author.handle}</Text>
-          <Text style={styles.timestamp}>
-            {new Date(post.created_at).toLocaleString()}
-          </Text>
-        </TouchableOpacity>
-        {post.author.id !== currentUserId && (
-          <TouchableOpacity
-            style={styles.followButton}
-            onPress={handleFollowToggle}
-            disabled={followPending}
-          >
-            <Text style={styles.followButtonText}>
-              {followPending ? '…' : isFollowing ? 'Following' : 'Follow'}
-            </Text>
-          </TouchableOpacity>
-        )}
-      </View>
+    <Animated.View style={[styles.wrapper, entrance.style]}>
+      <Pressable
+        onPressIn={pressAnim.onPressIn}
+        onPressOut={pressAnim.onPressOut}
+        style={[styles.card, pressAnim.style]}
+      >
+        <LinearGradient
+          colors={theme.gradients.cosmicBlue}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.cardGradient}
+        >
+          <View style={styles.cardInner}>
+            <View style={styles.header}>
+              <TouchableOpacity onPress={handleOpenProfile}>
+                <UserAvatar uri={post.author.photo} label={post.author.name} size={42} />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.meta} onPress={handleOpenProfile}>
+                <Text style={styles.author}>{post.author.name}</Text>
+                <Text style={styles.handle}>@{post.author.handle}</Text>
+                <Text style={styles.timestamp}>
+                  {new Date(post.created_at).toLocaleString()}
+                </Text>
+              </TouchableOpacity>
+              {post.author.id !== currentUserId && (
+                <TouchableOpacity
+                  style={styles.followButton}
+                  onPress={handleFollowToggle}
+                  disabled={followPending}
+                >
+                  <Text style={styles.followButtonText}>
+                    {followPending ? '…' : isFollowing ? 'Following' : 'Follow'}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
 
-      <TouchableOpacity onPress={handleOpenDetails} activeOpacity={0.92}>
-        <View style={styles.body}>
-          <PostContent
-            text={post.text}
-            media={post.media}
-            legacySources={[
-              post.images,
-              post.image_urls,
-              post.image_url,
-              (post as any)?.image,
-              (post as any)?.photo,
-              (post as any)?.photos,
-            ]}
-          />
-        </View>
-      </TouchableOpacity>
+            <TouchableOpacity onPress={handleBodyPress} activeOpacity={0.92}>
+              <View style={styles.body}>
+                <PostContent
+                  text={post.text}
+                  media={post.media}
+                  legacySources={[
+                    post.images,
+                    post.image_urls,
+                    post.image_url,
+                    (post as any)?.image,
+                    (post as any)?.photo,
+                    (post as any)?.photos,
+                  ]}
+                />
+              </View>
+            </TouchableOpacity>
 
-      <View style={styles.divider} />
+            <View style={styles.divider} />
 
-      <View style={styles.footer}>
-        <TouchableOpacity
-          onPress={handleLikeToggle}
-          accessibilityRole="button"
-          disabled={likePending}
+            <View style={styles.footer}>
+              <TouchableOpacity
+                onPress={handleLikeToggle}
+                accessibilityRole="button"
+                disabled={likePending}
+                style={[
+                  styles.actionPill,
+                  post.liked && styles.actionPillActive,
+                  likePending && styles.likeDisabled,
+                ]}
+              >
+                <Text style={styles.actionText}>
+                  {post.liked ? 'Unlike' : 'Like'} • {post.like_count}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleOpenDetails}
+                accessibilityRole="button"
+                style={styles.actionPill}
+                activeOpacity={0.85}
+              >
+                <Text style={styles.actionText}>Comments • {post.comment_count}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </LinearGradient>
+        <Animated.View
+          pointerEvents="none"
           style={[
-            styles.actionPill,
-            post.liked && styles.actionPillActive,
-            likePending && styles.likeDisabled,
+            styles.heartBurst,
+            {
+              transform: [{ scale: heartScale }],
+              opacity: heartScale,
+            },
           ]}
         >
-          <Text style={styles.actionText}>
-            {post.liked ? 'Unlike' : 'Like'} • {post.like_count}
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={handleOpenDetails}
-          accessibilityRole="button"
-          style={styles.actionPill}
-          activeOpacity={0.85}
-        >
-          <Text style={styles.actionText}>Comments • {post.comment_count}</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+          <Text style={styles.heartIcon}>♥</Text>
+        </Animated.View>
+      </Pressable>
+    </Animated.View>
   );
 }
 
 export const FeedPostCard = memo(FeedPostCardComponent);
 
 const styles = StyleSheet.create({
-  card: {
-    backgroundColor: '#0B1120',
-    borderRadius: 24,
-    padding: 18,
+  wrapper: {
     marginBottom: 16,
+  },
+  card: {
+    borderRadius: 24,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOpacity: 0.28,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 8,
+  },
+  cardGradient: {
+    padding: 1.5,
+    borderRadius: 24,
+  },
+  cardInner: {
+    backgroundColor: '#0B1120',
+    borderRadius: 22,
+    padding: 18,
     borderWidth: 1,
     borderColor: 'rgba(148,163,184,0.12)',
-    shadowColor: '#000000',
-    shadowOpacity: 0.35,
-    shadowRadius: 20,
-    shadowOffset: { width: 0, height: 12 },
-    elevation: 6,
   },
   header: {
     flexDirection: 'row',
@@ -240,5 +316,17 @@ const styles = StyleSheet.create({
   },
   likeDisabled: {
     opacity: 0.6,
+  },
+  heartBurst: {
+    position: 'absolute',
+    right: 18,
+    bottom: 36,
+  },
+  heartIcon: {
+    fontSize: 28,
+    color: '#F472B6',
+    textShadowColor: 'rgba(244,114,182,0.5)',
+    textShadowOffset: { width: 0, height: 4 },
+    textShadowRadius: 12,
   },
 });
