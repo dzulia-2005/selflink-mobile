@@ -281,7 +281,7 @@ export function FeedScreen() {
           onPress={() => navigation.navigate('SoulReels')}
           activeOpacity={0.85}
         >
-          <Text style={styles.reelsLabel}>SoulReels</Text>
+          <Text style={styles.reelsLabel}>Reels</Text>
         </TouchableOpacity>
       </View>
       {showInitialSkeleton ? (

@@ -1,4 +1,4 @@
-import { useNavigation } from '@react-navigation/native';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -12,36 +12,71 @@ import {
   Dimensions,
 } from 'react-native';
 
+import { getForYouVideoFeed } from '@api/videoFeed';
 import { SoulReelItem } from '@components/SoulReelItem';
-import type { VideoFeedItem, VideoFeedMode } from '@schemas/videoFeed';
-import { useVideoFeedStore } from '@store/videoFeedStore';
-import { theme } from '@theme';
+import type { VideoFeedItem } from '@schemas/videoFeed';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export function SoulReelsScreen() {
   const navigation = useNavigation<any>();
-  const currentMode = useVideoFeedStore((state) => state.currentMode);
-  const items = useVideoFeedStore((state) => state.itemsByMode[state.currentMode]);
-  const isLoading = useVideoFeedStore(
-    (state) => state.isLoadingByMode[state.currentMode],
-  );
-  const isPaging = useVideoFeedStore((state) => state.isPagingByMode[state.currentMode]);
-  const error = useVideoFeedStore((state) => state.errorByMode[state.currentMode]);
-  const fetchFirstPage = useVideoFeedStore((state) => state.fetchFirstPage);
-  const fetchNextPage = useVideoFeedStore((state) => state.fetchNextPage);
-  const setMode = useVideoFeedStore((state) => state.setMode);
+  const isFocused = useIsFocused();
+  const [items, setItems] = useState<VideoFeedItem[]>([]);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isPaging, setIsPaging] = useState(false);
+  const [error, setError] = useState<string | undefined>(undefined);
   const [activeId, setActiveId] = useState<string | number | null>(null);
   const viewabilityConfig = useRef({
     itemVisiblePercentThreshold: 80,
   });
 
+  const loadFirstPage = useCallback(async () => {
+    setIsLoading(true);
+    setError(undefined);
+    try {
+      const response = await getForYouVideoFeed();
+      setItems(response.items);
+      setNextCursor(response.next);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to load videos.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const loadNextPage = useCallback(async () => {
+    if (!nextCursor || isPaging) {
+      return;
+    }
+    setIsPaging(true);
+    setError(undefined);
+    try {
+      const response = await getForYouVideoFeed(nextCursor);
+      setItems((prev) => prev.concat(response.items));
+      setNextCursor(response.next);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to load more videos.');
+    } finally {
+      setIsPaging(false);
+    }
+  }, [isPaging, nextCursor]);
+
   useEffect(() => {
-    fetchFirstPage().catch(() => undefined);
-  }, [fetchFirstPage]);
+    loadFirstPage().catch(() => undefined);
+  }, [loadFirstPage]);
+
+  useEffect(() => {
+    if (!isFocused) {
+      setActiveId(null);
+    }
+  }, [isFocused]);
 
   const onViewableItemsChanged = useRef(
     ({ viewableItems }: { viewableItems: Array<ViewToken<VideoFeedItem>> }) => {
+      if (!isFocused) {
+        return;
+      }
       const visible = viewableItems.find((item) => item.isViewable);
       if (visible?.item?.id !== undefined) {
         setActiveId(String(visible.item.id));
@@ -49,22 +84,14 @@ export function SoulReelsScreen() {
     },
   ).current;
 
-  const handleModeChange = useCallback(
-    (mode: VideoFeedMode) => {
-      if (mode === currentMode) {
-        return;
-      }
-      setMode(mode);
-      setActiveId(null);
-    },
-    [currentMode, setMode],
-  );
-
   const renderItem = useCallback(
     ({ item }: { item: VideoFeedItem }) => (
-      <SoulReelItem post={item.post} isActive={String(item.id) === String(activeId)} />
+      <SoulReelItem
+        post={item.post}
+        isActive={isFocused && String(item.id) === String(activeId)}
+      />
     ),
-    [activeId],
+    [activeId, isFocused],
   );
 
   const keyExtractor = useCallback((item: VideoFeedItem) => String(item.id), []);
@@ -90,21 +117,7 @@ export function SoulReelsScreen() {
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Text style={styles.backLabel}>Back</Text>
         </TouchableOpacity>
-        <View style={styles.modeSwitch}>
-          {(['for_you', 'following'] as VideoFeedMode[]).map((mode) => (
-            <TouchableOpacity
-              key={mode}
-              onPress={() => handleModeChange(mode)}
-              style={[styles.modeButton, currentMode === mode && styles.modeButtonActive]}
-            >
-              <Text
-                style={[styles.modeLabel, currentMode === mode && styles.modeLabelActive]}
-              >
-                {mode === 'for_you' ? 'For You' : 'Following'}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+        <Text style={styles.screenTitle}>Reels</Text>
         <View style={styles.rightPlaceholder} />
       </View>
       <FlatList
@@ -116,7 +129,7 @@ export function SoulReelsScreen() {
         snapToInterval={SCREEN_HEIGHT}
         snapToAlignment="start"
         disableIntervalMomentum
-        onEndReached={fetchNextPage}
+        onEndReached={loadNextPage}
         onEndReachedThreshold={0.6}
         showsVerticalScrollIndicator={false}
         onViewableItemsChanged={onViewableItemsChanged}
@@ -124,7 +137,7 @@ export function SoulReelsScreen() {
         refreshControl={
           <RefreshControl
             refreshing={isLoading}
-            onRefresh={() => fetchFirstPage().catch(() => undefined)}
+            onRefresh={() => loadFirstPage().catch(() => undefined)}
             tintColor="#fff"
           />
         }
@@ -145,7 +158,7 @@ export function SoulReelsScreen() {
       {error ? (
         <View style={styles.errorBanner}>
           <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity onPress={() => fetchFirstPage().catch(() => undefined)}>
+          <TouchableOpacity onPress={() => loadFirstPage().catch(() => undefined)}>
             <Text style={styles.retry}>Retry</Text>
           </TouchableOpacity>
         </View>
@@ -177,29 +190,11 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: '700',
   },
-  modeSwitch: {
-    flexDirection: 'row',
-    gap: 8,
-    backgroundColor: 'rgba(15,23,42,0.6)',
-    padding: 6,
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: 'rgba(226,232,240,0.35)',
-  },
-  modeButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 999,
-  },
-  modeButtonActive: {
-    backgroundColor: theme.gradients.cosmicBlue[0],
-  },
-  modeLabel: {
-    color: '#E2E8F0',
-    fontWeight: '700',
-  },
-  modeLabelActive: {
-    color: '#0B1120',
+  screenTitle: {
+    color: '#fff',
+    fontWeight: '800',
+    fontSize: 16,
+    letterSpacing: 0.3,
   },
   loader: {
     height: SCREEN_HEIGHT,
