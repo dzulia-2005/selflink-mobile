@@ -16,7 +16,6 @@ import {
 } from 'react-native';
 
 import * as socialApi from '@api/social';
-import { getForYouVideoFeed } from '@api/videoFeed';
 import { CommentContent } from '@components/comments/CommentContent';
 import { SoulReelItem } from '@components/SoulReelItem';
 import { UserAvatar } from '@components/UserAvatar';
@@ -74,11 +73,17 @@ export function SoulReelsScreen() {
   const fetchFirstPage = useVideoFeedStore((state) => state.fetchFirstPage);
   const fetchNextPage = useVideoFeedStore((state) => state.fetchNextPage);
   const setMode = useVideoFeedStore((state) => state.setMode);
-  const items = itemsByMode[currentMode] ?? [];
-  const nextCursor = nextByMode[currentMode];
-  const isLoading = isLoadingByMode[currentMode];
-  const isPaging = isPagingByMode[currentMode];
-  const error = errorByMode[currentMode];
+  const items = useMemo(() => itemsByMode[currentMode] ?? [], [currentMode, itemsByMode]);
+  const nextCursor = useMemo(() => nextByMode[currentMode], [currentMode, nextByMode]);
+  const isLoading = useMemo(
+    () => isLoadingByMode[currentMode],
+    [currentMode, isLoadingByMode],
+  );
+  const isPaging = useMemo(
+    () => isPagingByMode[currentMode],
+    [currentMode, isPagingByMode],
+  );
+  const error = useMemo(() => errorByMode[currentMode], [currentMode, errorByMode]);
   const [activeId, setActiveId] = useState<string | number | null>(null);
   const [muted, setMuted] = useState(true);
   const [commentingPost, setCommentingPost] = useState<Post | null>(null);
@@ -353,17 +358,26 @@ export function SoulReelsScreen() {
       </View>
       <View style={styles.modeRow}>
         <TouchableOpacity
-          style={[styles.modeButton, currentMode === 'for_you' && styles.modeButtonActive]}
+          style={[
+            styles.modeButton,
+            currentMode === 'for_you' && styles.modeButtonActive,
+          ]}
           onPress={() => setMode('for_you')}
         >
           <Text
-            style={[styles.modeLabel, currentMode === 'for_you' && styles.modeLabelActive]}
+            style={[
+              styles.modeLabel,
+              currentMode === 'for_you' && styles.modeLabelActive,
+            ]}
           >
             For You
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.modeButton, currentMode === 'following' && styles.modeButtonActive]}
+          style={[
+            styles.modeButton,
+            currentMode === 'following' && styles.modeButtonActive,
+          ]}
           onPress={() => setMode('following')}
         >
           <Text
@@ -414,7 +428,9 @@ export function SoulReelsScreen() {
       {error ? (
         <View style={styles.errorBanner}>
           <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity onPress={() => fetchFirstPage(currentMode).catch(() => undefined)}>
+          <TouchableOpacity
+            onPress={() => fetchFirstPage(currentMode).catch(() => undefined)}
+          >
             <Text style={styles.retry}>Retry</Text>
           </TouchableOpacity>
         </View>
