@@ -1,4 +1,4 @@
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useIsFocused, useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import {
   useCallback,
@@ -32,6 +32,7 @@ import { theme } from '@theme';
 
 export function FeedScreen() {
   const navigation = useNavigation<any>();
+  const isFocused = useIsFocused();
   const currentMode = useFeedStore((state) => state.currentMode);
   const items = useFeedStore((state) => state.itemsByMode[state.currentMode]);
   const isLoading = useFeedStore((state) => state.isLoadingByMode[state.currentMode]);
@@ -48,6 +49,10 @@ export function FeedScreen() {
   const [segmentWidth, setSegmentWidth] = useState(0);
   const showFab = useMemo(() => items.some((item) => item.type === 'post'), [items]);
   const [activeVideoPostId, setActiveVideoPostId] = useState<string | null>(null);
+  const videoExtraData = useMemo(
+    () => ({ activeVideoPostId, isFocused }),
+    [activeVideoPostId, isFocused],
+  );
 
   useEffect(() => {
     loadFeed().catch(() => undefined);
@@ -108,6 +113,7 @@ export function FeedScreen() {
             <FeedPostCard
               post={item.post}
               isVideoActive={
+                isFocused &&
                 Boolean(item.post.video?.url) &&
                 String(item.post.id) === String(activeVideoPostId ?? '')
               }
@@ -123,7 +129,7 @@ export function FeedScreen() {
           return null;
       }
     },
-    [activeVideoPostId],
+    [activeVideoPostId, isFocused],
   );
 
   const renderSeparator = useCallback(() => <View style={styles.separator} />, []);
@@ -188,8 +194,11 @@ export function FeedScreen() {
       </View>
     ) : null;
 
-  const onViewableItemsChanged = useRef(
+  const onViewableItemsChanged = useCallback(
     ({ viewableItems }: { viewableItems: Array<ViewToken<FeedItem>> }) => {
+      if (!isFocused) {
+        return;
+      }
       const visibleVideos = viewableItems
         .filter(
           (token) =>
@@ -216,7 +225,8 @@ export function FeedScreen() {
       const next = visibleVideos.sort((a, b) => (a.index ?? 0) - (b.index ?? 0))[0];
       setActiveVideoPostId((prev) => (prev === next.id ? prev : (next.id as string)));
     },
-  ).current;
+    [isFocused],
+  );
 
   const viewabilityConfig = useRef({
     itemVisiblePercentThreshold: 75,
@@ -299,7 +309,7 @@ export function FeedScreen() {
           scrollEventThrottle={16}
           onViewableItemsChanged={onViewableItemsChanged}
           viewabilityConfig={viewabilityConfig.current}
-          extraData={activeVideoPostId}
+          extraData={videoExtraData}
         />
       )}
       {showFab ? (

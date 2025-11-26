@@ -69,6 +69,13 @@ function VideoPostPlayerComponent({ source, isActive = false, mode = 'inline' }:
     }
   }, [player, shouldPlay]);
 
+  useEffect(() => {
+    return () => {
+      // Ensure playback stops when the component unmounts or leaves the viewport.
+      player.pause();
+    };
+  }, [player]);
+
   const handleTogglePlayback = () => {
     if (isPlaying) {
       setUserPaused(true);
