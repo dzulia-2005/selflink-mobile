@@ -13,9 +13,7 @@ export type PickedVideo = {
 
 const VIDEO_MEDIA_TYPE: ImagePicker.MediaType | ImagePicker.MediaTypeOptions =
   // Prefer new enum when available.
-  (ImagePicker as any).MediaType?.Video ??
-  // eslint-disable-next-line deprecation/deprecation -- fallback for older SDKs.
-  ImagePicker.MediaTypeOptions.Videos;
+  (ImagePicker as any).MediaType?.Video ?? ImagePicker.MediaTypeOptions.Videos;
 
 const defaultOptions: ImagePicker.ImagePickerOptions = {
   mediaTypes: VIDEO_MEDIA_TYPE as any,
