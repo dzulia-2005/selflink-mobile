@@ -20,6 +20,7 @@ const mockPickVideo = jest.fn(async () => ({
   type: 'video/mp4',
   duration: 5,
 }));
+const mockMarkAllDirty = jest.fn();
 
 jest.mock('@api/social', () => ({
   createPost: (...args: unknown[]) => mockCreatePost(...args),
@@ -48,6 +49,13 @@ jest.mock('@hooks/useVideoPicker', () => ({
     pickVideo: mockPickVideo,
     isPicking: false,
   }),
+}));
+
+jest.mock('@store/feedStore', () => ({
+  useFeedStore: (selector: any) =>
+    selector({
+      markAllDirty: mockMarkAllDirty,
+    }),
 }));
 
 describe('CreatePostScreen', () => {
@@ -93,6 +101,7 @@ describe('CreatePostScreen', () => {
         imageUris: undefined,
       }),
     );
+    expect(mockMarkAllDirty).toHaveBeenCalled();
     expect(mockGoBack).toHaveBeenCalled();
   });
 

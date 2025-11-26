@@ -19,6 +19,7 @@ import { createPost } from '@api/social';
 import { MarkdownText } from '@components/markdown/MarkdownText';
 import { useImagePicker, type PickedImage } from '@hooks/useImagePicker';
 import { useVideoPicker, type PickedVideo } from '@hooks/useVideoPicker';
+import { useFeedStore } from '@store/feedStore';
 
 export function CreatePostScreen() {
   const navigation = useNavigation<any>();
@@ -31,6 +32,7 @@ export function CreatePostScreen() {
     pickVideo,
     isPicking: isPickingVideo,
   } = useVideoPicker({ allowsEditing: false, quality: 0.8 });
+  const markAllDirty = useFeedStore((state) => state.markAllDirty);
 
   const hasImages = selectedImages.length > 0;
   const canSubmit = useMemo(
@@ -155,6 +157,7 @@ export function CreatePostScreen() {
       setContent('');
       setSelectedImages([]);
       setSelectedVideo(null);
+      markAllDirty();
       navigation.goBack();
     } catch (error) {
       const message = deriveErrorMessage(error);
@@ -166,6 +169,7 @@ export function CreatePostScreen() {
     content,
     deriveErrorMessage,
     navigation,
+    markAllDirty,
     selectedImages,
     selectedVideo,
   ]);

@@ -1,4 +1,4 @@
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import {
   useCallback,
@@ -38,6 +38,8 @@ export function FeedScreen() {
   const isPaging = useFeedStore((state) => state.isPagingByMode[state.currentMode]);
   const error = useFeedStore((state) => state.errorByMode[state.currentMode]);
   const loadFeed = useFeedStore((state) => state.loadFeed);
+  const dirtyByMode = useFeedStore((state) => state.dirtyByMode);
+  const clearDirty = useFeedStore((state) => state.clearDirty);
   const loadMore = useFeedStore((state) => state.loadMore);
   const setMode = useFeedStore((state) => state.setMode);
   const listRef = useRef<FlatList<FeedItem>>(null);
@@ -50,6 +52,17 @@ export function FeedScreen() {
   useEffect(() => {
     loadFeed().catch(() => undefined);
   }, [loadFeed]);
+
+  useFocusEffect(
+    useCallback(() => {
+      const mode = currentMode;
+      if (!dirtyByMode[mode]) {
+        return;
+      }
+      clearDirty(mode);
+      loadFeed(mode).catch(() => undefined);
+    }, [clearDirty, currentMode, dirtyByMode, loadFeed]),
+  );
 
   useEffect(() => {
     Animated.timing(indicator, {

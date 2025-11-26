@@ -12,12 +12,16 @@ interface FeedState {
   isLoadingByMode: Record<FeedMode, boolean>;
   isPagingByMode: Record<FeedMode, boolean>;
   errorByMode: Record<FeedMode, string | undefined>;
-  loadFeed: () => Promise<void>;
+  dirtyByMode: Record<FeedMode, boolean>;
+  loadFeed: (mode?: FeedMode) => Promise<void>;
   loadMore: () => Promise<void>;
   setMode: (mode: FeedMode) => void;
   likePost: (postId: string) => Promise<void>;
   unlikePost: (postId: string) => Promise<void>;
   addComment: (postId: string, payload: AddCommentPayload) => Promise<Comment>;
+  markDirty: (mode: FeedMode) => void;
+  markAllDirty: () => void;
+  clearDirty: (mode: FeedMode) => void;
 }
 
 const MODES: FeedMode[] = ['for_you', 'following'];
@@ -46,8 +50,9 @@ export const useFeedStore = create<FeedState>((set, get) => ({
   isLoadingByMode: emptyByMode<boolean>(false),
   isPagingByMode: emptyByMode<boolean>(false),
   errorByMode: emptyByMode<string | undefined>(undefined),
-  async loadFeed() {
-    const mode = get().currentMode;
+  dirtyByMode: emptyByMode<boolean>(false),
+  async loadFeed(modeParam) {
+    const mode = modeParam ?? get().currentMode;
     set((state) => ({
       isLoadingByMode: { ...state.isLoadingByMode, [mode]: true },
       errorByMode: { ...state.errorByMode, [mode]: undefined },
@@ -72,6 +77,21 @@ export const useFeedStore = create<FeedState>((set, get) => ({
         isLoadingByMode: { ...state.isLoadingByMode, [mode]: false },
       }));
     }
+  },
+  markDirty(mode) {
+    set((state) => ({
+      dirtyByMode: { ...state.dirtyByMode, [mode]: true },
+    }));
+  },
+  markAllDirty() {
+    set(() => ({
+      dirtyByMode: emptyByMode<boolean>(true),
+    }));
+  },
+  clearDirty(mode) {
+    set((state) => ({
+      dirtyByMode: { ...state.dirtyByMode, [mode]: false },
+    }));
   },
   async loadMore() {
     const mode = get().currentMode;

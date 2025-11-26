@@ -15,6 +15,7 @@ const mockUnlikePost = jest.fn();
 const mockSetMode = jest.fn((mode) => {
   mockState.currentMode = mode;
 });
+const mockClearDirty = jest.fn();
 
 const mockNavigate = jest.fn();
 const mockParentNavigate = jest.fn();
@@ -29,6 +30,7 @@ jest.mock('@react-navigation/native', () => {
       setOptions: mockSetOptions,
       getParent: jest.fn(() => ({ navigate: mockParentNavigate })),
     }),
+    useFocusEffect: (cb: any) => cb(),
   };
 });
 
@@ -48,6 +50,8 @@ jest.mock('@store/feedStore', () => ({
         addComment: mockAddComment,
         likePost: mockLikePost,
         unlikePost: mockUnlikePost,
+        dirtyByMode: { for_you: false, following: false },
+        clearDirty: mockClearDirty,
       },
     ),
 }));
@@ -159,6 +163,8 @@ describe('FeedScreen', () => {
       addComment: mockAddComment,
       likePost: mockLikePost,
       unlikePost: mockUnlikePost,
+      dirtyByMode: { for_you: false, following: false },
+      clearDirty: mockClearDirty,
     };
   });
 
@@ -207,5 +213,20 @@ describe('FeedScreen', () => {
 
     fireEvent.press(getByText('Following'));
     expect(mockSetMode).toHaveBeenCalledWith('following');
+  });
+
+  it('refreshes current mode when dirty on focus', () => {
+    mockState.itemsByMode.for_you = [postItem];
+    mockState.dirtyByMode.for_you = true;
+    mockState.currentMode = 'for_you';
+    mockLoadFeed.mockClear();
+    mockClearDirty.mockClear();
+
+    render(<FeedScreen />);
+
+    expect(mockClearDirty).toHaveBeenCalledWith('for_you');
+    expect(
+      mockLoadFeed.mock.calls.some((call) => call[0] === 'for_you' || call.length === 0),
+    ).toBe(true);
   });
 });
