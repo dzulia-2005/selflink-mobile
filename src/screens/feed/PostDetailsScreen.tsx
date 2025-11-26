@@ -181,7 +181,7 @@ export function PostDetailsScreen() {
               text={post?.text}
               media={post?.media}
               video={post?.video}
-              isVideoActive
+              shouldPlayVideo
               legacySources={[
                 post?.images,
                 post?.image_urls,

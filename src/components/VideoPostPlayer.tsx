@@ -10,6 +10,8 @@ type Props = {
   source: PostVideo;
   shouldPlay?: boolean;
   mode?: 'inline' | 'reel';
+  muted?: boolean;
+  onMuteChange?: (muted: boolean) => void;
 };
 
 const formatDuration = (seconds?: number | null): string | null => {
@@ -22,10 +24,16 @@ const formatDuration = (seconds?: number | null): string | null => {
   return `${mins}:${secs.toString().padStart(2, '0')}`;
 };
 
-function VideoPostPlayerComponent({ source, shouldPlay = false, mode = 'inline' }: Props) {
+function VideoPostPlayerComponent({
+  source,
+  shouldPlay = false,
+  mode = 'inline',
+  muted,
+  onMuteChange,
+}: Props) {
   const isScreenFocused = useIsFocused();
   const isMounted = useRef(true);
-  const [isMuted, setIsMuted] = useState(true);
+  const [internalMuted, setInternalMuted] = useState(true);
   const [userPaused, setUserPaused] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [status, setStatus] = useState<VideoPlayerStatus>('loading');
@@ -35,6 +43,7 @@ function VideoPostPlayerComponent({ source, shouldPlay = false, mode = 'inline' 
     instance.muted = true;
   });
 
+  const effectiveMuted = muted ?? internalMuted;
   const shouldBePlaying = isScreenFocused && shouldPlay && !userPaused;
 
   const aspectRatio = useMemo(() => {
@@ -82,8 +91,8 @@ function VideoPostPlayerComponent({ source, shouldPlay = false, mode = 'inline' 
   }, [player]);
 
   useEffect(() => {
-    player.muted = isMuted;
-  }, [isMuted, player]);
+    player.muted = effectiveMuted;
+  }, [effectiveMuted, player]);
 
   useEffect(() => {
     if (shouldBePlaying) {
@@ -103,7 +112,14 @@ function VideoPostPlayerComponent({ source, shouldPlay = false, mode = 'inline' 
     }
   };
 
-  const handleToggleMute = () => setIsMuted((prev) => !prev);
+  const handleToggleMute = () => {
+    const next = !effectiveMuted;
+    if (onMuteChange) {
+      onMuteChange(next);
+    } else {
+      setInternalMuted(next);
+    }
+  };
 
   const durationLabel = formatDuration(source.duration ?? null);
 
@@ -142,7 +158,7 @@ function VideoPostPlayerComponent({ source, shouldPlay = false, mode = 'inline' 
             testID="video-mute-toggle"
           >
             <Ionicons
-              name={isMuted ? 'volume-mute' : 'volume-high'}
+              name={effectiveMuted ? 'volume-mute' : 'volume-high'}
               size={18}
               color="#E2E8F0"
             />
