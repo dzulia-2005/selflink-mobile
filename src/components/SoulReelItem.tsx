@@ -1,11 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import { memo } from 'react';
-import { Dimensions, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Animated, Dimensions, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { VideoPostPlayer } from '@components/VideoPostPlayer';
 import { UserAvatar } from '@components/UserAvatar';
 import type { Post } from '@schemas/social';
-import { usePressScaleAnimation } from '@styles/animations';
+import { usePressScaleAnimation } from '../styles/animations';
 
 type Props = {
   post: Post;
@@ -18,6 +18,7 @@ type Props = {
 };
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 function SoulReelItemComponent({
   post,
@@ -64,7 +65,7 @@ function SoulReelItemComponent({
         </View>
 
         <View style={styles.actions}>
-          <Pressable
+          <AnimatedPressable
             onPress={handleLike}
             style={[styles.actionButton, pressAnim.style]}
             onPressIn={likeAnim.onPressIn}
@@ -78,8 +79,8 @@ function SoulReelItemComponent({
               color={post.liked ? '#F472B6' : '#E2E8F0'}
             />
             <Text style={styles.actionLabel}>{post.like_count}</Text>
-          </Pressable>
-          <Pressable
+          </AnimatedPressable>
+          <AnimatedPressable
             onPress={() => onComment?.(post.id)}
             style={[styles.actionButton, pressAnim.style]}
             accessibilityLabel="Comment reel"
@@ -87,8 +88,8 @@ function SoulReelItemComponent({
           >
             <Ionicons name="chatbubble-ellipses" size={28} color="#E2E8F0" />
             <Text style={styles.actionLabel}>{post.comment_count}</Text>
-          </Pressable>
-          <Pressable
+          </AnimatedPressable>
+          <AnimatedPressable
             onPress={onToggleMute}
             style={[styles.actionButton, pressAnim.style]}
             accessibilityLabel="Toggle sound"
@@ -100,7 +101,7 @@ function SoulReelItemComponent({
               color="#E2E8F0"
             />
             <Text style={styles.actionLabel}>{muted ? 'Mute' : 'Sound'}</Text>
-          </Pressable>
+          </AnimatedPressable>
         </View>
       </View>
     </View>
