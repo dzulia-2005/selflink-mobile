@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useIsFocused } from '@react-navigation/native';
 import { VideoView, type VideoPlayerStatus, useVideoPlayer } from 'expo-video';
-import { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import type { PostVideo } from '@schemas/social';
@@ -24,6 +24,7 @@ const formatDuration = (seconds?: number | null): string | null => {
 
 function VideoPostPlayerComponent({ source, shouldPlay = false, mode = 'inline' }: Props) {
   const isScreenFocused = useIsFocused();
+  const isMounted = useRef(true);
   const [isMuted, setIsMuted] = useState(true);
   const [userPaused, setUserPaused] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -59,24 +60,25 @@ function VideoPostPlayerComponent({ source, shouldPlay = false, mode = 'inline' 
     };
   }, [player]);
 
+  useEffect(
+    () => () => {
+      isMounted.current = false;
+    },
+    [],
+  );
+
   const safePause = useCallback(() => {
-    try {
-      player.pause();
-    } catch (error) {
-      if (__DEV__) {
-        console.warn('VideoPostPlayer: pause ignored', error);
-      }
+    if (!isMounted.current) {
+      return;
     }
+    player.pause();
   }, [player]);
 
   const safePlay = useCallback(() => {
-    try {
-      player.play();
-    } catch (error) {
-      if (__DEV__) {
-        console.warn('VideoPostPlayer: play ignored', error);
-      }
+    if (!isMounted.current) {
+      return;
     }
+    player.play();
   }, [player]);
 
   useEffect(() => {
@@ -90,13 +92,6 @@ function VideoPostPlayerComponent({ source, shouldPlay = false, mode = 'inline' 
       safePause();
     }
   }, [player, safePause, safePlay, shouldBePlaying]);
-
-  useEffect(() => {
-    return () => {
-      // Ensure playback stops when the component unmounts or leaves the viewport.
-      safePause();
-    };
-  }, [player, safePause]);
 
   const handleTogglePlayback = () => {
     if (isPlaying) {
