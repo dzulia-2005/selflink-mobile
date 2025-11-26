@@ -53,6 +53,9 @@ export function FeedScreen() {
     () => ({ activeVideoPostId, isFocused }),
     [activeVideoPostId, isFocused],
   );
+  const viewabilityConfig = useRef({
+    itemVisiblePercentThreshold: 80,
+  });
 
   useEffect(() => {
     loadFeed().catch(() => undefined);
@@ -80,6 +83,12 @@ export function FeedScreen() {
       listRef.current?.scrollToOffset({ offset, animated: false });
     });
   }, [currentMode, indicator]);
+
+  useEffect(() => {
+    if (!isFocused) {
+      setActiveVideoPostId(null);
+    }
+  }, [isFocused]);
 
   const headerAction = useCallback(() => {
     return (
@@ -112,7 +121,7 @@ export function FeedScreen() {
           return (
             <FeedPostCard
               post={item.post}
-              isVideoActive={
+              shouldPlayVideo={
                 isFocused &&
                 Boolean(item.post.video?.url) &&
                 String(item.post.id) === String(activeVideoPostId ?? '')
@@ -227,10 +236,6 @@ export function FeedScreen() {
     },
     [isFocused],
   );
-
-  const viewabilityConfig = useRef({
-    itemVisiblePercentThreshold: 75,
-  });
 
   return (
     <LinearGradient colors={theme.gradients.appBackground} style={styles.container}>

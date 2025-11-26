@@ -13,7 +13,7 @@ type Props = {
   media?: MediaAsset[] | null;
   legacySources?: unknown[];
   video?: PostVideo | null;
-  isVideoActive?: boolean;
+  shouldPlayVideo?: boolean;
 };
 
 function PostContentComponent({
@@ -21,7 +21,7 @@ function PostContentComponent({
   media,
   legacySources = [],
   video,
-  isVideoActive,
+  shouldPlayVideo,
 }: Props) {
   const hasVideo = Boolean(video?.url);
   const attachments = useMemo(
@@ -40,7 +40,10 @@ function PostContentComponent({
         </View>
       ) : null}
       {hasVideo ? (
-        <VideoPostPlayer source={video as PostVideo} isActive={Boolean(isVideoActive)} />
+        <VideoPostPlayer
+          source={video as PostVideo}
+          shouldPlay={Boolean(shouldPlayVideo)}
+        />
       ) : (
         <AttachmentGallery attachments={attachments} />
       )}

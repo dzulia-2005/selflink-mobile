@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useIsFocused } from '@react-navigation/native';
 import { VideoView, type VideoPlayerStatus, useVideoPlayer } from 'expo-video';
 import { memo, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
@@ -7,7 +8,7 @@ import type { PostVideo } from '@schemas/social';
 
 type Props = {
   source: PostVideo;
-  isActive?: boolean;
+  shouldPlay?: boolean;
   mode?: 'inline' | 'reel';
 };
 
@@ -21,7 +22,8 @@ const formatDuration = (seconds?: number | null): string | null => {
   return `${mins}:${secs.toString().padStart(2, '0')}`;
 };
 
-function VideoPostPlayerComponent({ source, isActive = false, mode = 'inline' }: Props) {
+function VideoPostPlayerComponent({ source, shouldPlay = false, mode = 'inline' }: Props) {
+  const isScreenFocused = useIsFocused();
   const [isMuted, setIsMuted] = useState(true);
   const [userPaused, setUserPaused] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -32,7 +34,7 @@ function VideoPostPlayerComponent({ source, isActive = false, mode = 'inline' }:
     instance.muted = true;
   });
 
-  const shouldPlay = isActive && !userPaused;
+  const shouldBePlaying = isScreenFocused && shouldPlay && !userPaused;
 
   const aspectRatio = useMemo(() => {
     if (mode === 'reel') {
@@ -62,12 +64,12 @@ function VideoPostPlayerComponent({ source, isActive = false, mode = 'inline' }:
   }, [isMuted, player]);
 
   useEffect(() => {
-    if (shouldPlay) {
+    if (shouldBePlaying) {
       player.play();
     } else {
       player.pause();
     }
-  }, [player, shouldPlay]);
+  }, [player, shouldBePlaying]);
 
   useEffect(() => {
     return () => {
