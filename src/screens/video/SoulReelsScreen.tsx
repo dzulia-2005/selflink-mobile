@@ -24,22 +24,61 @@ import { useToast } from '@context/ToastContext';
 import type { Comment, Post } from '@schemas/social';
 import type { VideoFeedItem } from '@schemas/videoFeed';
 import { useFeedStore } from '@store/feedStore';
+import { useVideoFeedStore } from '@store/videoFeedStore';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
+const useSafeNavigation = <T,>() => {
+  try {
+    return useNavigation<T>();
+  } catch (error) {
+    if (typeof __DEV__ !== 'undefined' && __DEV__) {
+      console.warn('SoulReelsScreen: navigation unavailable', error);
+    }
+    return null as unknown as T;
+  }
+};
+
+const useSafeIsFocused = () => {
+  try {
+    return useIsFocused();
+  } catch {
+    return true;
+  }
+};
+
+const useSafeToast = () => {
+  try {
+    return useToast();
+  } catch {
+    return {
+      push: () => undefined,
+    };
+  }
+};
+
 export function SoulReelsScreen() {
-  const navigation = useNavigation<any>();
-  const isFocused = useIsFocused();
-  const toast = useToast();
+  const navigation = useSafeNavigation<any>();
+  const isFocused = useSafeIsFocused();
+  const toast = useSafeToast();
   const likePost = useFeedStore((state) => state.likePost);
   const unlikePost = useFeedStore((state) => state.unlikePost);
   const addCommentToStore = useFeedStore((state) => state.addComment);
   const pendingLikes = useRef<Set<string>>(new Set());
-  const [items, setItems] = useState<VideoFeedItem[]>([]);
-  const [nextCursor, setNextCursor] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isPaging, setIsPaging] = useState(false);
-  const [error, setError] = useState<string | undefined>(undefined);
+  const currentMode = useVideoFeedStore((state) => state.currentMode);
+  const itemsByMode = useVideoFeedStore((state) => state.itemsByMode);
+  const nextByMode = useVideoFeedStore((state) => state.nextByMode);
+  const isLoadingByMode = useVideoFeedStore((state) => state.isLoadingByMode);
+  const isPagingByMode = useVideoFeedStore((state) => state.isPagingByMode);
+  const errorByMode = useVideoFeedStore((state) => state.errorByMode);
+  const fetchFirstPage = useVideoFeedStore((state) => state.fetchFirstPage);
+  const fetchNextPage = useVideoFeedStore((state) => state.fetchNextPage);
+  const setMode = useVideoFeedStore((state) => state.setMode);
+  const items = itemsByMode[currentMode] ?? [];
+  const nextCursor = nextByMode[currentMode];
+  const isLoading = isLoadingByMode[currentMode];
+  const isPaging = isPagingByMode[currentMode];
+  const error = errorByMode[currentMode];
   const [activeId, setActiveId] = useState<string | number | null>(null);
   const [muted, setMuted] = useState(true);
   const [commentingPost, setCommentingPost] = useState<Post | null>(null);
@@ -54,64 +93,35 @@ export function SoulReelsScreen() {
     itemVisiblePercentThreshold: 80,
   });
 
-  const loadFirstPage = useCallback(async () => {
-    setIsLoading(true);
-    setError(undefined);
-    try {
-      const response = await getForYouVideoFeed();
-      setItems(response.items);
-      setNextCursor(response.next);
-      setEngagementById((prev) => {
-        const nextState = { ...prev };
-        response.items.forEach((item) => {
-          const key = String(item.id);
-          nextState[key] = {
-            liked: item.post.liked,
-            likeCount: item.post.like_count,
-            commentCount: item.post.comment_count,
-          };
-        });
-        return nextState;
-      });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unable to load videos.');
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  const loadNextPage = useCallback(async () => {
-    if (!nextCursor || isPaging) {
-      return;
-    }
-    setIsPaging(true);
-    setError(undefined);
-    try {
-      const response = await getForYouVideoFeed(nextCursor);
-      setItems((prev) => prev.concat(response.items));
-      setEngagementById((prev) => {
-        const nextState = { ...prev };
-        response.items.forEach((item) => {
-          const key = String(item.id);
-          nextState[key] = {
-            liked: item.post.liked,
-            likeCount: item.post.like_count,
-            commentCount: item.post.comment_count,
-          };
-        });
-        return nextState;
-      });
-      setNextCursor(response.next);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unable to load more videos.');
-    } finally {
-      setIsPaging(false);
-    }
-  }, [isPaging, nextCursor]);
+  useEffect(() => {
+    fetchFirstPage().catch(() => undefined);
+  }, [fetchFirstPage]);
 
   useEffect(() => {
-    loadFirstPage().catch(() => undefined);
-  }, [loadFirstPage]);
+    setEngagementById((prev) => {
+      let changed = false;
+      const nextState = { ...prev };
+      items.forEach((item) => {
+        const key = String(item.id);
+        const nextValue = {
+          liked: item.post.liked,
+          likeCount: item.post.like_count,
+          commentCount: item.post.comment_count,
+        };
+        const current = prev[key];
+        if (
+          !current ||
+          current.liked !== nextValue.liked ||
+          current.likeCount !== nextValue.likeCount ||
+          current.commentCount !== nextValue.commentCount
+        ) {
+          nextState[key] = nextValue;
+          changed = true;
+        }
+      });
+      return changed ? nextState : prev;
+    });
+  }, [items]);
 
   useEffect(() => {
     if (!isFocused) {
@@ -131,6 +141,13 @@ export function SoulReelsScreen() {
     },
     [isFocused],
   );
+
+  const loadNextPage = useCallback(() => {
+    if (!nextCursor) {
+      return;
+    }
+    fetchNextPage().catch(() => undefined);
+  }, [fetchNextPage, nextCursor]);
 
   const derivedItems = useMemo(() => {
     return items.map((item) => {
@@ -302,7 +319,7 @@ export function SoulReelsScreen() {
             openComments(matched.post);
           }
         }}
-        onProfile={(userId) => navigation.navigate('UserProfile', { userId })}
+        onProfile={(userId) => navigation?.navigate?.('UserProfile', { userId })}
       />
     ),
     [activeId, derivedItems, handleLike, isFocused, muted, navigation, openComments],
@@ -328,11 +345,36 @@ export function SoulReelsScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.topBar}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
+        <TouchableOpacity onPress={() => navigation?.goBack?.()}>
           <Text style={styles.backLabel}>Back</Text>
         </TouchableOpacity>
         <Text style={styles.screenTitle}>Reels</Text>
         <View style={styles.rightPlaceholder} />
+      </View>
+      <View style={styles.modeRow}>
+        <TouchableOpacity
+          style={[styles.modeButton, currentMode === 'for_you' && styles.modeButtonActive]}
+          onPress={() => setMode('for_you')}
+        >
+          <Text
+            style={[styles.modeLabel, currentMode === 'for_you' && styles.modeLabelActive]}
+          >
+            For You
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.modeButton, currentMode === 'following' && styles.modeButtonActive]}
+          onPress={() => setMode('following')}
+        >
+          <Text
+            style={[
+              styles.modeLabel,
+              currentMode === 'following' && styles.modeLabelActive,
+            ]}
+          >
+            Following
+          </Text>
+        </TouchableOpacity>
       </View>
       <FlatList
         data={derivedItems}
@@ -351,7 +393,7 @@ export function SoulReelsScreen() {
         refreshControl={
           <RefreshControl
             refreshing={isLoading}
-            onRefresh={() => loadFirstPage().catch(() => undefined)}
+            onRefresh={() => fetchFirstPage(currentMode).catch(() => undefined)}
             tintColor="#fff"
           />
         }
@@ -372,7 +414,7 @@ export function SoulReelsScreen() {
       {error ? (
         <View style={styles.errorBanner}>
           <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity onPress={() => loadFirstPage().catch(() => undefined)}>
+          <TouchableOpacity onPress={() => fetchFirstPage(currentMode).catch(() => undefined)}>
             <Text style={styles.retry}>Retry</Text>
           </TouchableOpacity>
         </View>
@@ -509,6 +551,31 @@ const styles = StyleSheet.create({
   },
   rightPlaceholder: {
     width: 48,
+  },
+  modeRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingBottom: 10,
+  },
+  modeButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
+    backgroundColor: '#1f2937',
+  },
+  modeButtonActive: {
+    backgroundColor: '#0f172a',
+    borderWidth: 1,
+    borderColor: '#22c55e',
+  },
+  modeLabel: {
+    color: '#e5e7eb',
+    fontWeight: '600',
+  },
+  modeLabelActive: {
+    color: '#bbf7d0',
   },
   modalBackdrop: {
     flex: 1,

@@ -14,6 +14,14 @@ type Props = {
   onMuteChange?: (muted: boolean) => void;
 };
 
+const useSafeIsFocused = () => {
+  try {
+    return useIsFocused();
+  } catch {
+    return true;
+  }
+};
+
 const formatDuration = (seconds?: number | null): string | null => {
   if (typeof seconds !== 'number' || Number.isNaN(seconds)) {
     return null;
@@ -31,7 +39,7 @@ function VideoPostPlayerComponent({
   muted,
   onMuteChange,
 }: Props) {
-  const isScreenFocused = useIsFocused();
+  const isScreenFocused = useSafeIsFocused();
   const isMounted = useRef(true);
   const [internalMuted, setInternalMuted] = useState(true);
   const [userPaused, setUserPaused] = useState(false);
