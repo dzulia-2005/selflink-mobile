@@ -15,11 +15,12 @@ const normalizeHealthEndpoint = (raw: unknown): string => {
   if (!trimmed) {
     return DEFAULT_HEALTH_ENDPOINT;
   }
-  const withoutSlashes = trimmed.replace(/^\/+/, '').replace(/\/+$/, '');
-  if (!withoutSlashes || /^[0-9]+$/.test(withoutSlashes)) {
+  const segments = trimmed.split('/').filter(Boolean);
+  const last = segments[segments.length - 1] ?? '';
+  if (!last || /^[0-9]+$/.test(last)) {
     return DEFAULT_HEALTH_ENDPOINT;
   }
-  return `${withoutSlashes}/`;
+  return `${last}/`;
 };
 const healthEndpoint = normalizeHealthEndpoint(extra.healthEndpoint);
 const resolveRealtimeUrl = () => {
