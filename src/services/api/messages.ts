@@ -38,6 +38,14 @@ export type Message = {
   body: string;
   type: string;
   meta: Record<string, unknown> | string;
+   attachments?: Array<{
+    id?: number | string;
+    url?: string;
+    file?: string;
+    type?: string;
+    mimeType?: string;
+    mime_type?: string;
+  }> | null;
   created_at: string;
 };
 
