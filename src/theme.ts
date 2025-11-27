@@ -56,6 +56,9 @@ const gradients = {
   buttonActive: ['#8B5CF6', '#312E81'] as const,
   buttonDisabled: ['#94A3B8', '#CBD5F5'] as const,
   panel: ['#0F172A', '#1E293B'] as const,
+  messagingBackground: ['#F5F3EE', '#E7DFD3'] as const,
+  messagingOutgoing: ['rgba(16,185,129,0.16)', 'rgba(16,185,129,0.08)'] as const,
+  messagingIncoming: ['rgba(15,23,42,0.06)', 'rgba(15,23,42,0.04)'] as const,
 };
 
 export const theme = {
@@ -96,6 +99,20 @@ export const theme = {
     full: 9999,
   },
   typography,
+  messaging: {
+    backgroundStart: '#F5F3EE',
+    backgroundEnd: '#E7DFD3',
+    outgoingBorder: 'rgba(16, 185, 129, 0.35)',
+    outgoingTile: 'rgba(16, 185, 129, 0.12)',
+    outgoingInner: 'rgba(255,255,255,0.72)',
+    incomingTile: 'rgba(15,23,42,0.06)',
+    incomingBorder: 'rgba(148,163,184,0.15)',
+    ink: '#0F172A',
+    subduedInk: 'rgba(15,23,42,0.55)',
+    placeholder: 'rgba(148,163,184,0.16)',
+    errorBg: 'rgba(248,113,113,0.16)',
+    errorBorder: 'rgba(248,113,113,0.45)',
+  },
   shadows: {
     card: {
       shadowColor: '#000',

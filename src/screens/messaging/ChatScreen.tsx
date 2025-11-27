@@ -6,6 +6,7 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
+import { LinearGradient } from 'expo-linear-gradient';
 import {
   useCallback,
   useEffect,
@@ -593,7 +594,10 @@ export function ChatScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <LinearGradient
+      colors={[theme.messaging.backgroundStart, theme.messaging.backgroundEnd]}
+      style={styles.container}
+    >
       {replyingTo ? (
         <View style={styles.replyContainer}>
           <View style={styles.replyTextContainer}>
@@ -789,14 +793,14 @@ export function ChatScreen() {
           </View>
         </View>
       </Modal>
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    paddingTop: 6,
   },
   listContent: {
     paddingVertical: 12,

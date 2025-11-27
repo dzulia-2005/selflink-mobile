@@ -1,9 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import React, { memo } from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import type { Message } from '@schemas/messaging';
+import { theme } from '@theme';
 
 type Props = {
   message: Message;
@@ -75,13 +75,14 @@ const ChatBubbleComponent: React.FC<Props> = ({
                 key={att.id ?? att.url}
                 source={{ uri: att.url }}
                 style={styles.imageThumb}
+                resizeMode="cover"
               />
             ))}
           </View>
         ) : null}
         {videos.map((att) => (
           <View key={att.id ?? att.url} style={styles.videoChip}>
-            <Ionicons name="videocam" size={14} color="#0f172a" />
+            <Ionicons name="videocam" size={14} color="#E2E8F0" />
             <Text style={styles.videoLabel}>Video</Text>
           </View>
         ))}
@@ -124,13 +125,17 @@ const ChatBubbleComponent: React.FC<Props> = ({
     switch (status) {
       case 'queued':
       case 'pending':
-        return <Ionicons name="time-outline" color="#fbbf24" {...baseProps} />;
+        return (
+          <Ionicons name="time-outline" color="rgba(15,23,42,0.45)" {...baseProps} />
+        );
       case 'sent':
-        return <Ionicons name="checkmark" color="#bae6fd" {...baseProps} />;
+        return <Ionicons name="checkmark" color="rgba(15,23,42,0.45)" {...baseProps} />;
       case 'delivered':
-        return <Ionicons name="checkmark-done" color="#d1fae5" {...baseProps} />;
+        return (
+          <Ionicons name="checkmark-done" color="rgba(15,23,42,0.55)" {...baseProps} />
+        );
       case 'read':
-        return <Ionicons name="checkmark-done" color="#34d399" {...baseProps} />;
+        return <Ionicons name="checkmark-done" color="#2DD4BF" {...baseProps} />;
       case 'failed':
         return (
           <TouchableOpacity
@@ -146,6 +151,22 @@ const ChatBubbleComponent: React.FC<Props> = ({
     }
   };
 
+  const renderErrorChip = () => {
+    if (status !== 'failed') {
+      return null;
+    }
+    return (
+      <TouchableOpacity
+        disabled={!onRetry}
+        onPress={onRetry ? () => onRetry(message) : undefined}
+        style={styles.errorChip}
+      >
+        <Ionicons name="warning" size={12} color="#DC2626" style={styles.errorIcon} />
+        <Text style={styles.errorText}>Tap to retry</Text>
+      </TouchableOpacity>
+    );
+  };
+
   const content = (
     <View style={styles.bubbleContent}>
       {renderReplyPreview()}
@@ -154,6 +175,7 @@ const ChatBubbleComponent: React.FC<Props> = ({
         <Text style={isOwn ? styles.textOwn : styles.textOther}>{message.body}</Text>
       ) : null}
       {renderReactions()}
+      {renderErrorChip()}
       <View style={styles.metaRow}>
         {showTimestamp ? <Text style={styles.timestamp}>{time}</Text> : null}
         {isOwn ? renderStatusIcon() : null}
@@ -172,18 +194,13 @@ const ChatBubbleComponent: React.FC<Props> = ({
           onLongPress && !disableActions ? () => onLongPress(message) : undefined
         }
       >
-        {isOwn ? (
-          <LinearGradient
-            colors={['#0f766e', '#22c55e']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={[styles.gradientBubble, radius]}
-          >
+        <View
+          style={[styles.bubble, isOwn ? styles.bubbleOwn : styles.bubbleOther, radius]}
+        >
+          <View style={[styles.innerTile, isOwn ? styles.innerOwn : styles.innerOther]}>
             {content}
-          </LinearGradient>
-        ) : (
-          <View style={[styles.otherBubble, radius]}>{content}</View>
-        )}
+          </View>
+        </View>
       </TouchableOpacity>
     </View>
   );
@@ -228,7 +245,7 @@ const getRadius = (isOwn: boolean, isFirst: boolean, isLast: boolean) => {
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 12,
-    marginVertical: 2,
+    marginVertical: 4,
   },
   containerLeft: {
     alignItems: 'flex-start',
@@ -236,95 +253,116 @@ const styles = StyleSheet.create({
   containerRight: {
     alignItems: 'flex-end',
   },
-  gradientBubble: {
-    maxWidth: '80%',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+  bubble: {
+    maxWidth: '82%',
+    borderWidth: 1,
+    borderRadius: 22,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 3,
   },
-  otherBubble: {
-    maxWidth: '80%',
-    backgroundColor: '#E5E7EB',
+  bubbleOwn: {
+    borderColor: theme.messaging.outgoingBorder,
+    backgroundColor: theme.messaging.outgoingTile,
+  },
+  bubbleOther: {
+    borderColor: theme.messaging.incomingBorder,
+    backgroundColor: theme.messaging.incomingTile,
+  },
+  innerTile: {
     paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingVertical: 10,
+    borderRadius: 20,
+  },
+  innerOwn: {
+    backgroundColor: theme.messaging.outgoingInner,
+  },
+  innerOther: {
+    backgroundColor: 'rgba(255,255,255,0.85)',
   },
   bubbleContent: {
     flexShrink: 1,
+    gap: 6,
   },
   textOwn: {
-    color: '#F9FAFB',
+    color: theme.messaging.ink,
     fontSize: 15,
+    fontWeight: '600',
   },
   textOther: {
-    color: '#111827',
+    color: theme.messaging.ink,
     fontSize: 15,
   },
   metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-end',
-    marginTop: 2,
+    marginTop: 4,
+    gap: 6,
   },
   timestamp: {
-    fontSize: 10,
-    color: '#d1d5db',
+    fontSize: 11,
+    color: theme.messaging.subduedInk,
   },
   statusIcon: {
     marginLeft: 4,
   },
   retryWrapper: {
-    marginLeft: 4,
+    marginLeft: 2,
   },
   attachmentsContainer: {
-    marginBottom: 6,
+    marginBottom: 2,
+    gap: 8,
   },
   imageGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    gap: 8,
   },
   imageThumb: {
-    width: 140,
-    height: 140,
-    borderRadius: 12,
-    backgroundColor: '#e5e7eb',
-    marginRight: 6,
-    marginBottom: 6,
+    width: 160,
+    height: 160,
+    borderRadius: 16,
+    backgroundColor: theme.messaging.placeholder,
   },
   videoChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    borderRadius: 10,
-    backgroundColor: '#e5e7eb',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 14,
+    backgroundColor: 'rgba(15,23,42,0.4)',
     alignSelf: 'flex-start',
   },
   videoLabel: {
-    marginLeft: 6,
-    color: '#0f172a',
-    fontWeight: '600',
-    fontSize: 12,
+    marginLeft: 8,
+    color: '#E2E8F0',
+    fontWeight: '700',
+    fontSize: 13,
   },
   replyPreview: {
     paddingVertical: 6,
-    paddingHorizontal: 8,
-    borderRadius: 10,
+    paddingHorizontal: 10,
+    borderRadius: 12,
     marginBottom: 6,
   },
   replyPreviewOwn: {
-    backgroundColor: '#0f172a20',
+    backgroundColor: 'rgba(16,185,129,0.12)',
   },
   replyPreviewOther: {
-    backgroundColor: '#cbd5e170',
+    backgroundColor: 'rgba(15,23,42,0.07)',
   },
   replySender: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#0f172a',
+    color: theme.messaging.ink,
     marginBottom: 2,
   },
   replySnippet: {
     fontSize: 12,
-    color: '#1f2937',
+    color: theme.messaging.subduedInk,
   },
   reactionsRow: {
     flexDirection: 'row',
@@ -358,6 +396,26 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     color: '#0f172a',
+  },
+  errorChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: theme.messaging.errorBorder,
+    backgroundColor: theme.messaging.errorBg,
+    marginTop: 4,
+  },
+  errorText: {
+    color: '#B91C1C',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  errorIcon: {
+    marginRight: 6,
   },
 });
 
