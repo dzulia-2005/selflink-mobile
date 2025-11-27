@@ -15,10 +15,14 @@ export const MessageBubble = memo(function MessageBubble({ message }: Props) {
   const isOwn = user?.id && Number(user.id) === message.sender.id;
   const attachments = Array.isArray(message.attachments) ? message.attachments : [];
   const images = attachments.filter(
-    (att) => (att.type ?? att.mimeType ?? att.mime_type ?? '').startsWith('image') || att.type === 'image',
+    (att) =>
+      (att.type ?? att.mimeType ?? (att as any).mime_type ?? '').startsWith('image') ||
+      att.type === 'image',
   );
   const videos = attachments.filter(
-    (att) => (att.type ?? att.mimeType ?? att.mime_type ?? '').startsWith('video') || att.type === 'video',
+    (att) =>
+      (att.type ?? att.mimeType ?? (att as any).mime_type ?? '').startsWith('video') ||
+      att.type === 'video',
   );
 
   return (

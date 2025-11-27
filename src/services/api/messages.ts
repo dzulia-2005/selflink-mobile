@@ -38,7 +38,7 @@ export type Message = {
   body: string;
   type: string;
   meta: Record<string, unknown> | string;
-   attachments?: Array<{
+  attachments?: Array<{
     id?: number | string;
     url?: string;
     file?: string;

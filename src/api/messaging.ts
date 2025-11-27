@@ -1,5 +1,6 @@
 import type { AxiosRequestConfig } from 'axios';
 
+import { env } from '@config/env';
 import type {
   CreateThreadPayload,
   Message,
@@ -10,9 +11,8 @@ import type {
   MessageReactionSummary,
   MessageReplyPreview,
 } from '@schemas/messaging';
-import { env } from '@config/env';
-import { buildUrl } from '@utils/url';
 import { parseJsonPreservingLargeInts } from '@utils/json';
+import { buildUrl } from '@utils/url';
 
 import { apiClient } from './client';
 
@@ -83,7 +83,8 @@ const normalizeAttachments = (
       const mime = (resolved as any)?.mimeType ?? (resolved as any)?.mime_type;
       const duration =
         (resolved as any)?.duration ?? (resolved as any)?.duration_seconds ?? null;
-      const rawUrl = (resolved as any)?.url ?? (resolved as any)?.file ?? (item as any)?.url;
+      const rawUrl =
+        (resolved as any)?.url ?? (resolved as any)?.file ?? (item as any)?.url;
       const resolvedUrl = rawUrl ? buildUrl(env.backendUrl, rawUrl) : null;
       const rawType = (resolved as any)?.type ?? (item as any)?.type ?? '';
       const typeFromMime =
@@ -93,7 +94,7 @@ const normalizeAttachments = (
             ? 'image'
             : undefined;
       const normalizedType =
-        rawType === 'video' || rawType === 'image' ? rawType : typeFromMime ?? 'image';
+        rawType === 'video' || rawType === 'image' ? rawType : (typeFromMime ?? 'image');
       return {
         id: id != null ? String(id) : String(index),
         url: resolvedUrl ?? '',
