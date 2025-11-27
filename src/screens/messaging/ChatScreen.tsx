@@ -215,7 +215,9 @@ export function ChatScreen() {
     if (!latest?.id) {
       return;
     }
-    markThreadRead(threadKey, { lastMessageId: String(latest.id) }).catch(() => undefined);
+    markThreadRead(threadKey, { lastMessageId: String(latest.id) }).catch(
+      () => undefined,
+    );
   }, [isFocused, markThreadRead, sortedMessages, threadKey]);
 
   const headerProfileButton = useCallback(() => {
@@ -579,13 +581,7 @@ export function ChatScreen() {
         </View>
       );
     },
-    [
-      currentUserKey,
-      handleRetry,
-      openMessageActions,
-      pendingDeleteId,
-      sortedMessages,
-    ],
+    [currentUserKey, handleRetry, openMessageActions, pendingDeleteId, sortedMessages],
   );
 
   if (isLoading && messages.length === 0) {

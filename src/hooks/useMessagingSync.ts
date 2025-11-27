@@ -378,7 +378,11 @@ export function useMessagingSync(enabled: boolean) {
         (payload.message as any)?.thread ??
         payload.payload?.thread_id ??
         payload.payload?.thread;
-      applyMessageStatus(String(messageId), status, threadHint ? String(threadHint) : null);
+      applyMessageStatus(
+        String(messageId),
+        status,
+        threadHint ? String(threadHint) : null,
+      );
     },
     [applyMessageStatus],
   );

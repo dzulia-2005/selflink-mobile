@@ -901,14 +901,14 @@ export const useMessagingStore = create<MessagingState>((set, get) => {
       };
 
       const enqueuePending = (entry: PendingMessage) => {
-        set((state) => {
-          const existingIndex = state.pendingMessages.findIndex(
+        set((currentState) => {
+          const existingIndex = currentState.pendingMessages.findIndex(
             (item) => item.clientUuid === entry.clientUuid,
           );
           const pendingMessages =
             existingIndex === -1
-              ? [...state.pendingMessages, entry]
-              : state.pendingMessages.map((item, index) =>
+              ? [...currentState.pendingMessages, entry]
+              : currentState.pendingMessages.map((item, index) =>
                   index === existingIndex ? { ...item, ...entry } : item,
                 );
           persistPendingQueue(pendingMessages);

@@ -235,15 +235,13 @@ const normalizeReactions = (
   });
   return Array.from(map.values());
 };
-
 const normalizeReplyPreview = (
   reply: ReplyToResponse | null | undefined,
 ): MessageReplyPreview | null => {
   if (!reply) {
     return null;
   }
-  const id =
-    reply.id !== undefined && reply.id !== null ? String(reply.id) : undefined;
+  const id = reply.id !== undefined && reply.id !== null ? String(reply.id) : undefined;
   const senderId =
     reply.sender_id !== undefined && reply.sender_id !== null
       ? String(reply.sender_id)
@@ -430,7 +428,9 @@ export async function sendMessageWithMeta(
       ...(options?.type ? { type: options.type } : {}),
       ...(options?.meta ? { meta: options.meta } : {}),
       ...(options?.attachments ? { attachments: options.attachments } : {}),
-      ...(options?.replyToMessageId ? { reply_to_message_id: options.replyToMessageId } : {}),
+      ...(options?.replyToMessageId
+        ? { reply_to_message_id: options.replyToMessageId }
+        : {}),
     },
   });
   return normalizeMessage(parsed, precise);
