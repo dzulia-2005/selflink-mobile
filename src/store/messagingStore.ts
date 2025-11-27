@@ -24,6 +24,7 @@ type PendingMessage = {
   threadId: string;
   body: string;
   attachments?: PendingAttachment[];
+  replyToMessageId?: string | null;
   createdAt: string;
   attempts: number;
   nextAttemptAt?: number;
@@ -74,6 +75,108 @@ const attachmentsEqual = (
   return true;
 };
 
+const normalizeReactions = (reactions?: Message['reactions'] | null) => {
+  if (!Array.isArray(reactions)) {
+    return undefined;
+  }
+  return reactions
+    .map((reaction) =>
+      reaction?.emoji
+        ? {
+            emoji: reaction.emoji,
+            count: Math.max(1, reaction.count ?? 1),
+            reactedByCurrentUser: reaction.reactedByCurrentUser ?? false,
+          }
+        : null,
+    )
+    .filter(Boolean) as Exclude<Message['reactions'], undefined>;
+};
+
+const reactionsEqual = (
+  a?: Message['reactions'] | null,
+  b?: Message['reactions'] | null,
+): boolean => {
+  const aList = normalizeReactions(a) ?? [];
+  const bList = normalizeReactions(b) ?? [];
+  if (aList.length !== bList.length) {
+    return false;
+  }
+  const sortByEmoji = (list: NonNullable<Message['reactions']>) =>
+    [...list].sort((left, right) => left.emoji.localeCompare(right.emoji));
+  const sortedA = sortByEmoji(aList);
+  const sortedB = sortByEmoji(bList);
+  for (let i = 0; i < sortedA.length; i += 1) {
+    const aItem = sortedA[i];
+    const bItem = sortedB[i];
+    if (
+      aItem.emoji !== bItem.emoji ||
+      aItem.count !== bItem.count ||
+      Boolean(aItem.reactedByCurrentUser) !== Boolean(bItem.reactedByCurrentUser)
+    ) {
+      return false;
+    }
+  }
+  return true;
+};
+
+const replyPreviewEqual = (
+  a?: Message['replyTo'] | null,
+  b?: Message['replyTo'] | null,
+): boolean => {
+  if (!a && !b) {
+    return true;
+  }
+  if (!a || !b) {
+    return false;
+  }
+  return (
+    a.id === b.id &&
+    a.senderId === b.senderId &&
+    a.senderName === b.senderName &&
+    a.textPreview === b.textPreview &&
+    Boolean(a.hasAttachments) === Boolean(b.hasAttachments)
+  );
+};
+
+const applyReactionDelta = (
+  reactions: Message['reactions'] | undefined,
+  emoji: string,
+  delta: number,
+  reactedByCurrentUser?: boolean,
+): Message['reactions'] => {
+  const normalized = normalizeReactions(reactions) ?? [];
+  const existingIndex = normalized.findIndex((reaction) => reaction.emoji === emoji);
+  if (existingIndex === -1) {
+    if (delta < 0) {
+      return normalized;
+    }
+    return [
+      ...normalized,
+      {
+        emoji,
+        count: Math.max(1, delta),
+        reactedByCurrentUser: reactedByCurrentUser || false,
+      },
+    ];
+  }
+  const next = [...normalized];
+  const target = next[existingIndex];
+  const nextCount = Math.max(0, target.count + delta);
+  if (nextCount === 0) {
+    next.splice(existingIndex, 1);
+  } else {
+    next[existingIndex] = {
+      ...target,
+      count: nextCount,
+      reactedByCurrentUser:
+        reactedByCurrentUser !== undefined
+          ? reactedByCurrentUser
+          : target.reactedByCurrentUser,
+    };
+  }
+  return next;
+};
+
 const mergeMessagesChronologically = (
   existing: Message[] | undefined,
   incoming: Message[],
@@ -110,7 +213,9 @@ const mergeMessagesChronologically = (
       current.read_at !== message.read_at ||
       current.meta !== message.meta ||
       current.type !== message.type ||
-      !attachmentsEqual(current.attachments, message.attachments)
+      !attachmentsEqual(current.attachments, message.attachments) ||
+      !reactionsEqual(current.reactions, message.reactions) ||
+      !replyPreviewEqual(current.replyTo, message.replyTo)
     ) {
       changed = true;
       map.set(key, message);
@@ -152,6 +257,26 @@ const computeTotalUnread = (unreadByThread: UnreadMap) =>
 const computeRetryDelayMs = (attempts: number) => {
   const exponent = Math.max(0, attempts - 1);
   return Math.min(MAX_RETRY_MS, BASE_RETRY_MS * 2 ** exponent);
+};
+
+const toBigIntId = (value: string) => {
+  if (!/^\d+$/.test(value)) {
+    return null;
+  }
+  try {
+    return BigInt(value);
+  } catch {
+    return null;
+  }
+};
+
+const messageIdLte = (candidate: string, target: string) => {
+  const a = toBigIntId(candidate);
+  const b = toBigIntId(target);
+  if (a !== null && b !== null) {
+    return a <= b;
+  }
+  return candidate.localeCompare(target) <= 0;
 };
 
 const generateClientUuid = () => {
@@ -335,6 +460,11 @@ const loadPendingQueue = async (): Promise<PendingMessage[]> => {
       ...item,
       attempts: item.attempts ?? 0,
       status: item.status ?? 'queued',
+      replyToMessageId:
+        item.replyToMessageId ??
+        (item as any)?.reply_to_message_id ??
+        (item as any)?.reply_to ??
+        null,
       attachments: Array.isArray(item.attachments)
         ? (item.attachments as PendingAttachment[]).map((attachment) => ({
             uri: (attachment as any).uri ?? (attachment as any).url ?? '',
@@ -367,11 +497,15 @@ export type MessagingState = typeof initialState & {
     threadId: string,
     text: string,
     attachments?: PendingAttachment[],
+    replyToMessageId?: string | null,
   ) => Promise<void>;
   appendMessage: (threadId: string, message: Message) => void;
   removeMessage: (threadId: string, messageId: string) => Promise<void>;
   removeThread: (threadId: string) => Promise<void>;
-  markThreadRead: (threadId: string, options?: { sync?: boolean }) => Promise<void>;
+  markThreadRead: (
+    threadId: string,
+    options?: { sync?: boolean; lastMessageId?: string | null },
+  ) => Promise<void>;
   setActiveThread: (threadId: string | null) => void;
   setSessionUserId: (userId: string | number | null) => void;
   recomputeTotalUnread: () => void;
@@ -380,6 +514,19 @@ export type MessagingState = typeof initialState & {
   flushPendingQueue: (options?: { force?: boolean }) => Promise<void>;
   retryPendingMessage: (clientUuid: string) => Promise<void>;
   setTransportOnline: (online: boolean) => void;
+  applyMessageStatus: (
+    messageId: string,
+    status: MessageStatus,
+    threadId?: string | null,
+  ) => void;
+  applyReaction: (payload: {
+    threadId?: string | null;
+    messageId: string;
+    emoji: string;
+    action: 'added' | 'removed';
+    userId?: string | null;
+    reactions?: Message['reactions'];
+  }) => void;
   reset: () => void;
 };
 
@@ -418,6 +565,73 @@ export const useMessagingStore = create<MessagingState>((set, get) => {
     set({
       messagesByThread: { ...state.messagesByThread, [key]: nextMessages },
     });
+  };
+
+  const applyReadThrough = (threadId: string, lastReadId: string | null) => {
+    const key = normalizeThreadId(threadId);
+    if (!key || !lastReadId) {
+      return;
+    }
+    const state = get();
+    const sessionUserId = state.sessionUserId;
+    if (!sessionUserId) {
+      return;
+    }
+    const messages = state.messagesByThread[key];
+    if (!messages || messages.length === 0) {
+      return;
+    }
+    let changed = false;
+    const nextMessages = messages.map((message) => {
+      const senderId = message.sender?.id != null ? String(message.sender.id) : null;
+      if (!senderId || senderId !== sessionUserId) {
+        return message;
+      }
+      if (!message.id || !messageIdLte(String(message.id), lastReadId)) {
+        return message;
+      }
+      if (message.status === 'read') {
+        return message;
+      }
+      changed = true;
+      return {
+        ...message,
+        status: 'read' as MessageStatus,
+        read_at: message.read_at ?? new Date().toISOString(),
+      };
+    });
+    if (changed) {
+      set({
+        messagesByThread: { ...state.messagesByThread, [key]: nextMessages },
+      });
+    }
+  };
+
+  const findMessageLocation = (messageId: string, threadHint?: string | null) => {
+    const state = get();
+    const targetId = String(messageId);
+    const searchThreads = threadHint
+      ? [normalizeThreadId(threadHint)]
+      : Object.keys(state.messagesByThread);
+    for (const key of searchThreads) {
+      if (!key) {
+        continue;
+      }
+      const messages = state.messagesByThread[key];
+      if (!messages || messages.length === 0) {
+        continue;
+      }
+      const index = messages.findIndex(
+        (message) =>
+          String(message.id) === targetId ||
+          deriveMessageKey(message) === targetId ||
+          (message as any)?.client_uuid === targetId,
+      );
+      if (index !== -1) {
+        return { key, index, messages };
+      }
+    }
+    return null;
   };
 
   return {
@@ -617,7 +831,7 @@ export const useMessagingStore = create<MessagingState>((set, get) => {
         set({ messagesByThread });
       }
     },
-    async sendMessage(threadId, text, attachments) {
+    async sendMessage(threadId, text, attachments, replyToMessageId) {
       const body = text.trim();
       const hasBody = Boolean(body);
       const hasAttachments = Array.isArray(attachments) && attachments.length > 0;
@@ -627,16 +841,39 @@ export const useMessagingStore = create<MessagingState>((set, get) => {
       const clientUuid = generateClientUuid();
       const createdAt = new Date().toISOString();
       const threadKey = normalizeThreadId(threadId) || String(threadId);
+      const state = get();
+      const replySource =
+        replyToMessageId && state.messagesByThread[threadKey]
+          ? state.messagesByThread[threadKey].find(
+              (message) => message.id === replyToMessageId,
+            )
+          : undefined;
+      const replyPreview =
+        replyToMessageId && replySource
+          ? {
+              id: replyToMessageId,
+              senderId:
+                replySource.sender?.id !== undefined && replySource.sender?.id !== null
+                  ? String(replySource.sender.id)
+                  : '',
+              senderName: replySource.sender?.name ?? null,
+              textPreview: replySource.body ?? null,
+              hasAttachments: Array.isArray(replySource.attachments)
+                ? replySource.attachments.length > 0
+                : false,
+            }
+          : undefined;
       const optimistic: Message = {
         id: clientUuid,
         thread: threadKey,
-        sender: { id: get().sessionUserId ?? 'me' } as unknown as Message['sender'],
+        sender: { id: state.sessionUserId ?? 'me' } as unknown as Message['sender'],
         body: hasBody ? body : '',
         type: 'text',
         meta: null,
-        status: get().transportOnline ? 'pending' : 'queued',
+        status: state.transportOnline ? 'pending' : 'queued',
         client_uuid: clientUuid,
         created_at: createdAt,
+        replyTo: replyPreview,
         attachments: Array.isArray(attachments)
           ? attachments.map((attachment, index) => ({
               id: `${clientUuid}-${index}`,
@@ -657,6 +894,7 @@ export const useMessagingStore = create<MessagingState>((set, get) => {
         threadId: threadKey,
         body: hasBody ? body : '',
         attachments: hasAttachments ? attachments : undefined,
+        replyToMessageId: replyToMessageId ?? undefined,
         createdAt,
         attempts: 0,
         status: 'queued',
@@ -678,7 +916,7 @@ export const useMessagingStore = create<MessagingState>((set, get) => {
         });
       };
 
-      if (!get().transportOnline) {
+      if (!state.transportOnline) {
         enqueuePending(queueCandidate);
         updateLocalStatus(threadKey, clientUuid, 'queued');
         return;
@@ -691,9 +929,11 @@ export const useMessagingStore = create<MessagingState>((set, get) => {
               text: body,
               clientUuid,
               attachments: attachments ?? [],
+              replyToMessageId,
             })
           : await messagingApi.sendMessageWithMeta(threadId, body, {
               clientUuid,
+              replyToMessageId,
             });
         const normalized =
           message.client_uuid || message.status || message.id === clientUuid
@@ -743,7 +983,27 @@ export const useMessagingStore = create<MessagingState>((set, get) => {
         id: normalizedId,
         thread: key,
         client_uuid: clientUuid != null ? String(clientUuid) : undefined,
+        reactions: normalizeReactions((message as any).reactions) ?? undefined,
       };
+      const replyFallback = (message as any).replyTo ?? (message as any).reply_to;
+      if (replyFallback?.id != null && replyFallback?.sender_id != null) {
+        normalizedMessage.replyTo = {
+          id: String(replyFallback.id),
+          senderId: String(
+            replyFallback.sender_id ??
+              replyFallback.sender?.id ??
+              replyFallback.senderId ??
+              replyFallback.sender?.sender_id ??
+              '',
+          ),
+          senderName:
+            replyFallback.sender?.name ?? replyFallback.sender_name ?? replyFallback.name,
+          textPreview: replyFallback.text_preview ?? replyFallback.body ?? null,
+          hasAttachments: Boolean(replyFallback.has_attachments),
+        };
+      } else if ((message as any).replyTo) {
+        normalizedMessage.replyTo = (message as any).replyTo;
+      }
       let threads = state.threads;
       let threadFromState = threads.find((thread) => String(thread.id) === key);
       const sessionUserId = state.sessionUserId;
@@ -809,7 +1069,9 @@ export const useMessagingStore = create<MessagingState>((set, get) => {
           currentMessage.status !== normalizedMessage.status ||
           currentMessage.delivered_at !== normalizedMessage.delivered_at ||
           currentMessage.read_at !== normalizedMessage.read_at ||
-          currentMessage.client_uuid !== normalizedMessage.client_uuid;
+          currentMessage.client_uuid !== normalizedMessage.client_uuid ||
+          !reactionsEqual(currentMessage.reactions, normalizedMessage.reactions) ||
+          !replyPreviewEqual(currentMessage.replyTo, normalizedMessage.replyTo);
         if (needsReplacement) {
           const nextMessages = [...existingMessages];
           nextMessages[duplicateIndex] = normalizedMessage;
@@ -928,6 +1190,11 @@ export const useMessagingStore = create<MessagingState>((set, get) => {
         });
       }
 
+      const messages = state.messagesByThread[key] ?? [];
+      const latestMessageId =
+        options?.lastMessageId ??
+        (messages.length > 0 ? String(messages[messages.length - 1].id) : null);
+
       if (options?.sync === false || pendingReadRequests.has(key)) {
         return;
       }
@@ -937,7 +1204,10 @@ export const useMessagingStore = create<MessagingState>((set, get) => {
         if (typeof __DEV__ !== 'undefined' && __DEV__) {
           console.debug('messagingStore: markThreadRead -> POST', { threadId: key });
         }
-        await messagingApi.markThreadRead(threadId);
+        await messagingApi.markThreadRead(threadId, latestMessageId);
+        if (latestMessageId) {
+          applyReadThrough(threadId, latestMessageId);
+        }
       } catch (error) {
         console.warn('messagingStore: failed to mark thread read', error);
         try {
@@ -1054,9 +1324,11 @@ export const useMessagingStore = create<MessagingState>((set, get) => {
                     text: pending.body,
                     clientUuid: pending.clientUuid,
                     attachments: pending.attachments,
+                    replyToMessageId: pending.replyToMessageId,
                   })
                 : await messagingApi.sendMessageWithMeta(pending.threadId, pending.body, {
                     clientUuid: pending.clientUuid,
+                    replyToMessageId: pending.replyToMessageId,
                   });
             get().appendMessage(message.thread, {
               ...message,
@@ -1129,6 +1401,70 @@ export const useMessagingStore = create<MessagingState>((set, get) => {
           .flushPendingQueue()
           .catch(() => undefined);
       }
+    },
+    applyMessageStatus(messageId, status, threadId) {
+      if (!messageId || !status) {
+        return;
+      }
+      const location = findMessageLocation(messageId, threadId);
+      if (!location) {
+        return;
+      }
+      const state = get();
+      const { key, index, messages } = location;
+      const target = messages[index];
+      const nextStatus = status as MessageStatus;
+      if (target.status === nextStatus) {
+        return;
+      }
+      const nextMessages = [...messages];
+      nextMessages[index] = {
+        ...target,
+        status: nextStatus,
+        delivered_at:
+          nextStatus === 'delivered' && !target.delivered_at
+            ? new Date().toISOString()
+            : target.delivered_at,
+        read_at:
+          nextStatus === 'read' && !target.read_at
+            ? new Date().toISOString()
+            : target.read_at,
+      };
+      set({
+        messagesByThread: { ...state.messagesByThread, [key]: nextMessages },
+      });
+    },
+    applyReaction({ threadId, messageId, emoji, action, userId, reactions }) {
+      if (!emoji || !messageId) {
+        return;
+      }
+      const location = findMessageLocation(messageId, threadId);
+      if (!location) {
+        return;
+      }
+      const state = get();
+      const { key, index, messages } = location;
+      const target = messages[index];
+      const isSelf =
+        userId !== undefined && userId !== null && state.sessionUserId !== null
+          ? String(userId) === state.sessionUserId
+          : undefined;
+      const nextReactions = reactions
+        ? normalizeReactions(reactions)
+        : applyReactionDelta(
+            target.reactions,
+            emoji,
+            action === 'removed' ? -1 : 1,
+            isSelf,
+          );
+      if (reactionsEqual(target.reactions, nextReactions)) {
+        return;
+      }
+      const nextMessages = [...messages];
+      nextMessages[index] = { ...target, reactions: nextReactions };
+      set({
+        messagesByThread: { ...state.messagesByThread, [key]: nextMessages },
+      });
     },
     reset() {
       set({ ...initialState });

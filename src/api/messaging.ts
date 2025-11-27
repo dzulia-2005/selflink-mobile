@@ -7,6 +7,8 @@ import type {
   PendingAttachment,
   MessageStatus,
   Thread,
+  MessageReactionSummary,
+  MessageReplyPreview,
 } from '@schemas/messaging';
 import { parseJsonPreservingLargeInts } from '@utils/json';
 
@@ -31,10 +33,31 @@ type MessageResponse = Omit<Message, 'id' | 'thread'> & {
   delivered_at?: string | null;
   read_at?: string | null;
   attachments?: MessageAttachment[];
+  reactions?: ReactionResponse[];
+  reply_to?: ReplyToResponse | null;
+  replyTo?: ReplyToResponse | null;
 };
 
 type ThreadResponse = Omit<Thread, 'id'> & {
   id: string | number;
+};
+
+type ReactionResponse = {
+  emoji?: string;
+  count?: number;
+  user_ids?: Array<string | number> | null;
+  reacted_by_current_user?: boolean;
+  reacted?: boolean;
+};
+
+type ReplyToResponse = {
+  id?: string | number | null;
+  sender_id?: string | number | null;
+  sender?: { id?: string | number | null; name?: string | null } | null;
+  text_preview?: string | null;
+  body?: string | null;
+  has_attachments?: boolean;
+  attachments?: unknown[] | null;
 };
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -173,6 +196,81 @@ const normalizeParticipants = (
   });
 };
 
+const normalizeReactions = (
+  reactions?: ReactionResponse[] | null,
+): MessageReactionSummary[] | undefined => {
+  if (!Array.isArray(reactions)) {
+    return undefined;
+  }
+  const map = new Map<string, MessageReactionSummary>();
+  reactions.forEach((reaction) => {
+    if (!reaction?.emoji) {
+      return;
+    }
+    const emoji = reaction.emoji;
+    const countFromUsers = Array.isArray(reaction.user_ids)
+      ? reaction.user_ids.length
+      : null;
+    const count =
+      typeof reaction.count === 'number'
+        ? reaction.count
+        : countFromUsers !== null
+          ? countFromUsers
+          : 1;
+    const reacted = Boolean(reaction.reacted_by_current_user ?? reaction.reacted);
+    const existing = map.get(emoji);
+    if (existing) {
+      map.set(emoji, {
+        emoji,
+        count: Math.max(existing.count, count),
+        reactedByCurrentUser: existing.reactedByCurrentUser || reacted || undefined,
+      });
+    } else {
+      map.set(emoji, {
+        emoji,
+        count: Math.max(1, count),
+        reactedByCurrentUser: reacted || undefined,
+      });
+    }
+  });
+  return Array.from(map.values());
+};
+
+const normalizeReplyPreview = (
+  reply: ReplyToResponse | null | undefined,
+): MessageReplyPreview | null => {
+  if (!reply) {
+    return null;
+  }
+  const id =
+    reply.id !== undefined && reply.id !== null ? String(reply.id) : undefined;
+  const senderId =
+    reply.sender_id !== undefined && reply.sender_id !== null
+      ? String(reply.sender_id)
+      : reply.sender?.id !== undefined && reply.sender?.id !== null
+        ? String(reply.sender.id)
+        : undefined;
+  if (!id || !senderId) {
+    return null;
+  }
+  const text =
+    typeof reply.text_preview === 'string'
+      ? reply.text_preview
+      : typeof reply.body === 'string'
+        ? reply.body
+        : null;
+  const hasAttachments =
+    reply.has_attachments ??
+    (Array.isArray(reply.attachments) ? reply.attachments.length > 0 : undefined);
+  return {
+    id,
+    senderId,
+    senderName: reply.sender?.name ?? null,
+    textPreview: text,
+    hasAttachments: hasAttachments ?? false,
+  };
+};
+
 async function requestWithPrecision<T>(config: AxiosRequestConfig): Promise<{
   parsed: T;
   precise: T;
@@ -229,6 +327,10 @@ const normalizeMessage = (
     thread: resolvedThread != null ? String(resolvedThread) : String(approx.thread),
     sender: sender ?? merged.sender ?? approx.sender,
     attachments: normalizeAttachments(approx.attachments, precise?.attachments),
+    reactions: normalizeReactions(merged.reactions ?? approx.reactions),
+    replyTo: normalizeReplyPreview(
+      merged.reply_to ?? merged.replyTo ?? (approx as any).reply_to ?? null,
+    ),
   };
 };
 
@@ -302,6 +404,7 @@ type SendMessageOptions = {
   type?: string;
   meta?: Record<string, unknown> | null;
   attachments?: PendingAttachment[];
+  replyToMessageId?: string | null;
 };
 
 export type SendMessageParams = {
@@ -309,6 +412,7 @@ export type SendMessageParams = {
   text: string;
   clientUuid?: string;
   attachments?: PendingAttachment[];
+  replyToMessageId?: string | null;
 };
 
 export async function sendMessageWithMeta(
@@ -326,6 +430,7 @@ export async function sendMessageWithMeta(
       ...(options?.type ? { type: options.type } : {}),
       ...(options?.meta ? { meta: options.meta } : {}),
       ...(options?.attachments ? { attachments: options.attachments } : {}),
+      ...(options?.replyToMessageId ? { reply_to_message_id: options.replyToMessageId } : {}),
     },
   });
   return normalizeMessage(parsed, precise);
@@ -336,7 +441,10 @@ export async function sendMessageWithAttachments(
 ): Promise<Message> {
   const { threadId, text, clientUuid, attachments } = params;
   if (!attachments || attachments.length === 0) {
-    return sendMessageWithMeta(threadId, text, { clientUuid });
+    return sendMessageWithMeta(threadId, text, {
+      clientUuid,
+      replyToMessageId: params.replyToMessageId,
+    });
   }
   const form = new FormData();
   const trimmed = text.trim();
@@ -344,6 +452,9 @@ export async function sendMessageWithAttachments(
     form.append('body', trimmed);
   }
   form.append('client_uuid', clientUuid ?? '');
+  if (params.replyToMessageId) {
+    form.append('reply_to_message_id', params.replyToMessageId);
+  }
   attachments.forEach((attachment, index) => {
     const name =
       attachment.name ??
@@ -393,6 +504,29 @@ export async function ackMessage(
     );
   } catch (error) {
     console.warn('messagingApi: ackMessage failed', { messageId, status, error });
+    throw error;
+  }
+}
+
+export async function toggleReaction(
+  messageId: string,
+  emoji: string,
+): Promise<MessageReactionSummary[] | null> {
+  try {
+    const { parsed, precise } = await requestWithPrecision<{
+      reactions?: ReactionResponse[];
+    }>({
+      method: 'POST',
+      url: `/messages/${messageId}/reactions/`,
+      data: { emoji },
+    });
+    const reactions = normalizeReactions(
+      (precise as { reactions?: ReactionResponse[] })?.reactions ??
+        (parsed as { reactions?: ReactionResponse[] })?.reactions,
+    );
+    return reactions ?? null;
+  } catch (error) {
+    console.warn('messagingApi: toggleReaction failed', { messageId, emoji, error });
     throw error;
   }
 }
@@ -448,8 +582,13 @@ export async function getThread(threadId: string): Promise<Thread> {
   return normalizeThread(parsed as ThreadResponse, precise as ThreadResponse | undefined);
 }
 
-export async function markThreadRead(threadId: string): Promise<void> {
-  await apiClient.post(`/threads/${resolveThreadId(threadId)}/read/`, {});
+export async function markThreadRead(
+  threadId: string,
+  lastReadMessageId?: string | null,
+): Promise<void> {
+  await apiClient.post(`/threads/${resolveThreadId(threadId)}/read/`, {
+    ...(lastReadMessageId ? { last_read_message_id: lastReadMessageId } : {}),
+  });
 }
 
 export async function getMessage(messageId: string): Promise<Message> {

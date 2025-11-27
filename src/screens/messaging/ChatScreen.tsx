@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import {
   RouteProp,
   useFocusEffect,
+  useIsFocused,
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
@@ -19,6 +20,7 @@ import {
   Alert,
   FlatList,
   Image,
+  Modal,
   ScrollView,
   StyleSheet,
   Text,
@@ -27,6 +29,7 @@ import {
   View,
 } from 'react-native';
 
+import { toggleReaction } from '@api/messaging';
 import { ChatBubble } from '@components/messaging/ChatBubble';
 import TypingIndicator from '@components/messaging/TypingIndicator';
 import { useMultiImagePicker } from '@hooks/useMultiImagePicker';
@@ -54,6 +57,28 @@ interface RouteParams {
 type ChatRoute = RouteProp<Record<'Chat', RouteParams>, 'Chat'>;
 
 const EMPTY_MESSAGES: Message[] = [];
+
+const isSameDay = (a: Date, b: Date) =>
+  a.getFullYear() === b.getFullYear() &&
+  a.getMonth() === b.getMonth() &&
+  a.getDate() === b.getDate();
+
+const formatDayLabel = (value: Date) => {
+  const today = new Date();
+  const yesterday = new Date();
+  yesterday.setDate(today.getDate() - 1);
+  if (isSameDay(value, today)) {
+    return 'Today';
+  }
+  if (isSameDay(value, yesterday)) {
+    return 'Yesterday';
+  }
+  return value.toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: value.getFullYear() === today.getFullYear() ? undefined : 'numeric',
+  });
+};
 
 const mapTypingStatusResponse = (status: TypingStatus): ThreadTypingStatus | null => {
   if (!status?.typing) {
@@ -90,10 +115,14 @@ export function ChatScreen() {
   const route = useRoute<ChatRoute>();
   const threadId = route.params.threadId;
   const otherUserId = route.params.otherUserId;
+  const isFocused = useIsFocused();
   const [input, setInput] = useState('');
   const [selectedVideo, setSelectedVideo] = useState<PickedVideo | null>(null);
   const [isSending, setIsSending] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [replyingTo, setReplyingTo] = useState<Message | null>(null);
+  const [actionTarget, setActionTarget] = useState<Message | null>(null);
+  const [isReactionSending, setIsReactionSending] = useState(false);
   const loadThreadMessages = useMessagingStore((state) => state.loadThreadMessages);
   const sendMessage = useMessagingStore((state) => state.sendMessage);
   const markThreadRead = useMessagingStore((state) => state.markThreadRead);
@@ -102,6 +131,7 @@ export function ChatScreen() {
   const removeMessage = useMessagingStore((state) => state.removeMessage);
   const setTypingStatus = useMessagingStore((state) => state.setTypingStatus);
   const retryPendingMessage = useMessagingStore((state) => state.retryPendingMessage);
+  const applyReaction = useMessagingStore((state) => state.applyReaction);
   const {
     images: selectedImages,
     pickImages,
@@ -130,6 +160,7 @@ export function ChatScreen() {
   const typingActiveRef = useRef(false);
   const currentUserKey = currentUserId != null ? String(currentUserId) : null;
   const listRef = useRef<FlatList<Message> | null>(null);
+  const reactionEmojis = useMemo(() => ['❤️', '👍', '😂', '😮', '😢', '🙏'], []);
 
   const sortedMessages = useMemo(() => {
     return [...messages].sort((a, b) => {
@@ -176,6 +207,17 @@ export function ChatScreen() {
     }
   }, [sortedMessages.length]);
 
+  useEffect(() => {
+    if (!isFocused || !sortedMessages.length) {
+      return;
+    }
+    const latest = sortedMessages[sortedMessages.length - 1];
+    if (!latest?.id) {
+      return;
+    }
+    markThreadRead(threadKey, { lastMessageId: String(latest.id) }).catch(() => undefined);
+  }, [isFocused, markThreadRead, sortedMessages, threadKey]);
+
   const headerProfileButton = useCallback(() => {
     if (!otherUserId) {
       return null;
@@ -200,7 +242,12 @@ export function ChatScreen() {
   useFocusEffect(
     useCallback(() => {
       setActiveThread(threadKey);
-      markThreadRead(threadKey).catch(() => undefined);
+      const latest =
+        useMessagingStore.getState().messagesByThread[threadKey]?.slice(-1)[0]?.id ??
+        null;
+      markThreadRead(threadKey, {
+        lastMessageId: latest ? String(latest) : undefined,
+      }).catch(() => undefined);
       return () => {
         setActiveThread(null);
         syncThreads().catch(() => undefined);
@@ -282,6 +329,76 @@ export function ChatScreen() {
     [removeImage],
   );
 
+  const openMessageActions = useCallback(
+    (message: Message) => {
+      if (pendingDeleteId) {
+        return;
+      }
+      setActionTarget(message);
+    },
+    [pendingDeleteId],
+  );
+
+  const closeMessageActions = useCallback(() => {
+    if (isReactionSending) {
+      return;
+    }
+    setActionTarget(null);
+  }, [isReactionSending]);
+
+  const handleSelectReaction = useCallback(
+    async (emoji: string) => {
+      if (!actionTarget) {
+        return;
+      }
+      const messageId = String(actionTarget.id);
+      const latest =
+        useMessagingStore
+          .getState()
+          .messagesByThread[threadKey]?.find((msg) => String(msg.id) === messageId) ??
+        actionTarget;
+      const hasReacted = latest?.reactions?.some(
+        (reaction) => reaction.emoji === emoji && reaction.reactedByCurrentUser,
+      );
+      const optimisticAction = hasReacted ? 'removed' : 'added';
+      applyReaction({
+        threadId: threadKey,
+        messageId,
+        emoji,
+        action: optimisticAction as 'added' | 'removed',
+        userId: currentUserKey,
+      });
+      setIsReactionSending(true);
+      try {
+        await toggleReaction(messageId, emoji);
+      } catch (error) {
+        applyReaction({
+          threadId: threadKey,
+          messageId,
+          emoji,
+          action: hasReacted ? 'added' : 'removed',
+          userId: currentUserKey,
+        });
+        console.warn('ChatScreen: reaction toggle failed', error);
+        Alert.alert('Unable to react', 'Please try again.');
+      } finally {
+        setIsReactionSending(false);
+        setActionTarget(null);
+      }
+    },
+    [actionTarget, applyReaction, currentUserKey, threadKey],
+  );
+
+  const handleReplyAction = useCallback(() => {
+    if (!actionTarget) {
+      return;
+    }
+    setReplyingTo(actionTarget);
+    setActionTarget(null);
+  }, [actionTarget]);
+
+  const clearReply = useCallback(() => setReplyingTo(null), []);
+
   useEffect(() => {
     let cancelled = false;
     getTypingStatus(threadId)
@@ -326,10 +443,11 @@ export function ChatScreen() {
           attachments: pendingAttachments.length,
         });
       }
-      await sendMessage(threadId, trimmed, pendingAttachments);
+      await sendMessage(threadId, trimmed, pendingAttachments, replyingTo?.id ?? null);
       setInput('');
       setSelectedVideo(null);
       clearImages();
+      setReplyingTo(null);
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
         typingTimeoutRef.current = null;
@@ -354,6 +472,7 @@ export function ChatScreen() {
     isSending,
     notifyTyping,
     pendingAttachments,
+    replyingTo,
     sendMessage,
     threadId,
   ]);
@@ -430,22 +549,43 @@ export function ChatScreen() {
       const statusForBubble: MessageStatus | undefined = isOwn
         ? ((item.status as MessageStatus | undefined) ?? 'sent')
         : undefined;
+      const showDaySeparator =
+        index === 0 ||
+        !isSameDay(
+          new Date(item.created_at),
+          new Date(sortedMessages[index - 1]?.created_at ?? item.created_at),
+        );
 
       return (
-        <ChatBubble
-          message={item}
-          isOwn={Boolean(isOwn)}
-          isFirstInGroup={!sameSenderAsNext}
-          isLastInGroup={!sameSenderAsPrev}
-          showTimestamp={!sameSenderAsPrev}
-          status={statusForBubble}
-          onLongPress={confirmDeleteMessage}
-          disableActions={Boolean(pendingDeleteId)}
-          onRetry={statusForBubble === 'failed' ? handleRetry : undefined}
-        />
+        <View>
+          {showDaySeparator ? (
+            <View style={styles.daySeparator}>
+              <Text style={styles.daySeparatorText}>
+                {formatDayLabel(new Date(item.created_at))}
+              </Text>
+            </View>
+          ) : null}
+          <ChatBubble
+            message={item}
+            isOwn={Boolean(isOwn)}
+            isFirstInGroup={!sameSenderAsNext}
+            isLastInGroup={!sameSenderAsPrev}
+            showTimestamp={!sameSenderAsPrev}
+            status={statusForBubble}
+            onLongPress={openMessageActions}
+            disableActions={Boolean(pendingDeleteId)}
+            onRetry={statusForBubble === 'failed' ? handleRetry : undefined}
+          />
+        </View>
       );
     },
-    [confirmDeleteMessage, currentUserKey, handleRetry, pendingDeleteId, sortedMessages],
+    [
+      currentUserKey,
+      handleRetry,
+      openMessageActions,
+      pendingDeleteId,
+      sortedMessages,
+    ],
   );
 
   if (isLoading && messages.length === 0) {
@@ -458,6 +598,25 @@ export function ChatScreen() {
 
   return (
     <View style={styles.container}>
+      {replyingTo ? (
+        <View style={styles.replyContainer}>
+          <View style={styles.replyTextContainer}>
+            <Text style={styles.replyLabel}>
+              Replying to {replyingTo.sender?.name ?? 'Message'}
+            </Text>
+            <Text style={styles.replyPreview} numberOfLines={1}>
+              {replyingTo.body?.trim()
+                ? replyingTo.body
+                : replyingTo.attachments?.length
+                  ? 'Attachment'
+                  : 'Message'}
+            </Text>
+          </View>
+          <TouchableOpacity onPress={clearReply} style={styles.replyCloseButton}>
+            <Ionicons name="close" size={16} color="#0f172a" />
+          </TouchableOpacity>
+        </View>
+      ) : null}
       <FlatList
         ref={listRef}
         data={sortedMessages}
@@ -579,6 +738,61 @@ export function ChatScreen() {
           />
         </TouchableOpacity>
       </View>
+      <Modal
+        visible={Boolean(actionTarget)}
+        transparent
+        animationType="fade"
+        onRequestClose={closeMessageActions}
+      >
+        <View style={styles.actionBackdrop}>
+          <TouchableOpacity
+            style={StyleSheet.absoluteFill}
+            activeOpacity={1}
+            onPress={closeMessageActions}
+          />
+          <View style={styles.actionSheet}>
+            <Text style={styles.actionTitle}>Message actions</Text>
+            <View style={styles.reactionRow}>
+              {reactionEmojis.map((emoji) => (
+                <TouchableOpacity
+                  key={emoji}
+                  style={styles.reactionButton}
+                  onPress={() => handleSelectReaction(emoji)}
+                  disabled={isReactionSending}
+                >
+                  <Text style={styles.reactionEmoji}>{emoji}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            <View style={styles.actionButtonsRow}>
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={handleReplyAction}
+                disabled={isReactionSending}
+              >
+                <Text style={styles.actionButtonText}>Reply</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={() => {
+                  if (actionTarget) {
+                    confirmDeleteMessage(actionTarget);
+                  }
+                  closeMessageActions();
+                }}
+                disabled={isReactionSending}
+              >
+                <Text style={[styles.actionButtonText, styles.destructiveText]}>
+                  Delete
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.actionButton} onPress={closeMessageActions}>
+                <Text style={styles.actionButtonText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -594,6 +808,35 @@ const styles = StyleSheet.create({
   },
   listFooter: {
     height: 32,
+  },
+  replyContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#E5E7EB',
+    backgroundColor: '#FFFFFF',
+  },
+  replyTextContainer: {
+    flex: 1,
+    paddingRight: 12,
+  },
+  replyLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#0f172a',
+  },
+  replyPreview: {
+    marginTop: 2,
+    color: '#475569',
+    fontSize: 12,
+  },
+  replyCloseButton: {
+    padding: 6,
+    borderRadius: 999,
+    backgroundColor: '#E5E7EB',
   },
   headerLink: {
     color: '#2563EB',
@@ -682,5 +925,63 @@ const styles = StyleSheet.create({
     backgroundColor: '#EF4444',
     borderRadius: 999,
     padding: 4,
+  },
+  daySeparator: {
+    alignItems: 'center',
+    marginVertical: 8,
+  },
+  daySeparatorText: {
+    fontSize: 12,
+    color: '#6b7280',
+    backgroundColor: '#E5E7EB',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  actionBackdrop: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0,0,0,0.25)',
+  },
+  actionSheet: {
+    padding: 16,
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+  },
+  actionTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#0f172a',
+    marginBottom: 8,
+  },
+  reactionRow: {
+    flexDirection: 'row',
+    marginBottom: 12,
+  },
+  reactionButton: {
+    marginRight: 10,
+    padding: 8,
+    borderRadius: 12,
+    backgroundColor: '#F1F5F9',
+  },
+  reactionEmoji: {
+    fontSize: 20,
+  },
+  actionButtonsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  actionButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+  },
+  actionButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#0f172a',
+  },
+  destructiveText: {
+    color: '#DC2626',
   },
 });

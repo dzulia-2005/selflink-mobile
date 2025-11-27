@@ -44,6 +44,8 @@ export interface Message {
   client_uuid?: string | null;
   delivered_at?: string | null;
   read_at?: string | null;
+  reactions?: MessageReactionSummary[];
+  replyTo?: MessageReplyPreview | null;
   created_at: string;
 }
 
@@ -75,6 +77,20 @@ export type MessageAttachment = {
 };
 
 export type MessageAttachmentType = 'image' | 'video';
+
+export type MessageReactionSummary = {
+  emoji: string;
+  count: number;
+  reactedByCurrentUser?: boolean;
+};
+
+export type MessageReplyPreview = {
+  id: string;
+  senderId: string;
+  senderName?: string | null;
+  textPreview?: string | null;
+  hasAttachments?: boolean;
+};
 
 export type PendingAttachment = {
   uri: string;

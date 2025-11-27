@@ -3,7 +3,7 @@ import { AppState, AppStateStatus } from 'react-native';
 
 import * as messagingApi from '@api/messaging';
 import { connectRealtime, RealtimePayload } from '@realtime/index';
-import type { Message } from '@schemas/messaging';
+import type { Message, MessageStatus } from '@schemas/messaging';
 import { useAuthStore } from '@store/authStore';
 import { useMessagingStore } from '@store/messagingStore';
 
@@ -30,6 +30,8 @@ type MessageEnvelope = RealtimePayload & {
 };
 
 const MESSAGE_EVENT_TYPES = new Set(['message', 'message:new']);
+const MESSAGE_STATUS_TYPES = new Set(['message:status']);
+const MESSAGE_REACTION_TYPES = new Set(['message:reaction']);
 
 const POLL_INTERVAL_MS = 12_000;
 const looksLikeNetworkError = (error: unknown) => {
@@ -63,6 +65,8 @@ export function useMessagingSync(enabled: boolean) {
   const flushPendingQueue = useMessagingStore((state) => state.flushPendingQueue);
   const hydratePendingQueue = useMessagingStore((state) => state.hydratePendingQueue);
   const setTransportOnline = useMessagingStore((state) => state.setTransportOnline);
+  const applyMessageStatus = useMessagingStore((state) => state.applyMessageStatus);
+  const applyReaction = useMessagingStore((state) => state.applyReaction);
   const activeThreadIdRef = useRef<string | null>(activeThreadId);
   useEffect(() => {
     activeThreadIdRef.current = activeThreadId;
@@ -360,6 +364,59 @@ export function useMessagingSync(enabled: boolean) {
     ],
   );
 
+  const handleStatusEvent = useCallback(
+    (payload: Record<string, any>) => {
+      const status = payload.status as MessageStatus | undefined;
+      const messageId =
+        payload.message_id ?? payload.id ?? (payload.message as any)?.id ?? null;
+      if (!status || !messageId) {
+        return;
+      }
+      const threadHint =
+        payload.thread_id ??
+        payload.thread ??
+        (payload.message as any)?.thread ??
+        payload.payload?.thread_id ??
+        payload.payload?.thread;
+      applyMessageStatus(String(messageId), status, threadHint ? String(threadHint) : null);
+    },
+    [applyMessageStatus],
+  );
+
+  const handleReactionEvent = useCallback(
+    (payload: Record<string, any>) => {
+      const messageId =
+        payload.message_id ?? payload.id ?? (payload.message as any)?.id ?? null;
+      const emoji = payload.emoji;
+      const action =
+        (payload.action as 'added' | 'removed' | undefined) ??
+        (payload.removed ? 'removed' : 'added');
+      if (!messageId || !emoji || !action) {
+        return;
+      }
+      const threadHint =
+        payload.thread_id ??
+        payload.thread ??
+        (payload.message as any)?.thread ??
+        payload.payload?.thread_id ??
+        payload.payload?.thread;
+      applyReaction({
+        messageId: String(messageId),
+        emoji: String(emoji),
+        action,
+        threadId: threadHint ? String(threadHint) : undefined,
+        userId:
+          payload.user_id ??
+          payload.userId ??
+          payload.user ??
+          (payload.payload as any)?.user_id ??
+          null,
+        reactions: payload.reactions as Message['reactions'],
+      });
+    },
+    [applyReaction],
+  );
+
   const handleRealtimePayload = useCallback(
     (payload: RealtimePayload) => {
       const type =
@@ -384,6 +441,10 @@ export function useMessagingSync(enabled: boolean) {
       }
       if (type && MESSAGE_EVENT_TYPES.has(type)) {
         handleRealtimeMessage(payload as MessageEnvelope).catch(() => undefined);
+      } else if (type && MESSAGE_STATUS_TYPES.has(type)) {
+        handleStatusEvent(payload as Record<string, any>);
+      } else if (type && MESSAGE_REACTION_TYPES.has(type)) {
+        handleReactionEvent(payload as Record<string, any>);
       } else if (type === 'typing') {
         const typingPayload = payload as Record<string, any>;
         const threadHint =
@@ -413,7 +474,9 @@ export function useMessagingSync(enabled: boolean) {
     [
       ensurePolling,
       flushPendingQueue,
+      handleReactionEvent,
       handleRealtimeMessage,
+      handleStatusEvent,
       pollThreadsAndActiveMessages,
       setTransportOnline,
       setTypingStatus,

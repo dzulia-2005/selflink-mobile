@@ -35,6 +35,30 @@ const ChatBubbleComponent: React.FC<Props> = ({
     minute: '2-digit',
   });
 
+  const renderReplyPreview = () => {
+    if (!message.replyTo) {
+      return null;
+    }
+    const preview =
+      message.replyTo.textPreview ??
+      (message.replyTo.hasAttachments ? 'Attachment' : 'Message');
+    return (
+      <View
+        style={[
+          styles.replyPreview,
+          isOwn ? styles.replyPreviewOwn : styles.replyPreviewOther,
+        ]}
+      >
+        <Text style={styles.replySender} numberOfLines={1}>
+          {message.replyTo.senderName ?? 'Reply'}
+        </Text>
+        <Text style={styles.replySnippet} numberOfLines={1}>
+          {preview}
+        </Text>
+      </View>
+    );
+  };
+
   const renderAttachments = () => {
     const attachments = Array.isArray(message.attachments) ? message.attachments : [];
     if (!attachments.length) {
@@ -59,6 +83,33 @@ const ChatBubbleComponent: React.FC<Props> = ({
           <View key={att.id ?? att.url} style={styles.videoChip}>
             <Ionicons name="videocam" size={14} color="#0f172a" />
             <Text style={styles.videoLabel}>Video</Text>
+          </View>
+        ))}
+      </View>
+    );
+  };
+
+  const renderReactions = () => {
+    if (!message.reactions || message.reactions.length === 0) {
+      return null;
+    }
+    return (
+      <View
+        style={[
+          styles.reactionsRow,
+          isOwn ? styles.reactionsRowOwn : styles.reactionsRowOther,
+        ]}
+      >
+        {message.reactions.map((reaction) => (
+          <View
+            key={reaction.emoji}
+            style={[
+              styles.reactionChip,
+              reaction.reactedByCurrentUser ? styles.reactionChipActive : null,
+            ]}
+          >
+            <Text style={styles.reactionText}>{reaction.emoji}</Text>
+            <Text style={styles.reactionCount}>{reaction.count}</Text>
           </View>
         ))}
       </View>
@@ -97,10 +148,12 @@ const ChatBubbleComponent: React.FC<Props> = ({
 
   const content = (
     <View style={styles.bubbleContent}>
+      {renderReplyPreview()}
       {renderAttachments()}
       {message.body ? (
         <Text style={isOwn ? styles.textOwn : styles.textOther}>{message.body}</Text>
       ) : null}
+      {renderReactions()}
       <View style={styles.metaRow}>
         {showTimestamp ? <Text style={styles.timestamp}>{time}</Text> : null}
         {isOwn ? renderStatusIcon() : null}
@@ -250,6 +303,61 @@ const styles = StyleSheet.create({
     color: '#0f172a',
     fontWeight: '600',
     fontSize: 12,
+  },
+  replyPreview: {
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    borderRadius: 10,
+    marginBottom: 6,
+  },
+  replyPreviewOwn: {
+    backgroundColor: '#0f172a20',
+  },
+  replyPreviewOther: {
+    backgroundColor: '#cbd5e170',
+  },
+  replySender: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#0f172a',
+    marginBottom: 2,
+  },
+  replySnippet: {
+    fontSize: 12,
+    color: '#1f2937',
+  },
+  reactionsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 6,
+  },
+  reactionsRowOwn: {
+    justifyContent: 'flex-end',
+  },
+  reactionsRowOther: {
+    justifyContent: 'flex-start',
+  },
+  reactionChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 12,
+    backgroundColor: '#0f172a14',
+    marginRight: 6,
+    marginTop: 4,
+  },
+  reactionChipActive: {
+    backgroundColor: '#0ea5e933',
+  },
+  reactionText: {
+    fontSize: 12,
+    marginRight: 4,
+  },
+  reactionCount: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#0f172a',
   },
 });
 
