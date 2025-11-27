@@ -41,7 +41,8 @@ function VideoPostPlayerComponent({
   mutedDefault,
   onMuteChange,
 }: Props) {
-  const screenFocused = isScreenFocused ?? useSafeIsFocused();
+  const safeIsFocused = useSafeIsFocused();
+  const screenFocused = isScreenFocused ?? safeIsFocused;
   const isMounted = useRef(true);
   const [internalMuted, setInternalMuted] = useState(mutedDefault ?? true);
   const [userPaused, setUserPaused] = useState(false);
