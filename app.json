@@ -28,7 +28,7 @@
     },
     "extra": {
       "backendUrl": "http://192.168.0.104:8000/",
-      "healthEndpoint": "health/",
+      "healthEndpoint": "api/v1/health/",
       "realtimeUrl": "ws://192.168.0.104:8001/ws"
     }
   }

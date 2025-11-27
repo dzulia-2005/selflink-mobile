@@ -3,15 +3,25 @@ import Constants from 'expo-constants';
 const extra = Constants?.expoConfig?.extra ?? {};
 
 const DEFAULT_BACKEND = 'http://192.168.0.104:8000/';
+const DEFAULT_HEALTH_ENDPOINT = 'api/v1/health/';
 
 const backendUrl =
   typeof extra.backendUrl === 'string' ? extra.backendUrl : DEFAULT_BACKEND;
-const healthEndpointRaw =
-  typeof extra.healthEndpoint === 'string' ? extra.healthEndpoint : undefined;
-const healthEndpoint =
-  typeof healthEndpointRaw === 'string' && healthEndpointRaw.trim().length > 0
-    ? healthEndpointRaw
-    : 'health/';
+const normalizeHealthEndpoint = (raw: unknown): string => {
+  if (typeof raw !== 'string') {
+    return DEFAULT_HEALTH_ENDPOINT;
+  }
+  const trimmed = raw.trim();
+  if (!trimmed) {
+    return DEFAULT_HEALTH_ENDPOINT;
+  }
+  const withoutSlashes = trimmed.replace(/^\/+/, '').replace(/\/+$/, '');
+  if (!withoutSlashes || /^[0-9]+$/.test(withoutSlashes)) {
+    return DEFAULT_HEALTH_ENDPOINT;
+  }
+  return `${withoutSlashes}/`;
+};
+const healthEndpoint = normalizeHealthEndpoint(extra.healthEndpoint);
 const resolveRealtimeUrl = () => {
   if (typeof extra.realtimeUrl === 'string') {
     return extra.realtimeUrl;
