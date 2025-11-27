@@ -19,7 +19,7 @@ const useSafeIsFocused = () => {
   try {
     return useIsFocused();
   } catch {
-    return true;
+    return false;
   }
 };
 
@@ -86,17 +86,21 @@ function VideoPostPlayerComponent({
     };
   }, [player]);
 
+  const stopAndUnload = useCallback(async () => {
+    try {
+      player.pause();
+      await player.replaceAsync(null);
+    } catch {
+      // ignore
+    }
+  }, [player]);
+
   useEffect(
     () => () => {
       isMounted.current = false;
-      try {
-        player.pause();
-        player.unload();
-      } catch {
-        // ignore
-      }
+      void stopAndUnload();
     },
-    [player],
+    [stopAndUnload],
   );
 
   const safePause = useCallback(() => {
@@ -121,15 +125,10 @@ function VideoPostPlayerComponent({
     if (!screenFocused) {
       setManualPlay(false);
       setUserPaused(false);
-      try {
-        player.pause();
-        player.unload();
-      } catch {
-        // ignore
-      }
+      void stopAndUnload();
       return;
     }
-  }, [player, screenFocused]);
+  }, [screenFocused, stopAndUnload]);
 
   useEffect(() => {
     if (!screenFocused) {
@@ -138,15 +137,10 @@ function VideoPostPlayerComponent({
     if (shouldBePlaying) {
       safePlay();
     } else {
-      try {
-        player.pause();
-        player.unload();
-      } catch {
-        // ignore
-      }
+      void stopAndUnload();
       setManualPlay(false);
     }
-  }, [player, screenFocused, shouldBePlaying, safePlay]);
+  }, [screenFocused, shouldBePlaying, safePlay, stopAndUnload]);
 
   const handleTogglePlayback = () => {
     if (isPlaying) {
