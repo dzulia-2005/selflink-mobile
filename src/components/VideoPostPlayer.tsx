@@ -50,6 +50,7 @@ function VideoPostPlayerComponent({
   const [manualPlay, setManualPlay] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [status, setStatus] = useState<VideoPlayerStatus>('loading');
+  const sourceLoadedRef = useRef(true);
 
   const player = useVideoPlayer(source.url, (instance) => {
     instance.loop = true;
@@ -90,6 +91,7 @@ function VideoPostPlayerComponent({
     try {
       player.pause();
       await player.replaceAsync(null);
+      sourceLoadedRef.current = false;
     } catch {
       // ignore
     }
@@ -135,12 +137,23 @@ function VideoPostPlayerComponent({
       return;
     }
     if (shouldBePlaying) {
-      safePlay();
+      const ensurePlay = async () => {
+        if (!sourceLoadedRef.current) {
+          try {
+            await player.replaceAsync(source.url);
+            sourceLoadedRef.current = true;
+          } catch {
+            // ignore
+          }
+        }
+        safePlay();
+      };
+      ensurePlay().catch(() => undefined);
     } else {
-      stopAndUnload().catch(() => undefined);
+      safePause();
       setManualPlay(false);
     }
-  }, [screenFocused, shouldBePlaying, safePlay, stopAndUnload]);
+  }, [player, screenFocused, shouldBePlaying, safePause, safePlay, source.url]);
 
   const handleTogglePlayback = () => {
     if (isPlaying) {
