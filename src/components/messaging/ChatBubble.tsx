@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { memo } from 'react';
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Animated, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
+import { useBubbleAnimation } from '@hooks/useBubbleAnimation';
 import type { Message } from '@schemas/messaging';
 import { theme } from '@theme';
 
@@ -29,6 +30,7 @@ const ChatBubbleComponent: React.FC<Props> = ({
   onRetry,
 }) => {
   const radius = getRadius(isOwn, isFirstInGroup, isLastInGroup);
+  const { animatedStyle } = useBubbleAnimation(isOwn);
 
   const time = new Date(message.created_at).toLocaleTimeString([], {
     hour: '2-digit',
@@ -184,8 +186,12 @@ const ChatBubbleComponent: React.FC<Props> = ({
   );
 
   return (
-    <View
-      style={[styles.container, isOwn ? styles.containerRight : styles.containerLeft]}
+    <Animated.View
+      style={[
+        styles.container,
+        isOwn ? styles.containerRight : styles.containerLeft,
+        animatedStyle,
+      ]}
     >
       <TouchableOpacity
         activeOpacity={0.85}
@@ -202,7 +208,7 @@ const ChatBubbleComponent: React.FC<Props> = ({
           </View>
         </View>
       </TouchableOpacity>
-    </View>
+    </Animated.View>
   );
 };
 
