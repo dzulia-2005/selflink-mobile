@@ -172,6 +172,15 @@ export const theme = {
     verticalRhythm: 12,
     cosmicPadding: 18,
   },
+  reels: {
+    backgroundStart: '#020617',
+    backgroundEnd: '#020617',
+    overlayGlass: 'rgba(15,23,42,0.78)',
+    textPrimary: '#F9FAFB',
+    textSecondary: 'rgba(226,232,240,0.85)',
+    accentLike: '#FB7185',
+    accentIcon: '#E5E7EB',
+  },
   feed: {
     backgroundStart: '#020617',
     backgroundEnd: '#020617',

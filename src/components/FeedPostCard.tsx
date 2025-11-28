@@ -172,6 +172,7 @@ function FeedPostCardComponent({ post, shouldPlayVideo = false, isFeedFocused }:
                   style={styles.followButton}
                   onPress={handleFollowToggle}
                   disabled={followPending}
+                  activeOpacity={0.9}
                 >
                   <Text style={styles.followButtonText}>
                     {followPending ? '…' : isFollowing ? 'Following' : 'Follow'}
@@ -355,19 +356,18 @@ const styles = StyleSheet.create({
   },
   followButton: {
     borderWidth: 1,
-    borderColor: 'rgba(56,189,248,0.75)',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 16,
+    borderColor: 'rgba(56,189,248,0.65)',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 18,
     alignSelf: 'center',
-    backgroundColor: 'rgba(15,23,42,0.8)',
+    backgroundColor: theme.feed.glass,
   },
   followButtonText: {
-    color: '#E0F2FE',
-    fontSize: 12,
+    color: theme.feed.textPrimary,
+    fontSize: 13,
     fontWeight: '700',
-    letterSpacing: 0.5,
-    textTransform: 'uppercase',
+    letterSpacing: 0.2,
   },
   body: {
     marginTop: 14,
