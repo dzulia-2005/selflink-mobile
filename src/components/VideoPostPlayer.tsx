@@ -5,6 +5,7 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import type { PostVideo } from '@schemas/social';
+import { theme } from '@theme';
 
 type Props = {
   source: PostVideo;
@@ -57,7 +58,14 @@ function VideoPostPlayerComponent({
     instance.muted = true;
   });
 
-  const effectiveMuted = mutedDefault ?? internalMuted;
+  useEffect(() => {
+    if (mutedDefault === undefined) {
+      return;
+    }
+    setInternalMuted(mutedDefault);
+  }, [mutedDefault]);
+
+  const effectiveMuted = internalMuted;
   const shouldBePlaying =
     AUTOPLAY_ENABLED &&
     screenFocused &&
@@ -168,11 +176,8 @@ function VideoPostPlayerComponent({
 
   const handleToggleMute = () => {
     const next = !effectiveMuted;
-    if (onMuteChange) {
-      onMuteChange(next);
-    } else {
-      setInternalMuted(next);
-    }
+    setInternalMuted(next);
+    onMuteChange?.(next);
   };
 
   const durationLabel = formatDuration(source.duration ?? null);
@@ -214,17 +219,17 @@ function VideoPostPlayerComponent({
             <Ionicons
               name={effectiveMuted ? 'volume-mute' : 'volume-high'}
               size={18}
-              color="#E2E8F0"
+              color={theme.reels.textPrimary}
             />
           </Pressable>
           {!isPlaying ? (
             <View style={styles.centerIndicator} pointerEvents="none">
-              <Ionicons name="play" size={32} color="#E2E8F0" />
+              <Ionicons name="play" size={32} color={theme.reels.textPrimary} />
             </View>
           ) : null}
           {status === 'loading' ? (
             <View style={styles.buffering}>
-              <ActivityIndicator color="#E2E8F0" />
+              <ActivityIndicator color={theme.reels.textPrimary} />
             </View>
           ) : null}
           {mode === 'inline' && durationLabel ? (
@@ -244,19 +249,20 @@ const styles = StyleSheet.create({
   container: {
     borderRadius: 20,
     overflow: 'hidden',
-    backgroundColor: '#0F172A',
+    backgroundColor: theme.palette.obsidian,
     borderWidth: 1,
     borderColor: 'rgba(148,163,184,0.25)',
   },
   containerReel: {
     borderRadius: 0,
     borderWidth: 0,
-    backgroundColor: '#000',
+    backgroundColor: theme.reels.backgroundStart,
+    flex: 1,
   },
   video: {
     width: '100%',
     minHeight: 260,
-    backgroundColor: '#0B1120',
+    backgroundColor: theme.palette.midnight,
   },
   fullSize: {
     width: '100%',
@@ -286,7 +292,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   tagText: {
-    color: '#E2E8F0',
+    color: theme.text.secondary,
     fontWeight: '700',
     fontSize: 12,
     letterSpacing: 0.3,
@@ -298,7 +304,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: 'rgba(15,23,42,0.75)',
+    backgroundColor: theme.reels.overlayGlass,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
@@ -311,7 +317,7 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: 'rgba(15,23,42,0.55)',
+    backgroundColor: theme.reels.overlayGlass,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -324,7 +330,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 12,
     bottom: 12,
-    backgroundColor: 'rgba(15,23,42,0.75)',
+    backgroundColor: theme.reels.overlayGlass,
     borderRadius: 12,
     paddingHorizontal: 10,
     paddingVertical: 6,
@@ -332,7 +338,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(148,163,184,0.35)',
   },
   durationText: {
-    color: '#E2E8F0',
+    color: theme.reels.textPrimary,
     fontWeight: '700',
     fontSize: 12,
     letterSpacing: 0.3,

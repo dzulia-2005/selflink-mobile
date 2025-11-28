@@ -1,38 +1,43 @@
-import { Ionicons } from '@expo/vector-icons';
 import { useIsFocused, useNavigation } from '@react-navigation/native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Animated,
+  Dimensions,
+  Easing,
   FlatList,
-  Modal,
   RefreshControl,
+  Share,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
   ViewToken,
-  Dimensions,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import * as socialApi from '@api/social';
 import { CommentContent } from '@components/comments/CommentContent';
 import { SoulReelItem } from '@components/SoulReelItem';
 import { UserAvatar } from '@components/UserAvatar';
-import { useToast } from '@context/ToastContext';
 import type { Comment, Post } from '@schemas/social';
 import type { VideoFeedItem } from '@schemas/videoFeed';
 import { useFeedStore } from '@store/feedStore';
 import { useVideoFeedStore } from '@store/videoFeedStore';
+import { theme } from '@theme';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const useSafeNavigation = <T,>() => {
   try {
     return useNavigation<T>();
-  } catch (error) {
+  } catch (err) {
     if (typeof __DEV__ !== 'undefined' && __DEV__) {
-      console.warn('SoulReelsScreen: navigation unavailable', error);
+      console.warn('SoulReelsScreen: navigation unavailable', err);
     }
     return null as unknown as T;
   }
@@ -46,20 +51,10 @@ const useSafeIsFocused = () => {
   }
 };
 
-const useSafeToast = () => {
-  try {
-    return useToast();
-  } catch {
-    return {
-      push: () => undefined,
-    };
-  }
-};
-
 export function SoulReelsScreen() {
   const navigation = useSafeNavigation<any>();
   const isFocused = useSafeIsFocused();
-  const toast = useSafeToast();
+  const insets = useSafeAreaInsets();
   const likePost = useFeedStore((state) => state.likePost);
   const unlikePost = useFeedStore((state) => state.unlikePost);
   const addCommentToStore = useFeedStore((state) => state.addComment);
@@ -86,14 +81,16 @@ export function SoulReelsScreen() {
   const error = useMemo(() => errorByMode[currentMode], [currentMode, errorByMode]);
   const [activeId, setActiveId] = useState<string | number | null>(null);
   const [muted, setMuted] = useState(true);
-  const [commentingPost, setCommentingPost] = useState<Post | null>(null);
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [loadingComments, setLoadingComments] = useState(false);
-  const [commentText, setCommentText] = useState('');
-  const [commentPending, setCommentPending] = useState(false);
   const [engagementById, setEngagementById] = useState<
     Record<string, { liked: boolean; likeCount: number; commentCount: number }>
   >({});
+  const [commentPost, setCommentPost] = useState<Post | null>(null);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [commentLoading, setCommentLoading] = useState(false);
+  const [commentText, setCommentText] = useState('');
+  const [commentPending, setCommentPending] = useState(false);
+  const panelWidth = SCREEN_WIDTH * 0.72;
+  const panelTranslate = useRef(new Animated.Value(panelWidth)).current;
   const viewabilityConfig = useRef({
     itemVisiblePercentThreshold: 80,
   });
@@ -131,8 +128,37 @@ export function SoulReelsScreen() {
   useEffect(() => {
     if (!isFocused) {
       setActiveId(null);
+      setCommentPost(null);
     }
   }, [isFocused]);
+
+  useEffect(() => {
+    Animated.timing(panelTranslate, {
+      toValue: commentPost ? 0 : panelWidth,
+      duration: 220,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    }).start();
+  }, [commentPost, panelTranslate, panelWidth]);
+
+  useEffect(() => {
+    const loadComments = async () => {
+      if (!commentPost) {
+        return;
+      }
+      setCommentLoading(true);
+      setComments([]);
+      try {
+        const data = await socialApi.getPostComments(commentPost.id);
+        setComments(data);
+      } catch (err) {
+        console.warn('SoulReelsScreen: failed to load comments', err);
+      } finally {
+        setCommentLoading(false);
+      }
+    };
+    loadComments().catch(() => undefined);
+  }, [commentPost]);
 
   const onViewableItemsChanged = useCallback(
     ({ viewableItems }: { viewableItems: Array<ViewToken<VideoFeedItem>> }) => {
@@ -234,101 +260,84 @@ export function SoulReelsScreen() {
         }
       } catch (err) {
         updateEngagement(postId, { liked: current.liked, likeCount: current.likeCount });
-        toast.push({
-          message: 'Unable to update like. Please try again.',
-          tone: 'error',
-          duration: 2500,
-        });
+        console.warn('SoulReelsScreen: unable to update like', err);
       } finally {
         pendingLikes.current.delete(key);
       }
     },
-    [engagementById, items, likePost, toast, unlikePost, updateEngagement],
+    [engagementById, items, likePost, unlikePost, updateEngagement],
   );
 
-  const openComments = useCallback((post: Post) => {
-    setComments([]);
+  const handleComment = useCallback((post: Post) => {
     setCommentText('');
-    setCommentingPost(post);
+    setCommentPost(post);
   }, []);
 
-  useEffect(() => {
-    const loadComments = async () => {
-      if (!commentingPost) {
-        return;
-      }
-      setLoadingComments(true);
-      try {
-        const data = await socialApi.getPostComments(commentingPost.id);
-        setComments(data);
-      } catch (err) {
-        toast.push({
-          message: 'Unable to load comments.',
-          tone: 'error',
-          duration: 2500,
-        });
-      } finally {
-        setLoadingComments(false);
-      }
-    };
-    loadComments().catch(() => undefined);
-  }, [commentingPost, toast]);
+  const handleShare = useCallback(async (post: VideoFeedItem['post']) => {
+    try {
+      const message = post.text
+        ? `${post.text}\n\nself.link/post/${post.id ?? ''}`.trim()
+        : `Check this reel on SelfLink: self.link/post/${post.id ?? ''}`;
+      await Share.share({ message });
+    } catch (err) {
+      console.warn('SoulReelsScreen: share failed', err);
+    }
+  }, []);
+
+  const renderItem = useCallback(
+    ({ item, index }: { item: VideoFeedItem; index: number }) => (
+      <SoulReelItem
+        post={item.post}
+        isActive={isFocused && String(item.id) === String(activeId)}
+        isScreenFocused={isFocused}
+        muted={muted}
+        onMuteChange={setMuted}
+        onLike={handleLike}
+        onComment={handleComment}
+        onShare={handleShare}
+        onProfile={(userId) => navigation?.navigate?.('UserProfile', { userId })}
+        index={index}
+      />
+    ),
+    [activeId, handleComment, handleLike, handleShare, isFocused, muted, navigation],
+  );
+
+  const handleCloseComments = useCallback(() => {
+    setCommentPost(null);
+    setCommentText('');
+    setComments([]);
+  }, []);
 
   const handleSubmitComment = useCallback(async () => {
-    if (!commentingPost || !commentText.trim() || commentPending) {
+    if (!commentPost || !commentText.trim() || commentPending) {
       return;
     }
+    const trimmed = commentText.trim();
     setCommentPending(true);
     try {
-      const newComment = await addCommentToStore(String(commentingPost.id), {
-        body: commentText.trim(),
+      const newComment = await addCommentToStore(String(commentPost.id), {
+        body: trimmed,
       });
-      setComments((prev) => [...prev, newComment]);
+      setComments((prev) => prev.concat(newComment));
       setCommentText('');
-      updateEngagement(commentingPost.id, {
+      updateEngagement(commentPost.id, {
         commentCount:
-          (engagementById[String(commentingPost.id)]?.commentCount ??
-            commentingPost.comment_count) + 1,
+          (engagementById[String(commentPost.id)]?.commentCount ??
+            commentPost.comment_count) + 1,
       });
     } catch (err) {
-      toast.push({
-        message: 'Unable to add comment. Please try again.',
-        tone: 'error',
-        duration: 2500,
-      });
+      console.warn('SoulReelsScreen: unable to add comment', err);
     } finally {
       setCommentPending(false);
     }
   }, [
     addCommentToStore,
     commentPending,
+    commentPost,
     commentText,
-    commentingPost,
     engagementById,
-    toast,
     updateEngagement,
   ]);
-  const renderItem = useCallback(
-    ({ item }: { item: VideoFeedItem }) => (
-      <SoulReelItem
-        post={item.post}
-        isActive={isFocused && String(item.id) === String(activeId)}
-        muted={muted}
-        onToggleMute={() => setMuted((prev) => !prev)}
-        onLike={handleLike}
-        onComment={(postId) => {
-          const matched = derivedItems.find(
-            (entry) => String(entry.id) === String(postId),
-          );
-          if (matched) {
-            openComments(matched.post);
-          }
-        }}
-        onProfile={(userId) => navigation?.navigate?.('UserProfile', { userId })}
-      />
-    ),
-    [activeId, derivedItems, handleLike, isFocused, muted, navigation, openComments],
-  );
 
   const keyExtractor = useCallback((item: VideoFeedItem) => String(item.id), []);
 
@@ -336,60 +345,32 @@ export function SoulReelsScreen() {
     if (isLoading) {
       return (
         <View style={styles.loader}>
-          <ActivityIndicator color="#fff" />
+          <ActivityIndicator color={theme.reels.textPrimary} />
         </View>
       );
     }
     return (
       <View style={styles.loader}>
-        <Text style={styles.emptyText}>No videos yet</Text>
+        <Text style={styles.emptyText}>No reels yet</Text>
       </View>
     );
   };
 
+  const errorOffsetStyle = useMemo(
+    () => ({
+      bottom: Math.max(insets.bottom, 16) + 12,
+      left: 16,
+      right: 16,
+    }),
+    [insets.bottom],
+  );
+
   return (
-    <View style={styles.container}>
-      <View style={styles.topBar}>
-        <TouchableOpacity onPress={() => navigation?.goBack?.()}>
-          <Text style={styles.backLabel}>Back</Text>
-        </TouchableOpacity>
-        <Text style={styles.screenTitle}>Reels</Text>
-        <View style={styles.rightPlaceholder} />
-      </View>
-      <View style={styles.modeRow}>
-        <TouchableOpacity
-          style={[
-            styles.modeButton,
-            currentMode === 'for_you' && styles.modeButtonActive,
-          ]}
-          onPress={() => setMode('for_you')}
-        >
-          <Text
-            style={[
-              styles.modeLabel,
-              currentMode === 'for_you' && styles.modeLabelActive,
-            ]}
-          >
-            For You
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[
-            styles.modeButton,
-            currentMode === 'following' && styles.modeButtonActive,
-          ]}
-          onPress={() => setMode('following')}
-        >
-          <Text
-            style={[
-              styles.modeLabel,
-              currentMode === 'following' && styles.modeLabelActive,
-            ]}
-          >
-            Following
-          </Text>
-        </TouchableOpacity>
-      </View>
+    <LinearGradient
+      colors={[theme.reels.backgroundStart, theme.reels.backgroundEnd]}
+      style={styles.container}
+    >
+      <View style={styles.halo} pointerEvents="none" />
       <FlatList
         data={derivedItems}
         keyExtractor={keyExtractor}
@@ -408,14 +389,16 @@ export function SoulReelsScreen() {
           <RefreshControl
             refreshing={isLoading}
             onRefresh={() => fetchFirstPage(currentMode).catch(() => undefined)}
-            tintColor="#fff"
+            tintColor={theme.reels.textPrimary}
+            colors={[theme.reels.textPrimary]}
+            progressBackgroundColor="rgba(34,211,238,0.08)"
           />
         }
         ListEmptyComponent={renderEmpty}
         ListFooterComponent={
           isPaging ? (
             <View style={styles.footerLoader}>
-              <ActivityIndicator color="#fff" />
+              <ActivityIndicator color={theme.reels.textPrimary} />
             </View>
           ) : null
         }
@@ -424,9 +407,10 @@ export function SoulReelsScreen() {
           offset: SCREEN_HEIGHT * index,
           index,
         })}
+        style={styles.list}
       />
       {error ? (
-        <View style={styles.errorBanner}>
+        <View style={[styles.errorBanner, errorOffsetStyle]}>
           <Text style={styles.errorText}>{error}</Text>
           <TouchableOpacity
             onPress={() => fetchFirstPage(currentMode).catch(() => undefined)}
@@ -436,104 +420,153 @@ export function SoulReelsScreen() {
         </View>
       ) : null}
 
-      <Modal
-        visible={Boolean(commentingPost)}
-        animationType="slide"
-        onRequestClose={() => setCommentingPost(null)}
-        transparent
+      {commentPost ? (
+        <TouchableWithoutFeedback onPress={handleCloseComments}>
+          <View style={styles.backdrop} />
+        </TouchableWithoutFeedback>
+      ) : null}
+
+      <Animated.View
+        style={[
+          styles.commentsPanel,
+          {
+            paddingTop: insets.top + 12,
+            paddingBottom: Math.max(insets.bottom, 16),
+            width: panelWidth,
+            transform: [{ translateX: panelTranslate }],
+          },
+        ]}
+        pointerEvents={commentPost ? 'auto' : 'none'}
       >
-        <View style={styles.modalBackdrop}>
-          <View style={styles.commentSheet}>
-            <View style={styles.commentHeader}>
-              <Text style={styles.commentTitle}>Comments</Text>
-              <TouchableOpacity onPress={() => setCommentingPost(null)} hitSlop={10}>
-                <Ionicons name="close" size={24} color="#E2E8F0" />
-              </TouchableOpacity>
-            </View>
-            {loadingComments ? (
-              <View style={styles.loader}>
-                <ActivityIndicator color="#fff" />
-              </View>
-            ) : (
-              <FlatList
-                data={comments}
-                keyExtractor={(item) => String(item.id)}
-                renderItem={({ item }) => (
-                  <View style={styles.commentRow}>
-                    <UserAvatar
-                      uri={item.author.photo}
-                      label={item.author.name}
-                      size={34}
-                    />
-                    <View style={styles.commentBody}>
-                      <Text style={styles.commentAuthor}>{item.author.name}</Text>
-                      <CommentContent text={item.body} media={item.media} />
-                    </View>
-                  </View>
-                )}
-                ListEmptyComponent={
-                  <View style={styles.loader}>
-                    <Text style={styles.emptyText}>Be the first to comment</Text>
-                  </View>
-                }
-              />
-            )}
-            <View style={styles.commentInputRow}>
-              <TextInput
-                value={commentText}
-                onChangeText={setCommentText}
-                placeholder="Add a comment…"
-                placeholderTextColor="#94A3B8"
-                style={styles.commentInput}
-                editable={!commentPending}
-              />
-              <TouchableOpacity
-                onPress={handleSubmitComment}
-                style={styles.commentSend}
-                disabled={commentPending || !commentText.trim()}
-              >
-                {commentPending ? (
-                  <ActivityIndicator color="#0B1120" />
-                ) : (
-                  <Text style={styles.sendLabel}>Send</Text>
-                )}
-              </TouchableOpacity>
-            </View>
-          </View>
+        <View style={styles.commentsHeader}>
+          <Text style={styles.commentsTitle}>Comments</Text>
+          <TouchableOpacity onPress={handleCloseComments} hitSlop={10}>
+            <Text style={styles.closeLabel}>✕</Text>
+          </TouchableOpacity>
         </View>
-      </Modal>
-    </View>
+        {commentLoading ? (
+          <View style={styles.commentsLoader}>
+            <ActivityIndicator color={theme.reels.textPrimary} />
+          </View>
+        ) : (
+          <FlatList
+            data={comments}
+            keyExtractor={(item) => String(item.id)}
+            renderItem={({ item }) => (
+              <View style={styles.commentRow}>
+                <UserAvatar uri={item.author.photo} label={item.author.name} size={34} />
+                <View style={styles.commentBody}>
+                  <Text style={styles.commentAuthor}>{item.author.name}</Text>
+                  <CommentContent
+                    text={item.body}
+                    media={item.media}
+                    legacySources={(item as any)?.images}
+                  />
+                </View>
+              </View>
+            )}
+            ListEmptyComponent={
+              <View style={styles.commentsLoader}>
+                <Text style={styles.emptyComments}>No comments yet</Text>
+              </View>
+            }
+            contentContainerStyle={styles.commentsList}
+            showsVerticalScrollIndicator={false}
+          />
+        )}
+        <View style={styles.composer}>
+          <TextInput
+            value={commentText}
+            onChangeText={setCommentText}
+            placeholder="Add a comment…"
+            placeholderTextColor={theme.reels.textSecondary}
+            style={styles.composerInput}
+            editable={!commentPending}
+            multiline
+          />
+          <TouchableOpacity
+            onPress={handleSubmitComment}
+            style={[
+              styles.sendButton,
+              (!commentText.trim() || commentPending) && styles.sendButtonDisabled,
+            ]}
+            disabled={!commentText.trim() || commentPending}
+          >
+            {commentPending ? (
+              <ActivityIndicator color={theme.reels.textPrimary} />
+            ) : (
+              <Text style={styles.sendLabel}>Send</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+      </Animated.View>
+
+      <View
+        style={[styles.topOverlay, { paddingTop: insets.top + 6 }]}
+        pointerEvents="box-none"
+      >
+        <Text style={styles.screenTitle}>Reels</Text>
+        <View style={styles.modeRow}>
+          <TouchableOpacity
+            style={[
+              styles.modeButton,
+              currentMode === 'for_you' && styles.modeButtonActive,
+            ]}
+            onPress={() => setMode('for_you')}
+            hitSlop={10}
+            testID="reels-tab-for-you"
+          >
+            <Text
+              style={[
+                styles.modeLabel,
+                currentMode === 'for_you' && styles.modeLabelActive,
+              ]}
+            >
+              For You
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.modeButton,
+              currentMode === 'following' && styles.modeButtonActive,
+            ]}
+            onPress={() => setMode('following')}
+            hitSlop={10}
+            testID="reels-tab-following"
+          >
+            <Text
+              style={[
+                styles.modeLabel,
+                currentMode === 'following' && styles.modeLabelActive,
+              ]}
+            >
+              Following
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: theme.reels.backgroundEnd,
   },
-  topBar: {
+  list: {
+    flex: 1,
+  },
+  halo: {
     position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 2,
-    paddingTop: 36,
-    paddingHorizontal: 12,
-    paddingBottom: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: 'rgba(0,0,0,0.35)',
-  },
-  backLabel: {
-    color: '#fff',
-    fontWeight: '700',
-  },
-  screenTitle: {
-    color: '#fff',
-    fontWeight: '800',
-    fontSize: 16,
-    letterSpacing: 0.3,
+    width: 320,
+    height: 320,
+    backgroundColor: 'rgba(59,130,246,0.08)',
+    borderRadius: 160,
+    top: -40,
+    right: -20,
+    opacity: 0.45,
+    transform: [{ rotate: '8deg' }],
   },
   loader: {
     height: SCREEN_HEIGHT,
@@ -541,7 +574,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   emptyText: {
-    color: '#E2E8F0',
+    color: theme.reels.textPrimary,
     fontWeight: '700',
   },
   footerLoader: {
@@ -549,9 +582,6 @@ const styles = StyleSheet.create({
   },
   errorBanner: {
     position: 'absolute',
-    bottom: 24,
-    left: 16,
-    right: 16,
     backgroundColor: 'rgba(239,68,68,0.9)',
     padding: 12,
     borderRadius: 12,
@@ -565,96 +595,133 @@ const styles = StyleSheet.create({
     color: '#0B1120',
     fontWeight: '700',
   },
-  rightPlaceholder: {
-    width: 48,
+  topOverlay: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    paddingHorizontal: 16,
+  },
+  screenTitle: {
+    color: theme.reels.textPrimary,
+    fontWeight: '800',
+    fontSize: 18,
+    letterSpacing: 0.5,
+    marginBottom: 10,
   },
   modeRow: {
     flexDirection: 'row',
     justifyContent: 'center',
     gap: 12,
-    paddingHorizontal: 16,
-    paddingBottom: 10,
+    backgroundColor: theme.reels.overlayGlass,
+    borderRadius: 999,
+    padding: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(148,163,184,0.3)',
   },
   modeButton: {
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 999,
-    backgroundColor: '#1f2937',
   },
   modeButtonActive: {
-    backgroundColor: '#0f172a',
+    backgroundColor: 'rgba(34,211,238,0.14)',
     borderWidth: 1,
-    borderColor: '#22c55e',
+    borderColor: 'rgba(34,211,238,0.5)',
   },
   modeLabel: {
-    color: '#e5e7eb',
-    fontWeight: '600',
+    color: theme.reels.textSecondary,
+    fontWeight: '700',
+    letterSpacing: 0.2,
   },
   modeLabelActive: {
-    color: '#bbf7d0',
+    color: theme.reels.textPrimary,
   },
-  modalBackdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.65)',
-    justifyContent: 'flex-end',
+  backdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    zIndex: 8,
   },
-  commentSheet: {
-    maxHeight: '70%',
-    backgroundColor: '#0B1120',
-    borderTopLeftRadius: 18,
-    borderTopRightRadius: 18,
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 8,
+  commentsPanel: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    right: 0,
+    backgroundColor: 'rgba(15,23,42,0.94)',
+    borderLeftWidth: 1,
+    borderLeftColor: 'rgba(148,163,184,0.45)',
+    zIndex: 9,
+    paddingHorizontal: 12,
   },
-  commentHeader: {
+  commentsHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    justifyContent: 'space-between',
+    paddingVertical: 8,
   },
-  commentTitle: {
-    color: '#E2E8F0',
+  commentsTitle: {
+    color: theme.reels.textPrimary,
     fontWeight: '800',
     fontSize: 16,
+  },
+  closeLabel: {
+    color: theme.reels.textSecondary,
+    fontSize: 18,
+  },
+  commentsLoader: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  commentsList: {
+    paddingBottom: 12,
   },
   commentRow: {
     flexDirection: 'row',
     gap: 10,
-    paddingVertical: 8,
+    paddingVertical: 10,
   },
   commentBody: {
     flex: 1,
     gap: 4,
   },
   commentAuthor: {
-    color: '#E2E8F0',
+    color: theme.reels.textPrimary,
     fontWeight: '700',
   },
-  commentInputRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingVertical: 10,
+  emptyComments: {
+    color: theme.reels.textSecondary,
   },
-  commentInput: {
-    flex: 1,
+  composer: {
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(148,163,184,0.3)',
+    paddingTop: 10,
+    paddingBottom: 4,
+    gap: 8,
+  },
+  composerInput: {
+    minHeight: 44,
+    maxHeight: 140,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: 'rgba(148,163,184,0.35)',
-    borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    color: '#E2E8F0',
-    backgroundColor: '#0F172A',
+    color: theme.reels.textPrimary,
+    backgroundColor: 'rgba(15,23,42,0.65)',
   },
-  commentSend: {
-    backgroundColor: '#0EA5E9',
+  sendButton: {
+    alignSelf: 'flex-end',
     paddingHorizontal: 14,
-    paddingVertical: 10,
+    paddingVertical: 8,
     borderRadius: 12,
+    backgroundColor: theme.feed.accentBlue,
+  },
+  sendButtonDisabled: {
+    opacity: 0.6,
   },
   sendLabel: {
     color: '#0B1120',
-    fontWeight: '700',
+    fontWeight: '800',
   },
 });

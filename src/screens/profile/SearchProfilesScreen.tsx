@@ -14,6 +14,7 @@ import {
 import { followUser, searchUsers, unfollowUser, UserSummary } from '@api/users';
 import { UserAvatar } from '@components/UserAvatar';
 import { useAuthStore } from '@store/authStore';
+import { theme } from '@theme';
 
 export function SearchProfilesScreen() {
   const navigation = useNavigation<any>();
@@ -84,7 +85,7 @@ export function SearchProfilesScreen() {
             </Text>
             <Text style={styles.resultHandle}>@{item.handle || item.username}</Text>
             <Text style={styles.resultCounts}>
-              Followers: {item.followers_count ?? 0} • Following:{' '}
+              Followers {item.followers_count ?? 0} • Following{' '}
               {item.following_count ?? 0}
             </Text>
           </View>
@@ -200,10 +201,11 @@ const styles = StyleSheet.create({
   },
   followButton: {
     borderWidth: 1,
-    borderColor: '#CBD5F5',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 4,
+    borderColor: theme.feed.border,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    backgroundColor: theme.feed.glass,
   },
   followButtonDisabled: {
     opacity: 0.6,

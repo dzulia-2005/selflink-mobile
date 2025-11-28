@@ -3,7 +3,6 @@ import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
-  Button,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -16,6 +15,7 @@ import type { UserSummary } from '@api/users';
 import { UserAvatar } from '@components/UserAvatar';
 import { useAuthStore } from '@store/authStore';
 import { useMessagingStore } from '@store/messagingStore';
+import { theme } from '@theme';
 
 interface RouteParams {
   userId: number;
@@ -166,13 +166,22 @@ export function UserProfileScreen() {
             {profile.name || profile.handle || profile.username}
           </Text>
           <Text style={styles.handle}>@{profile.handle || profile.username}</Text>
+          {profile.bio ? <Text style={styles.bio}>{profile.bio}</Text> : null}
+          <View style={styles.statsRow}>
+            <View style={styles.stat}>
+              <Text style={styles.statLabel}>Followers</Text>
+              <Text style={styles.statValue}>{profile.followers_count ?? 0}</Text>
+            </View>
+            <View style={styles.stat}>
+              <Text style={styles.statLabel}>Following</Text>
+              <Text style={styles.statValue}>{profile.following_count ?? 0}</Text>
+            </View>
+            <View style={styles.stat}>
+              <Text style={styles.statLabel}>Posts</Text>
+              <Text style={styles.statValue}>{profile.posts_count ?? 0}</Text>
+            </View>
+          </View>
         </View>
-      </View>
-      {profile.bio ? <Text>{profile.bio}</Text> : null}
-      <View style={styles.statsRow}>
-        <Text>Followers: {profile.followers_count ?? 0}</Text>
-        <Text>Following: {profile.following_count ?? 0}</Text>
-        <Text>Posts: {profile.posts_count ?? 0}</Text>
       </View>
       {!isOwnProfile ? (
         <View style={styles.actionsRow}>
@@ -185,7 +194,7 @@ export function UserProfileScreen() {
               {followPending
                 ? 'Please wait…'
                 : profile.is_following
-                  ? 'Unfollow'
+                  ? 'Following'
                   : 'Follow'}
             </Text>
           </TouchableOpacity>
@@ -200,37 +209,71 @@ export function UserProfileScreen() {
           </TouchableOpacity>
         </View>
       ) : null}
-      <View style={styles.linksRow}>
-        <Button title="Followers" onPress={() => console.log('TODO: followers list')} />
-        <Button title="Following" onPress={() => console.log('TODO: following list')} />
-      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, gap: 16 },
+  container: {
+    flex: 1,
+    padding: 16,
+    gap: 16,
+    backgroundColor: theme.feed.backgroundEnd,
+  },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  header: { flexDirection: 'row', alignItems: 'center', gap: 16 },
-  headerText: { flex: 1 },
-  name: { fontSize: 20, fontWeight: '600' },
-  handle: { color: '#475569' },
-  statsRow: { flexDirection: 'row', gap: 16 },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+    backgroundColor: theme.feed.cardBackground,
+    borderRadius: 18,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: theme.feed.cardBorder,
+  },
+  headerText: { flex: 1, gap: 6 },
+  name: { fontSize: 20, fontWeight: '800', color: theme.feed.textPrimary },
+  handle: { color: theme.feed.textSecondary },
+  bio: { color: theme.feed.textMuted },
+  statsRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 6,
+  },
+  stat: {
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 12,
+    backgroundColor: theme.feed.glass,
+    borderWidth: 1,
+    borderColor: theme.feed.border,
+  },
+  statLabel: {
+    color: theme.feed.textSecondary,
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  statValue: {
+    color: theme.feed.textPrimary,
+    fontSize: 15,
+    fontWeight: '800',
+    marginTop: 2,
+  },
   actionsRow: { flexDirection: 'row', gap: 12 },
   actionButton: {
     flex: 1,
     borderWidth: 1,
-    borderColor: '#CBD5F5',
-    borderRadius: 8,
-    paddingVertical: 10,
+    borderColor: theme.feed.border,
+    borderRadius: 16,
+    paddingVertical: 12,
     alignItems: 'center',
+    backgroundColor: theme.feed.glass,
   },
   primaryButton: {
-    backgroundColor: '#2563EB',
-    borderColor: '#2563EB',
+    backgroundColor: theme.feed.accentBlue,
+    borderColor: theme.feed.accentBlue,
   },
-  actionLabel: { fontWeight: '600' },
-  primaryLabel: { color: '#fff' },
+  actionLabel: { fontWeight: '700', color: theme.feed.textPrimary },
+  primaryLabel: { color: '#0B1120' },
   disabledButton: { opacity: 0.7 },
-  linksRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 12 },
 });
