@@ -1,7 +1,11 @@
 import { fireEvent, render } from '@testing-library/react-native';
 import React from 'react';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 jest.mock('react-native-markdown-display', () => 'Markdown');
+jest.mock('expo-haptics', () => ({
+  selectionAsync: jest.fn().mockResolvedValue(undefined),
+}));
 
 import type { FeedItem } from '@schemas/feed';
 import { FeedScreen } from '@screens/feed/FeedScreen';
@@ -146,6 +150,18 @@ const soulMatchItem: FeedItem = {
 };
 
 describe('FeedScreen', () => {
+  const renderScreen = () =>
+    render(
+      <SafeAreaProvider
+        initialMetrics={{
+          frame: { x: 0, y: 0, width: 360, height: 640 },
+          insets: { top: 0, bottom: 0, left: 0, right: 0 },
+        }}
+      >
+        <FeedScreen />
+      </SafeAreaProvider>,
+    );
+
   beforeEach(() => {
     jest.clearAllMocks();
     mockState = {
@@ -171,7 +187,7 @@ describe('FeedScreen', () => {
 
   it('renders mixed feed items', () => {
     mockState.itemsByMode.for_you = [postItem, mentorItem, matrixItem, soulMatchItem];
-    const { getByText } = render(<FeedScreen />);
+    const { getByText } = renderScreen();
 
     expect(getByText('Alice')).toBeTruthy();
     expect(getByText('Mentor Insight')).toBeTruthy();
@@ -184,7 +200,7 @@ describe('FeedScreen', () => {
 
   it('navigates via mentor and matrix CTAs', () => {
     mockState.itemsByMode.for_you = [mentorItem, matrixItem, soulMatchItem];
-    const { getByText } = render(<FeedScreen />);
+    const { getByText } = renderScreen();
 
     fireEvent.press(getByText('Open mentor'));
     expect(mockParentNavigate).toHaveBeenCalledWith('Mentor', { screen: 'MentorHome' });
@@ -202,7 +218,7 @@ describe('FeedScreen', () => {
 
   it('renders video posts with player', () => {
     mockState.itemsByMode.for_you = [videoPostItem];
-    const { getByTestId } = render(<FeedScreen />);
+    const { getByTestId } = renderScreen();
 
     expect(getByTestId('video-post-player')).toBeTruthy();
   });
@@ -210,7 +226,7 @@ describe('FeedScreen', () => {
   it('switches feed mode via toggle', () => {
     mockState.itemsByMode.for_you = [postItem];
     mockState.currentMode = 'for_you';
-    const { getByText } = render(<FeedScreen />);
+    const { getByText } = renderScreen();
 
     fireEvent.press(getByText('Following'));
     expect(mockSetMode).toHaveBeenCalledWith('following');
@@ -223,7 +239,7 @@ describe('FeedScreen', () => {
     mockLoadFeed.mockClear();
     mockClearDirty.mockClear();
 
-    render(<FeedScreen />);
+    renderScreen();
 
     expect(mockClearDirty).toHaveBeenCalledWith('for_you');
     expect(
