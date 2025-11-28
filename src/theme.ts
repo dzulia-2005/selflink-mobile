@@ -182,6 +182,13 @@ export const theme = {
     textMuted: 'rgba(226,232,240,0.65)',
     accentBlue: '#3B82F6',
     accentCyan: '#22D3EE',
+    cardBackground: 'rgba(15,23,42,0.94)',
+    cardBorder: 'rgba(59,130,246,0.35)',
+    cardGlow: 'rgba(0,0,0,0.35)',
+    textSecondary: 'rgba(148,163,184,0.9)',
+    actionBorder: 'rgba(148,163,184,0.45)',
+    actionLikedBorder: 'rgba(248,113,113,0.75)',
+    actionLikedBackground: 'rgba(248,113,113,0.15)',
   },
 };
 

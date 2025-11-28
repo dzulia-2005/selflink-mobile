@@ -1,4 +1,5 @@
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Image, StyleSheet, Text } from 'react-native';
 
 import { normalizeAvatarUrl } from '@utils/avatar';
 
@@ -34,11 +35,14 @@ export function UserAvatar({ uri, size = 48, label }: Props) {
   }
 
   return (
-    <View
+    <LinearGradient
+      colors={['#3B82F6', '#7C3AED']}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
       style={[styles.placeholder, { width: size, height: size, borderRadius: size / 2 }]}
     >
       <Text style={styles.placeholderLabel}>{initials}</Text>
-    </View>
+    </LinearGradient>
   );
 }
 
@@ -47,7 +51,6 @@ const styles = StyleSheet.create({
     borderRadius: 24,
   },
   placeholder: {
-    backgroundColor: '#1F2937',
     alignItems: 'center',
     justifyContent: 'center',
   },

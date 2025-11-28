@@ -103,14 +103,14 @@ export const SoulMatchFeedCard = memo(SoulMatchFeedCardComponent);
 
 const styles = StyleSheet.create({
   wrapper: {
-    marginBottom: 16,
+    marginBottom: 14,
   },
   card: {
     borderRadius: 20,
     overflow: 'hidden',
     shadowColor: '#000',
-    shadowOpacity: 0.25,
-    shadowRadius: 16,
+    shadowOpacity: 0.35,
+    shadowRadius: 18,
     shadowOffset: { width: 0, height: 10 },
     elevation: 6,
   },
@@ -119,9 +119,11 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   inner: {
-    backgroundColor: '#0B1120',
+    backgroundColor: theme.feed.cardBackground,
     borderRadius: 18,
     padding: 18,
+    borderWidth: 1,
+    borderColor: theme.feed.cardBorder,
   },
   label: {
     color: '#EC4899',
@@ -131,7 +133,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   title: {
-    color: '#E2E8F0',
+    color: theme.feed.textPrimary,
     fontSize: 18,
     fontWeight: '700',
     marginTop: 8,
