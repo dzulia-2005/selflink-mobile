@@ -53,7 +53,7 @@ export async function listGiftTypes(
   params: PaginatedQuery = {},
 ): Promise<GiftTypeListResponse> {
   return apiClient.request<GiftTypeListResponse>(
-    buildQuery('/api/v1/payments/gifts/', params),
+    buildQuery('/payments/gifts/', params),
     {
       method: 'GET',
     },
@@ -61,21 +61,21 @@ export async function listGiftTypes(
 }
 
 export async function createGiftType(payload: GiftTypePayload): Promise<GiftType> {
-  return apiClient.request<GiftType>('/api/v1/payments/gifts/', {
+  return apiClient.request<GiftType>('/payments/gifts/', {
     method: 'POST',
     body: payload,
   });
 }
 
 export async function getGiftType(id: number): Promise<GiftType> {
-  return apiClient.request<GiftType>(`/api/v1/payments/gifts/${id}/`, { method: 'GET' });
+  return apiClient.request<GiftType>(`/payments/gifts/${id}/`, { method: 'GET' });
 }
 
 export async function updateGiftType(
   id: number,
   payload: GiftTypePayload,
 ): Promise<GiftType> {
-  return apiClient.request<GiftType>(`/api/v1/payments/gifts/${id}/`, {
+  return apiClient.request<GiftType>(`/payments/gifts/${id}/`, {
     method: 'PUT',
     body: payload,
   });
@@ -85,14 +85,14 @@ export async function patchGiftType(
   id: number,
   payload: GiftTypePartialPayload,
 ): Promise<GiftType> {
-  return apiClient.request<GiftType>(`/api/v1/payments/gifts/${id}/`, {
+  return apiClient.request<GiftType>(`/payments/gifts/${id}/`, {
     method: 'PATCH',
     body: payload,
   });
 }
 
 export async function deleteGiftType(id: number): Promise<void> {
-  await apiClient.request(`/api/v1/payments/gifts/${id}/`, { method: 'DELETE' });
+  await apiClient.request(`/payments/gifts/${id}/`, { method: 'DELETE' });
 }
 
 // Plans
@@ -123,7 +123,7 @@ export type PlanPartialPayload = Partial<PlanPayload>;
 
 export async function listPlans(params: PaginatedQuery = {}): Promise<PlanListResponse> {
   return apiClient.request<PlanListResponse>(
-    buildQuery('/api/v1/payments/plans/', params),
+    buildQuery('/payments/plans/', params),
     {
       method: 'GET',
     },
@@ -131,32 +131,32 @@ export async function listPlans(params: PaginatedQuery = {}): Promise<PlanListRe
 }
 
 export async function createPlan(payload: PlanPayload): Promise<Plan> {
-  return apiClient.request<Plan>('/api/v1/payments/plans/', {
+  return apiClient.request<Plan>('/payments/plans/', {
     method: 'POST',
     body: payload,
   });
 }
 
 export async function getPlan(id: number): Promise<Plan> {
-  return apiClient.request<Plan>(`/api/v1/payments/plans/${id}/`, { method: 'GET' });
+  return apiClient.request<Plan>(`/payments/plans/${id}/`, { method: 'GET' });
 }
 
 export async function updatePlan(id: number, payload: PlanPayload): Promise<Plan> {
-  return apiClient.request<Plan>(`/api/v1/payments/plans/${id}/`, {
+  return apiClient.request<Plan>(`/payments/plans/${id}/`, {
     method: 'PUT',
     body: payload,
   });
 }
 
 export async function patchPlan(id: number, payload: PlanPartialPayload): Promise<Plan> {
-  return apiClient.request<Plan>(`/api/v1/payments/plans/${id}/`, {
+  return apiClient.request<Plan>(`/payments/plans/${id}/`, {
     method: 'PATCH',
     body: payload,
   });
 }
 
 export async function deletePlan(id: number): Promise<void> {
-  await apiClient.request(`/api/v1/payments/plans/${id}/`, { method: 'DELETE' });
+  await apiClient.request(`/payments/plans/${id}/`, { method: 'DELETE' });
 }
 
 // Subscriptions
@@ -194,7 +194,7 @@ export async function listSubscriptions(
   params: PaginatedQuery = {},
 ): Promise<SubscriptionListResponse> {
   return apiClient.request<SubscriptionListResponse>(
-    buildQuery('/api/v1/payments/subscriptions/', params),
+    buildQuery('/payments/subscriptions/', params),
     { method: 'GET' },
   );
 }
@@ -202,14 +202,14 @@ export async function listSubscriptions(
 export async function createSubscription(
   payload: SubscriptionPayload,
 ): Promise<Subscription> {
-  return apiClient.request<Subscription>('/api/v1/payments/subscriptions/', {
+  return apiClient.request<Subscription>('/payments/subscriptions/', {
     method: 'POST',
     body: payload,
   });
 }
 
 export async function getSubscription(id: number): Promise<Subscription> {
-  return apiClient.request<Subscription>(`/api/v1/payments/subscriptions/${id}/`, {
+  return apiClient.request<Subscription>(`/payments/subscriptions/${id}/`, {
     method: 'GET',
   });
 }
@@ -218,7 +218,7 @@ export async function updateSubscription(
   id: number,
   payload: SubscriptionPayload,
 ): Promise<Subscription> {
-  return apiClient.request<Subscription>(`/api/v1/payments/subscriptions/${id}/`, {
+  return apiClient.request<Subscription>(`/payments/subscriptions/${id}/`, {
     method: 'PUT',
     body: payload,
   });
@@ -228,14 +228,14 @@ export async function patchSubscription(
   id: number,
   payload: SubscriptionPartialPayload,
 ): Promise<Subscription> {
-  return apiClient.request<Subscription>(`/api/v1/payments/subscriptions/${id}/`, {
+  return apiClient.request<Subscription>(`/payments/subscriptions/${id}/`, {
     method: 'PATCH',
     body: payload,
   });
 }
 
 export async function deleteSubscription(id: number): Promise<void> {
-  await apiClient.request(`/api/v1/payments/subscriptions/${id}/`, { method: 'DELETE' });
+  await apiClient.request(`/payments/subscriptions/${id}/`, { method: 'DELETE' });
 }
 
 // Stripe Checkout
@@ -251,7 +251,7 @@ export async function createStripeCheckoutSession(
   payload: StripeCheckoutSessionPayload = {},
 ): Promise<StripeCheckoutSessionResponse> {
   return apiClient.request<StripeCheckoutSessionResponse>(
-    '/api/v1/payments/stripe/checkout-session/',
+    '/payments/stripe/checkout-session/',
     {
       method: 'POST',
       body: payload,

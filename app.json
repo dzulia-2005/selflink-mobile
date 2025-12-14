@@ -28,7 +28,7 @@
     },
     "extra": {
       "backendUrl": "https://api.self-link.com",
-      "healthEndpoint": "api/v1/health/",
+      "healthEndpoint": "/api/v1/health/",
       "realtimeUrl": "wss://api.self-link.com/ws"
     }
   }

@@ -11,7 +11,7 @@ export type MatrixProfile = {
 };
 
 export async function fetchMatrixProfile(): Promise<MatrixProfile> {
-  return apiClient.request<MatrixProfile>('/api/v1/matrix/profile/', {
+  return apiClient.request<MatrixProfile>('/matrix/profile/', {
     method: 'GET',
   });
 }
@@ -30,7 +30,7 @@ export type MatrixSyncResponse = {
 export async function syncMatrixProfile(
   payload: MatrixSyncPayload = {},
 ): Promise<MatrixSyncResponse> {
-  return apiClient.request<MatrixSyncResponse>('/api/v1/matrix/sync/', {
+  return apiClient.request<MatrixSyncResponse>('/matrix/sync/', {
     method: 'POST',
     body: payload,
   });

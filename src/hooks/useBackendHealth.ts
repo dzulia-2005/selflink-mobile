@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import { env } from '@config/env';
-import { buildUrl } from '@utils/url';
+import { HEALTH_URL } from '@config/env';
 
 type HealthStatus = 'idle' | 'loading' | 'online' | 'offline';
 
@@ -19,8 +18,7 @@ export function useBackendHealth(): BackendHealth {
     setStatus('loading');
     setError(undefined);
     try {
-      const url = buildUrl(env.backendUrl, env.healthEndpoint);
-      const response = await fetch(url);
+      const response = await fetch(HEALTH_URL);
       if (!response.ok) {
         throw new Error(`Health check failed (${response.status})`);
       }

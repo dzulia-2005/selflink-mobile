@@ -65,7 +65,7 @@ export async function fetchComments(
   }
 
   const queryString = searchParams.toString();
-  const path = `/api/v1/comments/${queryString ? `?${queryString}` : ''}`;
+  const path = `/comments/${queryString ? `?${queryString}` : ''}`;
 
   return apiClient.request<CommentsResponse>(path, { method: 'GET' });
 }
@@ -77,14 +77,14 @@ export type CreateCommentPayload = {
 };
 
 export async function createComment(payload: CreateCommentPayload): Promise<Comment> {
-  return apiClient.request<Comment>('/api/v1/comments/', {
+  return apiClient.request<Comment>('/comments/', {
     method: 'POST',
     body: payload,
   });
 }
 
 export async function fetchComment(id: number): Promise<Comment> {
-  return apiClient.request<Comment>(`/api/v1/comments/${id}/`, {
+  return apiClient.request<Comment>(`/comments/${id}/`, {
     method: 'GET',
   });
 }
@@ -98,7 +98,7 @@ export async function updateComment(
   id: number,
   payload: UpdateCommentPayload,
 ): Promise<Comment> {
-  return apiClient.request<Comment>(`/api/v1/comments/${id}/`, {
+  return apiClient.request<Comment>(`/comments/${id}/`, {
     method: 'PUT',
     body: payload,
   });
@@ -108,14 +108,14 @@ export async function patchComment(
   id: number,
   payload: Partial<UpdateCommentPayload>,
 ): Promise<Comment> {
-  return apiClient.request<Comment>(`/api/v1/comments/${id}/`, {
+  return apiClient.request<Comment>(`/comments/${id}/`, {
     method: 'PATCH',
     body: payload,
   });
 }
 
 export async function deleteComment(id: number): Promise<void> {
-  await apiClient.request(`/api/v1/comments/${id}/`, {
+  await apiClient.request(`/comments/${id}/`, {
     method: 'DELETE',
   });
 }

@@ -45,7 +45,7 @@ const parsePayload = (raw: string): MentorStreamPayload | null => {
 
 /**
  * Streaming hook for Mentor replies.
- * Connects to the backend SSE endpoint (/api/v1/mentor/stream/) and streams tokens in real time.
+ * Connects to the backend SSE endpoint (/mentor/stream/) and streams tokens in real time.
  * Falls back to the non-streaming mentor chat endpoint if SSE is unavailable.
  */
 export function useMentorStream(
@@ -134,7 +134,7 @@ export function useMentorStream(
       fallbackUsedRef.current = true;
       clearStreamTimeout();
       if (__DEV__) {
-        console.debug('[useMentorStream] Falling back to POST /api/v1/mentor/chat/');
+        console.debug('[useMentorStream] Falling back to POST /mentor/chat/');
       }
       try {
         const response = await callMentorChat({ mode, language, message });

@@ -1,6 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { LinearGradient } from 'expo-linear-gradient';
+import { isAxiosError } from 'axios';
 import { useCallback, useState } from 'react';
 import {
   Alert,
@@ -45,6 +46,21 @@ export function RegisterScreen() {
         username: handle || undefined,
       });
     } catch (err) {
+      if (__DEV__) {
+        if (isAxiosError(err)) {
+          console.debug('register failed: response', {
+            status: err.response?.status,
+            data: err.response?.data,
+          });
+          console.debug('register failed: request', {
+            baseURL: err.config?.baseURL,
+            url: err.config?.url,
+            data: err.config?.data,
+          });
+        } else {
+          console.debug('register failed: non-axios error', err);
+        }
+      }
       console.warn('register failed', err);
     }
   }, [name, email, handle, password, register]);

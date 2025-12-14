@@ -43,7 +43,7 @@ export async function listModerationEnforcements(
   }
 
   const qs = searchParams.toString();
-  const path = `/api/v1/moderation/enforcements/${qs ? `?${qs}` : ''}`;
+  const path = `/moderation/enforcements/${qs ? `?${qs}` : ''}`;
   return apiClient.request<ModerationEnforcementListResponse>(path, { method: 'GET' });
 }
 
@@ -51,7 +51,7 @@ export async function getModerationEnforcement(
   id: number,
 ): Promise<ModerationEnforcement> {
   return apiClient.request<ModerationEnforcement>(
-    `/api/v1/moderation/enforcements/${id}/`,
+    `/moderation/enforcements/${id}/`,
     { method: 'GET' },
   );
 }

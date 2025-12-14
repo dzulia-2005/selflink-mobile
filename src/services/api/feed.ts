@@ -102,12 +102,12 @@ export async function fetchHomeFeed(params: FeedQuery = {}): Promise<FeedRespons
   }
 
   const qs = searchParams.toString();
-  const path = `/api/v1/feed/home/${qs ? `?${qs}` : ''}`;
+  const path = `/feed/home/${qs ? `?${qs}` : ''}`;
   return apiClient.request<FeedResponse>(path, { method: 'GET' });
 }
 
 export async function fetchHomeHighlights(): Promise<HomeHighlightsResponse> {
-  return apiClient.request<HomeHighlightsResponse>('/api/v1/home/highlights/', {
+  return apiClient.request<HomeHighlightsResponse>('/home/highlights/', {
     method: 'GET',
   });
 }

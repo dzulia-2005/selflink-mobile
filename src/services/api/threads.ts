@@ -58,13 +58,13 @@ function buildQuery(path: string, params: ThreadQuery = {}) {
 }
 
 export async function listThreads(params: ThreadQuery = {}): Promise<ThreadListResponse> {
-  return apiClient.request<ThreadListResponse>(buildQuery('/api/v1/threads/', params), {
+  return apiClient.request<ThreadListResponse>(buildQuery('/threads/', params), {
     method: 'GET',
   });
 }
 
 export async function getThread(id: number | string): Promise<Thread> {
-  return apiClient.request<Thread>(`/api/v1/threads/${id}/`, { method: 'GET' });
+  return apiClient.request<Thread>(`/threads/${id}/`, { method: 'GET' });
 }
 
 export type CreateThreadPayload = {
@@ -74,14 +74,14 @@ export type CreateThreadPayload = {
 };
 
 export async function createThread(payload: CreateThreadPayload): Promise<Thread> {
-  return apiClient.request<Thread>('/api/v1/threads/', {
+  return apiClient.request<Thread>('/threads/', {
     method: 'POST',
     body: payload,
   });
 }
 
 export async function markThreadRead(id: number | string): Promise<void> {
-  await apiClient.request(`/api/v1/threads/${id}/read/`, { method: 'POST' });
+  await apiClient.request(`/threads/${id}/read/`, { method: 'POST' });
 }
 
 export type TypingPayload = {
@@ -92,7 +92,7 @@ export async function sendTypingSignal(
   id: number | string,
   payload: TypingPayload = { is_typing: true },
 ): Promise<void> {
-  await apiClient.request(`/api/v1/threads/${id}/typing/`, {
+  await apiClient.request(`/threads/${id}/typing/`, {
     method: 'POST',
     body: payload,
   });
@@ -112,7 +112,7 @@ type TypingStatusResponse = {
 
 export async function getTypingStatus(id: number | string): Promise<TypingStatus> {
   const response = await apiClient.request<TypingStatusResponse>(
-    `/api/v1/threads/${id}/typing/`,
+    `/threads/${id}/typing/`,
     {
       method: 'GET',
     },
@@ -128,7 +128,7 @@ export async function getTypingStatus(id: number | string): Promise<TypingStatus
 }
 
 export async function leaveThread(id: number | string): Promise<void> {
-  await apiClient.request(`/api/v1/threads/${id}/leave/`, {
+  await apiClient.request(`/threads/${id}/leave/`, {
     method: 'POST',
   });
 }

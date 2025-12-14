@@ -39,7 +39,7 @@ export type MentorHistoryResponse = {
 export async function sendMentorChat(
   payload: MentorChatPayload,
 ): Promise<MentorChatResponse> {
-  return apiClient.request<MentorChatResponse>('/api/v1/mentor/chat/', {
+  return apiClient.request<MentorChatResponse>('/mentor/chat/', {
     method: 'POST',
     body: payload,
   });
@@ -48,6 +48,6 @@ export async function sendMentorChat(
 export async function fetchMentorHistory(
   cursor?: string | null,
 ): Promise<MentorHistoryResponse> {
-  const path = cursor ?? '/api/v1/mentor/history/';
+  const path = cursor ?? '/mentor/history/';
   return apiClient.request<MentorHistoryResponse>(path, { method: 'GET' });
 }

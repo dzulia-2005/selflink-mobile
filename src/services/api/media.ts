@@ -53,23 +53,23 @@ export async function listMedia(params: MediaQuery = {}): Promise<MediaListRespo
   }
 
   const qs = searchParams.toString();
-  const path = `/api/v1/media/${qs ? `?${qs}` : ''}`;
+  const path = `/media/${qs ? `?${qs}` : ''}`;
   return apiClient.request<MediaListResponse>(path, { method: 'GET' });
 }
 
 export async function createMedia(payload: MediaPayload): Promise<MediaItem> {
-  return apiClient.request<MediaItem>('/api/v1/media/', {
+  return apiClient.request<MediaItem>('/media/', {
     method: 'POST',
     body: payload,
   });
 }
 
 export async function getMedia(id: number): Promise<MediaItem> {
-  return apiClient.request<MediaItem>(`/api/v1/media/${id}/`, { method: 'GET' });
+  return apiClient.request<MediaItem>(`/media/${id}/`, { method: 'GET' });
 }
 
 export async function updateMedia(id: number, payload: MediaPayload): Promise<MediaItem> {
-  return apiClient.request<MediaItem>(`/api/v1/media/${id}/`, {
+  return apiClient.request<MediaItem>(`/media/${id}/`, {
     method: 'PUT',
     body: payload,
   });
@@ -79,14 +79,14 @@ export async function patchMedia(
   id: number,
   payload: MediaPartialPayload,
 ): Promise<MediaItem> {
-  return apiClient.request<MediaItem>(`/api/v1/media/${id}/`, {
+  return apiClient.request<MediaItem>(`/media/${id}/`, {
     method: 'PATCH',
     body: payload,
   });
 }
 
 export async function deleteMedia(id: number): Promise<void> {
-  await apiClient.request(`/api/v1/media/${id}/`, {
+  await apiClient.request(`/media/${id}/`, {
     method: 'DELETE',
   });
 }

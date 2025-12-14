@@ -48,21 +48,21 @@ export async function listNotifications(
   }
 
   const qs = searchParams.toString();
-  const path = `/api/v1/notifications/${qs ? `?${qs}` : ''}`;
+  const path = `/notifications/${qs ? `?${qs}` : ''}`;
   return apiClient.request<NotificationListResponse>(path, { method: 'GET' });
 }
 
 export async function createNotification(
   payload: NotificationPayload,
 ): Promise<Notification> {
-  return apiClient.request<Notification>('/api/v1/notifications/', {
+  return apiClient.request<Notification>('/notifications/', {
     method: 'POST',
     body: payload,
   });
 }
 
 export async function getNotification(id: number): Promise<Notification> {
-  return apiClient.request<Notification>(`/api/v1/notifications/${id}/`, {
+  return apiClient.request<Notification>(`/notifications/${id}/`, {
     method: 'GET',
   });
 }
@@ -71,7 +71,7 @@ export async function updateNotification(
   id: number,
   payload: NotificationPayload,
 ): Promise<Notification> {
-  return apiClient.request<Notification>(`/api/v1/notifications/${id}/`, {
+  return apiClient.request<Notification>(`/notifications/${id}/`, {
     method: 'PUT',
     body: payload,
   });
@@ -81,16 +81,16 @@ export async function patchNotification(
   id: number,
   payload: NotificationPartialPayload,
 ): Promise<Notification> {
-  return apiClient.request<Notification>(`/api/v1/notifications/${id}/`, {
+  return apiClient.request<Notification>(`/notifications/${id}/`, {
     method: 'PATCH',
     body: payload,
   });
 }
 
 export async function deleteNotification(id: number): Promise<void> {
-  await apiClient.request(`/api/v1/notifications/${id}/`, { method: 'DELETE' });
+  await apiClient.request(`/notifications/${id}/`, { method: 'DELETE' });
 }
 
 export async function markAllNotificationsRead(): Promise<void> {
-  await apiClient.request('/api/v1/notifications/mark-all-read/', { method: 'POST' });
+  await apiClient.request('/notifications/mark-all-read/', { method: 'POST' });
 }

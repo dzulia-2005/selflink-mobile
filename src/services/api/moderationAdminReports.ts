@@ -53,14 +53,14 @@ export async function listModerationAdminReports(
   }
 
   const qs = searchParams.toString();
-  const path = `/api/v1/moderation/admin/reports/${qs ? `?${qs}` : ''}`;
+  const path = `/moderation/admin/reports/${qs ? `?${qs}` : ''}`;
   return apiClient.request<ModerationAdminReportListResponse>(path, { method: 'GET' });
 }
 
 export async function createModerationAdminReport(
   payload: ModerationAdminReportPayload,
 ): Promise<ModerationAdminReport> {
-  return apiClient.request<ModerationAdminReport>('/api/v1/moderation/admin/reports/', {
+  return apiClient.request<ModerationAdminReport>('/moderation/admin/reports/', {
     method: 'POST',
     body: payload,
   });
@@ -70,7 +70,7 @@ export async function getModerationAdminReport(
   id: number,
 ): Promise<ModerationAdminReport> {
   return apiClient.request<ModerationAdminReport>(
-    `/api/v1/moderation/admin/reports/${id}/`,
+    `/moderation/admin/reports/${id}/`,
     {
       method: 'GET',
     },
@@ -82,7 +82,7 @@ export async function updateModerationAdminReport(
   payload: ModerationAdminReportPayload,
 ): Promise<ModerationAdminReport> {
   return apiClient.request<ModerationAdminReport>(
-    `/api/v1/moderation/admin/reports/${id}/`,
+    `/moderation/admin/reports/${id}/`,
     {
       method: 'PUT',
       body: payload,
@@ -95,7 +95,7 @@ export async function patchModerationAdminReport(
   payload: ModerationAdminReportPartialPayload,
 ): Promise<ModerationAdminReport> {
   return apiClient.request<ModerationAdminReport>(
-    `/api/v1/moderation/admin/reports/${id}/`,
+    `/moderation/admin/reports/${id}/`,
     {
       method: 'PATCH',
       body: payload,
@@ -104,7 +104,7 @@ export async function patchModerationAdminReport(
 }
 
 export async function deleteModerationAdminReport(id: number): Promise<void> {
-  await apiClient.request(`/api/v1/moderation/admin/reports/${id}/`, {
+  await apiClient.request(`/moderation/admin/reports/${id}/`, {
     method: 'DELETE',
   });
 }

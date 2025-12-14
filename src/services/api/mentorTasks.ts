@@ -50,25 +50,25 @@ export async function listMentorTasks(
   }
 
   const qs = searchParams.toString();
-  const path = `/api/v1/mentor/tasks/${qs ? `?${qs}` : ''}`;
+  const path = `/mentor/tasks/${qs ? `?${qs}` : ''}`;
   return apiClient.request<MentorTaskListResponse>(path, { method: 'GET' });
 }
 
 export async function listTodayMentorTasks(): Promise<MentorTaskListResponse> {
-  return apiClient.request<MentorTaskListResponse>('/api/v1/mentor/tasks/today/', {
+  return apiClient.request<MentorTaskListResponse>('/mentor/tasks/today/', {
     method: 'GET',
   });
 }
 
 export async function createMentorTask(payload: MentorTaskPayload): Promise<MentorTask> {
-  return apiClient.request<MentorTask>('/api/v1/mentor/tasks/', {
+  return apiClient.request<MentorTask>('/mentor/tasks/', {
     method: 'POST',
     body: payload,
   });
 }
 
 export async function getMentorTask(id: number): Promise<MentorTask> {
-  return apiClient.request<MentorTask>(`/api/v1/mentor/tasks/${id}/`, {
+  return apiClient.request<MentorTask>(`/mentor/tasks/${id}/`, {
     method: 'GET',
   });
 }
@@ -77,7 +77,7 @@ export async function updateMentorTask(
   id: number,
   payload: MentorTaskPayload,
 ): Promise<MentorTask> {
-  return apiClient.request<MentorTask>(`/api/v1/mentor/tasks/${id}/`, {
+  return apiClient.request<MentorTask>(`/mentor/tasks/${id}/`, {
     method: 'PUT',
     body: payload,
   });
@@ -87,12 +87,12 @@ export async function patchMentorTask(
   id: number,
   payload: MentorTaskPartialPayload,
 ): Promise<MentorTask> {
-  return apiClient.request<MentorTask>(`/api/v1/mentor/tasks/${id}/`, {
+  return apiClient.request<MentorTask>(`/mentor/tasks/${id}/`, {
     method: 'PATCH',
     body: payload,
   });
 }
 
 export async function deleteMentorTask(id: number): Promise<void> {
-  await apiClient.request(`/api/v1/mentor/tasks/${id}/`, { method: 'DELETE' });
+  await apiClient.request(`/mentor/tasks/${id}/`, { method: 'DELETE' });
 }

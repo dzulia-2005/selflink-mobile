@@ -24,7 +24,7 @@ export class ApiClient {
   }
 
   async request<T>(path: string, options: RequestOptions = {}): Promise<T> {
-    const url = buildUrl(env.backendUrl, path);
+    const url = buildUrl(env.apiHttpBaseUrl, path);
     const { method = 'GET', body, headers = {}, auth = true } = options;
 
     const finalHeaders: Record<string, string> = {

@@ -37,7 +37,7 @@ export async function fetchDevices(params: DeviceQuery = {}): Promise<DevicesRes
   }
 
   const qs = searchParams.toString();
-  const path = `/api/v1/devices/${qs ? `?${qs}` : ''}`;
+  const path = `/devices/${qs ? `?${qs}` : ''}`;
   return apiClient.request<DevicesResponse>(path, { method: 'GET' });
 }
 
@@ -48,20 +48,20 @@ type DevicePayload = {
 };
 
 export async function createDevice(payload: DevicePayload): Promise<Device> {
-  return apiClient.request<Device>('/api/v1/devices/', {
+  return apiClient.request<Device>('/devices/', {
     method: 'POST',
     body: payload,
   });
 }
 
 export async function fetchDevice(id: number): Promise<Device> {
-  return apiClient.request<Device>(`/api/v1/devices/${id}/`, {
+  return apiClient.request<Device>(`/devices/${id}/`, {
     method: 'GET',
   });
 }
 
 export async function updateDevice(id: number, payload: DevicePayload): Promise<Device> {
-  return apiClient.request<Device>(`/api/v1/devices/${id}/`, {
+  return apiClient.request<Device>(`/devices/${id}/`, {
     method: 'PUT',
     body: payload,
   });
@@ -71,14 +71,14 @@ export async function patchDevice(
   id: number,
   payload: Partial<DevicePayload>,
 ): Promise<Device> {
-  return apiClient.request<Device>(`/api/v1/devices/${id}/`, {
+  return apiClient.request<Device>(`/devices/${id}/`, {
     method: 'PATCH',
     body: payload,
   });
 }
 
 export async function deleteDevice(id: number): Promise<void> {
-  await apiClient.request(`/api/v1/devices/${id}/`, {
+  await apiClient.request(`/devices/${id}/`, {
     method: 'DELETE',
   });
 }

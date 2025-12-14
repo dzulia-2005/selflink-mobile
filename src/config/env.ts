@@ -3,7 +3,7 @@ import Constants from 'expo-constants';
 const extra = Constants?.expoConfig?.extra ?? {};
 
 const DEFAULT_API_BASE_URL = 'https://api.self-link.com';
-const DEFAULT_HEALTH_ENDPOINT = 'api/v1/health/';
+const DEFAULT_HEALTH_ENDPOINT = '/api/v1/health/';
 
 const normalizeBaseUrl = (value: unknown): string => {
   if (!value) {
@@ -33,15 +33,13 @@ const normalizeHealthEndpoint = (raw: unknown): string => {
   if (!trimmed) {
     return DEFAULT_HEALTH_ENDPOINT;
   }
-  const segments = trimmed.split('/').filter(Boolean);
-  const last = segments[segments.length - 1] ?? '';
-  if (!last || /^[0-9]+$/.test(last)) {
-    return DEFAULT_HEALTH_ENDPOINT;
-  }
-  return `${last}/`;
+  const withLeadingSlash = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+  const withoutTrailing = withLeadingSlash.replace(/\/+$/, '');
+  return `${withoutTrailing}/`;
 };
 
-const healthEndpoint = normalizeHealthEndpoint(extra.healthEndpoint);
+export const HEALTH_ENDPOINT = normalizeHealthEndpoint(extra.healthEndpoint);
+export const HEALTH_URL = `${API_BASE_URL}${HEALTH_ENDPOINT}`;
 
 const resolveRealtimeUrl = () => {
   if (typeof extra.realtimeUrl === 'string') {
@@ -74,6 +72,7 @@ export const env = {
   backendUrl: API_BASE_URL,
   apiBaseUrl: API_BASE_URL,
   apiHttpBaseUrl: API_HTTP_BASE_URL,
-  healthEndpoint,
+  healthEndpoint: HEALTH_ENDPOINT,
+  healthUrl: HEALTH_URL,
   realtimeUrl,
 };

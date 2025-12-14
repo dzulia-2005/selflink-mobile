@@ -36,24 +36,24 @@ function buildQuery(path: string, params: UsersQuery = {}): string {
 }
 
 export async function listUsers(params: UsersQuery = {}): Promise<UsersListResponse> {
-  return apiClient.request<UsersListResponse>(buildQuery('/api/v1/users/', params), {
+  return apiClient.request<UsersListResponse>(buildQuery('/users/', params), {
     method: 'GET',
   });
 }
 
 export async function getUser(id: number): Promise<UserProfile> {
-  return apiClient.request<UserProfile>(`/api/v1/users/${id}/`, { method: 'GET' });
+  return apiClient.request<UserProfile>(`/users/${id}/`, { method: 'GET' });
 }
 
 export async function followUser(id: number): Promise<UserProfile> {
-  return apiClient.request<UserProfile>(`/api/v1/users/${id}/follow/`, {
+  return apiClient.request<UserProfile>(`/users/${id}/follow/`, {
     method: 'POST',
     body: {},
   });
 }
 
 export async function unfollowUser(id: number): Promise<void> {
-  await apiClient.request(`/api/v1/users/${id}/follow/`, { method: 'DELETE' });
+  await apiClient.request(`/users/${id}/follow/`, { method: 'DELETE' });
 }
 
 export async function listFollowers(
@@ -61,7 +61,7 @@ export async function listFollowers(
   params: UsersQuery = {},
 ): Promise<UsersListResponse> {
   return apiClient.request<UsersListResponse>(
-    buildQuery(`/api/v1/users/${id}/followers/`, params),
+    buildQuery(`/users/${id}/followers/`, params),
     { method: 'GET' },
   );
 }
@@ -71,13 +71,13 @@ export async function listFollowing(
   params: UsersQuery = {},
 ): Promise<UsersListResponse> {
   return apiClient.request<UsersListResponse>(
-    buildQuery(`/api/v1/users/${id}/following/`, params),
+    buildQuery(`/users/${id}/following/`, params),
     { method: 'GET' },
   );
 }
 
 export async function fetchCurrentUser(): Promise<AuthUser> {
-  return apiClient.request<AuthUser>('/api/v1/users/me/', {
+  return apiClient.request<AuthUser>('/users/me/', {
     method: 'GET',
   });
 }
@@ -85,7 +85,7 @@ export async function fetchCurrentUser(): Promise<AuthUser> {
 export async function updateCurrentUser(
   payload: Partial<Pick<AuthUser, 'name' | 'avatarUrl'>>,
 ): Promise<AuthUser> {
-  return apiClient.request<AuthUser>('/api/v1/users/me/', {
+  return apiClient.request<AuthUser>('/users/me/', {
     method: 'PATCH',
     body: payload,
   });

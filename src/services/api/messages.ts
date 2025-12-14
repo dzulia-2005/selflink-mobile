@@ -93,26 +93,26 @@ export async function listMessages(
   }
 
   const qs = searchParams.toString();
-  const path = `/api/v1/messages/${qs ? `?${qs}` : ''}`;
+  const path = `/messages/${qs ? `?${qs}` : ''}`;
   return apiClient.request<MessageListResponse>(path, { method: 'GET' });
 }
 
 export async function createMessage(payload: MessagePayload): Promise<Message> {
-  return apiClient.request<Message>('/api/v1/messages/', {
+  return apiClient.request<Message>('/messages/', {
     method: 'POST',
     body: payload,
   });
 }
 
 export async function getMessage(id: number): Promise<Message> {
-  return apiClient.request<Message>(`/api/v1/messages/${id}/`, { method: 'GET' });
+  return apiClient.request<Message>(`/messages/${id}/`, { method: 'GET' });
 }
 
 export async function updateMessage(
   id: number,
   payload: MessagePayload,
 ): Promise<Message> {
-  return apiClient.request<Message>(`/api/v1/messages/${id}/`, {
+  return apiClient.request<Message>(`/messages/${id}/`, {
     method: 'PUT',
     body: payload,
   });
@@ -122,12 +122,12 @@ export async function patchMessage(
   id: number,
   payload: MessagePartialPayload,
 ): Promise<Message> {
-  return apiClient.request<Message>(`/api/v1/messages/${id}/`, {
+  return apiClient.request<Message>(`/messages/${id}/`, {
     method: 'PATCH',
     body: payload,
   });
 }
 
 export async function deleteMessage(id: number): Promise<void> {
-  await apiClient.request(`/api/v1/messages/${id}/`, { method: 'DELETE' });
+  await apiClient.request(`/messages/${id}/`, { method: 'DELETE' });
 }

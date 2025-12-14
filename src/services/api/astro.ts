@@ -4,14 +4,14 @@ import { apiClient } from '@services/api/client';
 export async function createOrUpdateNatalChart(
   payload: BirthDataPayload,
 ): Promise<NatalChart> {
-  return apiClient.request<NatalChart>('/api/v1/astro/natal/', {
+  return apiClient.request<NatalChart>('/astro/natal/', {
     method: 'POST',
     body: payload,
   });
 }
 
 export async function getMyNatalChart(): Promise<NatalChart> {
-  return apiClient.request<NatalChart>('/api/v1/astro/natal/me/', {
+  return apiClient.request<NatalChart>('/astro/natal/me/', {
     method: 'GET',
   });
 }

@@ -43,21 +43,21 @@ export async function listMentorProfiles(
   }
 
   const qs = searchParams.toString();
-  const path = `/api/v1/mentor/profile/${qs ? `?${qs}` : ''}`;
+  const path = `/mentor/profile/${qs ? `?${qs}` : ''}`;
   return apiClient.request<MentorProfileListResponse>(path, { method: 'GET' });
 }
 
 export async function createMentorProfile(
   payload: MentorProfile,
 ): Promise<MentorProfile> {
-  return apiClient.request<MentorProfile>('/api/v1/mentor/profile/', {
+  return apiClient.request<MentorProfile>('/mentor/profile/', {
     method: 'POST',
     body: payload,
   });
 }
 
 export async function getMentorProfile(id: number): Promise<MentorProfile> {
-  return apiClient.request<MentorProfile>(`/api/v1/mentor/profile/${id}/`, {
+  return apiClient.request<MentorProfile>(`/mentor/profile/${id}/`, {
     method: 'GET',
   });
 }
@@ -66,7 +66,7 @@ export async function updateMentorProfile(
   id: number,
   payload: MentorProfile,
 ): Promise<MentorProfile> {
-  return apiClient.request<MentorProfile>(`/api/v1/mentor/profile/${id}/`, {
+  return apiClient.request<MentorProfile>(`/mentor/profile/${id}/`, {
     method: 'PUT',
     body: payload,
   });
@@ -76,14 +76,14 @@ export async function patchMentorProfile(
   id: number,
   payload: Partial<MentorProfile>,
 ): Promise<MentorProfile> {
-  return apiClient.request<MentorProfile>(`/api/v1/mentor/profile/${id}/`, {
+  return apiClient.request<MentorProfile>(`/mentor/profile/${id}/`, {
     method: 'PATCH',
     body: payload,
   });
 }
 
 export async function deleteMentorProfile(id: number): Promise<void> {
-  await apiClient.request(`/api/v1/mentor/profile/${id}/`, { method: 'DELETE' });
+  await apiClient.request(`/mentor/profile/${id}/`, { method: 'DELETE' });
 }
 
 export type NatalMentorResponse = {
@@ -100,13 +100,13 @@ export type SoulmatchMentorResponse = {
 };
 
 export async function fetchNatalMentor(): Promise<NatalMentorResponse> {
-  return apiClient.request('/api/v1/mentor/natal/', { method: 'POST' });
+  return apiClient.request('/mentor/natal/', { method: 'POST' });
 }
 
 export async function fetchSoulmatchMentor(
   userId: number,
 ): Promise<SoulmatchMentorResponse> {
-  return apiClient.request(`/api/v1/mentor/soulmatch/${userId}/`, { method: 'GET' });
+  return apiClient.request(`/mentor/soulmatch/${userId}/`, { method: 'GET' });
 }
 
 export type DailyMentorEntryPayload = {
@@ -145,7 +145,7 @@ export type DailyMentorSession = {
 export async function createDailyMentorEntry(
   payload: DailyMentorEntryPayload,
 ): Promise<DailyMentorEntryResponse> {
-  return apiClient.request('/api/v1/mentor/daily/entry/', {
+  return apiClient.request('/mentor/daily/entry/', {
     method: 'POST',
     body: payload,
   });
@@ -154,7 +154,7 @@ export async function createDailyMentorEntry(
 export async function fetchDailyMentorHistory(
   limit = 7,
 ): Promise<DailyMentorHistoryResponse> {
-  const path = `/api/v1/mentor/daily/history/?limit=${limit}`;
+  const path = `/mentor/daily/history/?limit=${limit}`;
   return apiClient.request(path, {
     method: 'GET',
   });
@@ -163,7 +163,7 @@ export async function fetchDailyMentorHistory(
 export async function fetchDailyMentorSession(
   sessionId: number | string,
 ): Promise<DailyMentorSession> {
-  return apiClient.request(`/api/v1/mentor/daily/session/${sessionId}/`, {
+  return apiClient.request(`/mentor/daily/session/${sessionId}/`, {
     method: 'GET',
   });
 }
@@ -190,7 +190,7 @@ export async function callMentorChat(
   payload: MentorChatRequest,
 ): Promise<MentorChatResponse> {
   const response = await apiClient.request<MentorChatRawResponse>(
-    '/api/v1/mentor/chat/',
+    '/mentor/chat/',
     {
       method: 'POST',
       body: payload,
@@ -222,6 +222,6 @@ export function buildMentorStreamUrl({
   }
   searchParams.set('message', message);
 
-  const path = `/api/v1/mentor/stream/?${searchParams.toString()}`;
-  return buildUrl(env.backendUrl, path);
+  const path = `/mentor/stream/?${searchParams.toString()}`;
+  return buildUrl(env.apiHttpBaseUrl, path);
 }

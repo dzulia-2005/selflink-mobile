@@ -27,7 +27,7 @@ export async function loginWithPassword(
   credentials: Credentials,
 ): Promise<LoginResponse> {
   try {
-    const result = await apiClient.request<LoginResponse>('/api/v1/auth/login/', {
+    const result = await apiClient.request<LoginResponse>('/auth/login/', {
       method: 'POST',
       auth: false,
       body: credentials,
@@ -60,7 +60,7 @@ export async function loginWithPassword(
 export async function registerUser(payload: RegisterPayload): Promise<LoginResponse> {
   try {
     const { email, password, handle, username, name, fullName, intention } = payload;
-    const result = await apiClient.request<LoginResponse>('/api/v1/auth/register/', {
+    const result = await apiClient.request<LoginResponse>('/auth/register/', {
       method: 'POST',
       auth: false,
       body: {
@@ -90,7 +90,7 @@ export async function registerUser(payload: RegisterPayload): Promise<LoginRespo
 }
 
 export async function refreshSession(refreshToken: string): Promise<LoginResponse> {
-  const result = await apiClient.request<LoginResponse>('/api/v1/auth/token/refresh/', {
+  const result = await apiClient.request<LoginResponse>('/auth/token/refresh/', {
     method: 'POST',
     auth: false,
     body: { refresh: refreshToken },

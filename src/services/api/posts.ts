@@ -44,46 +44,46 @@ function buildQuery(path: string, params: PostQuery = {}): string {
 }
 
 export async function listPosts(params: PostQuery = {}): Promise<PostListResponse> {
-  return apiClient.request<PostListResponse>(buildQuery('/api/v1/posts/', params), {
+  return apiClient.request<PostListResponse>(buildQuery('/posts/', params), {
     method: 'GET',
   });
 }
 
 export async function createPost(payload: PostPayload): Promise<Post> {
-  return apiClient.request<Post>('/api/v1/posts/', {
+  return apiClient.request<Post>('/posts/', {
     method: 'POST',
     body: payload,
   });
 }
 
 export async function getPost(id: number): Promise<Post> {
-  return apiClient.request<Post>(`/api/v1/posts/${id}/`, { method: 'GET' });
+  return apiClient.request<Post>(`/posts/${id}/`, { method: 'GET' });
 }
 
 export async function updatePost(id: number, payload: PostPayload): Promise<Post> {
-  return apiClient.request<Post>(`/api/v1/posts/${id}/`, {
+  return apiClient.request<Post>(`/posts/${id}/`, {
     method: 'PUT',
     body: payload,
   });
 }
 
 export async function patchPost(id: number, payload: PostPartialPayload): Promise<Post> {
-  return apiClient.request<Post>(`/api/v1/posts/${id}/`, {
+  return apiClient.request<Post>(`/posts/${id}/`, {
     method: 'PATCH',
     body: payload,
   });
 }
 
 export async function deletePost(id: number): Promise<void> {
-  await apiClient.request(`/api/v1/posts/${id}/`, { method: 'DELETE' });
+  await apiClient.request(`/posts/${id}/`, { method: 'DELETE' });
 }
 
 export async function likePost(id: number): Promise<void> {
-  await apiClient.request(`/api/v1/posts/${id}/like/`, { method: 'POST' });
+  await apiClient.request(`/posts/${id}/like/`, { method: 'POST' });
 }
 
 export async function unlikePost(id: number): Promise<void> {
-  await apiClient.request(`/api/v1/posts/${id}/unlike/`, { method: 'POST' });
+  await apiClient.request(`/posts/${id}/unlike/`, { method: 'POST' });
 }
 
 export type SearchPostsResponse = PostListResponse;
@@ -105,7 +105,7 @@ export async function searchPosts(
   }
   const qs = searchParams.toString();
   return apiClient.request<SearchPostsResponse>(
-    `/api/v1/search/posts/${qs ? `?${qs}` : ''}`,
+    `/search/posts/${qs ? `?${qs}` : ''}`,
     {
       method: 'GET',
     },
@@ -135,7 +135,7 @@ export async function searchUsers(
   }
   const qs = searchParams.toString();
   return apiClient.request<SearchUsersResponse>(
-    `/api/v1/search/users/${qs ? `?${qs}` : ''}`,
+    `/search/users/${qs ? `?${qs}` : ''}`,
     {
       method: 'GET',
     },
