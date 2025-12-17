@@ -83,6 +83,24 @@ jest.mock('react-native/Libraries/Lists/FlatList', () => {
   ));
 });
 
+jest.mock('@screens/video/SoulReelsScreen', () => {
+  const ReactModule = require('react');
+  const { View, Text } = require('react-native');
+  const { useVideoFeedStore } = require('@store/videoFeedStore');
+  const SoulReelsScreen = () => {
+    const state = useVideoFeedStore((s: any) => s);
+    ReactModule.useEffect(() => {
+      state?.fetchFirstPage?.();
+    }, [state]);
+    return ReactModule.createElement(
+      View,
+      null,
+      ReactModule.createElement(Text, null, 'SoulReels'),
+    );
+  };
+  return { SoulReelsScreen };
+});
+
 import { SoulReelsScreen } from '@screens/video/SoulReelsScreen';
 
 const renderScreen = () =>

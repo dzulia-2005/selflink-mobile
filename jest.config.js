@@ -14,6 +14,9 @@ module.exports = {
   ],
   moduleFileExtensions: [...sourceExts, ...assetExts, 'json', 'tsx', 'ts', 'js', 'jsx'],
   moduleNameMapper: {
+    '^react-native/Libraries/BatchedBridge/NativeModules$':
+      '<rootDir>/jest.mocks/NativeModules.js',
+    '^react-native/jest/mocks/NativeModules$': '<rootDir>/jest.mocks/NativeModules.js',
     '^@components/(.*)$': '<rootDir>/src/components/$1',
     '^@screens/(.*)$': '<rootDir>/src/screens/$1',
     '^@theme/(.*)$': '<rootDir>/src/theme/$1',

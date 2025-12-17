@@ -1,6 +1,11 @@
+const nativeModulesMock = require.resolve('./jest.mocks/NativeModules.js');
+
 module.exports = (request, options) => {
-  if (request === 'react-native/Libraries/BatchedBridge/NativeModules') {
-    return require.resolve('./jest.mocks/NativeModules.ts');
+  if (
+    request.includes('Libraries/BatchedBridge/NativeModules') ||
+    request.includes('jest/mocks/NativeModules')
+  ) {
+    return nativeModulesMock;
   }
   return options.defaultResolver(request, options);
 };

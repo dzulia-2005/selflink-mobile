@@ -52,12 +52,9 @@ function buildQuery(path: string, params: PaginatedQuery = {}): string {
 export async function listGiftTypes(
   params: PaginatedQuery = {},
 ): Promise<GiftTypeListResponse> {
-  return apiClient.request<GiftTypeListResponse>(
-    buildQuery('/payments/gifts/', params),
-    {
-      method: 'GET',
-    },
-  );
+  return apiClient.request<GiftTypeListResponse>(buildQuery('/payments/gifts/', params), {
+    method: 'GET',
+  });
 }
 
 export async function createGiftType(payload: GiftTypePayload): Promise<GiftType> {
@@ -122,12 +119,9 @@ export type PlanPayload = {
 export type PlanPartialPayload = Partial<PlanPayload>;
 
 export async function listPlans(params: PaginatedQuery = {}): Promise<PlanListResponse> {
-  return apiClient.request<PlanListResponse>(
-    buildQuery('/payments/plans/', params),
-    {
-      method: 'GET',
-    },
-  );
+  return apiClient.request<PlanListResponse>(buildQuery('/payments/plans/', params), {
+    method: 'GET',
+  });
 }
 
 export async function createPlan(payload: PlanPayload): Promise<Plan> {

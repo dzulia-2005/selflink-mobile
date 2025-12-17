@@ -14,32 +14,19 @@ export function buildUrl(base: string, path: string): string {
     }
   }
 
-  let baseUrl: URL | null = null;
   try {
-    baseUrl = new URL(base);
+    const baseUrl = new URL(base);
+    const basePath = baseUrl.pathname.replace(/\/+$/, '');
+    const pathPart = trimmedPath.replace(/^\/+/, '');
+    const combinedPath = `${basePath}/${pathPart}`.replace(/\/{2,}/g, '/');
+    const normalizedCombined =
+      combinedPath.startsWith('/') || combinedPath === ''
+        ? combinedPath
+        : `/${combinedPath}`;
+    return `${baseUrl.origin}${normalizedCombined}`;
   } catch {
     const normalizedBase = base.replace(/\/+$/, '');
-    const normalizedPath = trimmedPath.replace(/^\/+/, '');
-    return `${normalizedBase}/${normalizedPath}`;
-  }
-
-  const basePath = baseUrl.pathname.replace(/\/+$/, '');
-  if (trimmedPath.startsWith('/')) {
-    if (basePath && trimmedPath.startsWith(basePath)) {
-      return `${baseUrl.origin}${trimmedPath}`;
-    }
-    const combinedPath = `${basePath}/${trimmedPath.replace(/^\/+/, '')}`.replace(
-      /\/{2,}/g,
-      '/',
-    );
-    return `${baseUrl.origin}${combinedPath}`;
-  }
-
-  const combinedPath = `${basePath}/${trimmedPath}`.replace(/\/{2,}/g, '/');
-  return `${baseUrl.origin}${combinedPath}`;
-  try {
-    return new URL(normalizedPath, normalizedBase).toString();
-  } catch {
-    return `${normalizedBase}${normalizedPath}`;
+    const pathPart = trimmedPath.replace(/^\/+/, '');
+    return `${normalizedBase}/${pathPart}`;
   }
 }

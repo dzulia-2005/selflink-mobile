@@ -69,38 +69,29 @@ export async function createModerationAdminReport(
 export async function getModerationAdminReport(
   id: number,
 ): Promise<ModerationAdminReport> {
-  return apiClient.request<ModerationAdminReport>(
-    `/moderation/admin/reports/${id}/`,
-    {
-      method: 'GET',
-    },
-  );
+  return apiClient.request<ModerationAdminReport>(`/moderation/admin/reports/${id}/`, {
+    method: 'GET',
+  });
 }
 
 export async function updateModerationAdminReport(
   id: number,
   payload: ModerationAdminReportPayload,
 ): Promise<ModerationAdminReport> {
-  return apiClient.request<ModerationAdminReport>(
-    `/moderation/admin/reports/${id}/`,
-    {
-      method: 'PUT',
-      body: payload,
-    },
-  );
+  return apiClient.request<ModerationAdminReport>(`/moderation/admin/reports/${id}/`, {
+    method: 'PUT',
+    body: payload,
+  });
 }
 
 export async function patchModerationAdminReport(
   id: number,
   payload: ModerationAdminReportPartialPayload,
 ): Promise<ModerationAdminReport> {
-  return apiClient.request<ModerationAdminReport>(
-    `/moderation/admin/reports/${id}/`,
-    {
-      method: 'PATCH',
-      body: payload,
-    },
-  );
+  return apiClient.request<ModerationAdminReport>(`/moderation/admin/reports/${id}/`, {
+    method: 'PATCH',
+    body: payload,
+  });
 }
 
 export async function deleteModerationAdminReport(id: number): Promise<void> {

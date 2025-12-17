@@ -50,8 +50,7 @@ export async function listModerationEnforcements(
 export async function getModerationEnforcement(
   id: number,
 ): Promise<ModerationEnforcement> {
-  return apiClient.request<ModerationEnforcement>(
-    `/moderation/enforcements/${id}/`,
-    { method: 'GET' },
-  );
+  return apiClient.request<ModerationEnforcement>(`/moderation/enforcements/${id}/`, {
+    method: 'GET',
+  });
 }

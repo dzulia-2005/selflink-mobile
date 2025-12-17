@@ -189,13 +189,10 @@ type MentorChatRawResponse = {
 export async function callMentorChat(
   payload: MentorChatRequest,
 ): Promise<MentorChatResponse> {
-  const response = await apiClient.request<MentorChatRawResponse>(
-    '/mentor/chat/',
-    {
-      method: 'POST',
-      body: payload,
-    },
-  );
+  const response = await apiClient.request<MentorChatRawResponse>('/mentor/chat/', {
+    method: 'POST',
+    body: payload,
+  });
 
   return {
     sessionId: response.session_id ?? null,

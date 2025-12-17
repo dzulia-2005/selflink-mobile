@@ -104,12 +104,9 @@ export async function searchPosts(
     searchParams.set('page_size', String(params.page_size));
   }
   const qs = searchParams.toString();
-  return apiClient.request<SearchPostsResponse>(
-    `/search/posts/${qs ? `?${qs}` : ''}`,
-    {
-      method: 'GET',
-    },
-  );
+  return apiClient.request<SearchPostsResponse>(`/search/posts/${qs ? `?${qs}` : ''}`, {
+    method: 'GET',
+  });
 }
 
 export type SearchUsersResponse = {
@@ -134,10 +131,7 @@ export async function searchUsers(
     searchParams.set('page_size', String(params.page_size));
   }
   const qs = searchParams.toString();
-  return apiClient.request<SearchUsersResponse>(
-    `/search/users/${qs ? `?${qs}` : ''}`,
-    {
-      method: 'GET',
-    },
-  );
+  return apiClient.request<SearchUsersResponse>(`/search/users/${qs ? `?${qs}` : ''}`, {
+    method: 'GET',
+  });
 }
