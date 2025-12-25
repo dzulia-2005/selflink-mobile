@@ -1,130 +1,116 @@
-## What is SelfLink?
+# SelfLink Mobile
 
-SelfLink is an open-source mobile application built with React Native + Expo that explores how social features, personal growth tools, and AI-assisted guidance can coexist in a single, transparent platform.
+SelfLink Mobile is an early-stage, open-source mobile app built with React Native + Expo. It is developed in public and intentionally unfinished, with a focus on clean architecture, developer experience, and learning-by-doing.
 
-The project is currently in an early, experimental stage and focuses on:
-- user profiles and social interactions
-- structured content (posts, comments, messaging)
-- an evolving “AI mentor” concept
-- internationalization (multi-language support)
-- clean mobile architecture and developer experience
+## What Is SelfLink Mobile
 
-SelfLink is not a finished product. It is an open development effort intended for learning, experimentation, and collaboration around modern mobile app patterns.
+SelfLink Mobile is a React Native client exploring social features, personal growth tools, and optional AI-assisted guidance in a transparent codebase. It is not a finished product and should be treated as an evolving project built for experimentation and collaboration.
 
-## Who is this for?
+## Project Purpose
 
-This repository is mainly for:
-- React / React Native developers who want to explore Expo-based mobile apps
-- Contributors interested in improving architecture, performance, or documentation
-- Developers curious about integrating AI features into mobile apps
-- Anyone who enjoys shaping early-stage open-source projects
+The project exists to explore:
+- clean mobile architecture and maintainable code
+- a contributor-friendly workflow that welcomes experimentation
+- internationalization as a first-class concern
+- AI as an optional, assistive layer rather than a requirement
 
+## Who Is This For
 
-## Contributing & API Overview
+This repository is for:
+- beginners who want a real-world codebase to learn from
+- experienced developers who want to improve architecture or developer experience
+- contributors who prefer small, focused changes or documentation improvements
+- anyone with questions or feedback about the codebase
 
-This project is developed openly and is still evolving. Contributions of all sizes are welcome — from documentation improvements to refactors and new features.
+## Tech Stack
 
-If you’re interested in contributing, start here:
-- **Contributing guide:** see [CONTRIBUTING.md](./CONTRIBUTING.md) for workflow, expectations, and beginner-friendly contribution ideas.
-- **API overview:** see [docs/API.md](./docs/API.md) for a high-level map of the frontend API layer, grouped by category and linked to the relevant wrapper modules.
+- React Native
+- Expo
+- TypeScript
+- REST API backend (separate repo)
+- Optional AI features
 
-If something is unclear or feels under-documented, that’s a valid contribution too. Opening issues, suggesting improvements, or asking questions is encouraged.
+## Project Structure (High-Level)
 
+- `src/components/` - reusable UI components
+- `src/screens/` - screen-level views and flows
+- `src/navigation/` - navigators and route definitions
+- `src/services/api/` - frontend API wrapper layer
+- `src/hooks/` - shared hooks and state helpers
+- `src/theme/` - design tokens and styling primitives
+- `docs/` - project documentation
 
-## Quick Start
+## API Overview
+
+See `docs/API.md` for a frontend-facing map of API calls and wrapper modules. This is not backend documentation; it is a guide to how the mobile client talks to the REST API.
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js LTS
+- Expo tooling (use `npx expo` or install Expo CLI)
+- Android Studio for Android emulator, and/or Xcode for iOS simulator
+- Expo Go on a physical device (optional)
+
+### Install
 
 ```bash
 npm install
+```
+
+### Run Locally
+
+```bash
 npm run start
 ```
 
-Run the app with `npm run ios`, `npm run android`, or `npm run web`.
+Then launch on a simulator or device using the Expo UI, or run:
 
-## Project Structure
-
-```
-src/
-  components/      # Reusable UI (MetalPanel, MetalButton, etc.)
-  config/          # Environment helpers (backend URL, health endpoint)
-  hooks/           # Shared hooks (backend health, etc.)
-  navigation/      # Stack navigators & route types
-  services/        # API client scaffolding
-  screens/         # Screen-level views
-  theme/           # Palette, spacing, typography tokens
-  __tests__/       # Test suites (jest-expo + RTL)
+```bash
+npm run ios
+npm run android
 ```
 
-## Scripts
+### Troubleshooting
 
-- `npm run lint` – ESLint with import ordering rules.
-- `npm run typecheck` – TypeScript in noEmit mode.
-- `npm test` – jest-expo test runner.
-- `npm run start` – Boot Expo development server with the Auth + navigation stack.
+If Metro gets stuck or shows stale bundles, clear the cache:
 
-## Environment Config
+```bash
+npx expo start -c
+```
 
-- `src/config/env.ts` resolves `API_BASE_URL` from `EXPO_PUBLIC_API_BASE_URL` (or `expo.extra.backendUrl`), accepts either `https://api.self-link.com` or `https://api.self-link.com/api/v1`, defaults to `https://api.self-link.com`, and derives REST (`/api/v1`), websocket (`/ws`), and media (`/media/*`) URLs from the same host.
-- `src/hooks/useBackendHealth.ts` uses those values to test the Django API’s `/api/health/` endpoint by default.
-- Extend `src/services/api/client.ts` to add authenticated requests once login is wired.
+## Internationalization (i18n)
 
-## Backend URL configuration
+Internationalization is a core goal. Language support is evolving, and contributions to translation readiness or UI text cleanup are welcome. You do not need to speak all supported languages to contribute.
 
-- Defaults to `https://api.self-link.com` when no override is provided.
-- Set `EXPO_PUBLIC_API_BASE_URL` for overrides (Expo automatically exposes `EXPO_PUBLIC_*` at runtime).
-- Examples:
-  - Production: `EXPO_PUBLIC_API_BASE_URL=https://api.self-link.com/api/v1`
-  - Local: `EXPO_PUBLIC_API_BASE_URL=http://<LAN_IP>:8000`
-- Cloudflare routing assumption: `/api/v1/*` → API (8000), `/ws` → ASGI (8001), `/media/*` → static media server.
-- Dev cache-busting: if Cloudflare caches 404s for media during testing, append `?v=<timestamp>` to a media URL; debug builds also auto-append a `v=` query on `/media/*` to force reloads.
-- For EAS, add the env var to your build profile or Project → Environment Variables so iOS/Android builds pick it up.
+## AI Features
 
-## Authentication Foundation
+AI features, where present, are designed to augment user actions. No critical path depends solely on AI, and AI failures should degrade gracefully to non-AI flows.
 
-- `src/context/AuthContext.tsx` stores the JWT, syncs with `expo-secure-store`, and keeps `apiClient` updated.
-- `src/hooks/useAuth.ts` provides easy access to `signIn`, `signOut`, and auth state.
-- `src/screens/LoginScreen.tsx` offers a metallic-themed sign-in form that hits `/api/v1/auth/login/`, falling back to a mock token for local dev.
-- `src/screens/RegisterScreen.tsx` collects the backend-required payload (email, handle, name, password, optional full name/intention) and reuses the toast/auth flows before routing new users into the app.
-- `RootNavigator` now gates access: unauthenticated users see the Auth stack; signed-in users flow through onboarding (if needed) and then land in the tabbed experience (Feed, Messages, Mentor, SoulMatch, Payments, etc.).
-- Home’s welcome panel shows the active user and exposes a Sign Out CTA, making it easy to switch accounts during testing.
-- `src/services/api/user.ts` handles `/api/v1/users/*` (list/detail/follow/followers) plus the `/api/v1/users/me/` hydration flow used by AuthContext.
-- Auth automatically refreshes expired access tokens via `/api/v1/auth/token/refresh/`, and falling back to logout if the refresh token is invalid.
-- `src/hooks/useUsersDirectory.ts` provides a reusable controller for searching, paginating, and following users against the `/api/v1/users/*` endpoints.
-- `src/hooks/usePaymentsCatalog.ts` hydrates gifts, plans, and subscription data so payments UI can stay reactive and shareable across platforms.
-- `src/hooks/useMessages.ts` wraps `/api/v1/messages/`, emits typing signals, and ties into the realtime websocket feed for thread activity (with REST fallback).
-- `src/services/api/comments.ts` wraps `/api/v1/comments/` so shared clients (mobile/desktop) can page through comment threads and perform CRUD via the same helper.
-- `src/services/api/devices.ts` handles `/api/v1/devices/` CRUD so mobile/web can register or remove push tokens consistently.
-- `src/services/api/feed.ts` wraps `/api/v1/feed/home/` and `/api/v1/home/highlights/` so all clients can fetch both the paginated timeline and highlight rail with the same helper.
-- `src/services/api/matrix.ts` fetches `/api/v1/matrix/profile/` and posts to `/api/v1/matrix/sync/` so the SoulMatch/Mentor areas can share the same profile contract as the backend evolves.
-- `src/services/api/media.ts` offers list + CRUD helpers for `/api/v1/media/` and `/api/v1/media/{id}/`, keeping uploads/metadata updates consistent across clients.
-- `src/services/api/mentor.ts` exposes CRUD helpers for `/api/v1/mentor/profile/` so mentor personalization can be managed from mobile or desktop with the same code.
-- `src/services/api/mentorSessions.ts` wraps `/api/v1/mentor/chat/` and `/api/v1/mentor/history/` so mentor chat, replies, and history stay in sync across clients.
-- Mentor chat UI lives in `src/screens/mentor/MentorChatScreen.tsx`; mentor rich-text rendering sits in
-  `src/components/chat/MentorMessageContent.tsx`, and chat visual tokens (bubbles, spacing, typography) are centralized in
-  `src/theme/chat.ts`.
-- `src/services/api/mentorTasks.ts` centralizes `/api/v1/mentor/tasks/`, `/api/v1/mentor/tasks/{id}/`, and `/api/v1/mentor/tasks/today/` calls so daily task queues use shared code.
-- `src/services/api/messages.ts` provides list + CRUD helpers for `/api/v1/messages/` so chats and inbox features rely on a single shared wrapper.
-- `src/services/api/moderationAdminReports.ts` lets moderators list and manage `/api/v1/moderation/admin/reports/` entries (full CRUD) from any client.
-- `src/services/api/moderationEnforcements.ts` fetches `/api/v1/moderation/enforcements/` (with detail lookups) so clients can display the enforcement history tied to a user or post.
-- `src/services/api/moderationReports.ts` covers `/api/v1/moderation/reports/` (list + CRUD) for end-user report flows that escalate into moderation queues.
-- `src/services/api/notifications.ts` handles `/api/v1/notifications/`, item CRUD, and `/api/v1/notifications/mark-all-read/` so inbox badges stay in sync.
-- `src/services/api/payments.ts` centralizes gift types, subscription plans, and subscriptions (`/api/v1/payments/*`) so payments UI shares one contract.
-- `src/services/api/posts.ts` offers full CRUD for `/api/v1/posts/`, like/unlike helpers, and shared search functions for both posts and users.
-- `src/services/api/soulmatch.ts` provides the `/api/v1/soulmatch/` fetch and `/api/v1/soulmatch/refresh/` mutation used by the SoulMatch screen.
-- `src/services/api/threads.ts` and `src/hooks/useThreads.ts` cover `/api/v1/threads/` (list + create + read/typing/leave) so the inbox can pass thread IDs into the messaging flow and keep state fresh.
-- `src/components/MetalToast.tsx` and `src/context/ToastContext.tsx` supply metallic toasts used for graceful login/profile error messaging across the app.
+## Contributing
 
-## Screens & Navigation
+Start with `CONTRIBUTING.md` for workflow and expectations. Examples of good first contributions:
 
-- `FeedScreen` loads the server timeline, offers pull-to-refresh/infinite scroll, and exposes follow/unfollow + profile deep-links for each author. Empty feeds now show a “Create your first post” CTA and a floating “New Post” button.
-- `PostDetailsScreen` fetches a single post plus comments and lets you add new comments inline.
-- `SearchProfilesScreen` hits `/search/users/`, renders the results list, and lets you jump to a user profile or toggle follow/unfollow directly from the list.
-- `UserProfileScreen` fetches `/users/{id}/`, displays follower counts, allows follow/unfollow with optimistic updates, and provides a “Message” button that calls `POST /threads/direct/` (TODO: confirm path) before navigating to Chat.
-- `CreatePostScreen` is a simple form that calls `createPost` and returns to the feed when finished.
-- Messaging flows now use stacked navigation: `ThreadsScreen` lists threads, provides quick navigation to Chat, and includes a “View profile” affordance for direct threads; `ChatScreen` loads messages, sends via REST, optionally shows a header “Profile” button (if `otherUserId` is provided), and still handles realtime updates.
-- `ProfileScreen`, `MentorHomeScreen`, `NotificationsScreen`, etc., remain as before but now can launch the shared search/profile flows.
-- `MainTabsNavigator` nests stack navigators for Feed, Messages, and Profile tabs so the new routes (`PostDetails`, `CreatePost`, `SearchProfiles`, `UserProfile`, `Chat`) are properly registered.
+- improve README or inline documentation
+- tighten up TypeScript types or linting
+- add small tests around existing components
+- refactor a screen or component for clarity
+- refine API wrapper functions in `src/services/api/`
+- help with i18n readiness or UI text consistency
 
-## CI
+## Project Status
 
-- GitHub Actions workflow (`.github/workflows/ci.yml`) installs dependencies, then runs lint, typecheck, and tests on pushes and PRs targeting `main`.
-- Jest specs cover both UI and auth flows (`src/__tests__/HomeScreen.test.tsx`, `src/__tests__/AuthContext.test.tsx`).
+This project is in an early exploratory phase. Current focus areas include:
+
+- navigation, screens, and core UI flows
+- API wrapper consistency and error handling
+- internationalization readiness
+- testing and developer experience improvements
+- architecture cleanup and documentation
+
+No detailed roadmap is committed at this stage.
+
+## License
+
+See `LICENSE`.
