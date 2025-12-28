@@ -234,7 +234,7 @@ export function MessagesScreen() {
         <MetalPanel glow>
           <Text style={styles.heroTitle}>Messages</Text>
           <Text style={styles.heroSubtitle}>
-            Inspired by Jobs’ obsession for detail, tempered by Linus’ clarity, aiming for
+            Inspired by Jobs' obsession for detail, tempered by Linus' clarity, aiming for
             Musk-scale reach.
           </Text>
           <View style={styles.actionRow}>

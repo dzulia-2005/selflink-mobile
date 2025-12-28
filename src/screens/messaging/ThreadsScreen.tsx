@@ -114,7 +114,7 @@ export function ThreadsScreen() {
       <View style={styles.emptyContainer}>
         <Text style={styles.emptyTitle}>No messages yet</Text>
         <Text style={styles.emptySubtitle}>
-          Start a conversation by visiting someone’s profile and tapping “Message”.
+          Start a conversation by visiting someone's profile and tapping “Message”.
         </Text>
       </View>
     );

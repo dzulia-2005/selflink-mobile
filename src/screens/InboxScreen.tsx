@@ -171,7 +171,7 @@ export function InboxScreen() {
             <View style={styles.empty}>
               <Text style={styles.emptyTitle}>No threads yet</Text>
               <Text style={styles.emptyCopy}>
-                Once conversations begin, they’ll appear right here.
+                Once conversations begin, they'll appear right here.
               </Text>
             </View>
           ) : null

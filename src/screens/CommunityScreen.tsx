@@ -70,8 +70,8 @@ export function CommunityScreen() {
             <View style={styles.hero}>
               <Text style={styles.title}>Community</Text>
               <Text style={styles.subtitle}>
-                Crafted with a Jobs-level obsession for polish, engineered with Linus’s
-                clarity, and ambitious enough for Musk’s Mars boardroom.
+                Crafted with a Jobs-level obsession for polish, engineered with Linus's
+                clarity, and ambitious enough for Musk's Mars boardroom.
               </Text>
             </View>
             <MetalPanel glow>

@@ -128,7 +128,7 @@ export function BirthLocationMapModal({
             {mapError ? (
               <View style={styles.mapLoader}>
                 <Text style={styles.errorText}>
-                  We couldn’t load the map. Check your connection and try again.
+                  We couldn't load the map. Check your connection and try again.
                 </Text>
                 <MetalButton title="Try Again" onPress={() => setMapError(null)} />
               </View>
