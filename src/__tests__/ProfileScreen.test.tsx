@@ -2,7 +2,7 @@ import { fireEvent, render, waitFor } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { ToastProvider } from '@context/ToastContext';
-import { ProfileScreen } from '@screens/ProfileScreen';
+import { ProfileScreen } from '@screens/profile/ProfileScreen';
 
 const mockSignOut = jest.fn();
 const mockUpdateProfile = jest.fn();
