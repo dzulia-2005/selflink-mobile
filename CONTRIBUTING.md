@@ -19,6 +19,23 @@ Thanks for your interest in contributing to this project! Contributions of all s
 - Identify hardcoded strings and move them into i18n keys
 - Add or improve Georgian/Russian translations where possible
 
+## Contributor Quick Start
+
+1. Read `README.md` and `docs/API.md` to understand scope and API wrappers.
+2. Install dependencies: `npm install`.
+3. Run the app: `npm run start`, then launch iOS/Android from the Expo UI.
+4. Follow the app flow: `index.ts` -> `src/App.tsx` -> `src/navigation/RootNavigator.tsx`.
+5. Know the key folders:
+   - `src/screens/` feature entry points
+   - `src/components/` reusable UI
+   - `src/store/` app state (Zustand)
+   - `src/hooks/` side effects and shared logic
+   - `src/api/` (Axios) and `src/services/api/` (fetch) for API calls
+   - `src/types/` shared domain types
+   - `src/config/env.ts` runtime config (API base + realtime)
+6. Use module aliases like `@screens/` and `@components/` (see `babel.config.js` and `tsconfig.json`).
+7. Optional checks: `npm test`, `npm run lint`, `npm run typecheck`.
+
 ## Contribution workflow
 
 1. Fork the repo.
