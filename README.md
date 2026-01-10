@@ -42,7 +42,7 @@ This repository is for:
 
 ## API Overview
 
-See `docs/API.md` for a frontend-facing map of API calls and wrapper modules. This is not backend documentation; it is a guide to how the mobile client talks to the REST API.
+See [`docs/API.md`](docs/API.md) for a frontend-facing map of API calls and wrapper modules. This is not backend documentation; it is a guide to how the mobile client talks to the REST API.
 
 ## Getting Started
 
@@ -90,7 +90,7 @@ AI features, where present, are designed to augment user actions. No critical pa
 
 ## Contributing
 
-Start with `CONTRIBUTING.md` for workflow and expectations. Examples of good first contributions:
+Start with [`CONTRIBUTING.md`](CONTRIBUTING.md) for workflow and expectations. Examples of good first contributions:
 
 - improve README or inline documentation
 - tighten up TypeScript types or linting
@@ -98,6 +98,8 @@ Start with `CONTRIBUTING.md` for workflow and expectations. Examples of good fir
 - refactor a screen or component for clarity
 - refine API wrapper functions in `src/services/api/`
 - help with i18n readiness or UI text consistency
+
+For questions or collaboration, join the Discord: https://discord.gg/GQdQagsw
 
 ## Project Status
 
