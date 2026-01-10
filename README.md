@@ -4,6 +4,7 @@ SelfLink Mobile is an early-stage, open-source mobile app built with React Nativ
 
 ## What Is SelfLink Mobile
 
+click for more [`WHAT-IS-SELFLINK.md`](WHAT-IS-SELFLINK.md)
 SelfLink Mobile is a React Native client exploring social features, personal growth tools, and optional AI-assisted guidance in a transparent codebase. It is not a finished product and should be treated as an evolving project built for experimentation and collaboration.
 
 ## Project Purpose
