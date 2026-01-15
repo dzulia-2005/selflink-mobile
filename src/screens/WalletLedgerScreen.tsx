@@ -506,8 +506,8 @@ export function WalletLedgerScreen() {
       setFormError('Enter an amount greater than 0.');
       return;
     }
-    if (coinBalance && amountCents > coinBalance.balance_cents) {
-      setFormError('Amount exceeds available SLC balance.');
+    if (coinBalance && amountCents >= coinBalance.balance_cents) {
+      setFormError('Insufficient balance. Transfers include a fee.');
       return;
     }
 
