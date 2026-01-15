@@ -5,24 +5,43 @@ import { ToastProvider } from '@context/ToastContext';
 import { ProfileScreen } from '@screens/profile/ProfileScreen';
 
 const mockSignOut = jest.fn();
-const mockUpdateProfile = jest.fn();
-const mockRefreshProfile = jest.fn();
+const mockNavigate = jest.fn();
+const mockFetchProfile = jest.fn();
 
-jest.mock('@hooks/useAuth', () => ({
-  useAuth: () => ({
-    user: { id: '1', email: 'jobs@apple.com', name: 'Steve Jobs', avatarUrl: '' },
-    signOut: mockSignOut,
-    updateProfile: mockUpdateProfile,
-    refreshProfile: mockRefreshProfile,
-    profileError: null,
-  }),
+const mockState = {
+  currentUser: {
+    id: 1,
+    name: 'Steve Jobs',
+    handle: 'sjobs',
+    email: 'jobs@apple.com',
+    photo: '',
+  },
+  personalMap: null,
+  hasCompletedPersonalMap: false,
+  logout: mockSignOut,
+  fetchProfile: mockFetchProfile,
+};
+
+jest.mock('@react-navigation/native', () => {
+  const actual = jest.requireActual('@react-navigation/native');
+  return {
+    ...actual,
+    useNavigation: () => ({
+      navigate: mockNavigate,
+    }),
+  };
+});
+
+jest.mock('@store/authStore', () => ({
+  useAuthStore: (selector: (state: typeof mockState) => unknown) =>
+    selector(mockState),
 }));
 
 describe('ProfileScreen', () => {
   beforeEach(() => {
     mockSignOut.mockReset();
-    mockUpdateProfile.mockReset();
-    mockRefreshProfile.mockReset();
+    mockNavigate.mockReset();
+    mockFetchProfile.mockReset();
   });
 
   const renderScreen = () =>
@@ -39,42 +58,25 @@ describe('ProfileScreen', () => {
       </ToastProvider>,
     );
 
-  it('saves profile changes and shows success toast', async () => {
-    mockUpdateProfile.mockResolvedValue({
-      id: '1',
-      email: 'jobs@apple.com',
-      name: 'Steve Jay',
-      avatarUrl: '',
-    });
+  it('renders profile details and signs out', async () => {
+    mockSignOut.mockResolvedValue(undefined);
 
-    const { getByPlaceholderText, getByText, queryByText } = renderScreen();
+    const { getByText } = renderScreen();
 
-    const nameInput = getByPlaceholderText('Add your name');
-    fireEvent.changeText(nameInput, 'Steve Jay');
+    expect(getByText('Steve Jobs')).toBeTruthy();
+    expect(getByText('@sjobs')).toBeTruthy();
+    expect(getByText('jobs@apple.com')).toBeTruthy();
 
-    const saveButton = getByText('Save Changes');
-    fireEvent.press(saveButton);
+    fireEvent.press(getByText('Sign out'));
 
-    await waitFor(() =>
-      expect(mockUpdateProfile).toHaveBeenCalledWith({ name: 'Steve Jay' }),
-    );
-
-    expect(mockRefreshProfile).toHaveBeenCalled();
-    expect(queryByText('Profile updated successfully.')).toBeTruthy();
+    await waitFor(() => expect(mockSignOut).toHaveBeenCalled());
   });
 
-  it('shows error toast when profile update fails', async () => {
-    mockUpdateProfile.mockRejectedValue(new Error('network'));
+  it('navigates to profile edit', () => {
+    const { getByText } = renderScreen();
 
-    const { getByPlaceholderText, getByText, queryByText } = renderScreen();
+    fireEvent.press(getByText('Edit profile'));
 
-    const nameInput = getByPlaceholderText('Add your name');
-    fireEvent.changeText(nameInput, 'Steve Jay');
-
-    fireEvent.press(getByText('Save Changes'));
-
-    await waitFor(() => expect(mockUpdateProfile).toHaveBeenCalled());
-
-    expect(queryByText('Could not update profile. Please try again.')).toBeTruthy();
+    expect(mockNavigate).toHaveBeenCalledWith('ProfileEdit');
   });
 });
