@@ -232,6 +232,18 @@ export async function deleteSubscription(id: number): Promise<void> {
   await apiClient.request(`/payments/subscriptions/${id}/`, { method: 'DELETE' });
 }
 
+// Wallet
+export type Wallet = {
+  id: number;
+  balance_cents: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export async function getWallet(): Promise<Wallet> {
+  return apiClient.request<Wallet>('/payments/subscriptions/wallet/', { method: 'GET' });
+}
+
 // Stripe Checkout
 export type StripeCheckoutSessionPayload = {
   plan_id?: number;
