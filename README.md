@@ -45,6 +45,8 @@ This repository is for:
 
 See [`docs/API.md`](docs/API.md) for a frontend-facing map of API calls and wrapper modules. This is not backend documentation; it is a guide to how the mobile client talks to the REST API.
 
+Wallet + SLC integration notes live in [`docs/WALLET_SLC.md`](docs/WALLET_SLC.md).
+
 ## Getting Started
 
 ### Prerequisites
@@ -72,6 +74,19 @@ Then launch on a simulator or device using the Expo UI, or run:
 npm run ios
 npm run android
 ```
+
+## Wallet + SLC (Coin) Setup
+
+### Required env vars
+- `EXPO_PUBLIC_API_BASE_URL` (used to derive `API_BASE_URL` / `API_HTTP_BASE_URL` in `src/config/env.ts`)
+  - Example: `http://localhost:8000`
+
+### Test Wallet + SLC screens
+1. Start the backend locally and sign in.
+2. Open the Wallet tab.
+3. Confirm both "Wallet (Payments)" and "SLC Balance (Credits)" load.
+4. Use "Send SLC" with a valid recipient user ID.
+5. Verify the "SLC Activity" list updates and pagination works via "Load more".
 
 ### Troubleshooting
 
