@@ -21,5 +21,6 @@ describe('parseDollarsToCents', () => {
   it('returns zero for invalid values', () => {
     expect(parseDollarsToCents('')).toBe(0);
     expect(parseDollarsToCents('abc')).toBe(0);
+    expect(parseDollarsToCents('1.2.3')).toBe(0);
   });
 });
