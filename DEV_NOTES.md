@@ -37,16 +37,16 @@
 ## Backend Contract (from local backend repo)
 ### Coin endpoints
 - Routing:
-  - `/api/v1/coin/*` registered in `/home/greendragon/Desktop/selflink-backend/apps/coin/urls.py` and included via `/home/greendragon/Desktop/selflink-backend/apps/core/api_router.py`.
+  - `/api/v1/coin/*` registered in `selflink-backend/apps/coin/urls.py` and included via `selflink-backend/apps/core/api_router.py`.
 - Views:
-  - Balance: `CoinBalanceView.get` in `/home/greendragon/Desktop/selflink-backend/apps/coin/views.py`.
-  - Ledger: `CoinLedgerView.get` in `/home/greendragon/Desktop/selflink-backend/apps/coin/views.py`.
-  - Transfer: `CoinTransferView.post` in `/home/greendragon/Desktop/selflink-backend/apps/coin/views.py`.
-  - Spend: `CoinSpendView.post` in `/home/greendragon/Desktop/selflink-backend/apps/coin/views.py`.
+  - Balance: `CoinBalanceView.get` in `selflink-backend/apps/coin/views.py`.
+  - Ledger: `CoinLedgerView.get` in `selflink-backend/apps/coin/views.py`.
+  - Transfer: `CoinTransferView.post` in `selflink-backend/apps/coin/views.py`.
+  - Spend: `CoinSpendView.post` in `selflink-backend/apps/coin/views.py`.
 - Serializers:
-  - Ledger entries: `CoinLedgerEntrySerializer` in `/home/greendragon/Desktop/selflink-backend/apps/coin/serializers.py`.
-  - Transfer request: `CoinTransferSerializer` in `/home/greendragon/Desktop/selflink-backend/apps/coin/serializers.py`.
-  - Spend request: `CoinSpendSerializer` in `/home/greendragon/Desktop/selflink-backend/apps/coin/serializers.py`.
+  - Ledger entries: `CoinLedgerEntrySerializer` in `selflink-backend/apps/coin/serializers.py`.
+  - Transfer request: `CoinTransferSerializer` in `selflink-backend/apps/coin/serializers.py`.
+  - Spend request: `CoinSpendSerializer` in `selflink-backend/apps/coin/serializers.py`.
 - Contract:
   - GET `/api/v1/coin/balance/` -> `{ account_key, balance_cents, currency }`.
   - GET `/api/v1/coin/ledger/` (query: `limit` default 50, `cursor` optional) -> `{ results: CoinLedgerEntry[], next_cursor }`.
@@ -57,30 +57,30 @@
     - Response (201): `{ event_id, amount_cents, reference, balance_cents, currency }`.
 - Cursor handling:
   - `next_cursor` is opaque (base64url JSON). Legacy numeric cursors are accepted.
-  - Invalid cursor returns 400 with `{ "detail": "Invalid cursor." }` in `/home/greendragon/Desktop/selflink-backend/apps/coin/views.py`.
-  - Invalid limit returns 400 with `{ "detail": "Invalid limit." }` in `/home/greendragon/Desktop/selflink-backend/apps/coin/views.py`.
+  - Invalid cursor returns 400 with `{ "detail": "Invalid cursor." }` in `selflink-backend/apps/coin/views.py`.
+  - Invalid limit returns 400 with `{ "detail": "Invalid limit." }` in `selflink-backend/apps/coin/views.py`.
 - Error payloads:
-  - Transfer/spend validation errors return `{ detail, code }` with 400 in `/home/greendragon/Desktop/selflink-backend/apps/coin/views.py`.
-  - Serializer validation errors return field-keyed arrays (e.g., `{ "to_user_id": ["Receiver not found."] }`) in `/home/greendragon/Desktop/selflink-backend/apps/coin/serializers.py`.
+  - Transfer/spend validation errors return `{ detail, code }` with 400 in `selflink-backend/apps/coin/views.py`.
+  - Serializer validation errors return field-keyed arrays (e.g., `{ "to_user_id": ["Receiver not found."] }`) in `selflink-backend/apps/coin/serializers.py`.
   - Transfer codes: `insufficient_funds`, `invalid_receiver`, `invalid_amount`, `account_inactive`, `account_invalid`.
   - Spend codes: `insufficient_funds`, `invalid_amount`, `account_inactive`, `account_invalid`.
 - Ledger event metadata source:
   - Transfer metadata: `sender_user_id`, `to_user_id`, `amount_cents`, `fee_cents`.
   - Spend metadata: `user_id`, `reference`, `amount_cents`.
   - Mint metadata: `provider`, `external_id`, `amount_cents`.
-  - Source: `/home/greendragon/Desktop/selflink-backend/apps/coin/services/ledger.py`.
+  - Source: `selflink-backend/apps/coin/services/ledger.py`.
 
 ### Payments wallet endpoint
-- URL + view: GET `/api/v1/payments/subscriptions/wallet/` via `SubscriptionViewSet.wallet` in `/home/greendragon/Desktop/selflink-backend/apps/payments/views.py`.
-- Serializer fields: `WalletSerializer` in `/home/greendragon/Desktop/selflink-backend/apps/payments/serializers.py` returns `{ id, balance_cents, created_at, updated_at }`.
+- URL + view: GET `/api/v1/payments/subscriptions/wallet/` via `SubscriptionViewSet.wallet` in `selflink-backend/apps/payments/views.py`.
+- Serializer fields: `WalletSerializer` in `selflink-backend/apps/payments/serializers.py` returns `{ id, balance_cents, created_at, updated_at }`.
 
 ### Auth + throttling
-- All coin endpoints require auth: `permission_classes = [IsAuthenticated]` in `/home/greendragon/Desktop/selflink-backend/apps/coin/views.py`.
-- Wallet endpoint requires auth via `SubscriptionViewSet` in `/home/greendragon/Desktop/selflink-backend/apps/payments/views.py`.
-- Transfer/spend are throttled via `throttle_scope = "coin_transfer"` / `"coin_spend"` in `/home/greendragon/Desktop/selflink-backend/apps/coin/views.py`.
-- Throttle rates are configured in `/home/greendragon/Desktop/selflink-backend/core/settings/base.py` (`COIN_THROTTLE_TRANSFER`, `COIN_THROTTLE_SPEND`).
+- All coin endpoints require auth: `permission_classes = [IsAuthenticated]` in `selflink-backend/apps/coin/views.py`.
+- Wallet endpoint requires auth via `SubscriptionViewSet` in `selflink-backend/apps/payments/views.py`.
+- Transfer/spend are throttled via `throttle_scope = "coin_transfer"` / `"coin_spend"` in `selflink-backend/apps/coin/views.py`.
+- Throttle rates are configured in `selflink-backend/core/settings/base.py` (`COIN_THROTTLE_TRANSFER`, `COIN_THROTTLE_SPEND`).
 
 ### Backend docs
-- `/home/greendragon/Desktop/selflink-backend/docs/coin/WALLET.md` (SLC overview, transfer/spend endpoints, no public mint, cursor notes).
-- `/home/greendragon/Desktop/selflink-backend/docs/coin/TECHNICAL_REVIEW.md` (coin architecture, invariants, throttling mention).
-- `/home/greendragon/Desktop/selflink-backend/docs/WHY_THIS_STACK.md` (apps/coin overview).
+- `selflink-backend/docs/coin/WALLET.md` (SLC overview, transfer/spend endpoints, no public mint, cursor notes).
+- `selflink-backend/docs/coin/TECHNICAL_REVIEW.md` (coin architecture, invariants, throttling mention).
+- `selflink-backend/docs/WHY_THIS_STACK.md` (apps/coin overview).
