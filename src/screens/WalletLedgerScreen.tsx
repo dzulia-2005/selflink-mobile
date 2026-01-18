@@ -38,6 +38,7 @@ import { getWallet, Wallet } from '@services/api/payments';
 import { env } from '@config/env';
 import { theme } from '@theme/index';
 import { parseDollarsToCents } from '@utils/currency';
+import { createIpayPollSession, shouldCompleteIpayPolling } from '@utils/ipayPolling';
 
 import { COIN_SPEND_REFERENCES } from '../constants/coinSpendReferences';
 
@@ -266,8 +267,7 @@ export function WalletLedgerScreen() {
     null,
   );
   const appStateRef = useRef<AppStateStatus>(AppState.currentState);
-  const ipayPollTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
-  const ipayPollActiveRef = useRef(false);
+  const ipayPollSessionRef = useRef(createIpayPollSession());
 
   const isThrottled = throttleUntil !== null;
   const isSpendThrottled = spendThrottleUntil !== null;
@@ -453,24 +453,27 @@ export function WalletLedgerScreen() {
   }, [fetchWallet, fetchCoinBalance, fetchLedger, refreshing]);
 
   const stopIpayPolling = useCallback(() => {
-    ipayPollActiveRef.current = false;
-    ipayPollTimersRef.current.forEach((timer) => clearTimeout(timer));
-    ipayPollTimersRef.current = [];
+    ipayPollSessionRef.current.stop();
   }, []);
 
-  const runIpayPollAttempt = useCallback(async () => {
+  const runIpayPollAttempt = useCallback(async (sessionId: number) => {
     if (!pendingIpayReference) {
       stopIpayPolling();
       return;
     }
+    if (pendingIpayBalance === null) {
+      return;
+    }
+    if (!ipayPollSessionRef.current.isActive(sessionId)) {
+      return;
+    }
     try {
       const data = await getSlcBalance();
-      setCoinBalance(data);
-      if (pendingIpayBalance === null) {
-        setPendingIpayBalance(data.balance_cents);
+      if (!ipayPollSessionRef.current.isActive(sessionId)) {
         return;
       }
-      if (data.balance_cents > pendingIpayBalance) {
+      setCoinBalance(data);
+      if (shouldCompleteIpayPolling(pendingIpayBalance, data.balance_cents)) {
         setPendingIpayReference(null);
         setPendingIpayBalance(null);
         stopIpayPolling();
@@ -503,23 +506,17 @@ export function WalletLedgerScreen() {
   ]);
 
   const scheduleIpayPolling = useCallback(() => {
-    if (!pendingIpayReference || ipayPollActiveRef.current) {
+    if (!pendingIpayReference) {
       return;
     }
-    ipayPollActiveRef.current = true;
-    setPendingIpayBalance(
-      (current) => current ?? coinBalance?.balance_cents ?? 0,
-    );
     const delays = [0, 3000, 7000, 15000];
-    ipayPollTimersRef.current = delays.map((delay, index) =>
-      setTimeout(async () => {
-        await runIpayPollAttempt();
-        if (index === delays.length - 1) {
-          ipayPollActiveRef.current = false;
-        }
-      }, delay),
-    );
-  }, [coinBalance?.balance_cents, pendingIpayReference, runIpayPollAttempt]);
+    ipayPollSessionRef.current.start(delays, async (sessionId, isLast) => {
+      await runIpayPollAttempt(sessionId);
+      if (isLast) {
+        stopIpayPolling();
+      }
+    });
+  }, [pendingIpayReference, runIpayPollAttempt, stopIpayPolling]);
 
   useEffect(() => {
     const handleAppStateChange = (next: AppStateStatus) => {
@@ -626,8 +623,9 @@ export function WalletLedgerScreen() {
       if (!canOpen) {
         throw new Error('Cannot open iPay checkout URL');
       }
+      stopIpayPolling();
       setPendingIpayReference(response.reference);
-      setPendingIpayBalance(coinBalance?.balance_cents ?? null);
+      setPendingIpayBalance(coinBalance?.balance_cents ?? 0);
       setIpayVisible(false);
       setIpayAmountInput('');
       await Linking.openURL(checkoutUrl);
@@ -655,6 +653,7 @@ export function WalletLedgerScreen() {
     ipayAmountInput,
     ipayCurrency,
     ipayLoading,
+    stopIpayPolling,
     toast,
   ]);
 
