@@ -33,6 +33,7 @@ import {
   spendSlc,
   transferSlc,
 } from '@api/coin';
+import { createBtcpayCheckout, normalizeBtcpayApiError } from '@api/btcpayCheckout';
 import { createIpayCheckout } from '@api/ipay';
 import { createStripeCheckout, normalizeStripeApiError } from '@api/stripeCheckout';
 import { getWallet, Wallet } from '@services/api/payments';
@@ -40,6 +41,10 @@ import { env } from '@config/env';
 import { theme } from '@theme/index';
 import { parseDollarsToCents } from '@utils/currency';
 import { createIpayPollSession, shouldCompleteIpayPolling } from '@utils/ipayPolling';
+import {
+  createBtcpayPollSession,
+  shouldCompleteBtcpayPolling,
+} from '@utils/btcpayPolling';
 import {
   createStripePollSession,
   shouldCompleteStripePolling,
@@ -51,9 +56,11 @@ const LEDGER_PAGE_SIZE = 25;
 const PURCHASE_CURRENCIES = ['USD', 'EUR', 'GEL'] as const;
 const IPAY_CURRENCIES = PURCHASE_CURRENCIES;
 const STRIPE_CURRENCIES = PURCHASE_CURRENCIES;
+const BTCPAY_CURRENCIES = ['USD', 'EUR'] as const;
 type PurchaseCurrency = (typeof PURCHASE_CURRENCIES)[number];
 type IpayCurrency = PurchaseCurrency;
 type StripeCurrency = PurchaseCurrency;
+type BtcpayCurrency = (typeof BTCPAY_CURRENCIES)[number];
 const IPAY_REFERENCE_PARAM = 'reference';
 
 type ParsedApiError = {
@@ -275,6 +282,25 @@ export function WalletLedgerScreen() {
   const [pendingIpayBalance, setPendingIpayBalance] = useState<number | null>(
     null,
   );
+  const [btcpayVisible, setBtcpayVisible] = useState(false);
+  const [btcpayAmountInput, setBtcpayAmountInput] = useState('');
+  const [btcpayCurrency, setBtcpayCurrency] = useState<BtcpayCurrency>(
+    BTCPAY_CURRENCIES[0],
+  );
+  const [btcpayError, setBtcpayError] = useState<string | null>(null);
+  const [btcpayFieldErrors, setBtcpayFieldErrors] = useState<
+    Record<string, string[]> | null
+  >(null);
+  const [btcpayLoading, setBtcpayLoading] = useState(false);
+  const [pendingBtcpayReference, setPendingBtcpayReference] = useState<
+    string | null
+  >(null);
+  const [pendingBtcpayExpectedAmount, setPendingBtcpayExpectedAmount] = useState<
+    number | null
+  >(null);
+  const [pendingBtcpayStartedAt, setPendingBtcpayStartedAt] = useState<number | null>(
+    null,
+  );
   const [stripeVisible, setStripeVisible] = useState(false);
   const [stripeAmountInput, setStripeAmountInput] = useState('');
   const [stripeCurrency, setStripeCurrency] = useState<StripeCurrency>(
@@ -299,8 +325,10 @@ export function WalletLedgerScreen() {
   );
   const appStateRef = useRef<AppStateStatus>(AppState.currentState);
   const ipayPollSessionRef = useRef(createIpayPollSession());
+  const btcpayPollSessionRef = useRef(createBtcpayPollSession());
   const stripePollSessionRef = useRef(createStripePollSession());
   const stripeLedgerCursorRef = useRef<string | null>(null);
+  const btcpayLedgerCursorRef = useRef<string | null>(null);
 
   const isThrottled = throttleUntil !== null;
   const isSpendThrottled = spendThrottleUntil !== null;
@@ -551,6 +579,110 @@ export function WalletLedgerScreen() {
     });
   }, [pendingIpayReference, runIpayPollAttempt, stopIpayPolling]);
 
+  const stopBtcpayPolling = useCallback(() => {
+    btcpayPollSessionRef.current.stop();
+  }, []);
+
+  const clearBtcpayPending = useCallback(() => {
+    setPendingBtcpayReference(null);
+    setPendingBtcpayExpectedAmount(null);
+    setPendingBtcpayStartedAt(null);
+    btcpayLedgerCursorRef.current = null;
+  }, []);
+
+  const runBtcpayPollAttempt = useCallback(
+    async (sessionId: number) => {
+      if (!pendingBtcpayReference) {
+        stopBtcpayPolling();
+        return;
+      }
+      if (pendingBtcpayExpectedAmount === null || pendingBtcpayStartedAt === null) {
+        return;
+      }
+      if (!btcpayPollSessionRef.current.isActive(sessionId)) {
+        return;
+      }
+      try {
+        const balanceData = await getSlcBalance();
+        if (!btcpayPollSessionRef.current.isActive(sessionId)) {
+          return;
+        }
+        setCoinBalance(balanceData);
+        const ledgerData = await listSlcLedger({
+          cursor: btcpayLedgerCursorRef.current ?? undefined,
+          limit: LEDGER_PAGE_SIZE,
+        });
+        if (!btcpayPollSessionRef.current.isActive(sessionId)) {
+          return;
+        }
+        if (
+          shouldCompleteBtcpayPolling(
+            {
+              reference: pendingBtcpayReference,
+              expectedAmountCents: pendingBtcpayExpectedAmount,
+              startedAtMs: pendingBtcpayStartedAt,
+            },
+            ledgerData.results,
+          )
+        ) {
+          clearBtcpayPending();
+          stopBtcpayPolling();
+          await refreshCoinData();
+          toast.push({
+            tone: 'info',
+            message: 'SLC credited.',
+          });
+        }
+      } catch (error) {
+        const normalized = normalizeCoinApiError(
+          error,
+          'Unable to refresh SLC balance.',
+        );
+        if (normalized.status === 429) {
+          stopBtcpayPolling();
+          toast.push({ tone: 'error', message: normalized.message });
+          return;
+        }
+        if (isAuthStatus(normalized.status)) {
+          stopBtcpayPolling();
+          handleAuthError(normalized.message);
+        }
+      }
+    },
+    [
+      clearBtcpayPending,
+      handleAuthError,
+      pendingBtcpayExpectedAmount,
+      pendingBtcpayReference,
+      pendingBtcpayStartedAt,
+      refreshCoinData,
+      stopBtcpayPolling,
+      toast,
+    ],
+  );
+
+  const scheduleBtcpayPolling = useCallback(() => {
+    if (!pendingBtcpayReference) {
+      return;
+    }
+    const delays = [0, 3000, 7000, 15000];
+    btcpayPollSessionRef.current.start(delays, async (sessionId, isLast) => {
+      await runBtcpayPollAttempt(sessionId);
+      if (!btcpayPollSessionRef.current.isActive(sessionId)) {
+        return;
+      }
+      if (isLast) {
+        clearBtcpayPending();
+        stopBtcpayPolling();
+        toast.push({
+          tone: 'info',
+          message:
+            'Payment pending. If you were charged, balance will update shortly. Pull to refresh.',
+        });
+      }
+    });
+  }, [clearBtcpayPending, pendingBtcpayReference, runBtcpayPollAttempt, stopBtcpayPolling, toast]);
+
   const stopStripePolling = useCallback(() => {
     stripePollSessionRef.current.stop();
   }, []);
@@ -681,11 +813,13 @@ export function WalletLedgerScreen() {
       appStateRef.current = next;
       if (next === 'active' && prev !== 'active') {
         scheduleIpayPolling();
+        scheduleBtcpayPolling();
         scheduleStripePolling();
         return;
       }
       if (next !== 'active') {
         stopIpayPolling();
+        stopBtcpayPolling();
         stopStripePolling();
       }
     };
@@ -693,19 +827,36 @@ export function WalletLedgerScreen() {
     return () => {
       subscription.remove();
       stopIpayPolling();
+      stopBtcpayPolling();
       stopStripePolling();
     };
-  }, [scheduleIpayPolling, scheduleStripePolling, stopIpayPolling, stopStripePolling]);
+  }, [
+    scheduleBtcpayPolling,
+    scheduleIpayPolling,
+    scheduleStripePolling,
+    stopBtcpayPolling,
+    stopIpayPolling,
+    stopStripePolling,
+  ]);
 
   useFocusEffect(
     useCallback(() => {
       scheduleIpayPolling();
+      scheduleBtcpayPolling();
       scheduleStripePolling();
       return () => {
         stopIpayPolling();
+        stopBtcpayPolling();
         stopStripePolling();
       };
-    }, [scheduleIpayPolling, scheduleStripePolling, stopIpayPolling, stopStripePolling]),
+    }, [
+      scheduleBtcpayPolling,
+      scheduleIpayPolling,
+      scheduleStripePolling,
+      stopBtcpayPolling,
+      stopIpayPolling,
+      stopStripePolling,
+    ]),
   );
 
   const handleOpenSend = useCallback(() => {
@@ -748,6 +899,86 @@ export function WalletLedgerScreen() {
     }
     setIpayVisible(false);
   }, [ipayLoading]);
+
+  const handleOpenBtcpay = useCallback(() => {
+    setBtcpayError(null);
+    setBtcpayFieldErrors(null);
+    setBtcpayVisible(true);
+  }, []);
+
+  const handleCloseBtcpay = useCallback(() => {
+    if (btcpayLoading) {
+      return;
+    }
+    setBtcpayVisible(false);
+  }, [btcpayLoading]);
+
+  const handleSubmitBtcpay = useCallback(async () => {
+    if (btcpayLoading) {
+      return;
+    }
+    const amountCents = parseDollarsToCents(btcpayAmountInput);
+    if (amountCents <= 0) {
+      setBtcpayFieldErrors({ amount_cents: ['Enter an amount greater than 0.'] });
+      setBtcpayError('Enter an amount greater than 0.');
+      return;
+    }
+    if (!BTCPAY_CURRENCIES.includes(btcpayCurrency)) {
+      setBtcpayFieldErrors({ currency: ['Select a valid currency.'] });
+      setBtcpayError('Select a valid currency.');
+      return;
+    }
+
+    setBtcpayError(null);
+    setBtcpayFieldErrors(null);
+    setBtcpayLoading(true);
+    try {
+      const response = await createBtcpayCheckout({
+        amountCents: amountCents,
+        currency: btcpayCurrency,
+      });
+      if (!response.payment_url) {
+        throw new Error('Missing BTCPay checkout URL');
+      }
+      const canOpen = await Linking.canOpenURL(response.payment_url);
+      if (!canOpen) {
+        throw new Error('Cannot open BTCPay checkout URL');
+      }
+      stopBtcpayPolling();
+      btcpayLedgerCursorRef.current = null;
+      setPendingBtcpayReference(response.reference);
+      setPendingBtcpayExpectedAmount(response.amount_cents);
+      setPendingBtcpayStartedAt(Date.now());
+      setBtcpayVisible(false);
+      setBtcpayAmountInput('');
+      await Linking.openURL(response.payment_url);
+      toast.push({
+        tone: 'info',
+        message: 'Complete BTCPay checkout to receive SLC.',
+      });
+    } catch (error) {
+      const normalized = normalizeBtcpayApiError(
+        error,
+        'Unable to start BTCPay checkout.',
+      );
+      if (isAuthStatus(normalized.status)) {
+        handleAuthError(normalized.message);
+      } else {
+        setBtcpayError(normalized.message);
+        setBtcpayFieldErrors(normalized.fields ?? null);
+        toast.push({ tone: 'error', message: normalized.message });
+      }
+    } finally {
+      setBtcpayLoading(false);
+    }
+  }, [
+    btcpayAmountInput,
+    btcpayCurrency,
+    btcpayLoading,
+    handleAuthError,
+    stopBtcpayPolling,
+    toast,
+  ]);
 
   const handleSubmitIpay = useCallback(async () => {
     if (ipayLoading) {
@@ -944,7 +1175,6 @@ export function WalletLedgerScreen() {
   }, [
     coinBalance?.balance_cents,
     handleAuthError,
-    nextCursor,
     stripeAmountInput,
     stripeCurrency,
     stripeLoading,
@@ -1112,6 +1342,10 @@ export function WalletLedgerScreen() {
   const ipayAmountCents = parseDollarsToCents(ipayAmountInput);
   const hasIpayBaseUrl = Boolean(env.ipayBaseUrl);
   const hasPendingIpay = Boolean(pendingIpayReference);
+  const btcpayAmountError = btcpayFieldErrors?.amount_cents?.[0];
+  const btcpayCurrencyError = btcpayFieldErrors?.currency?.[0];
+  const btcpayAmountCents = parseDollarsToCents(btcpayAmountInput);
+  const hasPendingBtcpay = Boolean(pendingBtcpayReference);
   const stripeAmountError = stripeFieldErrors?.amount_cents?.[0];
   const stripeCurrencyError = stripeFieldErrors?.currency?.[0];
   const stripeAmountCents = parseDollarsToCents(stripeAmountInput);
@@ -1207,11 +1441,20 @@ export function WalletLedgerScreen() {
             />
             <MetalButton title="Buy SLC" onPress={handleOpenStripe} />
             <MetalButton title="Buy SLC (iPay)" onPress={handleOpenIpay} />
+            <MetalButton title="Buy SLC (BTCPay)" onPress={handleOpenBtcpay} />
           </View>
           {hasPendingStripe ? (
             <View style={styles.pendingNotice}>
               <Text style={styles.pendingText}>
                 Awaiting Stripe payment confirmation. It may take a moment.
+              </Text>
+              <MetalButton title="I&apos;ve paid" onPress={refreshCoinData} />
+            </View>
+          ) : null}
+          {hasPendingBtcpay ? (
+            <View style={styles.pendingNotice}>
+              <Text style={styles.pendingText}>
+                Awaiting BTCPay confirmation. It may take a moment.
               </Text>
               <MetalButton title="I&apos;ve paid" onPress={refreshCoinData} />
             </View>
@@ -1530,6 +1773,89 @@ export function WalletLedgerScreen() {
                 />
                 <TouchableOpacity
                   onPress={handleCloseStripe}
+                  style={styles.cancelButton}
+                >
+                  <Text style={styles.cancelText}>Cancel</Text>
+                </TouchableOpacity>
+              </View>
+            </MetalPanel>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={btcpayVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={handleCloseBtcpay}
+      >
+        <View style={styles.modalBackdrop}>
+          <Pressable style={StyleSheet.absoluteFill} onPress={handleCloseBtcpay} />
+          <View style={styles.modalContent}>
+            <MetalPanel glow style={styles.modalPanel}>
+              <Text style={styles.modalTitle}>Buy SLC (BTCPay)</Text>
+              <Text style={styles.modalSubtitle}>
+                Choose an amount and currency to start BTCPay checkout.
+              </Text>
+
+              <Text style={styles.fieldLabel}>Currency</Text>
+              <View style={styles.referenceList}>
+                {BTCPAY_CURRENCIES.map((currency) => {
+                  const selected = currency === btcpayCurrency;
+                  return (
+                    <TouchableOpacity
+                      key={currency}
+                      onPress={() => {
+                        setBtcpayCurrency(currency);
+                        setBtcpayError(null);
+                        setBtcpayFieldErrors(null);
+                      }}
+                      style={[
+                        styles.referenceOption,
+                        selected && styles.referenceOptionSelected,
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.referenceLabel,
+                          selected && styles.referenceLabelSelected,
+                        ]}
+                      >
+                        {currency}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+              {btcpayCurrencyError ? (
+                <Text style={styles.fieldError}>{btcpayCurrencyError}</Text>
+              ) : null}
+
+              <TextInput
+                style={styles.input}
+                placeholder={`Amount (${btcpayCurrency})`}
+                placeholderTextColor={theme.palette.graphite}
+                value={btcpayAmountInput}
+                onChangeText={(text) => {
+                  setBtcpayAmountInput(text);
+                  setBtcpayError(null);
+                  setBtcpayFieldErrors(null);
+                }}
+                keyboardType="decimal-pad"
+              />
+              {btcpayAmountError ? (
+                <Text style={styles.fieldError}>{btcpayAmountError}</Text>
+              ) : null}
+
+              {btcpayError ? <Text style={styles.formError}>{btcpayError}</Text> : null}
+              <View style={styles.buttonRow}>
+                <MetalButton
+                  title={btcpayLoading ? 'Starting...' : 'Continue'}
+                  onPress={handleSubmitBtcpay}
+                  disabled={btcpayLoading || btcpayAmountCents <= 0}
+                />
+                <TouchableOpacity
+                  onPress={handleCloseBtcpay}
                   style={styles.cancelButton}
                 >
                   <Text style={styles.cancelText}>Cancel</Text>
