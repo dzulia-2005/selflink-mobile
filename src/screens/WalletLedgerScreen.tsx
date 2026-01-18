@@ -300,6 +300,7 @@ export function WalletLedgerScreen() {
   const appStateRef = useRef<AppStateStatus>(AppState.currentState);
   const ipayPollSessionRef = useRef(createIpayPollSession());
   const stripePollSessionRef = useRef(createStripePollSession());
+  const stripeLedgerCursorRef = useRef<string | null>(null);
 
   const isThrottled = throttleUntil !== null;
   const isSpendThrottled = spendThrottleUntil !== null;
@@ -559,6 +560,7 @@ export function WalletLedgerScreen() {
     setPendingStripeStartBalance(null);
     setPendingStripeExpectedAmount(null);
     setPendingStripeStartedAt(null);
+    stripeLedgerCursorRef.current = null;
   }, []);
 
   const runStripePollAttempt = useCallback(
@@ -567,23 +569,40 @@ export function WalletLedgerScreen() {
         stopStripePolling();
         return;
       }
-      if (pendingStripeStartBalance === null || pendingStripeExpectedAmount === null) {
+      if (
+        pendingStripeStartBalance === null ||
+        pendingStripeExpectedAmount === null ||
+        pendingStripeStartedAt === null
+      ) {
         return;
       }
       if (!stripePollSessionRef.current.isActive(sessionId)) {
         return;
       }
       try {
-        const data = await getSlcBalance();
+        const balanceData = await getSlcBalance();
         if (!stripePollSessionRef.current.isActive(sessionId)) {
           return;
         }
-        setCoinBalance(data);
+        setCoinBalance(balanceData);
+        const ledgerData = await listSlcLedger({
+          cursor: stripeLedgerCursorRef.current ?? undefined,
+          limit: LEDGER_PAGE_SIZE,
+        });
+        if (!stripePollSessionRef.current.isActive(sessionId)) {
+          return;
+        }
+        if (ledgerData.next_cursor) {
+          stripeLedgerCursorRef.current = ledgerData.next_cursor;
+        }
         if (
           shouldCompleteStripePolling(
-            pendingStripeStartBalance,
-            pendingStripeExpectedAmount,
-            data.balance_cents,
+            {
+              reference: pendingStripeReference,
+              expectedAmountCents: pendingStripeExpectedAmount,
+              startedAtMs: pendingStripeStartedAt,
+            },
+            ledgerData.results,
           )
         ) {
           clearStripePending();
@@ -591,7 +610,7 @@ export function WalletLedgerScreen() {
           await refreshCoinData();
           toast.push({
             tone: 'info',
-            message: 'SLC balance updated.',
+            message: 'SLC purchase confirmed.',
           });
         }
       } catch (error) {
@@ -599,6 +618,10 @@ export function WalletLedgerScreen() {
           error,
           'Unable to refresh SLC balance.',
         );
+        if (normalized.status === 400 && /invalid cursor/i.test(normalized.message)) {
+          stripeLedgerCursorRef.current = null;
+          return;
+        }
         if (normalized.status === 429) {
           stopStripePolling();
           toast.push({ tone: 'error', message: normalized.message });
@@ -616,6 +639,7 @@ export function WalletLedgerScreen() {
       pendingStripeExpectedAmount,
       pendingStripeReference,
       pendingStripeStartBalance,
+      pendingStripeStartedAt,
       refreshCoinData,
       stopStripePolling,
       toast,
@@ -893,6 +917,7 @@ export function WalletLedgerScreen() {
         throw new Error('Cannot open Stripe checkout URL');
       }
       stopStripePolling();
+      stripeLedgerCursorRef.current = nextCursor ?? null;
       setPendingStripeReference(response.reference);
       setPendingStripeStartBalance(baselineBalance);
       setPendingStripeExpectedAmount(response.amount_cents);
@@ -922,6 +947,7 @@ export function WalletLedgerScreen() {
   }, [
     coinBalance?.balance_cents,
     handleAuthError,
+    nextCursor,
     stripeAmountInput,
     stripeCurrency,
     stripeLoading,
