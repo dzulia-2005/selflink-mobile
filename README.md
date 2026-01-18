@@ -48,6 +48,7 @@ See [`docs/API.md`](docs/API.md) for a frontend-facing map of API calls and wrap
 Wallet + SLC integration notes live in [`docs/WALLET_SLC.md`](docs/WALLET_SLC.md).
 Wallet + iPay purchase flow notes live in [`docs/WALLET_SLC_IPAY.md`](docs/WALLET_SLC_IPAY.md).
 Wallet + Stripe purchase flow notes live in [`docs/WALLET_SLC_STRIPE.md`](docs/WALLET_SLC_STRIPE.md).
+Wallet + BTCPay purchase flow notes live in [`docs/WALLET_SLC_BTCPAY.md`](docs/WALLET_SLC_BTCPAY.md).
 
 ## Getting Started
 
