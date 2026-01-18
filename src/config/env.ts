@@ -55,6 +55,11 @@ const { apiBaseUrl, apiHttpBaseUrl } = deriveApiUrls(rawApiBaseUrl);
 export const API_BASE_URL = apiBaseUrl;
 export const API_HTTP_BASE_URL = apiHttpBaseUrl;
 
+const rawIpayBaseUrl =
+  process.env.EXPO_PUBLIC_IPAY_BASE_URL ??
+  (typeof extra.ipayBaseUrl === 'string' ? extra.ipayBaseUrl : undefined);
+const ipayBaseUrl = rawIpayBaseUrl ? trimTrailingSlash(String(rawIpayBaseUrl).trim()) : '';
+
 const normalizeHealthEndpoint = (raw: unknown): string => {
   if (typeof raw !== 'string') {
     return DEFAULT_HEALTH_ENDPOINT;
@@ -122,4 +127,5 @@ export const env = {
   healthEndpoint: HEALTH_ENDPOINT,
   healthUrl: HEALTH_URL,
   realtimeUrl,
+  ipayBaseUrl,
 };

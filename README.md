@@ -46,6 +46,7 @@ This repository is for:
 See [`docs/API.md`](docs/API.md) for a frontend-facing map of API calls and wrapper modules. This is not backend documentation; it is a guide to how the mobile client talks to the REST API.
 
 Wallet + SLC integration notes live in [`docs/WALLET_SLC.md`](docs/WALLET_SLC.md).
+Wallet + iPay purchase flow notes live in [`docs/WALLET_SLC_IPAY.md`](docs/WALLET_SLC_IPAY.md).
 
 ## Getting Started
 

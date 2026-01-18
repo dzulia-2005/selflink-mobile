@@ -2,6 +2,9 @@ import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  AppState,
+  AppStateStatus,
+  Linking,
   Modal,
   Pressable,
   RefreshControl,
@@ -13,6 +16,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 
 import { EmptyState } from '@components/EmptyState';
 import { ErrorState } from '@components/ErrorState';
@@ -29,13 +33,18 @@ import {
   spendSlc,
   transferSlc,
 } from '@api/coin';
+import { createIpayCheckout } from '@api/ipay';
 import { getWallet, Wallet } from '@services/api/payments';
+import { env } from '@config/env';
 import { theme } from '@theme/index';
 import { parseDollarsToCents } from '@utils/currency';
 
 import { COIN_SPEND_REFERENCES } from '../constants/coinSpendReferences';
 
 const LEDGER_PAGE_SIZE = 25;
+const IPAY_CURRENCIES = ['USD', 'EUR', 'GEL'] as const;
+type IpayCurrency = (typeof IPAY_CURRENCIES)[number];
+const IPAY_REFERENCE_PARAM = 'reference';
 
 type ParsedApiError = {
   message: string;
@@ -47,6 +56,23 @@ const formatDollars = (cents: number) => `$${(cents / 100).toFixed(2)}`;
 
 const defaultSpendReference =
   COIN_SPEND_REFERENCES.length > 0 ? COIN_SPEND_REFERENCES[0].value : '';
+
+const buildIpayCheckoutUrl = (baseUrl: string, reference: string) => {
+  const trimmed = baseUrl.trim();
+  if (!trimmed) {
+    return '';
+  }
+  try {
+    const url = new URL(trimmed);
+    url.searchParams.set(IPAY_REFERENCE_PARAM, reference);
+    return url.toString();
+  } catch {
+    const separator = trimmed.includes('?') ? '&' : '?';
+    return `${trimmed}${separator}${IPAY_REFERENCE_PARAM}=${encodeURIComponent(
+      reference,
+    )}`;
+  }
+};
 
 const extractDetailMessage = (payload: unknown): string | null => {
   if (!payload) {
@@ -223,6 +249,25 @@ export function WalletLedgerScreen() {
     null,
   );
   const [refreshing, setRefreshing] = useState(false);
+  const [ipayVisible, setIpayVisible] = useState(false);
+  const [ipayAmountInput, setIpayAmountInput] = useState('');
+  const [ipayCurrency, setIpayCurrency] = useState<IpayCurrency>(
+    IPAY_CURRENCIES[0],
+  );
+  const [ipayError, setIpayError] = useState<string | null>(null);
+  const [ipayFieldErrors, setIpayFieldErrors] = useState<
+    Record<string, string[]> | null
+  >(null);
+  const [ipayLoading, setIpayLoading] = useState(false);
+  const [pendingIpayReference, setPendingIpayReference] = useState<string | null>(
+    null,
+  );
+  const [pendingIpayBalance, setPendingIpayBalance] = useState<number | null>(
+    null,
+  );
+  const appStateRef = useRef<AppStateStatus>(AppState.currentState);
+  const ipayPollTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const ipayPollActiveRef = useRef(false);
 
   const isThrottled = throttleUntil !== null;
   const isSpendThrottled = spendThrottleUntil !== null;
@@ -351,6 +396,15 @@ export function WalletLedgerScreen() {
         return;
       }
       const normalized = normalizeCoinApiError(error, 'Unable to load more activity.');
+      if (normalized.status === 400 && /invalid cursor/i.test(normalized.message)) {
+        setNextCursor(null);
+        toast.push({
+          tone: 'error',
+          message: 'Activity refreshed due to an invalid cursor.',
+        });
+        fetchLedger();
+        return;
+      }
       if (isAuthStatus(normalized.status)) {
         handleAuthError(normalized.message);
       } else {
@@ -362,7 +416,15 @@ export function WalletLedgerScreen() {
     } finally {
       setLoadingMore(false);
     }
-  }, [handleAuthError, ledgerLoading, loadingMore, nextCursor, refreshing, toast]);
+  }, [
+    fetchLedger,
+    handleAuthError,
+    ledgerLoading,
+    loadingMore,
+    nextCursor,
+    refreshing,
+    toast,
+  ]);
 
   useEffect(() => {
     fetchWallet();
@@ -389,6 +451,103 @@ export function WalletLedgerScreen() {
       setRefreshing(false);
     }
   }, [fetchWallet, fetchCoinBalance, fetchLedger, refreshing]);
+
+  const stopIpayPolling = useCallback(() => {
+    ipayPollActiveRef.current = false;
+    ipayPollTimersRef.current.forEach((timer) => clearTimeout(timer));
+    ipayPollTimersRef.current = [];
+  }, []);
+
+  const runIpayPollAttempt = useCallback(async () => {
+    if (!pendingIpayReference) {
+      stopIpayPolling();
+      return;
+    }
+    try {
+      const data = await getSlcBalance();
+      setCoinBalance(data);
+      if (pendingIpayBalance === null) {
+        setPendingIpayBalance(data.balance_cents);
+        return;
+      }
+      if (data.balance_cents > pendingIpayBalance) {
+        setPendingIpayReference(null);
+        setPendingIpayBalance(null);
+        stopIpayPolling();
+        await refreshCoinData();
+        toast.push({
+          tone: 'info',
+          message: 'SLC balance updated.',
+        });
+      }
+    } catch (error) {
+      const normalized = normalizeCoinApiError(error, 'Unable to refresh SLC balance.');
+      if (normalized.status === 429) {
+        stopIpayPolling();
+        toast.push({ tone: 'error', message: normalized.message });
+        return;
+      }
+      if (isAuthStatus(normalized.status)) {
+        stopIpayPolling();
+        handleAuthError(normalized.message);
+        return;
+      }
+    }
+  }, [
+    handleAuthError,
+    pendingIpayBalance,
+    pendingIpayReference,
+    refreshCoinData,
+    stopIpayPolling,
+    toast,
+  ]);
+
+  const scheduleIpayPolling = useCallback(() => {
+    if (!pendingIpayReference || ipayPollActiveRef.current) {
+      return;
+    }
+    ipayPollActiveRef.current = true;
+    setPendingIpayBalance(
+      (current) => current ?? coinBalance?.balance_cents ?? 0,
+    );
+    const delays = [0, 3000, 7000, 15000];
+    ipayPollTimersRef.current = delays.map((delay, index) =>
+      setTimeout(async () => {
+        await runIpayPollAttempt();
+        if (index === delays.length - 1) {
+          ipayPollActiveRef.current = false;
+        }
+      }, delay),
+    );
+  }, [coinBalance?.balance_cents, pendingIpayReference, runIpayPollAttempt]);
+
+  useEffect(() => {
+    const handleAppStateChange = (next: AppStateStatus) => {
+      const prev = appStateRef.current;
+      appStateRef.current = next;
+      if (next === 'active' && prev !== 'active') {
+        scheduleIpayPolling();
+        return;
+      }
+      if (next !== 'active') {
+        stopIpayPolling();
+      }
+    };
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+    return () => {
+      subscription.remove();
+      stopIpayPolling();
+    };
+  }, [scheduleIpayPolling, stopIpayPolling]);
+
+  useFocusEffect(
+    useCallback(() => {
+      scheduleIpayPolling();
+      return () => {
+        stopIpayPolling();
+      };
+    }, [scheduleIpayPolling, stopIpayPolling]),
+  );
 
   const handleOpenSend = useCallback(() => {
     setFormError(null);
@@ -417,6 +576,87 @@ export function WalletLedgerScreen() {
     }
     setSpendVisible(false);
   }, [spending]);
+
+  const handleOpenIpay = useCallback(() => {
+    setIpayError(null);
+    setIpayFieldErrors(null);
+    setIpayVisible(true);
+  }, []);
+
+  const handleCloseIpay = useCallback(() => {
+    if (ipayLoading) {
+      return;
+    }
+    setIpayVisible(false);
+  }, [ipayLoading]);
+
+  const handleSubmitIpay = useCallback(async () => {
+    if (ipayLoading) {
+      return;
+    }
+    if (!env.ipayBaseUrl) {
+      setIpayError('iPay is not configured for this build.');
+      return;
+    }
+    const amountCents = parseDollarsToCents(ipayAmountInput);
+    if (amountCents <= 0) {
+      setIpayFieldErrors({ amount_cents: ['Enter an amount greater than 0.'] });
+      setIpayError('Enter an amount greater than 0.');
+      return;
+    }
+    if (!IPAY_CURRENCIES.includes(ipayCurrency)) {
+      setIpayFieldErrors({ currency: ['Select a valid currency.'] });
+      setIpayError('Select a valid currency.');
+      return;
+    }
+
+    setIpayError(null);
+    setIpayFieldErrors(null);
+    setIpayLoading(true);
+    try {
+      const response = await createIpayCheckout({
+        amount_cents: amountCents,
+        currency: ipayCurrency,
+      });
+      const checkoutUrl = buildIpayCheckoutUrl(env.ipayBaseUrl, response.reference);
+      if (!checkoutUrl) {
+        throw new Error('Missing iPay checkout URL');
+      }
+      const canOpen = await Linking.canOpenURL(checkoutUrl);
+      if (!canOpen) {
+        throw new Error('Cannot open iPay checkout URL');
+      }
+      setPendingIpayReference(response.reference);
+      setPendingIpayBalance(coinBalance?.balance_cents ?? null);
+      setIpayVisible(false);
+      setIpayAmountInput('');
+      await Linking.openURL(checkoutUrl);
+      toast.push({
+        tone: 'info',
+        message: 'Complete payment in iPay to receive SLC.',
+      });
+    } catch (error) {
+      setPendingIpayReference(null);
+      setPendingIpayBalance(null);
+      const normalized = normalizeCoinApiError(error, 'Unable to start iPay checkout.');
+      if (isAuthStatus(normalized.status)) {
+        handleAuthError(normalized.message);
+      } else {
+        setIpayError(normalized.message);
+        setIpayFieldErrors(normalized.fields ?? null);
+        toast.push({ tone: 'error', message: normalized.message });
+      }
+    } finally {
+      setIpayLoading(false);
+    }
+  }, [
+    coinBalance?.balance_cents,
+    handleAuthError,
+    ipayAmountInput,
+    ipayCurrency,
+    ipayLoading,
+    toast,
+  ]);
 
   const handleSubmitSpend = useCallback(async () => {
     if (spending || isSpendThrottled) {
@@ -573,6 +813,11 @@ export function WalletLedgerScreen() {
   const spendAmountError = spendFieldErrors?.amount_cents?.[0];
   const spendNoteError = spendFieldErrors?.note?.[0];
   const hasSpendReferences = COIN_SPEND_REFERENCES.length > 0;
+  const ipayAmountError = ipayFieldErrors?.amount_cents?.[0];
+  const ipayCurrencyError = ipayFieldErrors?.currency?.[0];
+  const ipayAmountCents = parseDollarsToCents(ipayAmountInput);
+  const hasIpayBaseUrl = Boolean(env.ipayBaseUrl);
+  const hasPendingIpay = Boolean(pendingIpayReference);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -662,7 +907,16 @@ export function WalletLedgerScreen() {
               onPress={handleOpenSpend}
               disabled={coinLoading || !coinBalance || !hasSpendReferences}
             />
+            <MetalButton title="Buy SLC" onPress={handleOpenIpay} />
           </View>
+          {hasPendingIpay ? (
+            <View style={styles.pendingNotice}>
+              <Text style={styles.pendingText}>
+                Payment pending confirmation. It may take a moment.
+              </Text>
+              <MetalButton title="I&apos;ve paid" onPress={refreshCoinData} />
+            </View>
+          ) : null}
         </MetalPanel>
 
         <MetalPanel>
@@ -895,6 +1149,92 @@ export function WalletLedgerScreen() {
           </View>
         </View>
       </Modal>
+
+      <Modal
+        visible={ipayVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={handleCloseIpay}
+      >
+        <View style={styles.modalBackdrop}>
+          <Pressable style={StyleSheet.absoluteFill} onPress={handleCloseIpay} />
+          <View style={styles.modalContent}>
+            <MetalPanel glow style={styles.modalPanel}>
+              <Text style={styles.modalTitle}>Buy SLC</Text>
+              <Text style={styles.modalSubtitle}>
+                Choose an amount and currency to start iPay checkout.
+              </Text>
+
+              <Text style={styles.fieldLabel}>Currency</Text>
+              <View style={styles.referenceList}>
+                {IPAY_CURRENCIES.map((currency) => {
+                  const selected = currency === ipayCurrency;
+                  return (
+                    <TouchableOpacity
+                      key={currency}
+                      onPress={() => {
+                        setIpayCurrency(currency);
+                        setIpayError(null);
+                        setIpayFieldErrors(null);
+                      }}
+                      style={[
+                        styles.referenceOption,
+                        selected && styles.referenceOptionSelected,
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.referenceLabel,
+                          selected && styles.referenceLabelSelected,
+                        ]}
+                      >
+                        {currency}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+              {ipayCurrencyError ? (
+                <Text style={styles.fieldError}>{ipayCurrencyError}</Text>
+              ) : null}
+
+              <TextInput
+                style={styles.input}
+                placeholder={`Amount (${ipayCurrency})`}
+                placeholderTextColor={theme.palette.graphite}
+                value={ipayAmountInput}
+                onChangeText={(text) => {
+                  setIpayAmountInput(text);
+                  setIpayError(null);
+                  setIpayFieldErrors(null);
+                }}
+                keyboardType="decimal-pad"
+              />
+              {ipayAmountError ? (
+                <Text style={styles.fieldError}>{ipayAmountError}</Text>
+              ) : null}
+
+              {!hasIpayBaseUrl ? (
+                <Text style={styles.fieldError}>
+                  iPay checkout is not configured for this build.
+                </Text>
+              ) : null}
+
+              {ipayError ? <Text style={styles.formError}>{ipayError}</Text> : null}
+              <View style={styles.buttonRow}>
+                <MetalButton
+                  title={ipayLoading ? 'Starting...' : 'Continue'}
+                  onPress={handleSubmitIpay}
+                  disabled={ipayLoading || ipayAmountCents <= 0 || !hasIpayBaseUrl}
+                />
+                <TouchableOpacity onPress={handleCloseIpay} style={styles.cancelButton}>
+                  <Text style={styles.cancelText}>Cancel</Text>
+                </TouchableOpacity>
+              </View>
+            </MetalPanel>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -958,6 +1298,14 @@ const styles = StyleSheet.create({
     gap: theme.spacing.sm,
     flexWrap: 'wrap',
     marginTop: theme.spacing.md,
+  },
+  pendingNotice: {
+    marginTop: theme.spacing.sm,
+    gap: theme.spacing.xs,
+  },
+  pendingText: {
+    color: theme.palette.silver,
+    ...theme.typography.caption,
   },
   ledgerRow: {
     borderTopWidth: StyleSheet.hairlineWidth,
