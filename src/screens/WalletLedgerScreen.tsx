@@ -34,17 +34,26 @@ import {
   transferSlc,
 } from '@api/coin';
 import { createIpayCheckout } from '@api/ipay';
+import { createStripeCheckout, normalizeStripeApiError } from '@api/stripeCheckout';
 import { getWallet, Wallet } from '@services/api/payments';
 import { env } from '@config/env';
 import { theme } from '@theme/index';
 import { parseDollarsToCents } from '@utils/currency';
 import { createIpayPollSession, shouldCompleteIpayPolling } from '@utils/ipayPolling';
+import {
+  createStripePollSession,
+  shouldCompleteStripePolling,
+} from '@utils/stripePolling';
 
 import { COIN_SPEND_REFERENCES } from '../constants/coinSpendReferences';
 
 const LEDGER_PAGE_SIZE = 25;
-const IPAY_CURRENCIES = ['USD', 'EUR', 'GEL'] as const;
-type IpayCurrency = (typeof IPAY_CURRENCIES)[number];
+const PURCHASE_CURRENCIES = ['USD', 'EUR', 'GEL'] as const;
+const IPAY_CURRENCIES = PURCHASE_CURRENCIES;
+const STRIPE_CURRENCIES = PURCHASE_CURRENCIES;
+type PurchaseCurrency = (typeof PURCHASE_CURRENCIES)[number];
+type IpayCurrency = PurchaseCurrency;
+type StripeCurrency = PurchaseCurrency;
 const IPAY_REFERENCE_PARAM = 'reference';
 
 type ParsedApiError = {
@@ -266,8 +275,31 @@ export function WalletLedgerScreen() {
   const [pendingIpayBalance, setPendingIpayBalance] = useState<number | null>(
     null,
   );
+  const [stripeVisible, setStripeVisible] = useState(false);
+  const [stripeAmountInput, setStripeAmountInput] = useState('');
+  const [stripeCurrency, setStripeCurrency] = useState<StripeCurrency>(
+    STRIPE_CURRENCIES[0],
+  );
+  const [stripeError, setStripeError] = useState<string | null>(null);
+  const [stripeFieldErrors, setStripeFieldErrors] = useState<
+    Record<string, string[]> | null
+  >(null);
+  const [stripeLoading, setStripeLoading] = useState(false);
+  const [pendingStripeReference, setPendingStripeReference] = useState<
+    string | null
+  >(null);
+  const [pendingStripeStartBalance, setPendingStripeStartBalance] = useState<
+    number | null
+  >(null);
+  const [pendingStripeExpectedAmount, setPendingStripeExpectedAmount] = useState<
+    number | null
+  >(null);
+  const [pendingStripeStartedAt, setPendingStripeStartedAt] = useState<number | null>(
+    null,
+  );
   const appStateRef = useRef<AppStateStatus>(AppState.currentState);
   const ipayPollSessionRef = useRef(createIpayPollSession());
+  const stripePollSessionRef = useRef(createStripePollSession());
 
   const isThrottled = throttleUntil !== null;
   const isSpendThrottled = spendThrottleUntil !== null;
@@ -518,32 +550,141 @@ export function WalletLedgerScreen() {
     });
   }, [pendingIpayReference, runIpayPollAttempt, stopIpayPolling]);
 
+  const stopStripePolling = useCallback(() => {
+    stripePollSessionRef.current.stop();
+  }, []);
+
+  const clearStripePending = useCallback(() => {
+    setPendingStripeReference(null);
+    setPendingStripeStartBalance(null);
+    setPendingStripeExpectedAmount(null);
+    setPendingStripeStartedAt(null);
+  }, []);
+
+  const runStripePollAttempt = useCallback(
+    async (sessionId: number) => {
+      if (!pendingStripeReference) {
+        stopStripePolling();
+        return;
+      }
+      if (pendingStripeStartBalance === null || pendingStripeExpectedAmount === null) {
+        return;
+      }
+      if (!stripePollSessionRef.current.isActive(sessionId)) {
+        return;
+      }
+      try {
+        const data = await getSlcBalance();
+        if (!stripePollSessionRef.current.isActive(sessionId)) {
+          return;
+        }
+        setCoinBalance(data);
+        if (
+          shouldCompleteStripePolling(
+            pendingStripeStartBalance,
+            pendingStripeExpectedAmount,
+            data.balance_cents,
+          )
+        ) {
+          clearStripePending();
+          stopStripePolling();
+          await refreshCoinData();
+          toast.push({
+            tone: 'info',
+            message: 'SLC balance updated.',
+          });
+        }
+      } catch (error) {
+        const normalized = normalizeCoinApiError(
+          error,
+          'Unable to refresh SLC balance.',
+        );
+        if (normalized.status === 429) {
+          stopStripePolling();
+          toast.push({ tone: 'error', message: normalized.message });
+          return;
+        }
+        if (isAuthStatus(normalized.status)) {
+          stopStripePolling();
+          handleAuthError(normalized.message);
+        }
+      }
+    },
+    [
+      clearStripePending,
+      handleAuthError,
+      pendingStripeExpectedAmount,
+      pendingStripeReference,
+      pendingStripeStartBalance,
+      refreshCoinData,
+      stopStripePolling,
+      toast,
+    ],
+  );
+
+  const scheduleStripePolling = useCallback(() => {
+    if (!pendingStripeReference) {
+      return;
+    }
+    const delays = [0, 3000, 7000, 15000];
+    stripePollSessionRef.current.start(delays, async (sessionId, isLast) => {
+      await runStripePollAttempt(sessionId);
+      if (!stripePollSessionRef.current.isActive(sessionId)) {
+        return;
+      }
+      if (isLast) {
+        const startedAt = pendingStripeStartedAt;
+        clearStripePending();
+        stopStripePolling();
+        toast.push({
+          tone: 'info',
+          message:
+            startedAt !== null
+              ? 'Payment pending. If you were charged, balance will update shortly. Pull to refresh.'
+              : 'Payment pending. If you were charged, balance will update shortly. Pull to refresh.',
+        });
+      }
+    });
+  }, [
+    clearStripePending,
+    pendingStripeReference,
+    pendingStripeStartedAt,
+    runStripePollAttempt,
+    stopStripePolling,
+    toast,
+  ]);
+
   useEffect(() => {
     const handleAppStateChange = (next: AppStateStatus) => {
       const prev = appStateRef.current;
       appStateRef.current = next;
       if (next === 'active' && prev !== 'active') {
         scheduleIpayPolling();
+        scheduleStripePolling();
         return;
       }
       if (next !== 'active') {
         stopIpayPolling();
+        stopStripePolling();
       }
     };
     const subscription = AppState.addEventListener('change', handleAppStateChange);
     return () => {
       subscription.remove();
       stopIpayPolling();
+      stopStripePolling();
     };
-  }, [scheduleIpayPolling, stopIpayPolling]);
+  }, [scheduleIpayPolling, scheduleStripePolling, stopIpayPolling, stopStripePolling]);
 
   useFocusEffect(
     useCallback(() => {
       scheduleIpayPolling();
+      scheduleStripePolling();
       return () => {
         stopIpayPolling();
+        stopStripePolling();
       };
-    }, [scheduleIpayPolling, stopIpayPolling]),
+    }, [scheduleIpayPolling, scheduleStripePolling, stopIpayPolling, stopStripePolling]),
   );
 
   const handleOpenSend = useCallback(() => {
@@ -679,6 +820,112 @@ export function WalletLedgerScreen() {
     ipayCurrency,
     ipayLoading,
     stopIpayPolling,
+    toast,
+  ]);
+
+  const handleOpenStripe = useCallback(() => {
+    setStripeError(null);
+    setStripeFieldErrors(null);
+    setStripeVisible(true);
+  }, []);
+
+  const handleCloseStripe = useCallback(() => {
+    if (stripeLoading) {
+      return;
+    }
+    setStripeVisible(false);
+  }, [stripeLoading]);
+
+  const handleSubmitStripe = useCallback(async () => {
+    if (stripeLoading) {
+      return;
+    }
+    const amountCents = parseDollarsToCents(stripeAmountInput);
+    if (amountCents <= 0) {
+      setStripeFieldErrors({ amount_cents: ['Enter an amount greater than 0.'] });
+      setStripeError('Enter an amount greater than 0.');
+      return;
+    }
+    if (!STRIPE_CURRENCIES.includes(stripeCurrency)) {
+      setStripeFieldErrors({ currency: ['Select a valid currency.'] });
+      setStripeError('Select a valid currency.');
+      return;
+    }
+
+    setStripeError(null);
+    setStripeFieldErrors(null);
+    setStripeLoading(true);
+    try {
+      const response = await createStripeCheckout({
+        amountCents: amountCents,
+        currency: stripeCurrency,
+      });
+      let baselineBalance = coinBalance?.balance_cents;
+      if (baselineBalance === null || baselineBalance === undefined) {
+        try {
+          const balanceSnapshot = await getSlcBalance();
+          setCoinBalance(balanceSnapshot);
+          baselineBalance = balanceSnapshot.balance_cents;
+        } catch (error) {
+          const normalized = normalizeCoinApiError(
+            error,
+            'Unable to refresh SLC balance.',
+          );
+          if (isAuthStatus(normalized.status)) {
+            handleAuthError(normalized.message);
+          } else {
+            setStripeError(normalized.message);
+            toast.push({ tone: 'error', message: normalized.message });
+          }
+          return;
+        }
+      }
+      if (baselineBalance === null || baselineBalance === undefined) {
+        setStripeError('Unable to refresh SLC balance.');
+        toast.push({ tone: 'error', message: 'Unable to refresh SLC balance.' });
+        return;
+      }
+      if (!response.payment_url) {
+        throw new Error('Missing Stripe checkout URL');
+      }
+      const canOpen = await Linking.canOpenURL(response.payment_url);
+      if (!canOpen) {
+        throw new Error('Cannot open Stripe checkout URL');
+      }
+      stopStripePolling();
+      setPendingStripeReference(response.reference);
+      setPendingStripeStartBalance(baselineBalance);
+      setPendingStripeExpectedAmount(response.amount_cents);
+      setPendingStripeStartedAt(Date.now());
+      setStripeVisible(false);
+      setStripeAmountInput('');
+      await Linking.openURL(response.payment_url);
+      toast.push({
+        tone: 'info',
+        message: 'Complete payment in Stripe to receive SLC.',
+      });
+    } catch (error) {
+      const normalized = normalizeStripeApiError(
+        error,
+        'Unable to start Stripe checkout.',
+      );
+      if (isAuthStatus(normalized.status)) {
+        handleAuthError(normalized.message);
+      } else {
+        setStripeError(normalized.message);
+        setStripeFieldErrors(normalized.fields ?? null);
+        toast.push({ tone: 'error', message: normalized.message });
+      }
+    } finally {
+      setStripeLoading(false);
+    }
+  }, [
+    coinBalance?.balance_cents,
+    handleAuthError,
+    stripeAmountInput,
+    stripeCurrency,
+    stripeLoading,
+    stopStripePolling,
     toast,
   ]);
 
@@ -842,6 +1089,10 @@ export function WalletLedgerScreen() {
   const ipayAmountCents = parseDollarsToCents(ipayAmountInput);
   const hasIpayBaseUrl = Boolean(env.ipayBaseUrl);
   const hasPendingIpay = Boolean(pendingIpayReference);
+  const stripeAmountError = stripeFieldErrors?.amount_cents?.[0];
+  const stripeCurrencyError = stripeFieldErrors?.currency?.[0];
+  const stripeAmountCents = parseDollarsToCents(stripeAmountInput);
+  const hasPendingStripe = Boolean(pendingStripeReference);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -931,12 +1182,21 @@ export function WalletLedgerScreen() {
               onPress={handleOpenSpend}
               disabled={coinLoading || !coinBalance || !hasSpendReferences}
             />
-            <MetalButton title="Buy SLC" onPress={handleOpenIpay} />
+            <MetalButton title="Buy SLC" onPress={handleOpenStripe} />
+            <MetalButton title="Buy SLC (iPay)" onPress={handleOpenIpay} />
           </View>
+          {hasPendingStripe ? (
+            <View style={styles.pendingNotice}>
+              <Text style={styles.pendingText}>
+                Awaiting Stripe payment confirmation. It may take a moment.
+              </Text>
+              <MetalButton title="I&apos;ve paid" onPress={refreshCoinData} />
+            </View>
+          ) : null}
           {hasPendingIpay ? (
             <View style={styles.pendingNotice}>
               <Text style={styles.pendingText}>
-                Payment pending confirmation. It may take a moment.
+                Awaiting iPay confirmation. It may take a moment.
               </Text>
               <MetalButton title="I&apos;ve paid" onPress={refreshCoinData} />
             </View>
@@ -1166,6 +1426,89 @@ export function WalletLedgerScreen() {
                   disabled={spending || isSpendThrottled || !hasSpendReferences}
                 />
                 <TouchableOpacity onPress={handleCloseSpend} style={styles.cancelButton}>
+                  <Text style={styles.cancelText}>Cancel</Text>
+                </TouchableOpacity>
+              </View>
+            </MetalPanel>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={stripeVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={handleCloseStripe}
+      >
+        <View style={styles.modalBackdrop}>
+          <Pressable style={StyleSheet.absoluteFill} onPress={handleCloseStripe} />
+          <View style={styles.modalContent}>
+            <MetalPanel glow style={styles.modalPanel}>
+              <Text style={styles.modalTitle}>Buy SLC</Text>
+              <Text style={styles.modalSubtitle}>
+                Choose an amount and currency to start Stripe checkout.
+              </Text>
+
+              <Text style={styles.fieldLabel}>Currency</Text>
+              <View style={styles.referenceList}>
+                {STRIPE_CURRENCIES.map((currency) => {
+                  const selected = currency === stripeCurrency;
+                  return (
+                    <TouchableOpacity
+                      key={currency}
+                      onPress={() => {
+                        setStripeCurrency(currency);
+                        setStripeError(null);
+                        setStripeFieldErrors(null);
+                      }}
+                      style={[
+                        styles.referenceOption,
+                        selected && styles.referenceOptionSelected,
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.referenceLabel,
+                          selected && styles.referenceLabelSelected,
+                        ]}
+                      >
+                        {currency}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+              {stripeCurrencyError ? (
+                <Text style={styles.fieldError}>{stripeCurrencyError}</Text>
+              ) : null}
+
+              <TextInput
+                style={styles.input}
+                placeholder={`Amount (${stripeCurrency})`}
+                placeholderTextColor={theme.palette.graphite}
+                value={stripeAmountInput}
+                onChangeText={(text) => {
+                  setStripeAmountInput(text);
+                  setStripeError(null);
+                  setStripeFieldErrors(null);
+                }}
+                keyboardType="decimal-pad"
+              />
+              {stripeAmountError ? (
+                <Text style={styles.fieldError}>{stripeAmountError}</Text>
+              ) : null}
+
+              {stripeError ? <Text style={styles.formError}>{stripeError}</Text> : null}
+              <View style={styles.buttonRow}>
+                <MetalButton
+                  title={stripeLoading ? 'Starting...' : 'Continue'}
+                  onPress={handleSubmitStripe}
+                  disabled={stripeLoading || stripeAmountCents <= 0}
+                />
+                <TouchableOpacity
+                  onPress={handleCloseStripe}
+                  style={styles.cancelButton}
+                >
                   <Text style={styles.cancelText}>Cancel</Text>
                 </TouchableOpacity>
               </View>
