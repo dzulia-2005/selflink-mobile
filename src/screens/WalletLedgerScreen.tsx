@@ -592,9 +592,6 @@ export function WalletLedgerScreen() {
         if (!stripePollSessionRef.current.isActive(sessionId)) {
           return;
         }
-        if (ledgerData.next_cursor) {
-          stripeLedgerCursorRef.current = ledgerData.next_cursor;
-        }
         if (
           shouldCompleteStripePolling(
             {
@@ -917,7 +914,7 @@ export function WalletLedgerScreen() {
         throw new Error('Cannot open Stripe checkout URL');
       }
       stopStripePolling();
-      stripeLedgerCursorRef.current = nextCursor ?? null;
+      stripeLedgerCursorRef.current = null;
       setPendingStripeReference(response.reference);
       setPendingStripeStartBalance(baselineBalance);
       setPendingStripeExpectedAmount(response.amount_cents);
