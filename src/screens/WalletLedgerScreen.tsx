@@ -615,6 +615,31 @@ export function WalletLedgerScreen() {
         amount_cents: amountCents,
         currency: ipayCurrency,
       });
+      let baselineBalance = coinBalance?.balance_cents;
+      if (baselineBalance === null || baselineBalance === undefined) {
+        try {
+          const balanceSnapshot = await getSlcBalance();
+          setCoinBalance(balanceSnapshot);
+          baselineBalance = balanceSnapshot.balance_cents;
+        } catch (error) {
+          const normalized = normalizeCoinApiError(
+            error,
+            'Unable to refresh SLC balance.',
+          );
+          if (isAuthStatus(normalized.status)) {
+            handleAuthError(normalized.message);
+          } else {
+            setIpayError(normalized.message);
+            toast.push({ tone: 'error', message: normalized.message });
+          }
+          return;
+        }
+      }
+      if (baselineBalance === null || baselineBalance === undefined) {
+        setIpayError('Unable to refresh SLC balance.');
+        toast.push({ tone: 'error', message: 'Unable to refresh SLC balance.' });
+        return;
+      }
       const checkoutUrl = buildIpayCheckoutUrl(env.ipayBaseUrl, response.reference);
       if (!checkoutUrl) {
         throw new Error('Missing iPay checkout URL');
@@ -625,7 +650,7 @@ export function WalletLedgerScreen() {
       }
       stopIpayPolling();
       setPendingIpayReference(response.reference);
-      setPendingIpayBalance(coinBalance?.balance_cents ?? 0);
+      setPendingIpayBalance(baselineBalance);
       setIpayVisible(false);
       setIpayAmountInput('');
       await Linking.openURL(checkoutUrl);
