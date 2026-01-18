@@ -22,13 +22,16 @@ It mirrors the backend contract in `selflink-backend/apps/payments/stripe_checko
    `{ checkout_id, reference, amount_cents, currency, status, payment_url }`.
 4) App opens `payment_url` in the browser.
 5) Stripe webhook confirms payment server-side and mints SLC.
-6) On return, app polls `coin/balance` a few times and refreshes the ledger.
+6) On return, app polls `coin/balance` and `coin/ledger` until it sees a mint entry
+   tied to the checkout `reference`, then refreshes the ledger.
 
 ## UI behavior
 
 - Balance + ledger are read-only and derived from `coin/balance` and `coin/ledger`.
 - Buy flow uses a modal consistent with existing Wallet actions.
 - After purchase, the Wallet shows an "Awaiting Stripe payment confirmation" notice.
+- Completion is detected by a `mint` ledger entry with `event_metadata.reference`
+  matching the checkout reference (balance changes alone are insufficient).
 - Manual refresh ("I've paid") only re-fetches balance + ledger (no special backend call).
 
 ## Currency allowlist
