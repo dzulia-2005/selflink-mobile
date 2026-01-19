@@ -5,19 +5,65 @@
     "preview": {
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "https://api.self-link.com",
+        "EXPO_PUBLIC_REALTIME_URL": "wss://api.self-link.com/ws",
+        "EXPO_PUBLIC_HEALTH_ENDPOINT": "/api/v1/health/",
+        "EXPO_PUBLIC_IPAY_BASE_URL": "",
+        "EXPO_PUBLIC_BTCPAY_BASE_URL": "",
+        "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY": "",
+        "EXPO_PUBLIC_GOOGLE_MAPS_API_KEY": ""
       }
     },
     "preview2": {
       "android": {
         "gradleCommand": ":app:assembleRelease"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "https://api.self-link.com",
+        "EXPO_PUBLIC_REALTIME_URL": "wss://api.self-link.com/ws",
+        "EXPO_PUBLIC_HEALTH_ENDPOINT": "/api/v1/health/",
+        "EXPO_PUBLIC_IPAY_BASE_URL": "",
+        "EXPO_PUBLIC_BTCPAY_BASE_URL": "",
+        "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY": "",
+        "EXPO_PUBLIC_GOOGLE_MAPS_API_KEY": ""
       }
     },
     "preview3": {
-      "developmentClient": true
+      "developmentClient": true,
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "https://api.self-link.com",
+        "EXPO_PUBLIC_REALTIME_URL": "wss://api.self-link.com/ws",
+        "EXPO_PUBLIC_HEALTH_ENDPOINT": "/api/v1/health/",
+        "EXPO_PUBLIC_IPAY_BASE_URL": "",
+        "EXPO_PUBLIC_BTCPAY_BASE_URL": "",
+        "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY": "",
+        "EXPO_PUBLIC_GOOGLE_MAPS_API_KEY": ""
+      }
     },
     "preview4": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "https://api.self-link.com",
+        "EXPO_PUBLIC_REALTIME_URL": "wss://api.self-link.com/ws",
+        "EXPO_PUBLIC_HEALTH_ENDPOINT": "/api/v1/health/",
+        "EXPO_PUBLIC_IPAY_BASE_URL": "",
+        "EXPO_PUBLIC_BTCPAY_BASE_URL": "",
+        "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY": "",
+        "EXPO_PUBLIC_GOOGLE_MAPS_API_KEY": ""
+      }
     },
-    "production": {}
+    "production": {
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "https://api.self-link.com",
+        "EXPO_PUBLIC_REALTIME_URL": "wss://api.self-link.com/ws",
+        "EXPO_PUBLIC_HEALTH_ENDPOINT": "/api/v1/health/",
+        "EXPO_PUBLIC_IPAY_BASE_URL": "",
+        "EXPO_PUBLIC_BTCPAY_BASE_URL": "",
+        "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY": "",
+        "EXPO_PUBLIC_GOOGLE_MAPS_API_KEY": ""
+      }
+    }
   }
 }
