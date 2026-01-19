@@ -60,6 +60,10 @@ const rawIpayBaseUrl =
   (typeof extra.ipayBaseUrl === 'string' ? extra.ipayBaseUrl : undefined);
 const ipayBaseUrl = rawIpayBaseUrl ? trimTrailingSlash(String(rawIpayBaseUrl).trim()) : '';
 
+const rawHealthEndpoint =
+  process.env.EXPO_PUBLIC_HEALTH_ENDPOINT ??
+  (typeof extra.healthEndpoint === 'string' ? extra.healthEndpoint : undefined);
+
 const normalizeHealthEndpoint = (raw: unknown): string => {
   if (typeof raw !== 'string') {
     return DEFAULT_HEALTH_ENDPOINT;
@@ -73,7 +77,7 @@ const normalizeHealthEndpoint = (raw: unknown): string => {
   return `${withoutTrailing}/`;
 };
 
-export const HEALTH_ENDPOINT = normalizeHealthEndpoint(extra.healthEndpoint);
+export const HEALTH_ENDPOINT = normalizeHealthEndpoint(rawHealthEndpoint);
 export const HEALTH_URL = `${API_BASE_URL}${HEALTH_ENDPOINT}`;
 
 const normalizeRealtimeUrl = (raw: string) => {
@@ -120,6 +124,21 @@ const resolveRealtimeUrl = () => {
 
 const realtimeUrl = resolveRealtimeUrl();
 
+const rawBtcpayBaseUrl =
+  process.env.EXPO_PUBLIC_BTCPAY_BASE_URL ??
+  (typeof extra.btcpayBaseUrl === 'string' ? extra.btcpayBaseUrl : undefined);
+const btcpayBaseUrl = rawBtcpayBaseUrl
+  ? trimTrailingSlash(String(rawBtcpayBaseUrl).trim())
+  : '';
+
+const stripePublishableKey =
+  process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY ??
+  (typeof extra.stripePublishableKey === 'string' ? extra.stripePublishableKey : '');
+
+const googleMapsApiKey =
+  process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY ??
+  (typeof extra.googleMapsApiKey === 'string' ? extra.googleMapsApiKey : '');
+
 export const env = {
   backendUrl: API_BASE_URL,
   apiBaseUrl: API_BASE_URL,
@@ -128,4 +147,7 @@ export const env = {
   healthUrl: HEALTH_URL,
   realtimeUrl,
   ipayBaseUrl,
+  btcpayBaseUrl,
+  stripePublishableKey,
+  googleMapsApiKey,
 };

@@ -5,6 +5,7 @@ import {
   ActivityIndicator,
   Animated,
   Modal,
+  Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -14,6 +15,7 @@ import MapView, { MapPressEvent, Marker, Region } from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { MetalButton } from '@components/MetalButton';
+import { env } from '@config/env';
 import { theme } from '@theme/index';
 
 type Coordinate = { latitude: number; longitude: number };
@@ -41,6 +43,8 @@ export function BirthLocationMapModal({
   const [mapReady, setMapReady] = useState(false);
   const [mapError, setMapError] = useState<string | null>(null);
   const bounce = useRef(new Animated.Value(1)).current;
+  const mapsDisabled = Platform.OS === 'android' && !env.googleMapsApiKey && !__DEV__;
+  const showLoader = !mapReady && !mapError && !mapsDisabled;
 
   useEffect(() => {
     if (visible) {
@@ -52,6 +56,18 @@ export function BirthLocationMapModal({
       setMapError(null);
     }
   }, [initialLatitude, initialLongitude, visible]);
+
+  useEffect(() => {
+    if (!visible) {
+      return;
+    }
+    if (mapsDisabled) {
+      console.error(
+        'BirthLocationMapModal: Google Maps API key missing for Android build.',
+      );
+      setMapError('Map unavailable in this build. Missing Google Maps API key.');
+    }
+  }, [mapsDisabled, visible]);
 
   useEffect(() => {
     if (!markerCoord) {
@@ -98,6 +114,14 @@ export function BirthLocationMapModal({
     return 'Tap on the map to choose a location.';
   }, [city, country, markerCoord]);
 
+  const handleMapRetry = () => {
+    if (mapsDisabled) {
+      onCancel();
+      return;
+    }
+    setMapError(null);
+  };
+
   return (
     <Modal transparent visible={visible} animationType="slide" onRequestClose={onCancel}>
       <View style={styles.backdrop}>
@@ -119,18 +143,22 @@ export function BirthLocationMapModal({
           </Text>
 
           <View style={styles.mapCard}>
-            {!mapReady ? (
+            {showLoader ? (
               <View style={styles.mapLoader}>
                 <ActivityIndicator color={theme.palette.platinum} />
                 <Text style={styles.loaderText}>Loading map…</Text>
               </View>
             ) : null}
-            {mapError ? (
+            {mapError || mapsDisabled ? (
               <View style={styles.mapLoader}>
                 <Text style={styles.errorText}>
-                  We couldn't load the map. Check your connection and try again.
+                  {mapError ??
+                    'Map unavailable in this build. Missing Google Maps API key.'}
                 </Text>
-                <MetalButton title="Try Again" onPress={() => setMapError(null)} />
+                <MetalButton
+                  title={mapsDisabled ? 'Close' : 'Try Again'}
+                  onPress={handleMapRetry}
+                />
               </View>
             ) : (
               <MapView
