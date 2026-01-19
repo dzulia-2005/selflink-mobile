@@ -1,3 +1,13 @@
+<!-- ![Screenshot](assets/git_logo.png) -->
+<img src="assets/git_logo.png" alt="Screenshot" width="700">
+
+[![GitHub Actions Build Status](https://github.com/georgetoloraia/selflink-mobile/actions/workflows/ci.yml/badge.svg)](https://github.com/georgetoloraia/selflink-mobile/actions/workflows/ci.yml)
+[![Join our Discord](https://img.shields.io/badge/Discord-Join%20Server-5865F2?logo=discord&logoColor=white)](https://discord.gg/PkqyuWq2Zd)
+[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+
+
+
 # SelfLink Mobile
 
 SelfLink Mobile is an early-stage, open-source mobile app built with React Native + Expo. It is developed in public and intentionally unfinished, with a focus on clean architecture, developer experience, and learning-by-doing.
@@ -15,45 +25,48 @@ The project exists to explore:
 - internationalization as a first-class concern
 - AI as an optional, assistive layer rather than a requirement
 
-## Who Is This For
-
-This repository is for:
-- beginners who want a real-world codebase to learn from
-- experienced developers who want to improve architecture or developer experience
-- contributors who prefer small, focused changes or documentation improvements
-- anyone with questions or feedback about the codebase
-
 ## Tech Stack
 
-- React Native
-- Expo
+- React Native + Expo (EAS)
 - TypeScript
-- REST API backend (separate repo)
+- REST API backend (Backend repo - [Click me!](https://github.com/georgetoloraia/selflink-backend))
 - Optional AI features
 
-## Project Structure (High-Level)
+## Project Structure
 
-- `src/components/` - reusable UI components
-- `src/screens/` - screen-level views and flows
-- `src/navigation/` - navigators and route definitions
-- `src/services/api/` - frontend API wrapper layer
-- `src/hooks/` - shared hooks and state helpers
-- `src/theme/` - design tokens and styling primitives
-- `docs/` - project documentation
+```text
+src/
+├── components/     # UI components (Buttons, Inputs, Cards)
+├── screens/        # Screen-level views and flows
+├── navigation/     # Navigators, route configs
+├── services/       
+│   └── api/        # Frontend API wrapper layer
+├── hooks/          # Custom shared hooks and state helpers
+├── theme/          # Design tokens and styling primitives
+└── docs/           # Architecture notes and API documentation
+```
 
 ## API Overview
 
 See [`docs/API.md`](docs/API.md) for a frontend-facing map of API calls and wrapper modules. This is not backend documentation; it is a guide to how the mobile client talks to the REST API.
 
-Wallet + SLC integration notes live in [`docs/WALLET_SLC.md`](docs/WALLET_SLC.md).
-Wallet + iPay purchase flow notes live in [`docs/WALLET_SLC_IPAY.md`](docs/WALLET_SLC_IPAY.md).
-Wallet + Stripe purchase flow notes live in [`docs/WALLET_SLC_STRIPE.md`](docs/WALLET_SLC_STRIPE.md).
-Wallet + BTCPay purchase flow notes live in [`docs/WALLET_SLC_BTCPAY.md`](docs/WALLET_SLC_BTCPAY.md).
-Payments gifts notes live in [`docs/PAYMENTS_GIFTS_NOTES.md`](docs/PAYMENTS_GIFTS_NOTES.md).
-Mobile wallet + SLC overview lives in [`docs/MOBILE_WALLET_SLC_OVERVIEW.md`](docs/MOBILE_WALLET_SLC_OVERVIEW.md).
-Mobile payments providers guide lives in [`docs/MOBILE_PAYMENTS_PROVIDERS.md`](docs/MOBILE_PAYMENTS_PROVIDERS.md).
-Mobile gifts UI guide lives in [`docs/MOBILE_GIFTS_UI.md`](docs/MOBILE_GIFTS_UI.md).
-Mobile local runbook lives in [`docs/MOBILE_RUNBOOK_LOCAL.md`](docs/MOBILE_RUNBOOK_LOCAL.md).
+- Wallet + SLC integration notes live in [`docs/WALLET_SLC.md`](docs/WALLET_SLC.md).
+
+- Wallet + iPay purchase flow notes live in [`docs/WALLET_SLC_IPAY.md`](docs/WALLET_SLC_IPAY.md).
+
+- Wallet + Stripe purchase flow notes live in [`docs/WALLET_SLC_STRIPE.md`](docs/WALLET_SLC_STRIPE.md).
+
+- Wallet + BTCPay purchase flow notes live in [`docs/WALLET_SLC_BTCPAY.md`](docs/WALLET_SLC_BTCPAY.md).
+
+- Payments gifts notes live in [`docs/PAYMENTS_GIFTS_NOTES.md`](docs/PAYMENTS_GIFTS_NOTES.md).
+
+- Mobile wallet + SLC overview lives in [`docs/MOBILE_WALLET_SLC_OVERVIEW.md`](docs/MOBILE_WALLET_SLC_OVERVIEW.md).
+
+- Mobile payments providers guide lives in [`docs/MOBILE_PAYMENTS_PROVIDERS.md`](docs/MOBILE_PAYMENTS_PROVIDERS.md).
+
+- Mobile gifts UI guide lives in [`docs/MOBILE_GIFTS_UI.md`](docs/MOBILE_GIFTS_UI.md).
+
+- Mobile local runbook lives in [`docs/MOBILE_RUNBOOK_LOCAL.md`](docs/MOBILE_RUNBOOK_LOCAL.md).
 
 ## Getting Started
 
@@ -106,7 +119,12 @@ npx expo start -c
 
 ## Internationalization (i18n)
 
-Internationalization is a core goal. Language support is evolving, and contributions to translation readiness or UI text cleanup are welcome. You do not need to speak all supported languages to contribute.
+We aim to make this project accessible to everyone, regardless of their language. Support is actively evolving, and we welcome contributions in the following areas:
+* Adding new language localizations.
+* Refactoring UI components for better translation readiness.
+* Cleaning up and proofreading existing display text.
+
+*Note: You do not need to be multilingual to help with the technical side of i18n!*
 
 ## AI Features
 
@@ -123,7 +141,7 @@ Start with [`CONTRIBUTING.md`](CONTRIBUTING.md) for workflow and expectations. E
 - refine API wrapper functions in `src/services/api/`
 - help with i18n readiness or UI text consistency
 
-For questions or collaboration, join the Discord: https://discord.gg/GQdQagsw
+For questions or collaboration, join our [Discord](https://discord.gg/GQdQagsw)!
 
 ## Project Status
 
@@ -137,6 +155,3 @@ This project is in an early exploratory phase. Current focus areas include:
 
 No detailed roadmap is committed at this stage.
 
-## License
-
-See `LICENSE`.
