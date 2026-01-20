@@ -2,6 +2,14 @@
 
 Thanks for your interest in contributing to this project! Contributions of all sizes are welcome, from small fixes to bigger improvements.
 
+## Who This Is For
+
+- Beginners looking for a real-world codebase to learn from
+- Experienced developers interested in improving architecture or developer experience
+- Contributors who enjoy making focused, high-impact changes or improving documentation
+- Anyone with questions, suggestions, or feedback about the codebase
+
+
 ## Ways to contribute
 
 - Code improvements (bug fixes, small features, cleanup)
