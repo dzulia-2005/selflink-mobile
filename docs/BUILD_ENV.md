@@ -84,8 +84,7 @@ Likely cause:
 
 Fix:
 - Provide `EXPO_PUBLIC_GOOGLE_MAPS_API_KEY` in build env.
-- `app.config.js` injects `android.config.googleMaps.apiKey` and the
-  `react-native-maps` plugin.
+- `app.config.js` injects `android.config.googleMaps.apiKey`.
 - The map modal now guards and shows a safe error if the key is missing.
 
 Verified (Mobile):
