@@ -58,6 +58,8 @@ See [`docs/API.md`](docs/API.md) for a frontend-facing map of API calls and wrap
 
 - Wallet + BTCPay purchase flow notes live in [`docs/WALLET_SLC_BTCPAY.md`](docs/WALLET_SLC_BTCPAY.md).
 
+- Wallet + IAP purchase flow notes live in [`docs/WALLET_SLC_IAP.md`](docs/WALLET_SLC_IAP.md).
+
 - Payments gifts notes live in [`docs/PAYMENTS_GIFTS_NOTES.md`](docs/PAYMENTS_GIFTS_NOTES.md).
 
 - Mobile wallet + SLC overview lives in [`docs/MOBILE_WALLET_SLC_OVERVIEW.md`](docs/MOBILE_WALLET_SLC_OVERVIEW.md).
@@ -154,4 +156,3 @@ This project is in an early exploratory phase. Current focus areas include:
 - architecture cleanup and documentation
 
 No detailed roadmap is committed at this stage.
-
