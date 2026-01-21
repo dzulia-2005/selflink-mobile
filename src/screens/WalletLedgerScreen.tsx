@@ -304,6 +304,7 @@ export function WalletLedgerScreen() {
   const [iapLoading, setIapLoading] = useState(false);
   const [iapRestoring, setIapRestoring] = useState(false);
   const [pendingIap, setPendingIap] = useState<IapPurchaseContext | null>(null);
+  const [iapFinalizeFailed, setIapFinalizeFailed] = useState(false);
   const [ipayVisible, setIpayVisible] = useState(false);
   const [ipayAmountInput, setIpayAmountInput] = useState('');
   const [ipayCurrency, setIpayCurrency] = useState<IpayCurrency>(
@@ -1021,8 +1022,14 @@ export function WalletLedgerScreen() {
         if (purchase) {
           try {
             await finalizeIapPurchase(purchase);
+            setIapFinalizeFailed(false);
           } catch (finalizeError) {
-            console.warn('IAP finalize failed', finalizeError);
+            setIapFinalizeFailed(true);
+            toast.push({
+              tone: 'error',
+              message:
+                'Purchase verified, but finalization failed. Reopen the app or tap Restore Purchases.',
+            });
           }
         }
         pendingIapPayloadRef.current = null;
@@ -1881,6 +1888,18 @@ export function WalletLedgerScreen() {
                 title="Retry verification"
                 onPress={handleRetryIapVerification}
                 disabled={iapLoading || iapRestoring || !iapReady}
+              />
+            </View>
+          ) : null}
+          {!hasPendingIap && iapFinalizeFailed ? (
+            <View style={styles.pendingNotice}>
+              <Text style={styles.pendingText}>
+                Purchase verified, but finalization failed. Tap Restore purchases.
+              </Text>
+              <MetalButton
+                title={iapRestoring ? 'Restoring...' : 'Restore purchases'}
+                onPress={handleRestoreIapPurchases}
+                disabled={iapRestoring || !iapReady}
               />
             </View>
           ) : null}
