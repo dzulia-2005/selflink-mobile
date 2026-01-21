@@ -31,6 +31,7 @@ import {
   getSlcBalance,
   listSlcLedger,
   normalizeCoinApiError,
+  type NormalizedCoinError,
   spendSlc,
   transferSlc,
 } from '@api/coin';
@@ -1001,27 +1002,22 @@ export function WalletLedgerScreen() {
     ]),
   );
 
+  type VerifyResult =
+    | { status: 'success' }
+    | { status: 'pending' }
+    | { status: 'failed'; error: NormalizedCoinError };
+
   const verifyIapPayload = useCallback(
     async (
       payload: VerifyIapRequest,
       purchase?: IapPurchase,
       options?: { silent?: boolean },
-    ) => {
+    ): Promise<VerifyResult> => {
       clearIapPending();
       stopIapPolling();
       pendingIapPayloadRef.current = payload;
       try {
-        const response = await verifyIapPurchase(payload);
-        const ctx: IapPurchaseContext = {
-          platform: payload.platform,
-          productId: payload.product_id,
-          transactionId: payload.transaction_id,
-          providerEventId: response.provider_event_id,
-          coinEventId: response.coin_event_id,
-          startedAtMs: Date.now(),
-        };
-        setPendingIapContext(ctx);
-        scheduleIapPolling();
+        await verifyIapPurchase(payload);
         if (purchase) {
           try {
             await finalizeIapPurchase(purchase);
@@ -1029,10 +1025,12 @@ export function WalletLedgerScreen() {
             console.warn('IAP finalize failed', finalizeError);
           }
         }
+        pendingIapPayloadRef.current = null;
+        await refreshCoinData();
         if (!options?.silent) {
-          toast.push({ tone: 'info', message: 'Purchase verified. Updating balance…' });
+          toast.push({ tone: 'info', message: 'SLC purchase confirmed.' });
         }
-        return { ok: true };
+        return { status: 'success' };
       } catch (error) {
         const normalized = normalizeIapApiError(
           error,
@@ -1040,7 +1038,7 @@ export function WalletLedgerScreen() {
         );
         if (isAuthStatus(normalized.status)) {
           handleAuthError(normalized.message);
-          return { ok: false };
+          return { status: 'failed', error: normalized };
         }
         if (normalized.status === 409) {
           const ctx: IapPurchaseContext = {
@@ -1054,18 +1052,19 @@ export function WalletLedgerScreen() {
           if (!options?.silent) {
             toast.push({ tone: 'info', message: normalized.message });
           }
-          return { ok: false, pending: true };
+          return { status: 'pending' };
         }
         if (!options?.silent) {
           setIapError(normalized.message);
           toast.push({ tone: 'error', message: normalized.message });
         }
-        return { ok: false };
+        return { status: 'failed', error: normalized };
       }
     },
     [
       clearIapPending,
       handleAuthError,
+      refreshCoinData,
       scheduleIapPolling,
       setPendingIapContext,
       stopIapPolling,
