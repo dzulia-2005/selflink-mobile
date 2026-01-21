@@ -6,6 +6,7 @@ import {
   AppStateStatus,
   Linking,
   Modal,
+  Platform,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -35,12 +36,38 @@ import {
 } from '@api/coin';
 import { createBtcpayCheckout, normalizeBtcpayApiError } from '@api/btcpayCheckout';
 import { createIpayCheckout } from '@api/ipay';
+import {
+  normalizeIapApiError,
+  verifyIapPurchase,
+  type IapPlatform,
+  type VerifyIapRequest,
+} from '@api/iap';
 import { createStripeCheckout, normalizeStripeApiError } from '@api/stripeCheckout';
 import { getWallet, Wallet } from '@services/api/payments';
 import { env } from '@config/env';
 import { theme } from '@theme/index';
 import { parseDollarsToCents } from '@utils/currency';
+import {
+  endIapConnection,
+  fetchIapProducts,
+  finalizeIapPurchase,
+  getAvailableIapPurchases,
+  IAP_ERROR_CODES,
+  initIapConnection,
+  listenForIapUpdates,
+  mapPurchaseToVerifyRequest,
+  normalizeIapPurchaseError,
+  requestIapPurchase,
+  type IapProduct,
+  type IapPurchase,
+  type IapPurchaseError,
+} from '@utils/iapPurchase';
 import { createIpayPollSession, shouldCompleteIpayPolling } from '@utils/ipayPolling';
+import {
+  createIapPollSession,
+  shouldCompleteIapPolling,
+  type IapPurchaseContext,
+} from '@utils/iapPolling';
 import {
   createBtcpayPollSession,
   shouldCompleteBtcpayPolling,
@@ -51,6 +78,7 @@ import {
 } from '@utils/stripePolling';
 
 import { COIN_SPEND_REFERENCES } from '../constants/coinSpendReferences';
+import { getIapProductCatalog } from '../constants/iapProducts';
 
 const LEDGER_PAGE_SIZE = 25;
 const PURCHASE_CURRENCIES = ['USD', 'EUR', 'GEL'] as const;
@@ -266,6 +294,15 @@ export function WalletLedgerScreen() {
     null,
   );
   const [refreshing, setRefreshing] = useState(false);
+  const [iapVisible, setIapVisible] = useState(false);
+  const [iapProducts, setIapProducts] = useState<IapProduct[]>([]);
+  const [iapReady, setIapReady] = useState(false);
+  const [iapProductsLoading, setIapProductsLoading] = useState(false);
+  const [iapSelectedSku, setIapSelectedSku] = useState<string | null>(null);
+  const [iapError, setIapError] = useState<string | null>(null);
+  const [iapLoading, setIapLoading] = useState(false);
+  const [iapRestoring, setIapRestoring] = useState(false);
+  const [pendingIap, setPendingIap] = useState<IapPurchaseContext | null>(null);
   const [ipayVisible, setIpayVisible] = useState(false);
   const [ipayAmountInput, setIpayAmountInput] = useState('');
   const [ipayCurrency, setIpayCurrency] = useState<IpayCurrency>(
@@ -324,6 +361,10 @@ export function WalletLedgerScreen() {
     null,
   );
   const appStateRef = useRef<AppStateStatus>(AppState.currentState);
+  const pendingIapRef = useRef<IapPurchaseContext | null>(null);
+  const pendingIapPayloadRef = useRef<VerifyIapRequest | null>(null);
+  const iapPurchaseInFlightRef = useRef(false);
+  const iapPollSessionRef = useRef(createIapPollSession());
   const ipayPollSessionRef = useRef(createIpayPollSession());
   const btcpayPollSessionRef = useRef(createBtcpayPollSession());
   const stripePollSessionRef = useRef(createStripePollSession());
@@ -332,6 +373,17 @@ export function WalletLedgerScreen() {
 
   const isThrottled = throttleUntil !== null;
   const isSpendThrottled = spendThrottleUntil !== null;
+  const iapCatalog = useMemo(() => getIapProductCatalog(), []);
+  const iapSkus = useMemo(() => iapCatalog.map((item) => item.sku), [iapCatalog]);
+  const iapProductMap = useMemo(() => {
+    const map = new Map<string, IapProduct>();
+    iapProducts.forEach((product) => {
+      if (product.productId) {
+        map.set(product.productId, product);
+      }
+    });
+    return map;
+  }, [iapProducts]);
 
   useEffect(() => {
     if (!throttleUntil) {
@@ -512,6 +564,87 @@ export function WalletLedgerScreen() {
       setRefreshing(false);
     }
   }, [fetchWallet, fetchCoinBalance, fetchLedger, refreshing]);
+
+  const setPendingIapContext = useCallback((ctx: IapPurchaseContext | null) => {
+    pendingIapRef.current = ctx;
+    setPendingIap(ctx);
+    if (!ctx) {
+      pendingIapPayloadRef.current = null;
+    }
+  }, []);
+
+  const stopIapPolling = useCallback(() => {
+    iapPollSessionRef.current.stop();
+  }, []);
+
+  const clearIapPending = useCallback(() => {
+    setPendingIapContext(null);
+  }, [setPendingIapContext]);
+
+  const runIapPollAttempt = useCallback(
+    async (sessionId: number) => {
+      const ctx = pendingIapRef.current;
+      if (!ctx) {
+        stopIapPolling();
+        return;
+      }
+      if (!iapPollSessionRef.current.isActive(sessionId)) {
+        return;
+      }
+      try {
+        const ledgerData = await listSlcLedger({ limit: LEDGER_PAGE_SIZE });
+        if (!iapPollSessionRef.current.isActive(sessionId)) {
+          return;
+        }
+        if (shouldCompleteIapPolling(ctx, ledgerData.results)) {
+          clearIapPending();
+          stopIapPolling();
+          await refreshCoinData();
+          toast.push({
+            tone: 'info',
+            message: 'SLC credited.',
+          });
+        }
+      } catch (error) {
+        const normalized = normalizeCoinApiError(
+          error,
+          'Unable to refresh SLC balance.',
+        );
+        if (normalized.status === 429) {
+          stopIapPolling();
+          toast.push({ tone: 'error', message: normalized.message });
+          return;
+        }
+        if (isAuthStatus(normalized.status)) {
+          stopIapPolling();
+          handleAuthError(normalized.message);
+        }
+      }
+    },
+    [clearIapPending, handleAuthError, refreshCoinData, stopIapPolling, toast],
+  );
+
+  const scheduleIapPolling = useCallback(() => {
+    if (!pendingIapRef.current) {
+      return;
+    }
+    const delays = [0, 3000, 7000, 15000];
+    iapPollSessionRef.current.start(delays, async (sessionId, isLast) => {
+      await runIapPollAttempt(sessionId);
+      if (!iapPollSessionRef.current.isActive(sessionId)) {
+        return;
+      }
+      if (isLast) {
+        clearIapPending();
+        stopIapPolling();
+        toast.push({
+          tone: 'info',
+          message:
+            'Purchase pending. If you were charged, balance will update shortly. Pull to refresh.',
+        });
+      }
+    });
+  }, [clearIapPending, runIapPollAttempt, stopIapPolling, toast]);
 
   const stopIpayPolling = useCallback(() => {
     ipayPollSessionRef.current.stop();
@@ -812,12 +945,14 @@ export function WalletLedgerScreen() {
       const prev = appStateRef.current;
       appStateRef.current = next;
       if (next === 'active' && prev !== 'active') {
+        scheduleIapPolling();
         scheduleIpayPolling();
         scheduleBtcpayPolling();
         scheduleStripePolling();
         return;
       }
       if (next !== 'active') {
+        stopIapPolling();
         stopIpayPolling();
         stopBtcpayPolling();
         stopStripePolling();
@@ -826,14 +961,17 @@ export function WalletLedgerScreen() {
     const subscription = AppState.addEventListener('change', handleAppStateChange);
     return () => {
       subscription.remove();
+      stopIapPolling();
       stopIpayPolling();
       stopBtcpayPolling();
       stopStripePolling();
     };
   }, [
+    scheduleIapPolling,
     scheduleBtcpayPolling,
     scheduleIpayPolling,
     scheduleStripePolling,
+    stopIapPolling,
     stopBtcpayPolling,
     stopIpayPolling,
     stopStripePolling,
@@ -841,23 +979,313 @@ export function WalletLedgerScreen() {
 
   useFocusEffect(
     useCallback(() => {
+      scheduleIapPolling();
       scheduleIpayPolling();
       scheduleBtcpayPolling();
       scheduleStripePolling();
       return () => {
+        stopIapPolling();
         stopIpayPolling();
         stopBtcpayPolling();
         stopStripePolling();
       };
     }, [
+      scheduleIapPolling,
       scheduleBtcpayPolling,
       scheduleIpayPolling,
       scheduleStripePolling,
+      stopIapPolling,
       stopBtcpayPolling,
       stopIpayPolling,
       stopStripePolling,
     ]),
   );
+
+  const verifyIapPayload = useCallback(
+    async (
+      payload: VerifyIapRequest,
+      purchase?: IapPurchase,
+      options?: { silent?: boolean },
+    ) => {
+      clearIapPending();
+      stopIapPolling();
+      pendingIapPayloadRef.current = payload;
+      try {
+        const response = await verifyIapPurchase(payload);
+        const ctx: IapPurchaseContext = {
+          platform: payload.platform,
+          productId: payload.product_id,
+          transactionId: payload.transaction_id,
+          providerEventId: response.provider_event_id,
+          coinEventId: response.coin_event_id,
+          startedAtMs: Date.now(),
+        };
+        setPendingIapContext(ctx);
+        scheduleIapPolling();
+        if (purchase) {
+          try {
+            await finalizeIapPurchase(purchase);
+          } catch (finalizeError) {
+            console.warn('IAP finalize failed', finalizeError);
+          }
+        }
+        if (!options?.silent) {
+          toast.push({ tone: 'info', message: 'Purchase verified. Updating balance…' });
+        }
+        return { ok: true };
+      } catch (error) {
+        const normalized = normalizeIapApiError(
+          error,
+          'Unable to verify purchase.',
+        );
+        if (isAuthStatus(normalized.status)) {
+          handleAuthError(normalized.message);
+          return { ok: false };
+        }
+        if (normalized.status === 409) {
+          const ctx: IapPurchaseContext = {
+            platform: payload.platform,
+            productId: payload.product_id,
+            transactionId: payload.transaction_id,
+            startedAtMs: Date.now(),
+          };
+          setPendingIapContext(ctx);
+          scheduleIapPolling();
+          if (!options?.silent) {
+            toast.push({ tone: 'info', message: normalized.message });
+          }
+          return { ok: false, pending: true };
+        }
+        if (!options?.silent) {
+          setIapError(normalized.message);
+          toast.push({ tone: 'error', message: normalized.message });
+        }
+        return { ok: false };
+      }
+    },
+    [
+      clearIapPending,
+      handleAuthError,
+      scheduleIapPolling,
+      setPendingIapContext,
+      stopIapPolling,
+      toast,
+    ],
+  );
+
+  const handleIapPurchase = useCallback(
+    async (purchase: IapPurchase) => {
+      if (iapPurchaseInFlightRef.current) {
+        return;
+      }
+      iapPurchaseInFlightRef.current = true;
+      setIapLoading(true);
+      setIapError(null);
+      const platform: IapPlatform = Platform.OS === 'ios' ? 'ios' : 'android';
+      const payload = mapPurchaseToVerifyRequest(purchase, platform);
+      if (!payload) {
+        iapPurchaseInFlightRef.current = false;
+        setIapLoading(false);
+        setIapError('Unable to read purchase details.');
+        toast.push({ tone: 'error', message: 'Unable to read purchase details.' });
+        return;
+      }
+      try {
+        await verifyIapPayload(payload, purchase);
+      } finally {
+        iapPurchaseInFlightRef.current = false;
+        setIapLoading(false);
+      }
+    },
+    [toast, verifyIapPayload],
+  );
+
+  const handleRestoreIapPurchases = useCallback(async () => {
+    if (iapRestoring) {
+      return;
+    }
+    if (!iapReady) {
+      setIapError('In-app purchases are unavailable on this device.');
+      return;
+    }
+    setIapRestoring(true);
+    setIapError(null);
+    try {
+      const platform: IapPlatform = Platform.OS === 'ios' ? 'ios' : 'android';
+      const purchases = await getAvailableIapPurchases();
+      const eligible = purchases.filter((purchase) =>
+        purchase.productId ? iapSkus.includes(purchase.productId) : false,
+      );
+      if (eligible.length === 0) {
+        setIapError('No purchases available to restore.');
+        return;
+      }
+      for (const purchase of eligible) {
+        const payload = mapPurchaseToVerifyRequest(purchase, platform);
+        if (!payload) {
+          continue;
+        }
+        await verifyIapPayload(payload, purchase, { silent: true });
+      }
+      toast.push({ tone: 'info', message: 'Restore check completed.' });
+    } catch (error) {
+      const normalized = normalizeIapPurchaseError(error);
+      setIapError(normalized.message);
+      toast.push({ tone: 'error', message: normalized.message });
+    } finally {
+      setIapRestoring(false);
+    }
+  }, [iapReady, iapRestoring, iapSkus, toast, verifyIapPayload]);
+
+  const handleIapPurchaseError = useCallback(
+    (error: IapPurchaseError) => {
+      const normalized = normalizeIapPurchaseError(error);
+      if (normalized.code && IAP_ERROR_CODES.cancelled.has(normalized.code)) {
+        iapPurchaseInFlightRef.current = false;
+        setIapLoading(false);
+        toast.push({ tone: 'info', message: 'Purchase cancelled.' });
+        return;
+      }
+      if (normalized.code && IAP_ERROR_CODES.alreadyOwned.has(normalized.code)) {
+        iapPurchaseInFlightRef.current = false;
+        setIapLoading(false);
+        toast.push({
+          tone: 'info',
+          message: 'Purchase already owned. Checking restores…',
+        });
+        void handleRestoreIapPurchases();
+        return;
+      }
+      iapPurchaseInFlightRef.current = false;
+      setIapLoading(false);
+      setIapError(normalized.message);
+      toast.push({ tone: 'error', message: normalized.message });
+    },
+    [handleRestoreIapPurchases, toast],
+  );
+
+  const handleOpenIap = useCallback(() => {
+    setIapError(null);
+    if (!iapReady) {
+      setIapError('In-app purchases are unavailable on this device.');
+    }
+    setIapVisible(true);
+  }, [iapReady]);
+
+  const handleCloseIap = useCallback(() => {
+    if (iapLoading || iapRestoring) {
+      return;
+    }
+    setIapVisible(false);
+  }, [iapLoading, iapRestoring]);
+
+  const handleSubmitIap = useCallback(async () => {
+    if (iapLoading || iapRestoring) {
+      return;
+    }
+    if (!iapReady) {
+      setIapError('In-app purchases are unavailable on this device.');
+      return;
+    }
+    if (!iapSelectedSku) {
+      setIapError('Select a product to continue.');
+      return;
+    }
+    setIapError(null);
+    setIapLoading(true);
+    try {
+      clearIapPending();
+      stopIapPolling();
+      await requestIapPurchase(iapSelectedSku);
+      setIapVisible(false);
+    } catch (error) {
+      const normalized = normalizeIapPurchaseError(error);
+      setIapLoading(false);
+      setIapError(normalized.message);
+      toast.push({ tone: 'error', message: normalized.message });
+    }
+  }, [
+    clearIapPending,
+    iapLoading,
+    iapReady,
+    iapRestoring,
+    iapSelectedSku,
+    stopIapPolling,
+    toast,
+  ]);
+
+  const handleRetryIapVerification = useCallback(async () => {
+    if (iapLoading || iapRestoring) {
+      return;
+    }
+    if (!iapReady) {
+      setIapError('In-app purchases are unavailable on this device.');
+      return;
+    }
+    const payload = pendingIapPayloadRef.current;
+    if (!payload) {
+      toast.push({ tone: 'error', message: 'No pending purchase to verify.' });
+      return;
+    }
+    setIapLoading(true);
+    try {
+      await verifyIapPayload(payload);
+    } finally {
+      setIapLoading(false);
+    }
+  }, [iapLoading, iapReady, iapRestoring, toast, verifyIapPayload]);
+
+  useEffect(() => {
+    let removeListeners: (() => void) | null = null;
+    let active = true;
+    const setup = async () => {
+      const connected = await initIapConnection();
+      if (!active) {
+        return;
+      }
+      setIapReady(connected);
+      if (!connected) {
+        return;
+      }
+      removeListeners = listenForIapUpdates(handleIapPurchase, handleIapPurchaseError);
+    };
+    setup();
+    return () => {
+      active = false;
+      removeListeners?.();
+      endIapConnection();
+      setIapReady(false);
+    };
+  }, [handleIapPurchase, handleIapPurchaseError]);
+
+  useEffect(() => {
+    if (!iapVisible) {
+      return;
+    }
+    if (!iapReady) {
+      setIapError('In-app purchases are unavailable on this device.');
+      setIapProductsLoading(false);
+      return;
+    }
+    if (iapSkus.length === 0) {
+      setIapError('No products configured for this build.');
+      setIapProductsLoading(false);
+      return;
+    }
+    setIapProductsLoading(true);
+    setIapError(null);
+    fetchIapProducts(iapSkus)
+      .then((products) => {
+        setIapProducts(products);
+        if (!iapSelectedSku && iapSkus.length > 0) {
+          setIapSelectedSku(iapSkus[0]);
+        }
+      })
+      .catch(() => {
+        setIapError('Unable to load in-app products.');
+      })
+      .finally(() => setIapProductsLoading(false));
+  }, [iapSelectedSku, iapSkus, iapVisible]);
 
   const handleOpenSend = useCallback(() => {
     setFormError(null);
@@ -1337,6 +1765,7 @@ export function WalletLedgerScreen() {
   const spendAmountError = spendFieldErrors?.amount_cents?.[0];
   const spendNoteError = spendFieldErrors?.note?.[0];
   const hasSpendReferences = COIN_SPEND_REFERENCES.length > 0;
+  const hasPendingIap = Boolean(pendingIap);
   const ipayAmountError = ipayFieldErrors?.amount_cents?.[0];
   const ipayCurrencyError = ipayFieldErrors?.currency?.[0];
   const ipayAmountCents = parseDollarsToCents(ipayAmountInput);
@@ -1439,10 +1868,23 @@ export function WalletLedgerScreen() {
               onPress={handleOpenSpend}
               disabled={coinLoading || !coinBalance || !hasSpendReferences}
             />
+            <MetalButton title="Buy SLC (IAP)" onPress={handleOpenIap} />
             <MetalButton title="Buy SLC" onPress={handleOpenStripe} />
             <MetalButton title="Buy SLC (iPay)" onPress={handleOpenIpay} />
             <MetalButton title="Buy SLC (BTCPay)" onPress={handleOpenBtcpay} />
           </View>
+          {hasPendingIap ? (
+            <View style={styles.pendingNotice}>
+              <Text style={styles.pendingText}>
+                Awaiting in-app purchase confirmation. It may take a moment.
+              </Text>
+              <MetalButton
+                title="Retry verification"
+                onPress={handleRetryIapVerification}
+                disabled={iapLoading || iapRestoring || !iapReady}
+              />
+            </View>
+          ) : null}
           {hasPendingStripe ? (
             <View style={styles.pendingNotice}>
               <Text style={styles.pendingText}>
@@ -1695,6 +2137,86 @@ export function WalletLedgerScreen() {
                   <Text style={styles.cancelText}>Cancel</Text>
                 </TouchableOpacity>
               </View>
+            </MetalPanel>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={iapVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={handleCloseIap}
+      >
+        <View style={styles.modalBackdrop}>
+          <Pressable style={StyleSheet.absoluteFill} onPress={handleCloseIap} />
+          <View style={styles.modalContent}>
+            <MetalPanel glow style={styles.modalPanel}>
+              <Text style={styles.modalTitle}>Buy SLC (IAP)</Text>
+              <Text style={styles.modalSubtitle}>
+                Select a pack and complete the App Store or Play purchase.
+              </Text>
+
+              <Text style={styles.fieldLabel}>Available packs</Text>
+              {iapProductsLoading ? (
+                <View style={styles.inlineLoading}>
+                  <ActivityIndicator color={theme.palette.platinum} />
+                </View>
+              ) : (
+                <View style={styles.referenceList}>
+                  {iapCatalog.map((item) => {
+                    const storeProduct = iapProductMap.get(item.sku);
+                    const title = storeProduct?.title?.trim() || item.label;
+                    const price =
+                      storeProduct?.localizedPrice || storeProduct?.price || '';
+                    const selected = item.sku === iapSelectedSku;
+                    const label = price ? `${title} · ${price}` : title;
+                    return (
+                      <TouchableOpacity
+                        key={item.sku}
+                        onPress={() => {
+                          setIapSelectedSku(item.sku);
+                          setIapError(null);
+                        }}
+                        style={[
+                          styles.referenceOption,
+                          selected && styles.referenceOptionSelected,
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.referenceLabel,
+                            selected && styles.referenceLabelSelected,
+                          ]}
+                        >
+                          {label}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              )}
+
+              {iapError ? <Text style={styles.formError}>{iapError}</Text> : null}
+              <View style={styles.buttonRow}>
+                <MetalButton
+                  title={iapLoading ? 'Starting...' : 'Continue'}
+                  onPress={handleSubmitIap}
+                  disabled={iapLoading || iapRestoring || !iapSelectedSku || !iapReady}
+                />
+                <TouchableOpacity onPress={handleCloseIap} style={styles.cancelButton}>
+                  <Text style={styles.cancelText}>Cancel</Text>
+                </TouchableOpacity>
+              </View>
+              <TouchableOpacity
+                onPress={handleRestoreIapPurchases}
+                style={styles.inlineLink}
+                disabled={iapLoading || iapRestoring || !iapReady}
+              >
+                <Text style={styles.inlineLinkText}>
+                  {iapRestoring ? 'Restoring...' : 'Restore purchases'}
+                </Text>
+              </TouchableOpacity>
             </MetalPanel>
           </View>
         </View>
@@ -2142,6 +2664,14 @@ const styles = StyleSheet.create({
     color: theme.palette.ember,
     ...theme.typography.caption,
     marginTop: theme.spacing.xs,
+  },
+  inlineLink: {
+    alignSelf: 'flex-start',
+    marginTop: theme.spacing.xs,
+  },
+  inlineLinkText: {
+    color: theme.palette.azure,
+    ...theme.typography.caption,
   },
   cancelButton: {
     justifyContent: 'center',

@@ -1,6 +1,9 @@
 
 
 {
+  "cli": {
+    "appVersionSource": "local"
+  },
   "build": {
     "preview": {
       "android": {
@@ -10,9 +13,6 @@
         "EXPO_PUBLIC_API_BASE_URL": "https://api.self-link.com",
         "EXPO_PUBLIC_REALTIME_URL": "wss://api.self-link.com/ws",
         "EXPO_PUBLIC_HEALTH_ENDPOINT": "/api/v1/health/",
-        "EXPO_PUBLIC_IPAY_BASE_URL": "",
-        "EXPO_PUBLIC_BTCPAY_BASE_URL": "",
-        "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY": "",
         "EXPO_PUBLIC_GOOGLE_MAPS_API_KEY": ""
       }
     },
@@ -24,9 +24,6 @@
         "EXPO_PUBLIC_API_BASE_URL": "https://api.self-link.com",
         "EXPO_PUBLIC_REALTIME_URL": "wss://api.self-link.com/ws",
         "EXPO_PUBLIC_HEALTH_ENDPOINT": "/api/v1/health/",
-        "EXPO_PUBLIC_IPAY_BASE_URL": "",
-        "EXPO_PUBLIC_BTCPAY_BASE_URL": "",
-        "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY": "",
         "EXPO_PUBLIC_GOOGLE_MAPS_API_KEY": ""
       }
     },
@@ -36,9 +33,6 @@
         "EXPO_PUBLIC_API_BASE_URL": "https://api.self-link.com",
         "EXPO_PUBLIC_REALTIME_URL": "wss://api.self-link.com/ws",
         "EXPO_PUBLIC_HEALTH_ENDPOINT": "/api/v1/health/",
-        "EXPO_PUBLIC_IPAY_BASE_URL": "",
-        "EXPO_PUBLIC_BTCPAY_BASE_URL": "",
-        "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY": "",
         "EXPO_PUBLIC_GOOGLE_MAPS_API_KEY": ""
       }
     },
@@ -48,9 +42,6 @@
         "EXPO_PUBLIC_API_BASE_URL": "https://api.self-link.com",
         "EXPO_PUBLIC_REALTIME_URL": "wss://api.self-link.com/ws",
         "EXPO_PUBLIC_HEALTH_ENDPOINT": "/api/v1/health/",
-        "EXPO_PUBLIC_IPAY_BASE_URL": "",
-        "EXPO_PUBLIC_BTCPAY_BASE_URL": "",
-        "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY": "",
         "EXPO_PUBLIC_GOOGLE_MAPS_API_KEY": ""
       }
     },
@@ -59,9 +50,6 @@
         "EXPO_PUBLIC_API_BASE_URL": "https://api.self-link.com",
         "EXPO_PUBLIC_REALTIME_URL": "wss://api.self-link.com/ws",
         "EXPO_PUBLIC_HEALTH_ENDPOINT": "/api/v1/health/",
-        "EXPO_PUBLIC_IPAY_BASE_URL": "",
-        "EXPO_PUBLIC_BTCPAY_BASE_URL": "",
-        "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY": "",
         "EXPO_PUBLIC_GOOGLE_MAPS_API_KEY": ""
       }
     }

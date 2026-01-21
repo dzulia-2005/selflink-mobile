@@ -1,7 +1,5 @@
 const appJson = require('./app.json');
 
-const ensureArray = (value) => (Array.isArray(value) ? value : []);
-
 module.exports = () => {
   const base = appJson.expo;
   const extra = base.extra ?? {};
@@ -14,21 +12,10 @@ module.exports = () => {
   const stripePublishableKey =
     env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY || extra.stripePublishableKey || '';
   const healthEndpoint = env.EXPO_PUBLIC_HEALTH_ENDPOINT || extra.healthEndpoint || '';
-
-  const plugins = ensureArray(base.plugins);
-  const hasMapsPlugin = plugins.some((plugin) => {
-    if (Array.isArray(plugin)) {
-      return plugin[0] === 'react-native-maps';
-    }
-    return plugin === 'react-native-maps';
-  });
-  const mapsPlugin = googleMapsApiKey
-    ? ['react-native-maps', { android: { apiKey: googleMapsApiKey } }]
-    : 'react-native-maps';
+  const iapSkus = env.EXPO_PUBLIC_IAP_SKUS || extra.iapSkus || '';
 
   return {
     ...base,
-    plugins: hasMapsPlugin ? plugins : [...plugins, mapsPlugin],
     android: {
       ...base.android,
       versionCode: base.android?.versionCode ?? 1,
@@ -50,6 +37,7 @@ module.exports = () => {
       stripePublishableKey,
       googleMapsApiKey,
       healthEndpoint,
+      iapSkus,
     },
   };
 };
