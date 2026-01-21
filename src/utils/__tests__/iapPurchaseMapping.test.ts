@@ -9,7 +9,13 @@ jest.mock('react-native-iap', () => ({
   finishTransaction: jest.fn(),
 }));
 
-import { mapPurchaseToVerifyRequest } from '@utils/iapPurchase';
+import { finishTransaction, getProducts } from 'react-native-iap';
+
+import {
+  fetchIapProducts,
+  finalizeIapPurchase,
+  mapPurchaseToVerifyRequest,
+} from '@utils/iapPurchase';
 
 describe('iap purchase mapping', () => {
   it('maps iOS receipt payloads', () => {
@@ -58,5 +64,35 @@ describe('iap purchase mapping', () => {
     );
 
     expect(payload).toBeNull();
+  });
+});
+
+describe('iap purchase helpers', () => {
+  beforeEach(() => {
+    (getProducts as jest.Mock).mockReset();
+    (finishTransaction as jest.Mock).mockReset();
+  });
+
+  it('surfaces errors when getProducts signatures both fail', async () => {
+    (getProducts as jest.Mock)
+      .mockRejectedValueOnce(new Error('object signature failed'))
+      .mockRejectedValueOnce(new Error('array signature failed'));
+
+    await expect(fetchIapProducts(['sku_1'])).rejects.toThrow(
+      /object signature failed.*array signature failed/,
+    );
+  });
+
+  it('surfaces errors when finishTransaction signatures both fail', async () => {
+    (finishTransaction as jest.Mock)
+      .mockRejectedValueOnce(new Error('object signature failed'))
+      .mockRejectedValueOnce(new Error('args signature failed'));
+
+    await expect(
+      finalizeIapPurchase({
+        productId: 'com.selflink.slc.499',
+        transactionId: 'tx_123',
+      }),
+    ).rejects.toThrow(/object signature failed.*args signature failed/);
   });
 });

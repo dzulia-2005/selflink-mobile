@@ -54,12 +54,36 @@ export const endIapConnection = () => {
   }
 };
 
+const stringifyError = (error: unknown) => {
+  if (!error) {
+    return 'unknown error';
+  }
+  if (error instanceof Error) {
+    return error.message;
+  }
+  try {
+    return JSON.stringify(error);
+  } catch {
+    return String(error);
+  }
+};
+
 export const fetchIapProducts = async (skus: string[]): Promise<IapProduct[]> => {
   const getter = getProducts as unknown as (arg: unknown) => Promise<IapProduct[]>;
+  let firstError: unknown = null;
   try {
     return await getter({ skus });
-  } catch {
+  } catch (error) {
+    firstError = error;
+  }
+  try {
     return await getter(skus);
+  } catch (error) {
+    throw new Error(
+      `IAP getProducts failed (object + array signatures). First: ${stringifyError(
+        firstError,
+      )}; Second: ${stringifyError(error)}`,
+    );
   }
 };
 
@@ -97,11 +121,25 @@ export const getAvailableIapPurchases = async (): Promise<IapPurchase[]> => {
 };
 
 export const finalizeIapPurchase = async (purchase: IapPurchase) => {
-  const finisher = finishTransaction as unknown as (arg: unknown, arg2?: unknown) => Promise<void>;
+  const finisher = finishTransaction as unknown as (
+    arg: unknown,
+    arg2?: unknown,
+  ) => Promise<void>;
+  let firstError: unknown = null;
   try {
     await finisher({ purchase, isConsumable: true });
-  } catch {
+    return;
+  } catch (error) {
+    firstError = error;
+  }
+  try {
     await finisher(purchase, true);
+  } catch (error) {
+    throw new Error(
+      `IAP finishTransaction failed (object + args signatures). First: ${stringifyError(
+        firstError,
+      )}; Second: ${stringifyError(error)}`,
+    );
   }
 };
 
