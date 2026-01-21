@@ -60,6 +60,17 @@ const rawIpayBaseUrl =
   (typeof extra.ipayBaseUrl === 'string' ? extra.ipayBaseUrl : undefined);
 const ipayBaseUrl = rawIpayBaseUrl ? trimTrailingSlash(String(rawIpayBaseUrl).trim()) : '';
 
+const parseEnvList = (raw: unknown): string[] | undefined => {
+  if (typeof raw !== 'string') {
+    return undefined;
+  }
+  const items = raw
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean);
+  return items.length > 0 ? items : undefined;
+};
+
 const rawHealthEndpoint =
   process.env.EXPO_PUBLIC_HEALTH_ENDPOINT ??
   (typeof extra.healthEndpoint === 'string' ? extra.healthEndpoint : undefined);
@@ -139,6 +150,11 @@ const googleMapsApiKey =
   process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY ??
   (typeof extra.googleMapsApiKey === 'string' ? extra.googleMapsApiKey : '');
 
+const rawIapSkus =
+  process.env.EXPO_PUBLIC_IAP_SKUS ??
+  (typeof extra.iapSkus === 'string' ? extra.iapSkus : undefined);
+const iapSkus = parseEnvList(rawIapSkus);
+
 export const env = {
   backendUrl: API_BASE_URL,
   apiBaseUrl: API_BASE_URL,
@@ -150,4 +166,5 @@ export const env = {
   btcpayBaseUrl,
   stripePublishableKey,
   googleMapsApiKey,
+  iapSkus,
 };

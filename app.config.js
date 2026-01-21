@@ -12,6 +12,7 @@ module.exports = () => {
   const stripePublishableKey =
     env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY || extra.stripePublishableKey || '';
   const healthEndpoint = env.EXPO_PUBLIC_HEALTH_ENDPOINT || extra.healthEndpoint || '';
+  const iapSkus = env.EXPO_PUBLIC_IAP_SKUS || extra.iapSkus || '';
 
   return {
     ...base,
@@ -36,6 +37,7 @@ module.exports = () => {
       stripePublishableKey,
       googleMapsApiKey,
       healthEndpoint,
+      iapSkus,
     },
   };
 };

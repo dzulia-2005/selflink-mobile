@@ -33,6 +33,7 @@ Payment provider URLs (optional unless used):
 - `EXPO_PUBLIC_IPAY_BASE_URL`
 - `EXPO_PUBLIC_BTCPAY_BASE_URL`
 - `EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY`
+- `EXPO_PUBLIC_IAP_SKUS` (comma-separated SKU allowlist)
 
 Android maps (required for release MapView):
 - `EXPO_PUBLIC_GOOGLE_MAPS_API_KEY`
