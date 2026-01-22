@@ -27,11 +27,17 @@ interface Props {
   post: Post;
   shouldPlayVideo?: boolean;
   isFeedFocused?: boolean;
+  onCommentPress?: (post: Post) => void;
 }
 
 const AnimatedPressable = Animated.createAnimatedComponent(RNPressable);
 
-function FeedPostCardComponent({ post, shouldPlayVideo = false, isFeedFocused }: Props) {
+function FeedPostCardComponent({
+  post,
+  shouldPlayVideo = false,
+  isFeedFocused,
+  onCommentPress,
+}: Props) {
   const navigation = useNavigation<any>();
   const currentUserId = useAuthStore((state) => state.currentUser?.id);
   const likePost = useFeedStore((state) => state.likePost);
@@ -118,6 +124,14 @@ function FeedPostCardComponent({ post, shouldPlayVideo = false, isFeedFocused }:
   const handleOpenDetails = useCallback(() => {
     navigation.navigate('PostDetails', { postId: post.id, post });
   }, [navigation, post]);
+
+  const handleCommentPress = useCallback(() => {
+    if (onCommentPress) {
+      onCommentPress(post);
+      return;
+    }
+    handleOpenDetails();
+  }, [handleOpenDetails, onCommentPress, post]);
 
   const handleBodyPress = useCallback(() => {
     const now = Date.now();
@@ -253,7 +267,7 @@ function FeedPostCardComponent({ post, shouldPlayVideo = false, isFeedFocused }:
                 </LinearGradient>
               </TouchableOpacity>
               <TouchableOpacity
-                onPress={handleOpenDetails}
+                onPress={handleCommentPress}
                 accessibilityRole="button"
                 style={[styles.actionPill, commentPress.style]}
                 activeOpacity={0.85}
