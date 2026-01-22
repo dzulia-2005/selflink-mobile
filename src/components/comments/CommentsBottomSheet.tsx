@@ -172,7 +172,7 @@ export function CommentsBottomSheet({
                   comments.length === 0 && styles.commentsListEmpty,
                 ]}
                 ListEmptyComponent={
-                  <Text style={styles.emptyText}>No comments yet</Text>
+                  <Text style={styles.emptyText}>Be the first to comment</Text>
                 }
                 onEndReached={loadMore}
                 onEndReachedThreshold={0.4}
