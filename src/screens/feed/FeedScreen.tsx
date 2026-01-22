@@ -22,7 +22,9 @@ import { InsightSkeleton } from '@components/skeleton/InsightSkeleton';
 import { PostSkeleton } from '@components/skeleton/PostSkeleton';
 import { SoulMatchSkeleton } from '@components/skeleton/SoulMatchSkeleton';
 import { SoulMatchFeedCard } from '@components/SoulMatchFeedCard';
+import { CommentsBottomSheet } from '@components/comments/CommentsBottomSheet';
 import type { FeedItem, FeedMode } from '@schemas/feed';
+import type { Post } from '@schemas/social';
 import { useFeedStore } from '@store/feedStore';
 import { theme } from '@theme';
 
@@ -51,9 +53,10 @@ export function FeedScreen() {
   const [segmentWidth, setSegmentWidth] = useState(0);
   const showFab = useMemo(() => items.some((item) => item.type === 'post'), [items]);
   const [activeVideoPostId, setActiveVideoPostId] = useState<string | null>(null);
+  const [commentPost, setCommentPost] = useState<Post | null>(null);
   const videoExtraData = useMemo(
     () => ({ activeVideoPostId, isFocused }),
-    [activeVideoPostId, isFocused],
+    [activeVideoPostId, handleOpenComments, isFocused],
   );
   const viewabilityConfig = useRef({
     itemVisiblePercentThreshold: 80,
@@ -124,6 +127,14 @@ export function FeedScreen() {
     navigation.navigate('SoulReels');
   }, [navigation]);
 
+  const handleOpenComments = useCallback((post: Post) => {
+    setCommentPost(post);
+  }, []);
+
+  const handleCloseComments = useCallback(() => {
+    setCommentPost(null);
+  }, []);
+
   useEffect(() => {
     if (isFocused && activeTab === 'reels') {
       setActiveTab(currentMode);
@@ -154,6 +165,7 @@ export function FeedScreen() {
                 String(item.post.id) === String(activeVideoPostId ?? '')
               }
               isFeedFocused={isFocused}
+              onCommentPress={handleOpenComments}
             />
           );
         case 'mentor_insight':
@@ -410,6 +422,14 @@ export function FeedScreen() {
         >
           <Text style={styles.fabText}>+</Text>
         </TouchableOpacity>
+      ) : null}
+      {commentPost ? (
+        <CommentsBottomSheet
+          targetType="post"
+          targetId={String(commentPost.id)}
+          initialCommentCount={commentPost.comment_count}
+          onClose={handleCloseComments}
+        />
       ) : null}
     </LinearGradient>
   );
