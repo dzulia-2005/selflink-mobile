@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 
 import * as socialApi from '@api/social';
+import { likePost as likePostApi, unlikePost as unlikePostApi } from '@api/likes';
 import type { AddCommentPayload } from '@api/social';
 import type { FeedItem, FeedMode } from '@schemas/feed';
 import type { Comment } from '@schemas/social';
@@ -162,7 +163,21 @@ export const useFeedStore = create<FeedState>((set, get) => ({
     );
     set({ itemsByMode: updated });
     try {
-      await socialApi.likePost(postId);
+      const response = await likePostApi(postId);
+      set((state) => ({
+        itemsByMode: updateItemsAcrossModes(state.itemsByMode, (item) =>
+          item.type === 'post' && String(item.post.id) === String(postId)
+            ? {
+                ...item,
+                post: {
+                  ...item.post,
+                  liked: response.liked,
+                  like_count: response.like_count,
+                },
+              }
+            : item,
+        ),
+      }));
     } catch (error) {
       set((state) => ({
         itemsByMode: previousItems,
@@ -190,7 +205,21 @@ export const useFeedStore = create<FeedState>((set, get) => ({
     );
     set({ itemsByMode: updated });
     try {
-      await socialApi.unlikePost(postId);
+      const response = await unlikePostApi(postId);
+      set((state) => ({
+        itemsByMode: updateItemsAcrossModes(state.itemsByMode, (item) =>
+          item.type === 'post' && String(item.post.id) === String(postId)
+            ? {
+                ...item,
+                post: {
+                  ...item.post,
+                  liked: response.liked,
+                  like_count: response.like_count,
+                },
+              }
+            : item,
+        ),
+      }));
     } catch (error) {
       set((state) => ({
         itemsByMode: previousItems,
