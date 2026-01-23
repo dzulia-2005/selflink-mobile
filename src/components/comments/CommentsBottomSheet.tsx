@@ -13,9 +13,12 @@ import {
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { likeComment, normalizeLikesApiError, unlikeComment } from '@api/likes';
+import { GiftPickerSheet } from '@components/gifts/GiftPickerSheet';
+import { useToast } from '@context/ToastContext';
 import { useAuthStore } from '@store/authStore';
 import { theme } from '@theme';
 
@@ -46,9 +49,15 @@ export function CommentsBottomSheet({
   onCommentCountChange,
 }: Props) {
   const insets = useSafeAreaInsets();
+  const toast = useToast();
   const currentUser = useAuthStore((state) => state.currentUser);
+  const logout = useAuthStore((state) => state.logout);
   const translateY = useRef(new Animated.Value(SHEET_HEIGHT)).current;
   const closingRef = useRef(false);
+  const [commentReactions, setCommentReactions] = useState<
+    Record<string, { liked: boolean; likeCount: number; giftCount: number }>
+  >({});
+  const [giftTargetId, setGiftTargetId] = useState<string | null>(null);
 
   const {
     comments,
@@ -68,6 +77,29 @@ export function CommentsBottomSheet({
     initialCommentCount,
     onCommentCountChange,
   });
+
+  useEffect(() => {
+    setCommentReactions((prev) => {
+      let changed = false;
+      const next = { ...prev };
+      comments.forEach((comment) => {
+        const key = String(comment.id);
+        if (next[key]) {
+          return;
+        }
+        const baseLiked = Boolean(
+          (comment as any)?.viewer_has_liked ?? (comment as any)?.liked,
+        );
+        const baseCount =
+          typeof (comment as any)?.like_count === 'number'
+            ? Number((comment as any).like_count)
+            : 0;
+        next[key] = { liked: baseLiked, likeCount: baseCount, giftCount: 0 };
+        changed = true;
+      });
+      return changed ? next : prev;
+    });
+  }, [comments]);
 
   useEffect(() => {
     translateY.setValue(SHEET_HEIGHT);
@@ -90,6 +122,7 @@ export function CommentsBottomSheet({
     }).start(() => {
       closingRef.current = false;
       onClose?.();
+      setGiftTargetId(null);
     });
   }, [onClose, translateY]);
 
@@ -120,9 +153,99 @@ export function CommentsBottomSheet({
     [closeSheet, translateY],
   );
 
+  const handleAuthError = useCallback(
+    (message: string) => {
+      toast.push({ tone: 'error', message });
+      logout();
+    },
+    [logout, toast],
+  );
+
+  const handleToggleCommentLike = useCallback(
+    async (commentId: string | number) => {
+      const key = String(commentId);
+      const current = commentReactions[key] ?? {
+        liked: false,
+        likeCount: 0,
+        giftCount: 0,
+      };
+      const nextLiked = !current.liked;
+      const nextCount = Math.max(0, current.likeCount + (nextLiked ? 1 : -1));
+      setCommentReactions((prev) => ({
+        ...prev,
+        [key]: { ...current, liked: nextLiked, likeCount: nextCount },
+      }));
+      try {
+        const response = nextLiked
+          ? await likeComment(commentId)
+          : await unlikeComment(commentId);
+        setCommentReactions((prev) => ({
+          ...prev,
+          [key]: {
+            ...current,
+            liked: response.liked,
+            likeCount: response.like_count,
+          },
+        }));
+      } catch (err) {
+        const normalized = normalizeLikesApiError(err, 'Unable to update like.');
+        if (normalized.status === 401 || normalized.status === 403) {
+          handleAuthError(normalized.message);
+          return;
+        }
+        setCommentReactions((prev) => ({
+          ...prev,
+          [key]: current,
+        }));
+        toast.push({ tone: 'error', message: normalized.message });
+      }
+    },
+    [commentReactions, handleAuthError, toast],
+  );
+
+  const handleOpenGiftPicker = useCallback((commentId: string | number) => {
+    setGiftTargetId(String(commentId));
+  }, []);
+
+  const handleGiftSent = useCallback(
+    (_gift, quantity: number) => {
+      if (!giftTargetId) {
+        return;
+      }
+      setCommentReactions((prev) => {
+        const current = prev[giftTargetId] ?? {
+          liked: false,
+          likeCount: 0,
+          giftCount: 0,
+        };
+        return {
+          ...prev,
+          [giftTargetId]: {
+            ...current,
+            giftCount: current.giftCount + quantity,
+          },
+        };
+      });
+    },
+    [giftTargetId],
+  );
+
   const renderItem = useCallback(
-    ({ item }: { item: CommentWithOptimistic }) => <CommentItem comment={item} />,
-    [],
+    ({ item }: { item: CommentWithOptimistic }) => {
+      const key = String(item.id);
+      const reaction = commentReactions[key];
+      return (
+        <CommentItem
+          comment={item}
+          liked={reaction?.liked}
+          likeCount={reaction?.likeCount ?? 0}
+          giftCount={reaction?.giftCount ?? 0}
+          onLikePress={() => handleToggleCommentLike(item.id)}
+          onGiftPress={() => handleOpenGiftPicker(item.id)}
+        />
+      );
+    },
+    [commentReactions, handleOpenGiftPicker, handleToggleCommentLike],
   );
 
   const avatarLabel = currentUser?.name ?? 'You';
@@ -203,6 +326,12 @@ export function CommentsBottomSheet({
           />
         </Animated.View>
       </KeyboardAvoidingView>
+      <GiftPickerSheet
+        visible={Boolean(giftTargetId)}
+        target={giftTargetId ? { type: 'comment', id: giftTargetId } : null}
+        onClose={() => setGiftTargetId(null)}
+        onGiftSent={handleGiftSent}
+      />
     </Modal>
   );
 }
