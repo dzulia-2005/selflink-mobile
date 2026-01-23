@@ -23,6 +23,7 @@ import { PostSkeleton } from '@components/skeleton/PostSkeleton';
 import { SoulMatchSkeleton } from '@components/skeleton/SoulMatchSkeleton';
 import { SoulMatchFeedCard } from '@components/SoulMatchFeedCard';
 import { CommentsBottomSheet } from '@components/comments/CommentsBottomSheet';
+import { GiftPickerSheet } from '@components/gifts/GiftPickerSheet';
 import type { FeedItem, FeedMode } from '@schemas/feed';
 import type { Post } from '@schemas/social';
 import { useFeedStore } from '@store/feedStore';
@@ -54,9 +55,13 @@ export function FeedScreen() {
   const showFab = useMemo(() => items.some((item) => item.type === 'post'), [items]);
   const [activeVideoPostId, setActiveVideoPostId] = useState<string | null>(null);
   const [commentPost, setCommentPost] = useState<Post | null>(null);
+  const [giftPost, setGiftPost] = useState<Post | null>(null);
+  const [giftCountsByPost, setGiftCountsByPost] = useState<Record<string, number>>(
+    {},
+  );
   const videoExtraData = useMemo(
     () => ({ activeVideoPostId, isFocused }),
-    [activeVideoPostId, handleOpenComments, isFocused],
+    [activeVideoPostId, giftCountsByPost, handleOpenComments, handleOpenGiftPicker, isFocused],
   );
   const viewabilityConfig = useRef({
     itemVisiblePercentThreshold: 80,
@@ -135,6 +140,25 @@ export function FeedScreen() {
     setCommentPost(null);
   }, []);
 
+  const handleOpenGiftPicker = useCallback((post: Post) => {
+    setGiftPost(post);
+  }, []);
+
+  const handleCloseGiftPicker = useCallback(() => {
+    setGiftPost(null);
+  }, []);
+
+  const handleGiftSent = useCallback((_gift, quantity: number) => {
+    setGiftCountsByPost((prev) => {
+      const key = String(giftPost?.id ?? '');
+      if (!key) {
+        return prev;
+      }
+      const current = prev[key] ?? 0;
+      return { ...prev, [key]: current + quantity };
+    });
+  }, [giftPost?.id]);
+
   useEffect(() => {
     if (isFocused && activeTab === 'reels') {
       setActiveTab(currentMode);
@@ -166,6 +190,8 @@ export function FeedScreen() {
               }
               isFeedFocused={isFocused}
               onCommentPress={handleOpenComments}
+              onGiftPress={handleOpenGiftPicker}
+              giftCount={giftCountsByPost[String(item.post.id)] ?? 0}
             />
           );
         case 'mentor_insight':
@@ -431,6 +457,12 @@ export function FeedScreen() {
           onClose={handleCloseComments}
         />
       ) : null}
+      <GiftPickerSheet
+        visible={Boolean(giftPost)}
+        target={giftPost ? { type: 'post', id: String(giftPost.id) } : null}
+        onClose={handleCloseGiftPicker}
+        onGiftSent={handleGiftSent}
+      />
     </LinearGradient>
   );
 }

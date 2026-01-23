@@ -28,6 +28,8 @@ interface Props {
   shouldPlayVideo?: boolean;
   isFeedFocused?: boolean;
   onCommentPress?: (post: Post) => void;
+  onGiftPress?: (post: Post) => void;
+  giftCount?: number;
 }
 
 const AnimatedPressable = Animated.createAnimatedComponent(RNPressable);
@@ -37,9 +39,12 @@ function FeedPostCardComponent({
   shouldPlayVideo = false,
   isFeedFocused,
   onCommentPress,
+  onGiftPress,
+  giftCount = 0,
 }: Props) {
   const navigation = useNavigation<any>();
   const currentUserId = useAuthStore((state) => state.currentUser?.id);
+  const logout = useAuthStore((state) => state.logout);
   const likePost = useFeedStore((state) => state.likePost);
   const unlikePost = useFeedStore((state) => state.unlikePost);
   const entrance = useEntranceAnimation();
@@ -76,11 +81,17 @@ function FeedPostCardComponent({
       }
     } catch (error) {
       console.warn('FeedPostCard: like toggle failed', error);
-      Alert.alert('Unable to update like', 'Please try again.');
+      const status = (error as any)?.response?.status;
+      if (status === 401 || status === 403) {
+        Alert.alert('Session expired', 'Please sign in again.');
+        logout();
+      } else {
+        Alert.alert('Unable to update like', 'Please try again.');
+      }
     } finally {
       setLikePending(false);
     }
-  }, [likePending, likePost, unlikePost, post.id, post.liked]);
+  }, [likePending, likePost, unlikePost, post.id, post.liked, logout]);
 
   const handleFollowToggle = useCallback(async () => {
     if (followPending || post.author.id === currentUserId) {
@@ -132,6 +143,12 @@ function FeedPostCardComponent({
     }
     handleOpenDetails();
   }, [handleOpenDetails, onCommentPress, post]);
+
+  const handleGiftPress = useCallback(() => {
+    if (onGiftPress) {
+      onGiftPress(post);
+    }
+  }, [onGiftPress, post]);
 
   const handleBodyPress = useCallback(() => {
     const now = Date.now();
@@ -215,10 +232,10 @@ function FeedPostCardComponent({
               </View>
             </TouchableOpacity>
 
-            <View style={styles.divider} />
+          <View style={styles.divider} />
 
-            <View style={styles.footer}>
-              <TouchableOpacity
+          <View style={styles.footer}>
+            <TouchableOpacity
                 onPress={handleLikeToggle}
                 accessibilityRole="button"
                 disabled={likePending}
@@ -288,6 +305,34 @@ function FeedPostCardComponent({
                       style={styles.actionIcon}
                     />
                     <Text style={styles.actionText}>Comments • {post.comment_count}</Text>
+                  </View>
+                </LinearGradient>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleGiftPress}
+                accessibilityRole="button"
+                style={[styles.actionPill, commentPress.style]}
+                activeOpacity={0.85}
+                onPressIn={commentPress.onPressIn}
+                onPressOut={commentPress.onPressOut}
+                disabled={!onGiftPress}
+              >
+                <LinearGradient
+                  colors={['rgba(15,23,42,0.85)', 'rgba(15,23,42,0.85)']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.actionGradient}
+                >
+                  <View style={styles.actionContent}>
+                    <Ionicons
+                      name="gift-outline"
+                      size={16}
+                      color={theme.feed.textSecondary as unknown as string}
+                      style={styles.actionIcon}
+                    />
+                    <Text style={styles.actionText}>
+                      {giftCount > 0 ? `Gifts • ${giftCount}` : 'Send Gift'}
+                    </Text>
                   </View>
                 </LinearGradient>
               </TouchableOpacity>

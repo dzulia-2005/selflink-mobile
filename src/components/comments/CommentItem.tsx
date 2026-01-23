@@ -1,5 +1,6 @@
+import { Ionicons } from '@expo/vector-icons';
 import { memo, useMemo } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { UserAvatar } from '@components/UserAvatar';
 import { CommentContent } from '@components/comments/CommentContent';
@@ -8,6 +9,11 @@ import { theme } from '@theme';
 
 type Props = {
   comment: CommentWithOptimistic;
+  liked?: boolean;
+  likeCount?: number;
+  giftCount?: number;
+  onLikePress?: () => void;
+  onGiftPress?: () => void;
 };
 
 const formatTimestamp = (value: string | undefined) => {
@@ -21,7 +27,14 @@ const formatTimestamp = (value: string | undefined) => {
   return date.toLocaleString();
 };
 
-function CommentItemComponent({ comment }: Props) {
+function CommentItemComponent({
+  comment,
+  liked,
+  likeCount = 0,
+  giftCount = 0,
+  onLikePress,
+  onGiftPress,
+}: Props) {
   const timestamp = useMemo(
     () => formatTimestamp(comment.created_at),
     [comment.created_at],
@@ -41,6 +54,34 @@ function CommentItemComponent({ comment }: Props) {
           media={comment.media}
           legacySources={(comment as any)?.images}
         />
+        <View style={styles.actions}>
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={onLikePress}
+            disabled={!onLikePress}
+          >
+            <Ionicons
+              name={liked ? 'heart' : 'heart-outline'}
+              size={14}
+              color={liked ? theme.reels.accentLike : theme.reels.textSecondary}
+            />
+            <Text style={styles.actionText}>{likeCount}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={onGiftPress}
+            disabled={!onGiftPress}
+          >
+            <Ionicons
+              name="gift-outline"
+              size={14}
+              color={theme.reels.textSecondary}
+            />
+            <Text style={styles.actionText}>
+              {giftCount > 0 ? giftCount : ''}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -73,6 +114,21 @@ const styles = StyleSheet.create({
     flexShrink: 1,
   },
   meta: {
+    color: theme.reels.textSecondary,
+    fontSize: 12,
+  },
+  actions: {
+    flexDirection: 'row',
+    gap: 16,
+    alignItems: 'center',
+    marginTop: 6,
+  },
+  actionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  actionText: {
     color: theme.reels.textSecondary,
     fontSize: 12,
   },
