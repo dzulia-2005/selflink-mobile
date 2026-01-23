@@ -62,6 +62,8 @@ See [`docs/API.md`](docs/API.md) for a frontend-facing map of API calls and wrap
 
 - Payments gifts notes live in [`docs/PAYMENTS_GIFTS_NOTES.md`](docs/PAYMENTS_GIFTS_NOTES.md).
 
+- Mobile gifts + paid reactions guide lives in [`docs/GIFTS_MOBILE.md`](docs/GIFTS_MOBILE.md).
+
 - Mobile wallet + SLC overview lives in [`docs/MOBILE_WALLET_SLC_OVERVIEW.md`](docs/MOBILE_WALLET_SLC_OVERVIEW.md).
 
 - Mobile payments providers guide lives in [`docs/MOBILE_PAYMENTS_PROVIDERS.md`](docs/MOBILE_PAYMENTS_PROVIDERS.md).
