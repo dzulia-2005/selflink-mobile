@@ -31,7 +31,7 @@ describe('gifts api', () => {
     await sendPostGift(10, { gift_type_id: 1, quantity: 2 }, 'idem-1');
 
     expect(mockPost).toHaveBeenCalledWith(
-      '/feed/posts/10/gifts/',
+      '/posts/10/gifts/',
       { gift_type_id: 1, quantity: 2 },
       { headers: { 'Idempotency-Key': 'idem-1' } },
     );
@@ -43,7 +43,7 @@ describe('gifts api', () => {
     await sendCommentGift(7, { gift_type_id: 2, quantity: 1 });
 
     expect(mockPost).toHaveBeenCalledWith(
-      '/feed/comments/7/gifts/',
+      '/comments/7/gifts/',
       { gift_type_id: 2, quantity: 1 },
       undefined,
     );

@@ -45,7 +45,7 @@ export const normalizeLikesApiError = normalizeLikeError;
 
 export async function likePost(postId: string | number): Promise<LikeResponse> {
   const { data } = await apiClient.post<LikeResponse>(
-    `/feed/posts/${postId}/like/`,
+    `/posts/${postId}/like/`,
     {},
   );
   return data;
@@ -53,7 +53,7 @@ export async function likePost(postId: string | number): Promise<LikeResponse> {
 
 export async function unlikePost(postId: string | number): Promise<LikeResponse> {
   const { data } = await apiClient.delete<LikeResponse>(
-    `/feed/posts/${postId}/like/`,
+    `/posts/${postId}/unlike/`,
   );
   return data;
 }
@@ -62,7 +62,7 @@ export async function likeComment(
   commentId: string | number,
 ): Promise<LikeResponse> {
   const { data } = await apiClient.post<LikeResponse>(
-    `/feed/comments/${commentId}/like/`,
+    `/comments/${commentId}/like/`,
     {},
   );
   return data;
@@ -72,7 +72,7 @@ export async function unlikeComment(
   commentId: string | number,
 ): Promise<LikeResponse> {
   const { data } = await apiClient.delete<LikeResponse>(
-    `/feed/comments/${commentId}/like/`,
+    `/comments/${commentId}/unlike/`,
   );
   return data;
 }

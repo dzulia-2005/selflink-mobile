@@ -39,7 +39,7 @@ export async function sendPostGift(
   idempotencyKey?: string,
 ): Promise<GiftSendResponse> {
   const { data } = await apiClient.post<GiftSendResponse>(
-    `/feed/posts/${postId}/gifts/`,
+    `/posts/${postId}/gifts/`,
     payload,
     idempotencyKey ? { headers: { 'Idempotency-Key': idempotencyKey } } : undefined,
   );
@@ -52,7 +52,7 @@ export async function sendCommentGift(
   idempotencyKey?: string,
 ): Promise<GiftSendResponse> {
   const { data } = await apiClient.post<GiftSendResponse>(
-    `/feed/comments/${commentId}/gifts/`,
+    `/comments/${commentId}/gifts/`,
     payload,
     idempotencyKey ? { headers: { 'Idempotency-Key': idempotencyKey } } : undefined,
   );
