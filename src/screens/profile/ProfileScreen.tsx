@@ -1,22 +1,34 @@
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import * as Clipboard from 'expo-clipboard';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import { savePersonalMapProfile } from '@api/users';
+import { getRecipientId, savePersonalMapProfile } from '@api/users';
 import { UserAvatar } from '@components/UserAvatar';
+import { useToast } from '@context/ToastContext';
 import { useAvatarPicker } from '@hooks/useAvatarPicker';
 import { ProfileStackParamList } from '@navigation/types';
 import { useAuthStore } from '@store/authStore';
 import { theme } from '@theme';
+
+const formatAccountKey = (value: string) => {
+  if (value.length <= 14) {
+    return value;
+  }
+  return `${value.slice(0, 6)}…${value.slice(-6)}`;
+};
 
 export function ProfileScreen() {
   const currentUser = useAuthStore((state) => state.currentUser);
   const personalMap = useAuthStore((state) => state.personalMap);
   const hasCompletedPersonalMap = useAuthStore((state) => state.hasCompletedPersonalMap);
   const logout = useAuthStore((state) => state.logout);
+  const toast = useToast();
   const [isUpdatingPhoto, setIsUpdatingPhoto] = useState(false);
+  const [recipientId, setRecipientId] = useState<string | null>(null);
+  const [recipientIdLoading, setRecipientIdLoading] = useState(false);
   const { pickImage, isPicking } = useAvatarPicker();
   const fetchProfile = useAuthStore((state) => state.fetchProfile);
   const navigation =
@@ -62,6 +74,47 @@ export function ProfileScreen() {
     }
   }, [fetchProfile, isPicking, isUpdatingPhoto, pickImage]);
 
+  useEffect(() => {
+    if (!currentUser) {
+      return;
+    }
+    let isMounted = true;
+    setRecipientIdLoading(true);
+    getRecipientId()
+      .then((data) => {
+        if (isMounted) {
+          setRecipientId(data.account_key);
+        }
+      })
+      .catch((error) => {
+        console.warn('ProfileScreen: failed to load recipient id', error);
+        if (isMounted) {
+          setRecipientId(null);
+        }
+      })
+      .finally(() => {
+        if (isMounted) {
+          setRecipientIdLoading(false);
+        }
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, [currentUser?.id]);
+
+  const handleCopyRecipientId = useCallback(async () => {
+    if (!recipientId) {
+      return;
+    }
+    try {
+      await Clipboard.setStringAsync(recipientId);
+      toast.push({ message: 'Copied to clipboard', tone: 'info', duration: 1500 });
+    } catch (error) {
+      console.warn('ProfileScreen: failed to copy recipient id', error);
+      toast.push({ message: 'Unable to copy right now.', tone: 'error' });
+    }
+  }, [recipientId, toast]);
+
   if (!currentUser) {
     return (
       <View style={styles.emptyState}>
@@ -94,6 +147,30 @@ export function ProfileScreen() {
           {currentUser.birth_place ? (
             <Text style={styles.meta}>{currentUser.birth_place}</Text>
           ) : null}
+          <View style={styles.recipientCard}>
+            <View style={styles.recipientInfo}>
+              <Text style={styles.recipientLabel}>Recipient ID (SLC)</Text>
+              <Text style={styles.recipientValue}>
+                {recipientIdLoading
+                  ? 'Loading…'
+                  : recipientId
+                    ? formatAccountKey(recipientId)
+                    : 'Not available'}
+              </Text>
+              <Text style={styles.recipientHint}>Share this ID to receive SLC.</Text>
+            </View>
+            <TouchableOpacity
+              style={[
+                styles.copyButton,
+                (!recipientId || recipientIdLoading) && styles.copyButtonDisabled,
+              ]}
+              onPress={handleCopyRecipientId}
+              disabled={!recipientId || recipientIdLoading}
+              activeOpacity={0.85}
+            >
+              <Text style={styles.copyLabel}>Copy</Text>
+            </TouchableOpacity>
+          </View>
           <Text style={styles.sectionTitle}>Personal map</Text>
           {hasCompletedPersonalMap && personalMap ? (
             <View style={styles.mapGrid}>
@@ -185,6 +262,50 @@ const styles = StyleSheet.create({
   meta: {
     color: theme.text.secondary,
     textAlign: 'center',
+  },
+  recipientCard: {
+    alignSelf: 'stretch',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: theme.spacing.md,
+    marginTop: theme.spacing.sm,
+    padding: theme.spacing.md,
+    borderRadius: theme.radii.md,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: 'rgba(15, 23, 42, 0.35)',
+  },
+  recipientInfo: {
+    flex: 1,
+    gap: theme.spacing.xs,
+  },
+  recipientLabel: {
+    color: theme.text.muted,
+    ...theme.typography.caption,
+  },
+  recipientValue: {
+    color: theme.text.primary,
+    fontWeight: '700',
+  },
+  recipientHint: {
+    color: theme.text.secondary,
+    ...theme.typography.caption,
+  },
+  copyButton: {
+    paddingVertical: theme.spacing.xs,
+    paddingHorizontal: theme.spacing.md,
+    borderRadius: theme.radii.pill,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
+    backgroundColor: 'rgba(255,255,255,0.08)',
+  },
+  copyButtonDisabled: {
+    opacity: 0.6,
+  },
+  copyLabel: {
+    color: theme.text.primary,
+    fontWeight: '600',
   },
   sectionTitle: {
     alignSelf: 'flex-start',
