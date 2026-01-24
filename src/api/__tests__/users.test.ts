@@ -1,5 +1,5 @@
 import { apiClient } from '@api/client';
-import { getRecipientId } from '@api/users';
+import { getRecipientId, searchUsers } from '@api/users';
 
 jest.mock('@api/client', () => ({
   apiClient: {
@@ -21,5 +21,13 @@ describe('users api', () => {
 
     expect(mockGet).toHaveBeenCalledWith('/users/me/recipient-id/');
     expect(data.account_key).toBe('user:123');
+  });
+
+  it('searches users with query and limit', async () => {
+    mockGet.mockResolvedValueOnce({ data: [] });
+
+    await searchUsers('anna', 12);
+
+    expect(mockGet).toHaveBeenCalledWith('/search/users/?q=anna&limit=12');
   });
 });
