@@ -1,8 +1,8 @@
 import { useNavigation } from '@react-navigation/native';
-import { useCallback, useMemo, useState } from 'react';
+import * as Clipboard from 'expo-clipboard';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
-  Button,
   FlatList,
   StyleSheet,
   Text,
@@ -13,34 +13,66 @@ import {
 
 import { followUser, searchUsers, unfollowUser, UserSummary } from '@api/users';
 import { UserAvatar } from '@components/UserAvatar';
+import { useToast } from '@context/ToastContext';
 import { useAuthStore } from '@store/authStore';
 import { theme } from '@theme';
 
 export function SearchProfilesScreen() {
   const navigation = useNavigation<any>();
+  const toast = useToast();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<UserSummary[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | undefined>();
   const currentUserId = useAuthStore((state) => state.currentUser?.id);
+  const searchRequestId = useRef(0);
 
-  const handleSearch = useCallback(async () => {
+  useEffect(() => {
     const normalizedQuery = query.trim();
     if (!normalizedQuery) {
       setResults([]);
+      setError(undefined);
+      setIsLoading(false);
       return;
     }
-    setIsLoading(true);
-    setError(undefined);
-    try {
-      const data = await searchUsers(normalizedQuery);
-      setResults(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unable to search users.');
-    } finally {
-      setIsLoading(false);
-    }
+    const requestId = ++searchRequestId.current;
+    const timeout = setTimeout(() => {
+      setIsLoading(true);
+      setError(undefined);
+      searchUsers(normalizedQuery)
+        .then((data) => {
+          if (searchRequestId.current !== requestId) {
+            return;
+          }
+          setResults(data);
+        })
+        .catch((err) => {
+          if (searchRequestId.current !== requestId) {
+            return;
+          }
+          setError(err instanceof Error ? err.message : 'Unable to search users.');
+        })
+        .finally(() => {
+          if (searchRequestId.current === requestId) {
+            setIsLoading(false);
+          }
+        });
+    }, 350);
+    return () => clearTimeout(timeout);
   }, [query]);
+
+  const handleCopyRecipientId = useCallback(
+    async (accountKey: string) => {
+      try {
+        await Clipboard.setStringAsync(accountKey);
+        toast.push({ message: 'Copied to clipboard', tone: 'info', duration: 1500 });
+      } catch (error) {
+        console.warn('SearchProfiles: copy recipient id failed', error);
+        toast.push({ message: 'Unable to copy right now.', tone: 'error' });
+      }
+    },
+    [toast],
+  );
 
   const handleFollowToggle = useCallback(
     async (candidate: UserSummary) => {
@@ -90,24 +122,34 @@ export function SearchProfilesScreen() {
             </Text>
           </View>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={[
-            styles.followButton,
-            item.id === currentUserId && styles.followButtonDisabled,
-          ]}
-          onPress={() => handleFollowToggle(item)}
-        >
-          <Text style={styles.followButtonText}>
-            {item.id === currentUserId
-              ? 'You'
-              : item.is_following
-                ? 'Following'
-                : 'Follow'}
-          </Text>
-        </TouchableOpacity>
+        <View style={styles.resultActions}>
+          {item.account_key ? (
+            <TouchableOpacity
+              style={styles.copyButton}
+              onPress={() => handleCopyRecipientId(item.account_key as string)}
+            >
+              <Text style={styles.copyButtonText}>Copy ID</Text>
+            </TouchableOpacity>
+          ) : null}
+          <TouchableOpacity
+            style={[
+              styles.followButton,
+              item.id === currentUserId && styles.followButtonDisabled,
+            ]}
+            onPress={() => handleFollowToggle(item)}
+          >
+            <Text style={styles.followButtonText}>
+              {item.id === currentUserId
+                ? 'You'
+                : item.is_following
+                  ? 'Following'
+                  : 'Follow'}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
     ),
-    [currentUserId, handleFollowToggle, navigation],
+    [currentUserId, handleCopyRecipientId, handleFollowToggle, navigation],
   );
 
   const keyExtractor = useCallback((item: UserSummary) => String(item.id), []);
@@ -119,22 +161,23 @@ export function SearchProfilesScreen() {
     }
     return (
       <View style={styles.empty}>
-        <Text>No results</Text>
+        <Text style={styles.emptyText}>
+          {query.trim() ? 'No results.' : 'Search for a user to send SLC.'}
+        </Text>
       </View>
     );
-  }, [isLoading, results.length]);
+  }, [isLoading, query, results.length]);
 
   return (
     <View style={styles.container}>
       <View style={styles.formRow}>
         <TextInput
-          placeholder="Search profiles"
+          placeholder="Search users"
           value={query}
           onChangeText={setQuery}
           style={styles.input}
           autoCapitalize="none"
         />
-        <Button title="Search" onPress={handleSearch} disabled={isLoading} />
       </View>
       {isLoading && <ActivityIndicator style={styles.loading} />}
       {error ? <Text style={styles.error}>{error}</Text> : null}
@@ -155,24 +198,22 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   formRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
     marginBottom: 12,
   },
   input: {
-    flex: 1,
     borderWidth: 1,
-    borderColor: '#CBD5F5',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    borderColor: theme.feed.border,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    color: theme.feed.textPrimary,
+    backgroundColor: theme.feed.glass,
   },
   loading: {
     marginBottom: 12,
   },
   error: {
-    color: '#DC2626',
+    color: theme.palette.ember,
     marginBottom: 12,
   },
   resultRow: {
@@ -190,14 +231,19 @@ const styles = StyleSheet.create({
   },
   resultMeta: { flex: 1 },
   resultName: {
-    fontWeight: '600',
+    fontWeight: '700',
+    color: theme.feed.textPrimary,
   },
   resultHandle: {
-    color: '#475569',
+    color: theme.feed.textSecondary,
   },
   resultCounts: {
-    color: '#475569',
+    color: theme.feed.textMuted,
     fontSize: 12,
+  },
+  resultActions: {
+    alignItems: 'flex-end',
+    gap: 8,
   },
   followButton: {
     borderWidth: 1,
@@ -207,18 +253,35 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     backgroundColor: theme.feed.glass,
   },
+  copyButton: {
+    borderWidth: 1,
+    borderColor: theme.feed.border,
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: theme.feed.cardBackground,
+  },
+  copyButtonText: {
+    fontWeight: '700',
+    color: theme.feed.textPrimary,
+    fontSize: 12,
+  },
   followButtonDisabled: {
     opacity: 0.6,
   },
   followButtonText: {
-    fontWeight: '600',
+    fontWeight: '700',
+    color: theme.feed.textPrimary,
   },
   separator: {
     height: 1,
-    backgroundColor: '#E2E8F0',
+    backgroundColor: theme.feed.cardBorder,
   },
   empty: {
     padding: 24,
     alignItems: 'center',
+  },
+  emptyText: {
+    color: theme.feed.textSecondary,
   },
 });
