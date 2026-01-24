@@ -21,6 +21,7 @@ import { GiftPickerSheet } from '@components/gifts/GiftPickerSheet';
 import { useToast } from '@context/ToastContext';
 import { useAuthStore } from '@store/authStore';
 import { theme } from '@theme';
+import { normalizeGiftRenderData } from '@utils/gifts';
 
 import { CommentComposer } from './CommentComposer';
 import { CommentItem } from './CommentItem';
@@ -57,7 +58,12 @@ export function CommentsBottomSheet({
   const [commentReactions, setCommentReactions] = useState<
     Record<string, { liked: boolean; likeCount: number; giftCount: number }>
   >({});
+  const [giftSyncByComment, setGiftSyncByComment] = useState<Record<string, boolean>>(
+    {},
+  );
   const [giftTargetId, setGiftTargetId] = useState<string | null>(null);
+  const commentLikeCooldownRef = useRef<Record<string, number>>({});
+  const commentLikePendingRef = useRef<Record<string, boolean>>({});
 
   const {
     comments,
@@ -94,7 +100,12 @@ export function CommentsBottomSheet({
           typeof (comment as any)?.like_count === 'number'
             ? Number((comment as any).like_count)
             : 0;
-        next[key] = { liked: baseLiked, likeCount: baseCount, giftCount: 0 };
+        const giftRender = normalizeGiftRenderData(comment as unknown);
+        next[key] = {
+          liked: baseLiked,
+          likeCount: baseCount,
+          giftCount: giftRender.totalCount,
+        };
         changed = true;
       });
       return changed ? next : prev;
@@ -164,6 +175,15 @@ export function CommentsBottomSheet({
   const handleToggleCommentLike = useCallback(
     async (commentId: string | number) => {
       const key = String(commentId);
+      const now = Date.now();
+      if ((commentLikeCooldownRef.current[key] ?? 0) + 800 > now) {
+        return;
+      }
+      if (commentLikePendingRef.current[key]) {
+        return;
+      }
+      commentLikeCooldownRef.current[key] = now;
+      commentLikePendingRef.current[key] = true;
       const current = commentReactions[key] ?? {
         liked: false,
         likeCount: 0,
@@ -198,6 +218,8 @@ export function CommentsBottomSheet({
           [key]: current,
         }));
         toast.push({ tone: 'error', message: normalized.message });
+      } finally {
+        commentLikePendingRef.current[key] = false;
       }
     },
     [commentReactions, handleAuthError, toast],
@@ -208,24 +230,31 @@ export function CommentsBottomSheet({
   }, []);
 
   const handleGiftSent = useCallback(
-    (_gift, quantity: number) => {
+    (_gift, quantity: number, status?: 'pending' | 'synced' | 'failed') => {
       if (!giftTargetId) {
         return;
       }
-      setCommentReactions((prev) => {
-        const current = prev[giftTargetId] ?? {
-          liked: false,
-          likeCount: 0,
-          giftCount: 0,
-        };
-        return {
-          ...prev,
-          [giftTargetId]: {
-            ...current,
-            giftCount: current.giftCount + quantity,
-          },
-        };
-      });
+      if (status === 'pending') {
+        setCommentReactions((prev) => {
+          const current = prev[giftTargetId] ?? {
+            liked: false,
+            likeCount: 0,
+            giftCount: 0,
+          };
+          return {
+            ...prev,
+            [giftTargetId]: {
+              ...current,
+              giftCount: current.giftCount + quantity,
+            },
+          };
+        });
+        setGiftSyncByComment((prev) => ({ ...prev, [giftTargetId]: true }));
+        return;
+      }
+      if (status === 'synced' || status === 'failed') {
+        setGiftSyncByComment((prev) => ({ ...prev, [giftTargetId]: false }));
+      }
     },
     [giftTargetId],
   );
@@ -240,12 +269,18 @@ export function CommentsBottomSheet({
           liked={reaction?.liked}
           likeCount={reaction?.likeCount ?? 0}
           giftCount={reaction?.giftCount ?? 0}
+          giftSyncing={giftSyncByComment[key] ?? false}
           onLikePress={() => handleToggleCommentLike(item.id)}
           onGiftPress={() => handleOpenGiftPicker(item.id)}
         />
       );
     },
-    [commentReactions, handleOpenGiftPicker, handleToggleCommentLike],
+    [
+      commentReactions,
+      giftSyncByComment,
+      handleOpenGiftPicker,
+      handleToggleCommentLike,
+    ],
   );
 
   const avatarLabel = currentUser?.name ?? 'You';

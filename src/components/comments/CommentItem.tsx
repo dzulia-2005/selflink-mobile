@@ -12,6 +12,7 @@ type Props = {
   liked?: boolean;
   likeCount?: number;
   giftCount?: number;
+  giftSyncing?: boolean;
   onLikePress?: () => void;
   onGiftPress?: () => void;
 };
@@ -32,6 +33,7 @@ function CommentItemComponent({
   liked,
   likeCount = 0,
   giftCount = 0,
+  giftSyncing = false,
   onLikePress,
   onGiftPress,
 }: Props) {
@@ -80,6 +82,7 @@ function CommentItemComponent({
             <Text style={styles.actionText}>
               {giftCount > 0 ? giftCount : ''}
             </Text>
+            {giftSyncing ? <Text style={styles.syncText}>Syncing…</Text> : null}
           </TouchableOpacity>
         </View>
       </View>
@@ -131,5 +134,9 @@ const styles = StyleSheet.create({
   actionText: {
     color: theme.reels.textSecondary,
     fontSize: 12,
+  },
+  syncText: {
+    color: theme.reels.textSecondary,
+    fontSize: 10,
   },
 });
