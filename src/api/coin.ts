@@ -34,7 +34,8 @@ export type SlcLedgerQuery = {
 };
 
 export type TransferSlcPayload = {
-  to_user_id: number;
+  to_user_id?: number;
+  receiver_account_key?: string;
   amount_cents: number;
   note?: string;
 };
