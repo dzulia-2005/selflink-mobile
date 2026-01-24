@@ -1,4 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
+import * as Clipboard from 'expo-clipboard';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -1690,13 +1691,28 @@ export function WalletLedgerScreen() {
     toast,
   ]);
 
+  const handlePasteRecipient = useCallback(async () => {
+    try {
+      const pasted = await Clipboard.getStringAsync();
+      if (!pasted.trim()) {
+        toast.push({ tone: 'info', message: 'Clipboard is empty.' });
+        return;
+      }
+      setRecipientInput(pasted.trim());
+      setFormError(null);
+    } catch (error) {
+      console.warn('Wallet: paste recipient failed', error);
+      toast.push({ tone: 'error', message: 'Unable to paste right now.' });
+    }
+  }, [toast]);
+
   const handleSubmitTransfer = useCallback(async () => {
     if (sending || isThrottled) {
       return;
     }
-    const recipientId = Number(recipientInput.trim());
-    if (!Number.isInteger(recipientId) || recipientId <= 0) {
-      setFormError('Enter a valid recipient user ID.');
+    const receiverAccountKey = recipientInput.trim();
+    if (!receiverAccountKey) {
+      setFormError('Enter a recipient ID.');
       return;
     }
     const amountCents = parseDollarsToCents(amountInput);
@@ -1713,7 +1729,7 @@ export function WalletLedgerScreen() {
     setSending(true);
     try {
       await transferSlc({
-        to_user_id: recipientId,
+        receiver_account_key: receiverAccountKey,
         amount_cents: amountCents,
         note: noteInput.trim() || undefined,
       });
@@ -2012,19 +2028,30 @@ export function WalletLedgerScreen() {
             <MetalPanel glow style={styles.modalPanel}>
               <Text style={styles.modalTitle}>Send SLC</Text>
               <Text style={styles.modalSubtitle}>
-                Enter a recipient user ID and amount.
+                Enter a recipient ID (account key) and amount.
               </Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Recipient user ID"
-                placeholderTextColor={theme.palette.graphite}
-                value={recipientInput}
-                onChangeText={(text) => {
-                  setRecipientInput(text);
-                  setFormError(null);
-                }}
-                keyboardType="number-pad"
-              />
+              <Text style={styles.fieldLabel}>Recipient ID (account key)</Text>
+              <View style={styles.inputRow}>
+                <TextInput
+                  style={[styles.input, styles.inputGrow]}
+                  placeholder="user:123"
+                  placeholderTextColor={theme.palette.graphite}
+                  value={recipientInput}
+                  onChangeText={(text) => {
+                    setRecipientInput(text);
+                    setFormError(null);
+                  }}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+                <TouchableOpacity
+                  style={styles.pasteButton}
+                  onPress={handlePasteRecipient}
+                  activeOpacity={0.85}
+                >
+                  <Text style={styles.pasteLabel}>Paste</Text>
+                </TouchableOpacity>
+              </View>
               <TextInput
                 style={styles.input}
                 placeholder="Amount (USD)"
@@ -2645,6 +2672,29 @@ const styles = StyleSheet.create({
     color: theme.palette.platinum,
     ...theme.typography.body,
     marginBottom: theme.spacing.sm,
+  },
+  inputRow: {
+    flexDirection: 'row',
+    gap: theme.spacing.sm,
+    alignItems: 'center',
+    marginBottom: theme.spacing.sm,
+  },
+  inputGrow: {
+    flex: 1,
+    marginBottom: 0,
+  },
+  pasteButton: {
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+    borderRadius: theme.radius.md,
+    borderWidth: 1,
+    borderColor: theme.palette.graphite,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+  },
+  pasteLabel: {
+    color: theme.palette.platinum,
+    ...theme.typography.caption,
+    fontWeight: '600',
   },
   fieldLabel: {
     color: theme.palette.silver,
