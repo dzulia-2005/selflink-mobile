@@ -27,7 +27,7 @@ import { MetalButton } from '@components/MetalButton';
 import { useToast } from '@context/ToastContext';
 import { useAuthStore } from '@store/authStore';
 import { theme } from '@theme';
-import { usePressScaleAnimation } from '@styles/animations';
+import { usePressScaleAnimation } from '../../styles/animations';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const SHEET_HEIGHT = Math.round(SCREEN_HEIGHT * 0.7);
