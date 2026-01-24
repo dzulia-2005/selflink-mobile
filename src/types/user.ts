@@ -15,6 +15,7 @@ export interface User {
   name: string;
   bio: string;
   photo: string;
+  account_key?: string;
   birth_date: string | null;
   birth_time: string | null;
   birth_place: string;

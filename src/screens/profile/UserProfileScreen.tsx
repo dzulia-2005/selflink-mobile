@@ -1,4 +1,5 @@
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import * as Clipboard from 'expo-clipboard';
 import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -13,6 +14,7 @@ import { getOrCreateDirectThread } from '@api/messaging';
 import { followUser, getUserProfile, unfollowUser } from '@api/users';
 import type { UserSummary } from '@api/users';
 import { UserAvatar } from '@components/UserAvatar';
+import { useToast } from '@context/ToastContext';
 import { useAuthStore } from '@store/authStore';
 import { useMessagingStore } from '@store/messagingStore';
 import { theme } from '@theme';
@@ -23,6 +25,13 @@ interface RouteParams {
 
 type ProfileRoute = RouteProp<Record<'UserProfile', RouteParams>, 'UserProfile'>;
 
+const formatAccountKey = (value: string) => {
+  if (value.length <= 14) {
+    return value;
+  }
+  return `${value.slice(0, 6)}…${value.slice(-6)}`;
+};
+
 export function UserProfileScreen() {
   const navigation = useNavigation<any>();
   const route = useRoute<ProfileRoute>();
@@ -31,6 +40,7 @@ export function UserProfileScreen() {
   const [error, setError] = useState<string | undefined>();
   const [followPending, setFollowPending] = useState(false);
   const [messagePending, setMessagePending] = useState(false);
+  const toast = useToast();
   const currentUserId = useAuthStore((state) => state.currentUser?.id);
   const mergeThread = useMessagingStore((state) => state.mergeThread);
   const userId = route.params.userId;
@@ -137,6 +147,19 @@ export function UserProfileScreen() {
     }
   }, [isOwnProfile, mergeThread, openChatScreen, profile]);
 
+  const handleCopyRecipientId = useCallback(async () => {
+    if (!profile?.account_key) {
+      return;
+    }
+    try {
+      await Clipboard.setStringAsync(profile.account_key);
+      toast.push({ message: 'Copied to clipboard', tone: 'info', duration: 1500 });
+    } catch (error) {
+      console.warn('UserProfile: failed to copy recipient id', error);
+      toast.push({ message: 'Unable to copy right now.', tone: 'error' });
+    }
+  }, [profile?.account_key, toast]);
+
   if (loading) {
     return (
       <View style={styles.centered}>
@@ -152,6 +175,8 @@ export function UserProfileScreen() {
       </View>
     );
   }
+
+  const hasRecipientId = Boolean(profile.account_key);
 
   return (
     <View style={styles.container}>
@@ -182,6 +207,26 @@ export function UserProfileScreen() {
             </View>
           </View>
         </View>
+      </View>
+      <View style={styles.recipientCard}>
+        <View style={styles.recipientInfo}>
+          <Text style={styles.recipientLabel}>Recipient ID (SLC)</Text>
+          <Text style={styles.recipientValue}>
+            {hasRecipientId ? formatAccountKey(profile.account_key as string) : 'Not available'}
+          </Text>
+          {hasRecipientId ? (
+            <Text style={styles.recipientHint}>Share this ID to receive SLC.</Text>
+          ) : null}
+        </View>
+        {hasRecipientId ? (
+          <TouchableOpacity
+            style={styles.copyButton}
+            onPress={handleCopyRecipientId}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.copyLabel}>Copy</Text>
+          </TouchableOpacity>
+        ) : null}
       </View>
       {!isOwnProfile ? (
         <View style={styles.actionsRow}>
@@ -259,6 +304,44 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     marginTop: 2,
   },
+  recipientCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 16,
+    backgroundColor: theme.feed.cardBackground,
+    borderRadius: 18,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: theme.feed.cardBorder,
+  },
+  recipientInfo: {
+    flex: 1,
+    gap: 4,
+  },
+  recipientLabel: {
+    color: theme.feed.textSecondary,
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  recipientValue: {
+    color: theme.feed.textPrimary,
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  recipientHint: {
+    color: theme.feed.textMuted,
+    fontSize: 12,
+  },
+  copyButton: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: theme.feed.border,
+    backgroundColor: theme.feed.glass,
+  },
+  copyLabel: { fontWeight: '700', color: theme.feed.textPrimary },
   actionsRow: { flexDirection: 'row', gap: 12 },
   actionButton: {
     flex: 1,

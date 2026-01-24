@@ -17,6 +17,7 @@ export interface UserSummary {
   photo?: string;
   avatar_url?: string;
   bio?: string;
+  account_key?: string;
   is_following?: boolean;
   followers_count?: number;
   following_count?: number;
@@ -42,6 +43,7 @@ const mapUser = (user: User | UserSummary): UserSummary => {
     photo: fullUser.photo ?? summaryLike.photo ?? summaryLike.avatar_url,
     avatar_url: summaryLike.avatar_url ?? fullUser.photo ?? summaryLike.photo,
     bio: fullUser.bio ?? summaryLike.bio,
+    account_key: (summaryLike as any).account_key,
     is_following: Boolean((summaryLike as any).is_following),
     followers_count: (summaryLike as any).followers_count ?? 0,
     following_count: (summaryLike as any).following_count ?? 0,
@@ -61,6 +63,15 @@ export async function getUserById(id: number): Promise<User> {
 
 export async function getCurrentUser(): Promise<User> {
   const { data } = await apiClient.get<User>('/users/me/');
+  return data;
+}
+
+export type RecipientIdResponse = {
+  account_key: string;
+};
+
+export async function getRecipientId(): Promise<RecipientIdResponse> {
+  const { data } = await apiClient.get<RecipientIdResponse>('/users/me/recipient-id/');
   return data;
 }
 

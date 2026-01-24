@@ -70,6 +70,13 @@ All requests below require auth (JWT). Cursor values are opaque strings; do not 
     - `product:boost:profile`
   - No custom reference input is exposed in the UI.
 
+### Recipient ID (SLC account key)
+- Backend: `GET /api/v1/users/me/recipient-id/` returns `{ "account_key": "user:<id>" }`.
+  - Source: `selflink-backend/apps/users/views.py` (`recipient_id` action).
+- Mobile: `src/screens/profile/ProfileScreen.tsx` fetches and displays the account key with copy.
+- Transfers: `receiver_account_key` is accepted by `CoinTransferSerializer` in
+  `selflink-backend/apps/coin/serializers.py`. Mobile sends the account key from the Send SLC modal.
+
 ### Spend references (label -> reference)
 | Label | Reference |
 | --- | --- |

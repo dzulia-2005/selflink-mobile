@@ -28,7 +28,7 @@ describe('likes api', () => {
 
     await likePost(12);
 
-    expect(mockPost).toHaveBeenCalledWith('/feed/posts/12/like/', {});
+    expect(mockPost).toHaveBeenCalledWith('/posts/12/like/', {});
   });
 
   it('unlikes a post', async () => {
@@ -36,7 +36,7 @@ describe('likes api', () => {
 
     await unlikePost(12);
 
-    expect(mockDelete).toHaveBeenCalledWith('/feed/posts/12/like/');
+    expect(mockDelete).toHaveBeenCalledWith('/posts/12/unlike/');
   });
 
   it('likes a comment', async () => {
@@ -44,7 +44,7 @@ describe('likes api', () => {
 
     await likeComment(44);
 
-    expect(mockPost).toHaveBeenCalledWith('/feed/comments/44/like/', {});
+    expect(mockPost).toHaveBeenCalledWith('/comments/44/like/', {});
   });
 
   it('unlikes a comment', async () => {
@@ -52,7 +52,7 @@ describe('likes api', () => {
 
     await unlikeComment(44);
 
-    expect(mockDelete).toHaveBeenCalledWith('/feed/comments/44/like/');
+    expect(mockDelete).toHaveBeenCalledWith('/comments/44/unlike/');
   });
 
   it('normalizes auth errors', () => {

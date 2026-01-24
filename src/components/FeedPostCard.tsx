@@ -286,7 +286,7 @@ function FeedPostCardComponent({
                     <Text
                       style={[styles.actionText, post.liked && styles.actionTextActive]}
                     >
-                      {post.liked ? 'Unlike' : 'Like'} • {post.like_count}
+                      {post.like_count}
                     </Text>
                   </Animated.View>
                 </LinearGradient>
@@ -312,7 +312,7 @@ function FeedPostCardComponent({
                       color={theme.feed.textSecondary as unknown as string}
                       style={styles.actionIcon}
                     />
-                    <Text style={styles.actionText}>Comments • {post.comment_count}</Text>
+                    <Text style={styles.actionText}>{post.comment_count}</Text>
                   </View>
                 </LinearGradient>
               </TouchableOpacity>
@@ -338,10 +338,7 @@ function FeedPostCardComponent({
                       color={theme.feed.textSecondary as unknown as string}
                       style={styles.actionIcon}
                     />
-                    <Text style={styles.actionText}>
-                      {giftCount > 0 ? `Gifts • ${giftCount}` : 'Send Gift'}
-                      {giftSyncing ? ' · Syncing…' : ''}
-                    </Text>
+                    <Text style={styles.actionText}>{giftCount}</Text>
                   </View>
                 </LinearGradient>
               </TouchableOpacity>

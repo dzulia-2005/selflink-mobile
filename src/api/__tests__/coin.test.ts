@@ -69,6 +69,17 @@ describe('coin api', () => {
     });
   });
 
+  it('posts SLC transfer with receiver account key', async () => {
+    mockPost.mockResolvedValueOnce({ data: { event_id: 4 } });
+
+    await transferSlc({ receiver_account_key: 'user:42', amount_cents: 500 });
+
+    expect(mockPost).toHaveBeenCalledWith('/coin/transfer/', {
+      receiver_account_key: 'user:42',
+      amount_cents: 500,
+    });
+  });
+
   it('posts SLC spend payload', async () => {
     mockPost.mockResolvedValueOnce({ data: { event_id: 2 } });
 
