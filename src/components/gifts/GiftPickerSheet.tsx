@@ -43,7 +43,11 @@ type Props = {
   visible: boolean;
   target: GiftTarget | null;
   onClose: () => void;
-  onGiftSent?: (gift: GiftType, quantity: number) => void;
+  onGiftSent?: (
+    gift: GiftType,
+    quantity: number,
+    status?: 'pending' | 'synced' | 'failed',
+  ) => void;
 };
 
 let cachedGifts: GiftType[] | null = null;
@@ -80,6 +84,7 @@ export function GiftPickerSheet({ visible, target, onClose, onGiftSent }: Props)
   const [quantity, setQuantity] = useState(1);
   const [sending, setSending] = useState(false);
   const [cooldownUntil, setCooldownUntil] = useState<number | null>(null);
+  const [insufficientFunds, setInsufficientFunds] = useState(false);
 
   useEffect(() => {
     if (!visible) {
@@ -133,6 +138,7 @@ export function GiftPickerSheet({ visible, target, onClose, onGiftSent }: Props)
       setSelectedGift(null);
       setQuantity(1);
       setError(null);
+      setInsufficientFunds(false);
     });
   }, [onClose, translateY]);
 
@@ -172,6 +178,7 @@ export function GiftPickerSheet({ visible, target, onClose, onGiftSent }: Props)
     }
     setSending(true);
     setError(null);
+    setInsufficientFunds(false);
     const payload = {
       gift_type_id: selectedGift.id,
       quantity,
@@ -183,15 +190,36 @@ export function GiftPickerSheet({ visible, target, onClose, onGiftSent }: Props)
       } else {
         await sendCommentGift(target.id, payload, idempotencyKey);
       }
-      await Promise.all([
-        getSlcBalance().catch(() => undefined),
-        listSlcLedger().catch(() => undefined),
-      ]);
-      onGiftSent?.(selectedGift, quantity);
+      onGiftSent?.(selectedGift, quantity, 'pending');
+      let refreshOk = true;
+      try {
+        await Promise.all([
+          getSlcBalance().catch(() => undefined),
+          listSlcLedger().catch(() => undefined),
+        ]);
+      } catch (refreshError) {
+        refreshOk = false;
+        console.warn('GiftPickerSheet: refresh failed', refreshError);
+      }
+      if (!refreshOk) {
+        toast.push({
+          tone: 'info',
+          message: 'Gift sent. Balance may take a moment to sync.',
+        });
+        onGiftSent?.(selectedGift, quantity, 'failed');
+      } else {
+        onGiftSent?.(selectedGift, quantity, 'synced');
+      }
       toast.push({ tone: 'info', message: 'Gift sent.' });
       closeSheet();
     } catch (err) {
       const normalized = normalizeGiftApiError(err, 'Unable to send gift.');
+      if (
+        normalized.code === 'insufficient_funds' ||
+        normalized.message.toLowerCase().includes('insufficient')
+      ) {
+        setInsufficientFunds(true);
+      }
       if (normalized.status === 401 || normalized.status === 403) {
         toast.push({ tone: 'error', message: normalized.message });
         logout();
@@ -200,6 +228,7 @@ export function GiftPickerSheet({ visible, target, onClose, onGiftSent }: Props)
       }
       if (normalized.status === 429) {
         setCooldownUntil(Date.now() + 4000);
+        toast.push({ tone: 'info', message: normalized.message });
       }
       setError(normalized.message);
     } finally {
@@ -301,7 +330,7 @@ export function GiftPickerSheet({ visible, target, onClose, onGiftSent }: Props)
               </View>
               <Text style={styles.totalText}>You will spend {formatPrice(totalCents)}</Text>
               {error ? <Text style={styles.errorText}>{error}</Text> : null}
-              {error?.toLowerCase().includes('insufficient') ? (
+              {insufficientFunds ? (
                 <MetalButton title="Buy SLC" onPress={handleBuySlc} />
               ) : (
                 <MetalButton
@@ -419,6 +448,18 @@ const styles = StyleSheet.create({
     fontSize: 11,
     marginTop: 2,
   },
+  tileBadge: {
+    marginTop: 4,
+    alignSelf: 'flex-start',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 999,
+    backgroundColor: 'rgba(34,211,238,0.15)',
+    color: theme.reels.textSecondary,
+    fontSize: 9,
+    fontWeight: '700',
+    letterSpacing: 0.2,
+  },
   footer: {
     borderTopWidth: 1,
     borderTopColor: 'rgba(148,163,184,0.25)',
@@ -481,6 +522,7 @@ type GiftTileProps = {
 function GiftTile({ gift, selected, onPress }: GiftTileProps) {
   const press = usePressScaleAnimation(0.96);
   const imageUrl = resolveGiftImage(gift);
+  const isAnimated = gift.kind === 'animated' || Boolean(gift.animation_url);
   return (
     <TouchableOpacity
       style={[styles.tile, selected && styles.tileSelected]}
@@ -503,6 +545,7 @@ function GiftTile({ gift, selected, onPress }: GiftTileProps) {
           {gift.name}
         </Text>
         <Text style={styles.tilePrice}>{formatPrice(gift.price_slc_cents)}</Text>
+        {isAnimated ? <Text style={styles.tileBadge}>Animated</Text> : null}
       </Animated.View>
     </TouchableOpacity>
   );

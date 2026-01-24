@@ -30,6 +30,7 @@ interface Props {
   onCommentPress?: (post: Post) => void;
   onGiftPress?: (post: Post) => void;
   giftCount?: number;
+  giftSyncing?: boolean;
 }
 
 const AnimatedPressable = Animated.createAnimatedComponent(RNPressable);
@@ -41,6 +42,7 @@ function FeedPostCardComponent({
   onCommentPress,
   onGiftPress,
   giftCount = 0,
+  giftSyncing = false,
 }: Props) {
   const navigation = useNavigation<any>();
   const currentUserId = useAuthStore((state) => state.currentUser?.id);
@@ -52,6 +54,7 @@ function FeedPostCardComponent({
   const likePress = usePressScaleAnimation(0.96);
   const commentPress = usePressScaleAnimation(0.96);
   const heartScale = useRef(new Animated.Value(0)).current;
+  const lastLikeAt = useRef(0);
   const [pulseKey, setPulseKey] = useState(0);
   const [followPending, setFollowPending] = useState(false);
   const [likePending, setLikePending] = useState(false);
@@ -71,6 +74,11 @@ function FeedPostCardComponent({
     if (likePending) {
       return;
     }
+    const now = Date.now();
+    if (now - lastLikeAt.current < 800) {
+      return;
+    }
+    lastLikeAt.current = now;
     setLikePending(true);
     try {
       if (post.liked) {
@@ -332,6 +340,7 @@ function FeedPostCardComponent({
                     />
                     <Text style={styles.actionText}>
                       {giftCount > 0 ? `Gifts • ${giftCount}` : 'Send Gift'}
+                      {giftSyncing ? ' · Syncing…' : ''}
                     </Text>
                   </View>
                 </LinearGradient>

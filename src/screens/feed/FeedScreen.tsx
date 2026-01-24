@@ -28,6 +28,7 @@ import type { FeedItem, FeedMode } from '@schemas/feed';
 import type { Post } from '@schemas/social';
 import { useFeedStore } from '@store/feedStore';
 import { theme } from '@theme';
+import { normalizeGiftRenderData } from '@utils/gifts';
 
 type FeedTab = FeedMode | 'reels';
 
@@ -59,6 +60,7 @@ export function FeedScreen() {
   const [giftCountsByPost, setGiftCountsByPost] = useState<Record<string, number>>(
     {},
   );
+  const [giftSyncByPost, setGiftSyncByPost] = useState<Record<string, boolean>>({});
   const videoExtraData = useMemo(
     () => ({ activeVideoPostId, isFocused }),
     [activeVideoPostId, giftCountsByPost, handleOpenComments, handleOpenGiftPicker, isFocused],
@@ -148,16 +150,48 @@ export function FeedScreen() {
     setGiftPost(null);
   }, []);
 
-  const handleGiftSent = useCallback((_gift, quantity: number) => {
-    setGiftCountsByPost((prev) => {
+  const handleGiftSent = useCallback(
+    (_gift, quantity: number, status?: 'pending' | 'synced' | 'failed') => {
       const key = String(giftPost?.id ?? '');
       if (!key) {
-        return prev;
+        return;
       }
-      const current = prev[key] ?? 0;
-      return { ...prev, [key]: current + quantity };
+      if (status === 'pending') {
+        setGiftCountsByPost((prev) => {
+          const current = prev[key] ?? 0;
+          return { ...prev, [key]: current + quantity };
+        });
+        setGiftSyncByPost((prev) => ({ ...prev, [key]: true }));
+        return;
+      }
+      if (status === 'synced' || status === 'failed') {
+        setGiftSyncByPost((prev) => ({ ...prev, [key]: false }));
+      }
+    },
+    [giftPost?.id],
+  );
+
+  useEffect(() => {
+    setGiftCountsByPost((prev) => {
+      let changed = false;
+      const next = { ...prev };
+      items.forEach((item) => {
+        if (item.type !== 'post') {
+          return;
+        }
+        const key = String(item.post.id);
+        if (next[key] != null) {
+          return;
+        }
+        const normalized = normalizeGiftRenderData(item.post as unknown);
+        if (normalized.totalCount > 0) {
+          next[key] = normalized.totalCount;
+          changed = true;
+        }
+      });
+      return changed ? next : prev;
     });
-  }, [giftPost?.id]);
+  }, [items]);
 
   useEffect(() => {
     if (isFocused && activeTab === 'reels') {
@@ -192,6 +226,7 @@ export function FeedScreen() {
               onCommentPress={handleOpenComments}
               onGiftPress={handleOpenGiftPicker}
               giftCount={giftCountsByPost[String(item.post.id)] ?? 0}
+              giftSyncing={giftSyncByPost[String(item.post.id)] ?? false}
             />
           );
         case 'mentor_insight':
