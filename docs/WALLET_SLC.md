@@ -21,7 +21,7 @@ All requests below require auth (JWT). Cursor values are opaque strings; do not 
 | --- | --- | --- | --- |
 | `/api/v1/coin/balance/` | GET | `(none)` | `{ "account_key": "user:1", "balance_cents": 1200, "currency": "SLC" }` |
 | `/api/v1/coin/ledger/` | GET | `(query) cursor?, limit?` | `{ "results": [ { "id": 101, "event_id": 55, "event_type": "transfer", "occurred_at": "2025-01-15T12:00:00Z", "account_key": "user:1", "amount_cents": 500, "currency": "SLC", "direction": "DEBIT", "note": "Lunch", "event_metadata": { "sender_user_id": 1, "to_user_id": 2, "amount_cents": 500, "fee_cents": 25 }, "metadata": {}, "created_at": "2025-01-15T12:00:00Z" } ], "next_cursor": "opaque_cursor" }` |
-| `/api/v1/coin/transfer/` | POST | `{ "to_user_id": 2, "amount_cents": 500, "note": "Lunch" }` | `{ "event_id": 55, "to_user_id": 2, "amount_cents": 500, "fee_cents": 25, "total_debit_cents": 525, "balance_cents": 675, "currency": "SLC" }` |
+| `/api/v1/coin/transfer/` | POST | `{ "to_user_id": 2, "amount_cents": 500, "note": "Lunch" }` OR `{ "receiver_account_key": "user:2", "amount_cents": 500, "note": "Lunch" }` | `{ "event_id": 55, "to_user_id": 2, "amount_cents": 500, "fee_cents": 25, "total_debit_cents": 525, "balance_cents": 675, "currency": "SLC" }` |
 | `/api/v1/coin/spend/` | POST | `{ "amount_cents": 500, "reference": "order_123", "note": "Tip" }` | `{ "event_id": 77, "amount_cents": 500, "reference": "order_123", "balance_cents": 175, "currency": "SLC" }` |
 | `/api/v1/payments/subscriptions/wallet/` | GET | `(none)` | `{ "id": 3, "balance_cents": 4200, "created_at": "2025-01-10T12:00:00Z", "updated_at": "2025-01-15T12:00:00Z" }` |
 
@@ -76,6 +76,10 @@ All requests below require auth (JWT). Cursor values are opaque strings; do not 
 - Mobile: `src/screens/profile/ProfileScreen.tsx` fetches and displays the account key with copy.
 - Transfers: `receiver_account_key` is accepted by `CoinTransferSerializer` in
   `selflink-backend/apps/coin/serializers.py`. Mobile sends the account key from the Send SLC modal.
+- Search: `GET /api/v1/search/users/?q=<query>` (auth) returns `UserSerializer` results.
+  - Source: `selflink-backend/apps/search/urls.py`, `selflink-backend/apps/search/views.py`.
+  - Note: `UserSerializer` does not expose `account_key`, so search results cannot show it.
+    Users must open a profile and copy their own Recipient ID, or share it directly.
 
 ### Spend references (label -> reference)
 | Label | Reference |
