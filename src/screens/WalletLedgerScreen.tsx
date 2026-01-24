@@ -18,7 +18,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 
 import { EmptyState } from '@components/EmptyState';
 import { ErrorState } from '@components/ErrorState';
@@ -258,6 +258,7 @@ const formatTimestamp = (raw: string) => {
 
 export function WalletLedgerScreen() {
   const toast = useToast();
+  const navigation = useNavigation<any>();
   const logout = useAuthStore((state) => state.logout);
   const authHandledRef = useRef(false);
   const [wallet, setWallet] = useState<Wallet | null>(null);
@@ -1299,6 +1300,11 @@ export function WalletLedgerScreen() {
     setSendVisible(true);
   }, []);
 
+  const handleFindUser = useCallback(() => {
+    setSendVisible(false);
+    navigation.navigate('Profile', { screen: 'SearchProfiles' });
+  }, [navigation]);
+
   const handleCloseSend = useCallback(() => {
     if (sending) {
       return;
@@ -1895,6 +1901,9 @@ export function WalletLedgerScreen() {
             <MetalButton title="Buy SLC (iPay)" onPress={handleOpenIpay} />
             <MetalButton title="Buy SLC (BTCPay)" onPress={handleOpenBtcpay} />
           </View>
+          <TouchableOpacity style={styles.inlineLink} onPress={handleFindUser}>
+            <Text style={styles.inlineLinkText}>Find a user to send SLC</Text>
+          </TouchableOpacity>
           {hasPendingIap ? (
             <View style={styles.pendingNotice}>
               <Text style={styles.pendingText}>
