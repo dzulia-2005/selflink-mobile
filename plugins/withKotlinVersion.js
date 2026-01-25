@@ -7,7 +7,7 @@ module.exports = function withKotlinVersion(config) {
     if (!c.includes("kotlinVersion")) {
       c = c.replace(
         /buildscript\s*\{\s*\n/,
-        (m) => `${m}ext.kotlinVersion = "1.9.24"\n`
+        (m) => `${m}ext.kotlinVersion = "2.0.21"\n`
       );
     }
 
