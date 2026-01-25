@@ -20,8 +20,14 @@ import { UserAvatar } from '@components/UserAvatar';
 import { useToast } from '@context/ToastContext';
 import { SoulMatchStackParamList } from '@navigation/types';
 import { SoulmatchResult } from '@schemas/soulmatch';
-import { fetchRecommendations } from '@services/api/soulmatch';
+import {
+  fetchRecommendations,
+  type SoulmatchRecommendationsMeta,
+} from '@services/api/soulmatch';
+import { useAuthStore } from '@store/authStore';
 import { theme } from '@theme/index';
+import { normalizeApiError } from '@utils/apiErrors';
+import { normalizeSoulmatchRecommendations } from '@utils/soulmatchRecommendations';
 import { buildBadges, formatScore, scoreTone } from '@utils/soulmatch';
 
 type Nav = NativeStackNavigationProp<SoulMatchStackParamList>;
@@ -111,29 +117,55 @@ export function SoulMatchRecommendationsScreen({
 }: Props) {
   const navigation = useNavigation<Nav>();
   const toast = useToast();
-  const [items, setItems] = useState<SoulmatchResult[]>(initialItems);
+  const logout = useAuthStore((state) => state.logout);
+  const [meta, setMeta] = useState<SoulmatchRecommendationsMeta | null>(null);
+  const [items, setItems] = useState<SoulmatchResult[]>(
+    normalizeSoulmatchRecommendations(initialItems as SoulmatchResult[]).items,
+  );
   const [loading, setLoading] = useState(!initialItems.length);
   const [refreshing, setRefreshing] = useState(false);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (mode?: 'refresh') => {
     if (skipAutoLoad && initialItems.length) {
       return;
     }
-    setLoading(true);
+    if (mode !== 'refresh') {
+      setLoading(true);
+    }
     try {
-      const data = await fetchRecommendations();
-      setItems(data);
+      if (typeof __DEV__ !== 'undefined' && __DEV__) {
+        console.debug('SoulMatch: recommendations fetch start');
+      }
+      const response = await fetchRecommendations({ includeMeta: true });
+      const { items: normalized, dropped } = normalizeSoulmatchRecommendations(
+        response.results as SoulmatchResult[],
+      );
+      setItems(normalized);
+      setMeta(response.meta ?? null);
+      if (typeof __DEV__ !== 'undefined' && __DEV__) {
+        console.debug('SoulMatch: recommendations fetch ok', {
+          total: response.results.length,
+          normalized: normalized.length,
+          dropped,
+          meta: response.meta,
+        });
+      }
     } catch (error) {
-      console.error('SoulMatch recommendations failed', error);
-      toast.push({
-        message: 'Unable to load recommendations.',
-        tone: 'error',
-        duration: 4000,
-      });
+      const normalized = normalizeApiError(error, 'Unable to load recommendations.');
+      if (normalized.status === 401 || normalized.status === 403) {
+        toast.push({ message: normalized.message, tone: 'error', duration: 4000 });
+        logout();
+        return;
+      }
+      setMeta(null);
+      toast.push({ message: normalized.message, tone: 'error', duration: 4000 });
+      if (typeof __DEV__ !== 'undefined' && __DEV__) {
+        console.debug('SoulMatch: recommendations fetch error', normalized);
+      }
     } finally {
       setLoading(false);
     }
-  }, [initialItems.length, skipAutoLoad, toast]);
+  }, [initialItems.length, logout, skipAutoLoad, toast]);
 
   useFocusEffect(
     useCallback(() => {
@@ -145,7 +177,7 @@ export function SoulMatchRecommendationsScreen({
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await load();
+    await load('refresh');
     setRefreshing(false);
   }, [load]);
 
@@ -166,11 +198,24 @@ export function SoulMatchRecommendationsScreen({
     return <LoadingOverlay label="Finding your SoulMatches…" />;
   }
 
+  const missing = meta?.missing_requirements ?? [];
+  const missingBirth =
+    missing.includes('birth_date') ||
+    missing.includes('birth_time') ||
+    missing.includes('birth_place');
+  const emptyDescription = missingBirth
+    ? 'Complete your birth data to get matches.'
+    : meta?.reason === 'no_candidates'
+      ? 'No candidates yet — invite friends or try later.'
+      : 'Once your chart and profile are complete, recommendations will appear here.';
+
   return (
     <View style={styles.container}>
       <FlatList
         data={items}
-        keyExtractor={(item) => String(item.user?.id ?? item.user_id ?? Math.random())}
+        keyExtractor={(item, index) =>
+          String(item.user?.id ?? item.user_id ?? index)
+        }
         contentContainerStyle={styles.listContent}
         renderItem={renderItem}
         refreshControl={
@@ -183,7 +228,7 @@ export function SoulMatchRecommendationsScreen({
         ListEmptyComponent={
           <EmptyState
             title="No matches yet"
-            description="Once your chart and profile are complete, recommendations will appear here."
+            description={emptyDescription}
             actionLabel="Refresh"
             onAction={load}
           />

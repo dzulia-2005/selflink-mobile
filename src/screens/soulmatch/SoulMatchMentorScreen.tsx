@@ -21,6 +21,7 @@ import { SoulMatchStackParamList } from '@navigation/types';
 import { fetchSoulmatchMentor } from '@services/api/mentor';
 import { useAuthStore } from '@store/authStore';
 import { theme } from '@theme/index';
+import { normalizeApiError } from '@utils/apiErrors';
 
 type Route = RouteProp<SoulMatchStackParamList, 'SoulMatchMentor'>;
 type Nav = NativeStackNavigationProp<SoulMatchStackParamList>;
@@ -31,6 +32,7 @@ export function SoulMatchMentorScreen() {
   const { userId, displayName } = route.params;
   const toast = useToast();
   const currentUser = useAuthStore((state) => state.currentUser);
+  const logout = useAuthStore((state) => state.logout);
   const [mentorText, setMentorText] = useState<string | null>(null);
   const [score, setScore] = useState<number | null>(null);
   const [tags, setTags] = useState<string[]>([]);
@@ -77,17 +79,31 @@ export function SoulMatchMentorScreen() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
+      if (typeof __DEV__ !== 'undefined' && __DEV__) {
+        console.debug('SoulMatch: mentor fetch start', { userId });
+      }
       const result = await fetchSoulmatchMentor(userId);
       setMentorText(result.mentor_text);
       setScore(result.score);
       setTags(result.tags || []);
+      if (typeof __DEV__ !== 'undefined' && __DEV__) {
+        console.debug('SoulMatch: mentor fetch ok', { userId });
+      }
     } catch (error) {
-      console.error('SoulMatch mentor load failed', error);
-      toast.push({ message: 'Unable to load mentor guidance.', tone: 'error' });
+      const normalized = normalizeApiError(error, 'Unable to load mentor guidance.');
+      if (normalized.status === 401 || normalized.status === 403) {
+        toast.push({ message: normalized.message, tone: 'error' });
+        logout();
+        return;
+      }
+      toast.push({ message: normalized.message, tone: 'error' });
+      if (typeof __DEV__ !== 'undefined' && __DEV__) {
+        console.debug('SoulMatch: mentor fetch error', normalized);
+      }
     } finally {
       setLoading(false);
     }
-  }, [toast, userId]);
+  }, [logout, toast, userId]);
 
   useEffect(() => {
     navigation.setOptions?.({ title: displayName || 'SoulMatch Mentor' });
