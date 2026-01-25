@@ -23,12 +23,16 @@ import { PostSkeleton } from '@components/skeleton/PostSkeleton';
 import { SoulMatchSkeleton } from '@components/skeleton/SoulMatchSkeleton';
 import { SoulMatchFeedCard } from '@components/SoulMatchFeedCard';
 import { CommentsBottomSheet } from '@components/comments/CommentsBottomSheet';
+import { GiftBurstOverlay } from '@components/gifts/GiftBurstOverlay';
 import { GiftPickerSheet } from '@components/gifts/GiftPickerSheet';
 import type { FeedItem, FeedMode } from '@schemas/feed';
 import type { Post } from '@schemas/social';
+import { connectRealtime, type RealtimePayload } from '@realtime/index';
 import { useFeedStore } from '@store/feedStore';
+import { useAuthStore } from '@store/authStore';
 import { theme } from '@theme';
-import { normalizeGiftRenderData } from '@utils/gifts';
+import { normalizeGiftRenderData, type GiftPreview } from '@utils/gifts';
+import { useGiftBurst } from '@hooks/useGiftBurst';
 
 type FeedTab = FeedMode | 'reels';
 
@@ -36,6 +40,8 @@ export function FeedScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<any>();
   const isFocused = useIsFocused();
+  const token = useAuthStore((state) => state.accessToken);
+  const currentUserId = useAuthStore((state) => state.currentUser?.id ?? null);
   const currentMode = useFeedStore((state) => state.currentMode);
   const items = useFeedStore((state) => state.itemsByMode[state.currentMode]);
   const isLoading = useFeedStore((state) => state.isLoadingByMode[state.currentMode]);
@@ -61,6 +67,11 @@ export function FeedScreen() {
     {},
   );
   const [giftSyncByPost, setGiftSyncByPost] = useState<Record<string, boolean>>({});
+  const [giftRecentByPost, setGiftRecentByPost] = useState<
+    Record<string, GiftPreview[]>
+  >({});
+  const { burst, triggerGiftBurst, clearGiftBurst } = useGiftBurst();
+  const giftRealtimeRef = useRef<ReturnType<typeof connectRealtime> | null>(null);
   const videoExtraData = useMemo(
     () => ({ activeVideoPostId, isFocused }),
     [activeVideoPostId, giftCountsByPost, handleOpenComments, handleOpenGiftPicker, isFocused],
@@ -151,15 +162,27 @@ export function FeedScreen() {
   }, []);
 
   const handleGiftSent = useCallback(
-    (_gift, quantity: number, status?: 'pending' | 'synced' | 'failed') => {
+    (gift, quantity: number, status?: 'pending' | 'synced' | 'failed') => {
       const key = String(giftPost?.id ?? '');
       if (!key) {
         return;
       }
       if (status === 'pending') {
+        if (gift) {
+          triggerGiftBurst(gift);
+        }
         setGiftCountsByPost((prev) => {
           const current = prev[key] ?? 0;
           return { ...prev, [key]: current + quantity };
+        });
+        setGiftRecentByPost((prev) => {
+          const current = prev[key] ?? [];
+          return {
+            ...prev,
+            [key]: gift
+              ? [gift as any, ...current].slice(0, 4)
+              : current,
+          };
         });
         setGiftSyncByPost((prev) => ({ ...prev, [key]: true }));
         return;
@@ -168,7 +191,7 @@ export function FeedScreen() {
         setGiftSyncByPost((prev) => ({ ...prev, [key]: false }));
       }
     },
-    [giftPost?.id],
+    [giftPost?.id, triggerGiftBurst],
   );
 
   useEffect(() => {
@@ -191,7 +214,100 @@ export function FeedScreen() {
       });
       return changed ? next : prev;
     });
+    setGiftRecentByPost((prev) => {
+      let changed = false;
+      const next = { ...prev };
+      items.forEach((item) => {
+        if (item.type !== 'post') {
+          return;
+        }
+        const key = String(item.post.id);
+        if (next[key]?.length) {
+          return;
+        }
+        const normalized = normalizeGiftRenderData(item.post as unknown);
+        if (normalized.recent.length > 0) {
+          next[key] = normalized.recent.slice(0, 4);
+          changed = true;
+        }
+      });
+      return changed ? next : prev;
+    });
   }, [items]);
+
+  const giftChannels = useMemo(() => {
+    const channels = new Set<string>();
+    items.forEach((item) => {
+      if (item.type !== 'post') {
+        return;
+      }
+      const id = String(item.post.id);
+      channels.add(`post:${id}`);
+    });
+    return Array.from(channels).slice(0, 20);
+  }, [items]);
+
+  const giftChannelsKey = useMemo(() => giftChannels.join(','), [giftChannels]);
+
+  const handleGiftRealtime = useCallback(
+    (payload: RealtimePayload) => {
+      if (!payload || typeof payload !== 'object') {
+        return;
+      }
+      const record = payload as Record<string, unknown>;
+      if (record.type !== 'gift.received') {
+        return;
+      }
+      const target = record.target as { type?: string; id?: unknown } | undefined;
+      if (!target || target.type !== 'post') {
+        return;
+      }
+      const targetId = target.id != null ? String(target.id) : '';
+      if (!targetId) {
+        return;
+      }
+      const sender = record.sender as { id?: number } | undefined;
+      const giftType = record.gift_type as GiftPreview | undefined;
+      const quantity =
+        typeof record.quantity === 'number' ? record.quantity : 1;
+
+      if (sender?.id != null && currentUserId != null && sender.id === currentUserId) {
+        return;
+      }
+
+      if (giftType) {
+        triggerGiftBurst(giftType);
+      }
+
+      setGiftCountsByPost((prev) => {
+        const current = prev[targetId] ?? 0;
+        return { ...prev, [targetId]: current + quantity };
+      });
+      setGiftRecentByPost((prev) => {
+        const current = prev[targetId] ?? [];
+        return {
+          ...prev,
+          [targetId]: giftType ? [giftType, ...current].slice(0, 4) : current,
+        };
+      });
+    },
+    [currentUserId, triggerGiftBurst],
+  );
+
+  useEffect(() => {
+    if (!token || !isFocused || giftChannels.length === 0) {
+      giftRealtimeRef.current?.disconnect();
+      giftRealtimeRef.current = null;
+      return;
+    }
+    const connection = connectRealtime(token, { channels: giftChannels });
+    giftRealtimeRef.current = connection;
+    const unsubscribe = connection.subscribe(handleGiftRealtime);
+    return () => {
+      unsubscribe();
+      connection.disconnect();
+    };
+  }, [giftChannelsKey, handleGiftRealtime, isFocused, token]);
 
   useEffect(() => {
     if (isFocused && activeTab === 'reels') {
@@ -227,6 +343,7 @@ export function FeedScreen() {
               onGiftPress={handleOpenGiftPicker}
               giftCount={giftCountsByPost[String(item.post.id)] ?? 0}
               giftSyncing={giftSyncByPost[String(item.post.id)] ?? false}
+              giftPreviews={giftRecentByPost[String(item.post.id)] ?? []}
             />
           );
         case 'mentor_insight':
@@ -497,6 +614,12 @@ export function FeedScreen() {
         target={giftPost ? { type: 'post', id: String(giftPost.id) } : null}
         onClose={handleCloseGiftPicker}
         onGiftSent={handleGiftSent}
+      />
+      <GiftBurstOverlay
+        visible={Boolean(burst)}
+        gift={burst?.gift ?? null}
+        burstKey={burst?.key}
+        onComplete={clearGiftBurst}
       />
     </LinearGradient>
   );

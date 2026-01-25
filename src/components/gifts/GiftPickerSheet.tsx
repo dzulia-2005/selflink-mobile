@@ -3,7 +3,6 @@ import {
   Animated,
   Dimensions,
   FlatList,
-  Image,
   PanResponder,
   StyleSheet,
   Text,
@@ -23,6 +22,7 @@ import {
   sendCommentGift,
   sendPostGift,
 } from '@api/gifts';
+import { GiftMedia, isAnimatedGift } from '@components/gifts/GiftMedia';
 import { MetalButton } from '@components/MetalButton';
 import { useToast } from '@context/ToastContext';
 import { useAuthStore } from '@store/authStore';
@@ -66,9 +66,6 @@ const formatPrice = (cents?: number) => {
 };
 
 const clampQuantity = (value: number) => Math.max(1, Math.min(50, value));
-
-const resolveGiftImage = (gift: GiftType) =>
-  gift.media_url || gift.animation_url || '';
 
 export function GiftPickerSheet({ visible, target, onClose, onGiftSent }: Props) {
   const insets = useSafeAreaInsets();
@@ -304,9 +301,17 @@ export function GiftPickerSheet({ visible, target, onClose, onGiftSent }: Props)
               contentContainerStyle={styles.grid}
               showsVerticalScrollIndicator={false}
               ListEmptyComponent={
-                <Text style={styles.emptyText}>No gifts available yet.</Text>
+                <Text style={styles.emptyText}>Gifts are currently unavailable.</Text>
               }
             />
+            {selectedGift ? (
+              <View style={styles.preview}>
+                <GiftMedia gift={selectedGift} size="lg" showLabel />
+                <Text style={styles.previewPrice}>
+                  {selectedGift.name} • {formatPrice(selectedGift.price_slc_cents)}
+                </Text>
+              </View>
+            ) : null}
             <View style={styles.footer}>
               <View style={styles.quantityRow}>
                 <Text style={styles.quantityLabel}>Quantity</Text>
@@ -420,23 +425,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  tileImage: {
-    width: 56,
-    height: 56,
-    borderRadius: 12,
-  },
-  tilePlaceholder: {
-    width: 56,
-    height: 56,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(148,163,184,0.18)',
-  },
-  tilePlaceholderText: {
-    color: theme.reels.textPrimary,
-    fontSize: 22,
-  },
   tileName: {
     marginTop: 6,
     color: theme.reels.textPrimary,
@@ -459,6 +447,16 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontWeight: '700',
     letterSpacing: 0.2,
+  },
+  preview: {
+    alignItems: 'center',
+    paddingVertical: 8,
+    gap: 6,
+  },
+  previewPrice: {
+    color: theme.reels.textSecondary,
+    fontSize: 12,
+    fontWeight: '600',
   },
   footer: {
     borderTopWidth: 1,
@@ -521,8 +519,7 @@ type GiftTileProps = {
 
 function GiftTile({ gift, selected, onPress }: GiftTileProps) {
   const press = usePressScaleAnimation(0.96);
-  const imageUrl = resolveGiftImage(gift);
-  const isAnimated = gift.kind === 'animated' || Boolean(gift.animation_url);
+  const animated = isAnimatedGift(gift);
   return (
     <TouchableOpacity
       style={[styles.tile, selected && styles.tileSelected]}
@@ -533,19 +530,13 @@ function GiftTile({ gift, selected, onPress }: GiftTileProps) {
     >
       <Animated.View style={press.style}>
         <View style={styles.tileMedia}>
-          {imageUrl ? (
-            <Image source={{ uri: imageUrl }} style={styles.tileImage} />
-          ) : (
-            <View style={styles.tilePlaceholder}>
-              <Text style={styles.tilePlaceholderText}>★</Text>
-            </View>
-          )}
+          <GiftMedia gift={gift} size="sm" />
         </View>
         <Text style={styles.tileName} numberOfLines={1}>
           {gift.name}
         </Text>
         <Text style={styles.tilePrice}>{formatPrice(gift.price_slc_cents)}</Text>
-        {isAnimated ? <Text style={styles.tileBadge}>Animated</Text> : null}
+        {animated ? <Text style={styles.tileBadge}>Animated</Text> : null}
       </Animated.View>
     </TouchableOpacity>
   );

@@ -19,10 +19,11 @@ export type GiftSendResponse = Record<string, unknown>;
 export async function listGiftTypes(): Promise<GiftType[]> {
   const { data } = await apiClient.get<unknown>('/payments/gifts/');
   if (Array.isArray(data)) {
-    return data as GiftType[];
+    return (data as GiftType[]).filter((gift) => gift.is_active !== false);
   }
   if (data && typeof data === 'object' && Array.isArray((data as any).results)) {
-    return (data as { results: GiftType[] }).results ?? [];
+    const results = (data as { results: GiftType[] }).results ?? [];
+    return results.filter((gift) => gift.is_active !== false);
   }
   return [];
 }
@@ -36,12 +37,12 @@ type SendGiftPayload = {
 export async function sendPostGift(
   postId: string | number,
   payload: SendGiftPayload,
-  idempotencyKey?: string,
+  idempotencyKey: string,
 ): Promise<GiftSendResponse> {
   const { data } = await apiClient.post<GiftSendResponse>(
     `/posts/${postId}/gifts/`,
     payload,
-    idempotencyKey ? { headers: { 'Idempotency-Key': idempotencyKey } } : undefined,
+    { headers: { 'Idempotency-Key': idempotencyKey } },
   );
   return data;
 }
@@ -49,12 +50,12 @@ export async function sendPostGift(
 export async function sendCommentGift(
   commentId: string | number,
   payload: SendGiftPayload,
-  idempotencyKey?: string,
+  idempotencyKey: string,
 ): Promise<GiftSendResponse> {
   const { data } = await apiClient.post<GiftSendResponse>(
     `/comments/${commentId}/gifts/`,
     payload,
-    idempotencyKey ? { headers: { 'Idempotency-Key': idempotencyKey } } : undefined,
+    { headers: { 'Idempotency-Key': idempotencyKey } },
   );
   return data;
 }
@@ -62,4 +63,23 @@ export async function sendCommentGift(
 export const normalizeGiftApiError = (
   error: unknown,
   fallbackMessage = 'Unable to send gift.',
-): NormalizedCoinError => normalizeCoinApiError(error, fallbackMessage);
+): NormalizedCoinError => {
+  const normalized = normalizeCoinApiError(error, fallbackMessage);
+  const code = normalized.code;
+  let message = normalized.message;
+
+  if (code === 'insufficient_funds') {
+    message = 'Not enough SLC.';
+  } else if (code === 'gift_inactive' || code === 'invalid_gift_type') {
+    message = 'Gift not available.';
+  } else if (code === 'invalid_quantity') {
+    message = 'Invalid quantity.';
+  } else if (code === 'idempotency_conflict') {
+    message = 'This gift request is already being processed.';
+  }
+
+  return {
+    ...normalized,
+    message,
+  };
+};

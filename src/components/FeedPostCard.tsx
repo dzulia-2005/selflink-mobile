@@ -14,11 +14,13 @@ import {
 
 import { followUser, unfollowUser } from '@api/users';
 import { PostContent } from '@components/PostContent';
+import { GiftMedia } from '@components/gifts/GiftMedia';
 import { usePulseAnimation } from '@hooks/usePulseAnimation';
 import type { Post } from '@schemas/social';
 import { useAuthStore } from '@store/authStore';
 import { useFeedStore } from '@store/feedStore';
 import { theme } from '@theme';
+import type { GiftPreview } from '@utils/gifts';
 
 import { UserAvatar } from './UserAvatar';
 import { useEntranceAnimation, usePressScaleAnimation } from '../styles/animations';
@@ -31,6 +33,7 @@ interface Props {
   onGiftPress?: (post: Post) => void;
   giftCount?: number;
   giftSyncing?: boolean;
+  giftPreviews?: GiftPreview[];
 }
 
 const AnimatedPressable = Animated.createAnimatedComponent(RNPressable);
@@ -43,6 +46,7 @@ function FeedPostCardComponent({
   onGiftPress,
   giftCount = 0,
   giftSyncing = false,
+  giftPreviews = [],
 }: Props) {
   const navigation = useNavigation<any>();
   const currentUserId = useAuthStore((state) => state.currentUser?.id);
@@ -175,6 +179,8 @@ function FeedPostCardComponent({
     navigation.navigate('UserProfile', { userId: post.author.id });
   }, [navigation, post.author.id]);
 
+  const showGiftPreview = giftPreviews.length > 0;
+
   return (
     <Animated.View style={[styles.wrapper, entrance.style]}>
       <AnimatedPressable
@@ -243,7 +249,8 @@ function FeedPostCardComponent({
           <View style={styles.divider} />
 
           <View style={styles.footer}>
-            <TouchableOpacity
+            <View style={styles.actionsRow}>
+              <TouchableOpacity
                 onPress={handleLikeToggle}
                 accessibilityRole="button"
                 disabled={likePending}
@@ -342,6 +349,34 @@ function FeedPostCardComponent({
                   </View>
                 </LinearGradient>
               </TouchableOpacity>
+            </View>
+            {showGiftPreview ? (
+              <View style={styles.giftPreviewRow}>
+                  {giftPreviews.map((gift, index) => (
+                    <GiftMedia
+                      key={`${gift.id ?? gift.name ?? 'gift'}-${index}`}
+                      gift={gift}
+                      size="sm"
+                      style={styles.giftPreviewItem}
+                    />
+                  ))}
+                  {giftCount > giftPreviews.length ? (
+                    <Text style={styles.giftPreviewCount}>
+                      +{giftCount - giftPreviews.length}
+                    </Text>
+                  ) : null}
+                  {giftSyncing ? (
+                    <Text style={styles.giftPreviewSync}>Syncing…</Text>
+            ) : null}
+          </View>
+              ) : giftCount > 0 ? (
+                <View style={styles.giftPreviewRow}>
+                  <Text style={styles.giftPreviewCount}>{giftCount} gifts</Text>
+                  {giftSyncing ? (
+                    <Text style={styles.giftPreviewSync}>Syncing…</Text>
+                  ) : null}
+                </View>
+              ) : null}
             </View>
           </View>
         </LinearGradient>
@@ -444,6 +479,9 @@ const styles = StyleSheet.create({
   },
   footer: {
     marginTop: 16,
+    gap: 10,
+  },
+  actionsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: 12,
@@ -485,6 +523,25 @@ const styles = StyleSheet.create({
   },
   actionIcon: {
     marginRight: 8,
+  },
+  giftPreviewRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flexWrap: 'wrap',
+  },
+  giftPreviewItem: {
+    padding: 4,
+    borderRadius: 12,
+  },
+  giftPreviewCount: {
+    color: theme.feed.textSecondary,
+    fontWeight: '700',
+    fontSize: 12,
+  },
+  giftPreviewSync: {
+    color: theme.feed.textMuted,
+    fontSize: 11,
   },
   likeDisabled: {
     opacity: 0.6,

@@ -72,6 +72,8 @@ See [`docs/API.md`](docs/API.md) for a frontend-facing map of API calls and wrap
 
 - Mobile gifts UI guide lives in [`docs/MOBILE_GIFTS_UI.md`](docs/MOBILE_GIFTS_UI.md).
 
+- Gift rendering UI guide lives in [`docs/GIFTS_UI.md`](docs/GIFTS_UI.md).
+
 - Mobile local runbook lives in [`docs/MOBILE_RUNBOOK_LOCAL.md`](docs/MOBILE_RUNBOOK_LOCAL.md).
 
 ## Getting Started

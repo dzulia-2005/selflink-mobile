@@ -1,11 +1,14 @@
 import { Ionicons } from '@expo/vector-icons';
 import { memo, useMemo } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { UserAvatar } from '@components/UserAvatar';
 import { CommentContent } from '@components/comments/CommentContent';
 import type { CommentWithOptimistic } from '@components/comments/types';
+import { GiftMedia } from '@components/gifts/GiftMedia';
+import { useReactionPulse } from '@hooks/useReactionPulse';
 import { theme } from '@theme';
+import type { GiftPreview } from '@utils/gifts';
 
 type Props = {
   comment: CommentWithOptimistic;
@@ -13,6 +16,7 @@ type Props = {
   likeCount?: number;
   giftCount?: number;
   giftSyncing?: boolean;
+  giftPreviews?: GiftPreview[];
   onLikePress?: () => void;
   onGiftPress?: () => void;
 };
@@ -34,6 +38,7 @@ function CommentItemComponent({
   likeCount = 0,
   giftCount = 0,
   giftSyncing = false,
+  giftPreviews = [],
   onLikePress,
   onGiftPress,
 }: Props) {
@@ -41,6 +46,9 @@ function CommentItemComponent({
     () => formatTimestamp(comment.created_at),
     [comment.created_at],
   );
+  const giftPulse = useReactionPulse(giftCount);
+  const showGiftPreview = giftPreviews.length > 0;
+
   return (
     <View
       style={[styles.row, comment.__optimistic ? styles.rowOptimistic : null]}
@@ -56,6 +64,18 @@ function CommentItemComponent({
           media={comment.media}
           legacySources={(comment as any)?.images}
         />
+        {showGiftPreview ? (
+          <View style={styles.giftPreviewRow}>
+            {giftPreviews.map((gift, index) => (
+              <GiftMedia
+                key={`${gift.id ?? gift.name ?? 'gift'}-${index}`}
+                gift={gift}
+                size="sm"
+                style={styles.giftPreviewItem}
+              />
+            ))}
+          </View>
+        ) : null}
         <View style={styles.actions}>
           <TouchableOpacity
             style={styles.actionButton}
@@ -74,14 +94,16 @@ function CommentItemComponent({
             onPress={onGiftPress}
             disabled={!onGiftPress}
           >
-            <Ionicons
-              name="gift-outline"
-              size={14}
-              color={theme.reels.textSecondary}
-            />
-            <Text style={styles.actionText}>
+            <Animated.View style={giftPulse.animatedStyle}>
+              <Ionicons
+                name="gift-outline"
+                size={14}
+                color={theme.reels.textSecondary}
+              />
+            </Animated.View>
+            <Animated.Text style={[styles.actionText, giftPulse.animatedStyle]}>
               {giftCount > 0 ? giftCount : ''}
-            </Text>
+            </Animated.Text>
             {giftSyncing ? <Text style={styles.syncText}>Syncing…</Text> : null}
           </TouchableOpacity>
         </View>
@@ -125,6 +147,16 @@ const styles = StyleSheet.create({
     gap: 16,
     alignItems: 'center',
     marginTop: 6,
+  },
+  giftPreviewRow: {
+    flexDirection: 'row',
+    gap: 6,
+    alignItems: 'center',
+    flexWrap: 'wrap',
+  },
+  giftPreviewItem: {
+    padding: 3,
+    borderRadius: 10,
   },
   actionButton: {
     flexDirection: 'row',

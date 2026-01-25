@@ -152,14 +152,23 @@ export async function getUserFollowing(userId: number | string): Promise<UserSum
   return data.map(mapUser);
 }
 
-export async function searchUsers(query: string): Promise<UserSummary[]> {
+export async function searchUsers(
+  query: string,
+  limit?: number,
+): Promise<UserSummary[]> {
   if (!query.trim()) {
     return [];
   }
   const normalized = query.trim().replace(/^@+/, '') || query.trim();
   // Endpoint powered by apps/search/urls.py -> /search/users/
+  const searchParams = new URLSearchParams({
+    q: normalized,
+  });
+  if (limit) {
+    searchParams.set('limit', String(limit));
+  }
   const { data } = await apiClient.get<UserSummary[]>(
-    `/search/users/?q=${encodeURIComponent(normalized)}`,
+    `/search/users/?${searchParams.toString()}`,
   );
   return data.map(mapUser);
 }

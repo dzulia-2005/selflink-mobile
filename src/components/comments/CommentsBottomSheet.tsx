@@ -18,10 +18,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { likeComment, normalizeLikesApiError, unlikeComment } from '@api/likes';
 import { GiftPickerSheet } from '@components/gifts/GiftPickerSheet';
+import { GiftBurstOverlay } from '@components/gifts/GiftBurstOverlay';
 import { useToast } from '@context/ToastContext';
 import { useAuthStore } from '@store/authStore';
 import { theme } from '@theme';
 import { normalizeGiftRenderData } from '@utils/gifts';
+import { useGiftBurst } from '@hooks/useGiftBurst';
+import { connectRealtime, type RealtimePayload } from '@realtime/index';
 
 import { CommentComposer } from './CommentComposer';
 import { CommentItem } from './CommentItem';
@@ -52,18 +55,29 @@ export function CommentsBottomSheet({
   const insets = useSafeAreaInsets();
   const toast = useToast();
   const currentUser = useAuthStore((state) => state.currentUser);
+  const token = useAuthStore((state) => state.accessToken);
   const logout = useAuthStore((state) => state.logout);
   const translateY = useRef(new Animated.Value(SHEET_HEIGHT)).current;
   const closingRef = useRef(false);
   const [commentReactions, setCommentReactions] = useState<
-    Record<string, { liked: boolean; likeCount: number; giftCount: number }>
+    Record<
+      string,
+      {
+        liked: boolean;
+        likeCount: number;
+        giftCount: number;
+        giftPreviews?: ReturnType<typeof normalizeGiftRenderData>['recent'];
+      }
+    >
   >({});
   const [giftSyncByComment, setGiftSyncByComment] = useState<Record<string, boolean>>(
     {},
   );
   const [giftTargetId, setGiftTargetId] = useState<string | null>(null);
+  const { burst, triggerGiftBurst, clearGiftBurst } = useGiftBurst();
   const commentLikeCooldownRef = useRef<Record<string, number>>({});
   const commentLikePendingRef = useRef<Record<string, boolean>>({});
+  const realtimeRef = useRef<ReturnType<typeof connectRealtime> | null>(null);
 
   const {
     comments,
@@ -105,12 +119,86 @@ export function CommentsBottomSheet({
           liked: baseLiked,
           likeCount: baseCount,
           giftCount: giftRender.totalCount,
+          giftPreviews: giftRender.recent.slice(0, 3),
         };
         changed = true;
       });
       return changed ? next : prev;
     });
   }, [comments]);
+
+  const commentChannels = useMemo(() => {
+    const channels = new Set<string>();
+    comments.forEach((comment) => channels.add(`comment:${comment.id}`));
+    return Array.from(channels).slice(0, 20);
+  }, [comments]);
+
+  const commentChannelsKey = useMemo(
+    () => commentChannels.join(','),
+    [commentChannels],
+  );
+
+  const handleGiftRealtime = useCallback(
+    (payload: RealtimePayload) => {
+      if (!payload || typeof payload !== 'object') {
+        return;
+      }
+      const record = payload as Record<string, unknown>;
+      if (record.type !== 'gift.received') {
+        return;
+      }
+      const target = record.target as { type?: string; id?: unknown } | undefined;
+      if (!target || target.type !== 'comment') {
+        return;
+      }
+      const commentId = target.id != null ? String(target.id) : '';
+      if (!commentId) {
+        return;
+      }
+      const sender = record.sender as { id?: number } | undefined;
+      const giftType = record.gift_type as any;
+      const quantity =
+        typeof record.quantity === 'number' ? record.quantity : 1;
+
+      if (sender?.id != null && currentUser?.id != null && sender.id === currentUser.id) {
+        return;
+      }
+
+      if (giftType) {
+        triggerGiftBurst(giftType);
+      }
+
+      setCommentReactions((prev) => {
+        const current = prev[commentId] ?? { liked: false, likeCount: 0, giftCount: 0 };
+        return {
+          ...prev,
+          [commentId]: {
+            ...current,
+            giftCount: current.giftCount + quantity,
+            giftPreviews: giftType
+              ? [giftType, ...(current.giftPreviews ?? []).slice(0, 2)]
+              : current.giftPreviews,
+          },
+        };
+      });
+    },
+    [currentUser?.id, triggerGiftBurst],
+  );
+
+  useEffect(() => {
+    if (!token || commentChannels.length === 0) {
+      realtimeRef.current?.disconnect();
+      realtimeRef.current = null;
+      return;
+    }
+    const connection = connectRealtime(token, { channels: commentChannels });
+    realtimeRef.current = connection;
+    const unsubscribe = connection.subscribe(handleGiftRealtime);
+    return () => {
+      unsubscribe();
+      connection.disconnect();
+    };
+  }, [commentChannelsKey, handleGiftRealtime, token]);
 
   useEffect(() => {
     translateY.setValue(SHEET_HEIGHT);
@@ -230,11 +318,14 @@ export function CommentsBottomSheet({
   }, []);
 
   const handleGiftSent = useCallback(
-    (_gift, quantity: number, status?: 'pending' | 'synced' | 'failed') => {
+    (gift, quantity: number, status?: 'pending' | 'synced' | 'failed') => {
       if (!giftTargetId) {
         return;
       }
       if (status === 'pending') {
+        if (gift) {
+          triggerGiftBurst(gift);
+        }
         setCommentReactions((prev) => {
           const current = prev[giftTargetId] ?? {
             liked: false,
@@ -246,6 +337,12 @@ export function CommentsBottomSheet({
             [giftTargetId]: {
               ...current,
               giftCount: current.giftCount + quantity,
+              giftPreviews: gift
+                ? [
+                    gift as any,
+                    ...(current.giftPreviews ?? []).slice(0, 2),
+                  ]
+                : current.giftPreviews,
             },
           };
         });
@@ -256,7 +353,7 @@ export function CommentsBottomSheet({
         setGiftSyncByComment((prev) => ({ ...prev, [giftTargetId]: false }));
       }
     },
-    [giftTargetId],
+    [giftTargetId, triggerGiftBurst],
   );
 
   const renderItem = useCallback(
@@ -269,6 +366,7 @@ export function CommentsBottomSheet({
           liked={reaction?.liked}
           likeCount={reaction?.likeCount ?? 0}
           giftCount={reaction?.giftCount ?? 0}
+          giftPreviews={reaction?.giftPreviews ?? []}
           giftSyncing={giftSyncByComment[key] ?? false}
           onLikePress={() => handleToggleCommentLike(item.id)}
           onGiftPress={() => handleOpenGiftPicker(item.id)}
@@ -366,6 +464,12 @@ export function CommentsBottomSheet({
         target={giftTargetId ? { type: 'comment', id: giftTargetId } : null}
         onClose={() => setGiftTargetId(null)}
         onGiftSent={handleGiftSent}
+      />
+      <GiftBurstOverlay
+        visible={Boolean(burst)}
+        gift={burst?.gift ?? null}
+        burstKey={burst?.key}
+        onComplete={clearGiftBurst}
       />
     </Modal>
   );

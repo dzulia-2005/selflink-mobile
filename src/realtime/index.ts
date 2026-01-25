@@ -61,7 +61,25 @@ const resolveRealtimeUrl = (override?: string): string => {
   return deriveRealtimeUrlFromBackend();
 };
 
-export function connectRealtime(token: string, urlOverride?: string): RealtimeConnection {
+type RealtimeConnectOptions = {
+  urlOverride?: string;
+  channels?: string[];
+};
+
+const resolveConnectOptions = (
+  urlOverrideOrOptions?: string | RealtimeConnectOptions,
+): RealtimeConnectOptions => {
+  if (typeof urlOverrideOrOptions === 'string') {
+    return { urlOverride: urlOverrideOrOptions };
+  }
+  return urlOverrideOrOptions ?? {};
+};
+
+export function connectRealtime(
+  token: string,
+  urlOverrideOrOptions?: string | RealtimeConnectOptions,
+): RealtimeConnection {
+  const options = resolveConnectOptions(urlOverrideOrOptions);
   const handlers = new Set<RealtimeHandler>();
   let socket: WebSocket | null = null;
   let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
@@ -113,9 +131,12 @@ export function connectRealtime(token: string, urlOverride?: string): RealtimeCo
       reconnectTimer = null;
     }
     notify({ type: 'status', status: 'connecting', attempt });
-    const url = new URL(resolveRealtimeUrl(urlOverride));
+    const url = new URL(resolveRealtimeUrl(options.urlOverride));
     if (token) {
       url.searchParams.set('token', token);
+    }
+    if (options.channels && options.channels.length > 0) {
+      url.searchParams.set('channels', options.channels.join(','));
     }
     const urlString = url.toString();
     if (typeof __DEV__ !== 'undefined' && __DEV__) {
