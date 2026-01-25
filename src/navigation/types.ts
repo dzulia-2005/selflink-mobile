@@ -50,7 +50,7 @@ export type MentorStackParamList = {
 export type SoulMatchStackParamList = {
   SoulMatchHome: undefined;
   SoulMatchRecommendations: undefined;
-  SoulMatchDetail: { userId: number; displayName?: string };
+  SoulMatchDetail: { userId: number; displayName?: string; explainLevel?: import('@schemas/soulmatch').SoulmatchExplainLevel };
   SoulMatchMentor: { userId: number; displayName?: string };
 };
 

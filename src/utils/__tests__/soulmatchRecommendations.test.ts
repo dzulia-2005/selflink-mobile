@@ -1,4 +1,4 @@
-import { normalizeSoulmatchRecommendations } from '@utils/soulmatchRecommendations';
+import { normalizeSoulmatchRecommendations, normalizeSoulmatchRecsResponse } from '@utils/soulmatchRecommendations';
 
 describe('normalizeSoulmatchRecommendations', () => {
   it('filters entries without user or score', () => {
@@ -37,5 +37,39 @@ describe('normalizeSoulmatchRecommendations', () => {
     ]);
     expect(items).toHaveLength(1);
     expect(items[0].user.handle).toBe('janedoe');
+  });
+
+  it('falls back lens_label from lens', () => {
+    const { items } = normalizeSoulmatchRecommendations([
+      { user: { id: 7, name: 'Lens', handle: 'lens' }, score: 77, lens: 'timing_focus' },
+    ]);
+    expect(items[0].lens_label).toBe('Timing Focus');
+  });
+
+  it('falls back explanation.short from reason', () => {
+    const { items } = normalizeSoulmatchRecommendations([
+      { user: { id: 8, name: 'Why', handle: 'why' }, score: 81, reason: 'Because.' },
+    ]);
+    expect(items[0].explanation?.short).toBe('Because.');
+  });
+});
+
+describe('normalizeSoulmatchRecsResponse', () => {
+  it('handles array payloads', () => {
+    const payload = [
+      { user: { id: 1, name: 'A', handle: 'a' }, score: 70 },
+    ];
+    const normalized = normalizeSoulmatchRecsResponse(payload as any);
+    expect(normalized.results).toHaveLength(1);
+  });
+
+  it('handles wrapper payloads with meta', () => {
+    const payload = {
+      results: [{ user: { id: 2, name: 'B', handle: 'b' }, score: 80 }],
+      meta: { reason: 'no_candidates' },
+    };
+    const normalized = normalizeSoulmatchRecsResponse(payload as any);
+    expect(normalized.results).toHaveLength(1);
+    expect(normalized.meta?.reason).toBe('no_candidates');
   });
 });
