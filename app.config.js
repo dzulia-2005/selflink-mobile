@@ -13,7 +13,7 @@ module.exports = ({ config }) => {
   return {
     ...config,
 
-    plugins: ["./plugins/withIapStoreFlavor"],
+    plugins: ["./plugins/withIapStoreFlavor", "./plugins/withKotlinVersion"],
 
     name: "selflink-mobile",
     slug: "selflink",
