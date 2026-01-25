@@ -42,6 +42,11 @@ Verified (Mobile):
 - `src/config/env.ts`
 - `app.config.js`
 
+EAS Secrets (recommended for production keys):
+```
+eas secret:create --name EXPO_PUBLIC_GOOGLE_MAPS_API_KEY --value "<your-key>"
+```
+
 ---
 
 ## 3) Local dev example
