@@ -13,7 +13,7 @@
         "EXPO_PUBLIC_API_BASE_URL": "https://api.self-link.com",
         "EXPO_PUBLIC_REALTIME_URL": "wss://api.self-link.com/ws",
         "EXPO_PUBLIC_HEALTH_ENDPOINT": "/api/v1/health/",
-        "EXPO_PUBLIC_GOOGLE_MAPS_API_KEY": ""
+        "EXPO_PUBLIC_GOOGLE_MAPS_API_KEY": ".env./EXPO_PUBLIC_GOOGLE_MAPS_API_KEY"
       }
     },
     "preview2": {
@@ -24,7 +24,7 @@
         "EXPO_PUBLIC_API_BASE_URL": "https://api.self-link.com",
         "EXPO_PUBLIC_REALTIME_URL": "wss://api.self-link.com/ws",
         "EXPO_PUBLIC_HEALTH_ENDPOINT": "/api/v1/health/",
-        "EXPO_PUBLIC_GOOGLE_MAPS_API_KEY": ""
+        "EXPO_PUBLIC_GOOGLE_MAPS_API_KEY": ".env./EXPO_PUBLIC_GOOGLE_MAPS_API_KEY"
       }
     },
     "preview3": {
@@ -33,7 +33,7 @@
         "EXPO_PUBLIC_API_BASE_URL": "https://api.self-link.com",
         "EXPO_PUBLIC_REALTIME_URL": "wss://api.self-link.com/ws",
         "EXPO_PUBLIC_HEALTH_ENDPOINT": "/api/v1/health/",
-        "EXPO_PUBLIC_GOOGLE_MAPS_API_KEY": ""
+        "EXPO_PUBLIC_GOOGLE_MAPS_API_KEY": ".env./EXPO_PUBLIC_GOOGLE_MAPS_API_KEY"
       }
     },
     "preview4": {
@@ -42,7 +42,7 @@
         "EXPO_PUBLIC_API_BASE_URL": "https://api.self-link.com",
         "EXPO_PUBLIC_REALTIME_URL": "wss://api.self-link.com/ws",
         "EXPO_PUBLIC_HEALTH_ENDPOINT": "/api/v1/health/",
-        "EXPO_PUBLIC_GOOGLE_MAPS_API_KEY": ""
+        "EXPO_PUBLIC_GOOGLE_MAPS_API_KEY": ".env./EXPO_PUBLIC_GOOGLE_MAPS_API_KEY"
       }
     },
     "production": {
@@ -50,7 +50,7 @@
         "EXPO_PUBLIC_API_BASE_URL": "https://api.self-link.com",
         "EXPO_PUBLIC_REALTIME_URL": "wss://api.self-link.com/ws",
         "EXPO_PUBLIC_HEALTH_ENDPOINT": "/api/v1/health/",
-        "EXPO_PUBLIC_GOOGLE_MAPS_API_KEY": ""
+        "EXPO_PUBLIC_GOOGLE_MAPS_API_KEY": ".env./EXPO_PUBLIC_GOOGLE_MAPS_API_KEY"
       }
     }
   }
