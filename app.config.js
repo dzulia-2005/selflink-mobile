@@ -13,6 +13,8 @@ module.exports = ({ config }) => {
   return {
     ...config,
 
+    plugins: ["./plugins/withIapStoreFlavor"],
+
     name: "selflink-mobile",
     slug: "selflink",
     owner: "selflinks-organization",

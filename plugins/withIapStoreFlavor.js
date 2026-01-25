@@ -1,24 +1,25 @@
-const { withAppBuildGradle } = require('@expo/config-plugins');
+const { withAppBuildGradle } = require("@expo/config-plugins");
 
-const STRATEGY_LINE = 'missingDimensionStrategy "store", "play"';
+function addMissingDimensionStrategy(contents) {
+  const line = 'missingDimensionStrategy "store", "play"';
 
-const addMissingDimensionStrategy = (contents) => {
-  if (contents.includes(STRATEGY_LINE)) {
-    return contents;
+  // Idempotent: don't add twice
+  if (contents.includes(line)) return contents;
+
+  // Insert inside defaultConfig { ... }
+  const re = /defaultConfig\s*\{\s*\n/;
+  if (!re.test(contents)) {
+    throw new Error(
+      "withIapStoreFlavor: defaultConfig block not found in android/app/build.gradle"
+    );
   }
-  const match = contents.match(/defaultConfig\s*\{/);
-  if (!match) {
-    return contents;
-  }
-  return contents.replace(match[0], `${match[0]}\n        ${STRATEGY_LINE}`);
-};
+
+  return contents.replace(re, (m) => `${m}        ${line}\n`);
+}
 
 module.exports = function withIapStoreFlavor(config) {
-  return withAppBuildGradle(config, (config) => {
-    if (config.modResults.language !== 'groovy') {
-      return config;
-    }
-    config.modResults.contents = addMissingDimensionStrategy(config.modResults.contents);
-    return config;
+  return withAppBuildGradle(config, (cfg) => {
+    cfg.modResults.contents = addMissingDimensionStrategy(cfg.modResults.contents);
+    return cfg;
   });
 };
