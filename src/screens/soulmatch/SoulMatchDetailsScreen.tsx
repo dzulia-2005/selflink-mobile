@@ -20,7 +20,9 @@ import { useToast } from '@context/ToastContext';
 import { SoulMatchStackParamList } from '@navigation/types';
 import { SoulmatchResult } from '@schemas/soulmatch';
 import { fetchSoulmatchMentor, fetchSoulmatchWith } from '@services/api/soulmatch';
+import { useAuthStore } from '@store/authStore';
 import { theme } from '@theme/index';
+import { normalizeApiError } from '@utils/apiErrors';
 import { buildBadges, formatScore, scoreTone } from '@utils/soulmatch';
 
 type Route = RouteProp<SoulMatchStackParamList, 'SoulMatchDetail'>;
@@ -39,6 +41,7 @@ export function SoulMatchDetailsScreen({
   const route = useRoute<Route>();
   const { userId, displayName } = route.params;
   const toast = useToast();
+  const logout = useAuthStore((state) => state.logout);
   const [data, setData] = useState<SoulmatchResult | null>(prefetchedData);
   const [loading, setLoading] = useState(!prefetchedData);
   const [mentorText, setMentorText] = useState<string | null>(null);
@@ -55,19 +58,32 @@ export function SoulMatchDetailsScreen({
     }
     setLoading(true);
     try {
+      if (typeof __DEV__ !== 'undefined' && __DEV__) {
+        console.debug('SoulMatch: detail fetch start', { userId });
+      }
       const result = await fetchSoulmatchWith(userId);
       setData(result);
+      if (typeof __DEV__ !== 'undefined' && __DEV__) {
+        console.debug('SoulMatch: detail fetch ok', {
+          userId,
+          hasScore: typeof (result as SoulmatchResult).score === 'number',
+        });
+      }
     } catch (error) {
-      console.error('Soulmatch details failed', error);
-      toast.push({
-        message: 'Unable to load match details.',
-        tone: 'error',
-        duration: 4000,
-      });
+      const normalized = normalizeApiError(error, 'Unable to load match details.');
+      if (normalized.status === 401 || normalized.status === 403) {
+        toast.push({ message: normalized.message, tone: 'error', duration: 4000 });
+        logout();
+        return;
+      }
+      toast.push({ message: normalized.message, tone: 'error', duration: 4000 });
+      if (typeof __DEV__ !== 'undefined' && __DEV__) {
+        console.debug('SoulMatch: detail fetch error', normalized);
+      }
     } finally {
       setLoading(false);
     }
-  }, [toast, userId]);
+  }, [logout, toast, userId]);
 
   useEffect(() => {
     navigation.setOptions?.({ title });
@@ -110,10 +126,15 @@ export function SoulMatchDetailsScreen({
           : result,
       );
     } catch (error) {
-      console.error('Soulmatch mentor failed', error);
-      toast.push({ message: 'Mentor is unavailable. Try again later.', tone: 'error' });
+      const normalized = normalizeApiError(error, 'Mentor is unavailable. Try again later.');
+      if (normalized.status === 401 || normalized.status === 403) {
+        toast.push({ message: normalized.message, tone: 'error' });
+        logout();
+        return;
+      }
+      toast.push({ message: normalized.message, tone: 'error' });
     }
-  }, [toast, userId]);
+  }, [logout, toast, userId]);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -129,6 +150,20 @@ export function SoulMatchDetailsScreen({
     return (
       <View style={styles.empty}>
         <Text style={styles.emptyTitle}>Unable to load match.</Text>
+        <MetalButton title="Back" onPress={() => navigation.goBack()} />
+      </View>
+    );
+  }
+
+  const isPending = typeof data.score !== 'number';
+  if (isPending) {
+    return (
+      <View style={styles.empty}>
+        <Text style={styles.emptyTitle}>SoulMatch is being calculated.</Text>
+        <Text style={styles.emptySubtitle}>
+          Pull to refresh in a moment to see your compatibility.
+        </Text>
+        <MetalButton title="Refresh" onPress={load} />
         <MetalButton title="Back" onPress={() => navigation.goBack()} />
       </View>
     );
@@ -324,5 +359,10 @@ const styles = StyleSheet.create({
   emptyTitle: {
     color: theme.palette.platinum,
     ...theme.typography.subtitle,
+  },
+  emptySubtitle: {
+    color: theme.palette.silver,
+    ...theme.typography.body,
+    textAlign: 'center',
   },
 });
