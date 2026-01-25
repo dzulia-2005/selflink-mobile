@@ -1,5 +1,7 @@
 import {
   ActivityIndicator,
+  AppState,
+  AppStateStatus,
   Animated,
   Dimensions,
   FlatList,
@@ -11,6 +13,7 @@ import {
   Text,
   TouchableOpacity,
   TouchableWithoutFeedback,
+  ViewToken,
   View,
 } from 'react-native';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -23,6 +26,8 @@ import { useToast } from '@context/ToastContext';
 import { useAuthStore } from '@store/authStore';
 import { theme } from '@theme';
 import { normalizeGiftRenderData } from '@utils/gifts';
+import { createRealtimeDedupeStore } from '@utils/realtimeDedupe';
+import { areStringArraysEqual, buildChannelList } from '@utils/realtimeChannels';
 import { useGiftBurst } from '@hooks/useGiftBurst';
 import { connectRealtime, type RealtimePayload } from '@realtime/index';
 
@@ -78,6 +83,14 @@ export function CommentsBottomSheet({
   const commentLikeCooldownRef = useRef<Record<string, number>>({});
   const commentLikePendingRef = useRef<Record<string, boolean>>({});
   const realtimeRef = useRef<ReturnType<typeof connectRealtime> | null>(null);
+  const giftDedupeRef = useRef(createRealtimeDedupeStore(200));
+  const [visibleCommentChannels, setVisibleCommentChannels] = useState<string[]>([]);
+  const visibleCommentChannelsRef = useRef<string[]>([]);
+  const appStateRef = useRef<AppStateStatus>(AppState.currentState);
+  const [isAppActive, setIsAppActive] = useState(appStateRef.current === 'active');
+  const viewabilityConfig = useRef({
+    itemVisiblePercentThreshold: 60,
+  });
 
   const {
     comments,
@@ -127,16 +140,21 @@ export function CommentsBottomSheet({
     });
   }, [comments]);
 
-  const commentChannels = useMemo(() => {
-    const channels = new Set<string>();
-    comments.forEach((comment) => channels.add(`comment:${comment.id}`));
-    return Array.from(channels).slice(0, 20);
-  }, [comments]);
-
   const commentChannelsKey = useMemo(
-    () => commentChannels.join(','),
-    [commentChannels],
+    () => visibleCommentChannels.join(','),
+    [visibleCommentChannels],
   );
+
+  const updateCommentChannels = useCallback((commentIds: string[]) => {
+    const nextChannels = buildChannelList(
+      commentIds.filter(Boolean).map((id) => `comment:${id}`),
+    );
+    if (areStringArraysEqual(visibleCommentChannelsRef.current, nextChannels)) {
+      return;
+    }
+    visibleCommentChannelsRef.current = nextChannels;
+    setVisibleCommentChannels(nextChannels);
+  }, []);
 
   const handleGiftRealtime = useCallback(
     (payload: RealtimePayload) => {
@@ -153,6 +171,10 @@ export function CommentsBottomSheet({
       }
       const commentId = target.id != null ? String(target.id) : '';
       if (!commentId) {
+        return;
+      }
+      const eventId = record.id as string | number | null | undefined;
+      if (!giftDedupeRef.current.add(eventId)) {
         return;
       }
       const sender = record.sender as { id?: number } | undefined;
@@ -186,19 +208,38 @@ export function CommentsBottomSheet({
   );
 
   useEffect(() => {
-    if (!token || commentChannels.length === 0) {
+    if (!token || !isAppActive || visibleCommentChannels.length === 0) {
       realtimeRef.current?.disconnect();
       realtimeRef.current = null;
       return;
     }
-    const connection = connectRealtime(token, { channels: commentChannels });
+    realtimeRef.current?.disconnect();
+    const connection = connectRealtime(token, { channels: visibleCommentChannels });
     realtimeRef.current = connection;
     const unsubscribe = connection.subscribe(handleGiftRealtime);
     return () => {
       unsubscribe();
       connection.disconnect();
     };
-  }, [commentChannelsKey, handleGiftRealtime, token]);
+  }, [commentChannelsKey, handleGiftRealtime, isAppActive, token, visibleCommentChannels]);
+
+  useEffect(() => {
+    const handleAppStateChange = (next: AppStateStatus) => {
+      const prev = appStateRef.current;
+      appStateRef.current = next;
+      if (next === 'active' && prev !== 'active') {
+        setIsAppActive(true);
+        return;
+      }
+      if (next !== 'active') {
+        setIsAppActive(false);
+      }
+    };
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+    return () => {
+      subscription.remove();
+    };
+  }, []);
 
   useEffect(() => {
     translateY.setValue(SHEET_HEIGHT);
@@ -224,6 +265,12 @@ export function CommentsBottomSheet({
       setGiftTargetId(null);
     });
   }, [onClose, translateY]);
+
+  useEffect(() => {
+    return () => {
+      clearGiftBurst();
+    };
+  }, [clearGiftBurst]);
 
   const panResponder = useMemo(
     () =>
@@ -384,6 +431,23 @@ export function CommentsBottomSheet({
   const avatarLabel = currentUser?.name ?? 'You';
   const avatarUrl = currentUser?.photo ?? null;
 
+  const onViewableItemsChanged = useCallback(
+    ({ viewableItems }: { viewableItems: Array<ViewToken<CommentWithOptimistic>> }) => {
+      if (!isAppActive) {
+        return;
+      }
+      const visibleIds = viewableItems
+        .filter((token) => token.isViewable)
+        .map((token) => {
+          const id = token.item?.id;
+          return id != null ? String(id) : null;
+        })
+        .filter((id): id is string => Boolean(id));
+      updateCommentChannels(visibleIds);
+    },
+    [isAppActive, updateCommentChannels],
+  );
+
   return (
     <Modal transparent visible animationType="none" onRequestClose={closeSheet}>
       <TouchableWithoutFeedback onPress={closeSheet}>
@@ -443,6 +507,8 @@ export function CommentsBottomSheet({
                 onRefresh={refresh}
                 keyboardShouldPersistTaps="handled"
                 showsVerticalScrollIndicator={false}
+                onViewableItemsChanged={onViewableItemsChanged}
+                viewabilityConfig={viewabilityConfig.current}
               />
             )}
             {error ? <Text style={styles.errorText}>{error}</Text> : null}

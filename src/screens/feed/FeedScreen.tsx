@@ -4,6 +4,8 @@ import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  AppState,
+  AppStateStatus,
   Animated,
   FlatList,
   RefreshControl,
@@ -32,6 +34,8 @@ import { useFeedStore } from '@store/feedStore';
 import { useAuthStore } from '@store/authStore';
 import { theme } from '@theme';
 import { normalizeGiftRenderData, type GiftPreview } from '@utils/gifts';
+import { createRealtimeDedupeStore } from '@utils/realtimeDedupe';
+import { areStringArraysEqual, buildChannelList } from '@utils/realtimeChannels';
 import { useGiftBurst } from '@hooks/useGiftBurst';
 
 type FeedTab = FeedMode | 'reels';
@@ -72,6 +76,11 @@ export function FeedScreen() {
   >({});
   const { burst, triggerGiftBurst, clearGiftBurst } = useGiftBurst();
   const giftRealtimeRef = useRef<ReturnType<typeof connectRealtime> | null>(null);
+  const giftDedupeRef = useRef(createRealtimeDedupeStore(200));
+  const [visibleGiftChannels, setVisibleGiftChannels] = useState<string[]>([]);
+  const visibleGiftChannelsRef = useRef<string[]>([]);
+  const appStateRef = useRef<AppStateStatus>(AppState.currentState);
+  const [isAppActive, setIsAppActive] = useState(appStateRef.current === 'active');
   const videoExtraData = useMemo(
     () => ({ activeVideoPostId, isFocused }),
     [activeVideoPostId, giftCountsByPost, handleOpenComments, handleOpenGiftPicker, isFocused],
@@ -126,6 +135,24 @@ export function FeedScreen() {
       setActiveVideoPostId(null);
     }
   }, [isFocused]);
+
+  useEffect(() => {
+    const handleAppStateChange = (next: AppStateStatus) => {
+      const prev = appStateRef.current;
+      appStateRef.current = next;
+      if (next === 'active' && prev !== 'active') {
+        setIsAppActive(true);
+        return;
+      }
+      if (next !== 'active') {
+        setIsAppActive(false);
+      }
+    };
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+    return () => {
+      subscription.remove();
+    };
+  }, []);
 
   const handleModeChange = useCallback(
     (mode: FeedMode) => {
@@ -195,6 +222,12 @@ export function FeedScreen() {
   );
 
   useEffect(() => {
+    return () => {
+      clearGiftBurst();
+    };
+  }, [clearGiftBurst]);
+
+  useEffect(() => {
     setGiftCountsByPost((prev) => {
       let changed = false;
       const next = { ...prev };
@@ -235,19 +268,21 @@ export function FeedScreen() {
     });
   }, [items]);
 
-  const giftChannels = useMemo(() => {
-    const channels = new Set<string>();
-    items.forEach((item) => {
-      if (item.type !== 'post') {
-        return;
-      }
-      const id = String(item.post.id);
-      channels.add(`post:${id}`);
-    });
-    return Array.from(channels).slice(0, 20);
-  }, [items]);
+  const giftChannelsKey = useMemo(
+    () => visibleGiftChannels.join(','),
+    [visibleGiftChannels],
+  );
 
-  const giftChannelsKey = useMemo(() => giftChannels.join(','), [giftChannels]);
+  const updateGiftChannels = useCallback((postIds: string[]) => {
+    const nextChannels = buildChannelList(
+      postIds.filter(Boolean).map((id) => `post:${id}`),
+    );
+    if (areStringArraysEqual(visibleGiftChannelsRef.current, nextChannels)) {
+      return;
+    }
+    visibleGiftChannelsRef.current = nextChannels;
+    setVisibleGiftChannels(nextChannels);
+  }, []);
 
   const handleGiftRealtime = useCallback(
     (payload: RealtimePayload) => {
@@ -264,6 +299,10 @@ export function FeedScreen() {
       }
       const targetId = target.id != null ? String(target.id) : '';
       if (!targetId) {
+        return;
+      }
+      const eventId = record.id as string | number | null | undefined;
+      if (!giftDedupeRef.current.add(eventId)) {
         return;
       }
       const sender = record.sender as { id?: number } | undefined;
@@ -295,19 +334,20 @@ export function FeedScreen() {
   );
 
   useEffect(() => {
-    if (!token || !isFocused || giftChannels.length === 0) {
+    if (!token || !isFocused || !isAppActive || visibleGiftChannels.length === 0) {
       giftRealtimeRef.current?.disconnect();
       giftRealtimeRef.current = null;
       return;
     }
-    const connection = connectRealtime(token, { channels: giftChannels });
+    giftRealtimeRef.current?.disconnect();
+    const connection = connectRealtime(token, { channels: visibleGiftChannels });
     giftRealtimeRef.current = connection;
     const unsubscribe = connection.subscribe(handleGiftRealtime);
     return () => {
       unsubscribe();
       connection.disconnect();
     };
-  }, [giftChannelsKey, handleGiftRealtime, isFocused, token]);
+  }, [giftChannelsKey, handleGiftRealtime, isAppActive, isFocused, token, visibleGiftChannels]);
 
   useEffect(() => {
     if (isFocused && activeTab === 'reels') {
@@ -426,6 +466,19 @@ export function FeedScreen() {
       if (!isFocused) {
         return;
       }
+      const visiblePosts = viewableItems
+        .filter((token) => token.isViewable && token.item?.type === 'post')
+        .map((token) => {
+          if (token.item?.type !== 'post') {
+            return null;
+          }
+          const postId = token.item.post.id;
+          return postId ? String(postId) : null;
+        })
+        .filter((id): id is string => Boolean(id));
+
+      updateGiftChannels(visiblePosts);
+
       const visibleVideos = viewableItems
         .filter(
           (token) =>
@@ -452,7 +505,7 @@ export function FeedScreen() {
       const next = visibleVideos.sort((a, b) => (a.index ?? 0) - (b.index ?? 0))[0];
       setActiveVideoPostId((prev) => (prev === next.id ? prev : (next.id as string)));
     },
-    [isFocused],
+    [isFocused, updateGiftChannels],
   );
 
   const tabs = useMemo(
