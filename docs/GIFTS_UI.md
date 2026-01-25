@@ -70,3 +70,21 @@ When a gift is successfully sent:
 - Send to comment: `POST /api/v1/comments/{comment_id}/gifts/`
 
 No mobile code changes are required if the backend supplies the fields above.
+
+## Realtime gifts QA (integration)
+
+Purpose: verify that `gift.received` realtime events trigger a burst immediately
+and do not leak subscriptions when scrolling.
+
+1) Run backend + realtime + mobile (two accounts/devices if possible).
+2) Open Feed on device B and keep a post visible.
+3) From device A, send a gift to that post.
+4) Expected on device B:
+   - Burst animation plays immediately.
+   - Recent gifts row updates (or appears) without refresh.
+5) Scroll rapidly up/down:
+   - No crashes, no repeated bursts for the same event.
+6) Navigate away and back:
+   - Bursts still work, no duplicate events.
+7) Pull to refresh:
+   - `recent_gifts` matches backend (source of truth).
