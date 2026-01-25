@@ -1727,7 +1727,7 @@ export function WalletLedgerScreen() {
       return;
     }
     if (coinBalance && amountCents >= coinBalance.balance_cents) {
-      setFormError('Insufficient balance. Transfers include a fee.');
+      setFormError('Insufficient balance.');
       return;
     }
 

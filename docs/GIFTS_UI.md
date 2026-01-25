@@ -50,6 +50,7 @@ When a gift is successfully sent:
 - Gift list and preview use `GiftMedia` in:
   - `src/components/gifts/GiftPickerSheet.tsx`
 - The picker only shows gifts where `is_active !== false`.
+- Gift send endpoints require `Idempotency-Key` for safe retries.
 
 ## Adding new gifts (backend-first)
 
@@ -61,5 +62,11 @@ When a gift is successfully sent:
    - `price_slc_cents`
    - `is_active = true`
 2) Mobile will render it automatically in the gift picker grid.
+
+## API endpoints used
+
+- Catalog: `GET /api/v1/payments/gifts/`
+- Send to post: `POST /api/v1/posts/{post_id}/gifts/`
+- Send to comment: `POST /api/v1/comments/{comment_id}/gifts/`
 
 No mobile code changes are required if the backend supplies the fields above.

@@ -5,8 +5,10 @@ import { Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native
 import { UserAvatar } from '@components/UserAvatar';
 import { CommentContent } from '@components/comments/CommentContent';
 import type { CommentWithOptimistic } from '@components/comments/types';
+import { GiftMedia } from '@components/gifts/GiftMedia';
 import { useReactionPulse } from '@hooks/useReactionPulse';
 import { theme } from '@theme';
+import type { GiftPreview } from '@utils/gifts';
 
 type Props = {
   comment: CommentWithOptimistic;
@@ -14,6 +16,7 @@ type Props = {
   likeCount?: number;
   giftCount?: number;
   giftSyncing?: boolean;
+  giftPreviews?: GiftPreview[];
   onLikePress?: () => void;
   onGiftPress?: () => void;
 };
@@ -35,6 +38,7 @@ function CommentItemComponent({
   likeCount = 0,
   giftCount = 0,
   giftSyncing = false,
+  giftPreviews = [],
   onLikePress,
   onGiftPress,
 }: Props) {
@@ -43,6 +47,8 @@ function CommentItemComponent({
     [comment.created_at],
   );
   const giftPulse = useReactionPulse(giftCount);
+  const showGiftPreview = giftPreviews.length > 0;
+
   return (
     <View
       style={[styles.row, comment.__optimistic ? styles.rowOptimistic : null]}
@@ -58,6 +64,18 @@ function CommentItemComponent({
           media={comment.media}
           legacySources={(comment as any)?.images}
         />
+        {showGiftPreview ? (
+          <View style={styles.giftPreviewRow}>
+            {giftPreviews.map((gift, index) => (
+              <GiftMedia
+                key={`${gift.id ?? gift.name ?? 'gift'}-${index}`}
+                gift={gift}
+                size="sm"
+                style={styles.giftPreviewItem}
+              />
+            ))}
+          </View>
+        ) : null}
         <View style={styles.actions}>
           <TouchableOpacity
             style={styles.actionButton}
@@ -129,6 +147,16 @@ const styles = StyleSheet.create({
     gap: 16,
     alignItems: 'center',
     marginTop: 6,
+  },
+  giftPreviewRow: {
+    flexDirection: 'row',
+    gap: 6,
+    alignItems: 'center',
+    flexWrap: 'wrap',
+  },
+  giftPreviewItem: {
+    padding: 3,
+    borderRadius: 10,
   },
   actionButton: {
     flexDirection: 'row',

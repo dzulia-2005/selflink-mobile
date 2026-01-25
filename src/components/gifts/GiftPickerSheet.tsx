@@ -301,7 +301,7 @@ export function GiftPickerSheet({ visible, target, onClose, onGiftSent }: Props)
               contentContainerStyle={styles.grid}
               showsVerticalScrollIndicator={false}
               ListEmptyComponent={
-                <Text style={styles.emptyText}>No gifts available yet.</Text>
+                <Text style={styles.emptyText}>Gifts are currently unavailable.</Text>
               }
             />
             {selectedGift ? (

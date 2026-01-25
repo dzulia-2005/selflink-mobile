@@ -1,5 +1,7 @@
 import { apiClient } from '@api/client';
-import { listGiftTypes, sendCommentGift, sendPostGift } from '@api/gifts';
+import { AxiosError } from 'axios';
+
+import { listGiftTypes, normalizeGiftApiError, sendCommentGift, sendPostGift } from '@api/gifts';
 
 jest.mock('@api/client', () => ({
   apiClient: {
@@ -10,6 +12,12 @@ jest.mock('@api/client', () => ({
 
 const mockGet = jest.mocked(apiClient.get);
 const mockPost = jest.mocked(apiClient.post);
+const createAxiosError = (status: number, data: unknown) =>
+  ({
+    isAxiosError: true,
+    response: { status, data },
+    message: 'Request failed',
+  }) as AxiosError;
 
 describe('gifts api', () => {
   beforeEach(() => {
@@ -40,12 +48,33 @@ describe('gifts api', () => {
   it('posts a gift to a comment', async () => {
     mockPost.mockResolvedValueOnce({ data: { ok: true } });
 
-    await sendCommentGift(7, { gift_type_id: 2, quantity: 1 });
+    await sendCommentGift(7, { gift_type_id: 2, quantity: 1 }, 'idem-2');
 
     expect(mockPost).toHaveBeenCalledWith(
       '/comments/7/gifts/',
       { gift_type_id: 2, quantity: 1 },
-      undefined,
+      { headers: { 'Idempotency-Key': 'idem-2' } },
     );
+  });
+
+  it('maps insufficient funds error', () => {
+    const error = createAxiosError(400, { detail: 'insufficient_funds', code: 'insufficient_funds' });
+    const parsed = normalizeGiftApiError(error);
+
+    expect(parsed.message).toBe('Not enough SLC.');
+  });
+
+  it('maps gift inactive error', () => {
+    const error = createAxiosError(400, { detail: 'gift_inactive', code: 'gift_inactive' });
+    const parsed = normalizeGiftApiError(error);
+
+    expect(parsed.message).toBe('Gift not available.');
+  });
+
+  it('maps idempotency conflict error', () => {
+    const error = createAxiosError(400, { detail: 'idempotency_conflict', code: 'idempotency_conflict' });
+    const parsed = normalizeGiftApiError(error);
+
+    expect(parsed.message).toBe('This gift request is already being processed.');
   });
 });
