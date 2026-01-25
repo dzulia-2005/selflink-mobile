@@ -4,11 +4,11 @@
     "slug": "selflink",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/selflink-app-icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/icon.png",
+      "image": "./assets/selflink-app-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -22,7 +22,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/icon.png",
+        "foregroundImage": "./assets/selflink-app-icon.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
@@ -32,7 +32,7 @@
       "permissions": ["com.android.vending.BILLING"]
     },
     "web": {
-      "favicon": "./assets/icon.png"
+      "favicon": "./assets/favicon.png"
     },
     "extra": {
       "backendUrl": "https://api.self-link.com",
@@ -42,6 +42,7 @@
         "projectId": "6a9a9692-7823-4d44-af39-b3442c6e1816"
       }
     },
-    "owner": "selflinks-organization"
+    "owner": "selflinks-organization",
+    "plugins": ["./plugins/withIapStoreFlavor"]
   }
 }
