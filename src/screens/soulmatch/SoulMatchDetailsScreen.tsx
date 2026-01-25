@@ -7,6 +7,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from 'react-native';
 
@@ -24,6 +25,8 @@ import { useAuthStore } from '@store/authStore';
 import { theme } from '@theme/index';
 import { normalizeApiError } from '@utils/apiErrors';
 import { buildBadges, formatScore, scoreTone } from '@utils/soulmatch';
+import { SoulMatchUpgradeSheet } from '@components/soulmatch/SoulMatchUpgradeSheet';
+import { isSectionLocked, type SoulmatchTier } from '@utils/soulmatchUpgradeGate';
 
 type Route = RouteProp<SoulMatchStackParamList, 'SoulMatchDetail'>;
 type Nav = NativeStackNavigationProp<SoulMatchStackParamList>;
@@ -39,9 +42,12 @@ export function SoulMatchDetailsScreen({
 }: Props) {
   const navigation = useNavigation<Nav>();
   const route = useRoute<Route>();
-  const { userId, displayName } = route.params;
+  const { userId, displayName, explainLevel = 'free' } = route.params;
   const toast = useToast();
   const logout = useAuthStore((state) => state.logout);
+  const userTier: SoulmatchTier = 'free';
+  const [upgradeVisible, setUpgradeVisible] = useState(false);
+  const [requestedTier, setRequestedTier] = useState<'premium' | 'premium_plus'>('premium');
   const [data, setData] = useState<SoulmatchResult | null>(prefetchedData);
   const [loading, setLoading] = useState(!prefetchedData);
   const [mentorText, setMentorText] = useState<string | null>(null);
@@ -61,7 +67,7 @@ export function SoulMatchDetailsScreen({
       if (typeof __DEV__ !== 'undefined' && __DEV__) {
         console.debug('SoulMatch: detail fetch start', { userId });
       }
-      const result = await fetchSoulmatchWith(userId);
+      const result = await fetchSoulmatchWith(userId, { explainLevel });
       setData(result);
       if (typeof __DEV__ !== 'undefined' && __DEV__) {
         console.debug('SoulMatch: detail fetch ok', {
@@ -83,7 +89,7 @@ export function SoulMatchDetailsScreen({
     } finally {
       setLoading(false);
     }
-  }, [logout, toast, userId]);
+  }, [explainLevel, logout, toast, userId]);
 
   useEffect(() => {
     navigation.setOptions?.({ title });
@@ -176,7 +182,16 @@ export function SoulMatchDetailsScreen({
     lifestyle: 0,
   };
   const badges = buildBadges(data, 4);
+  const lensLabel = data.lens_label ?? data.lens;
   const tone = scoreTone(data.score);
+  const lockedFull = isSectionLocked('full', userTier) && Boolean(data.explanation?.full);
+  const lockedStrategy =
+    isSectionLocked('strategy', userTier) && Boolean(data.explanation?.strategy);
+  const showFull = !lockedFull && data.explanation?.full;
+  const showStrategy = !lockedStrategy && data.explanation?.strategy;
+  const timingSummary = data.timing_summary;
+  const timingWindow = data.timing_window?.label;
+  const trend = data.compatibility_trend;
 
   return (
     <ScrollView
@@ -213,11 +228,70 @@ export function SoulMatchDetailsScreen({
       <MetalPanel>
         <Text style={styles.sectionTitle}>Highlights</Text>
         <View style={styles.tagRow}>
+          {lensLabel ? <BadgePill label={lensLabel} tone="default" /> : null}
           {badges.map((tag) => (
             <BadgePill key={tag} label={tag} tone={tone} />
           ))}
         </View>
       </MetalPanel>
+
+      {(data.explanation?.short || showFull || showStrategy) && (
+        <MetalPanel>
+          <Text style={styles.sectionTitle}>Why this match</Text>
+          {data.explanation?.short ? (
+            <Text style={styles.body}>{data.explanation.short}</Text>
+          ) : null}
+          {showFull ? (
+            <ExpandableSection title="More" text={data.explanation?.full} />
+          ) : lockedFull ? (
+            <TouchableOpacity
+              onPress={() => {
+                setRequestedTier('premium');
+                setUpgradeVisible(true);
+              }}
+            >
+              <Text style={styles.unlockText}>Unlock to see more</Text>
+            </TouchableOpacity>
+          ) : null}
+          {showStrategy ? (
+            <ExpandableSection
+              title="How to approach"
+              text={data.explanation?.strategy}
+            />
+          ) : lockedStrategy ? (
+            <TouchableOpacity
+              onPress={() => {
+                setRequestedTier('premium_plus');
+                setUpgradeVisible(true);
+              }}
+            >
+              <Text style={styles.unlockText}>Unlock premium strategy</Text>
+            </TouchableOpacity>
+          ) : null}
+        </MetalPanel>
+      )}
+
+      {timingSummary || timingWindow || trend ? (
+        <MetalPanel>
+          <Text style={styles.sectionTitle}>Timing</Text>
+          {timingSummary ? <Text style={styles.body}>{timingSummary}</Text> : null}
+          {!isSectionLocked('timing', userTier) ? (
+            <>
+              {timingWindow ? <Text style={styles.timingLabel}>{timingWindow}</Text> : null}
+              {trend ? <Text style={styles.timingLabel}>{trend}</Text> : null}
+            </>
+          ) : timingWindow || trend ? (
+            <TouchableOpacity
+              onPress={() => {
+                setRequestedTier('premium');
+                setUpgradeVisible(true);
+              }}
+            >
+              <Text style={styles.unlockText}>Unlock timing details</Text>
+            </TouchableOpacity>
+          ) : null}
+        </MetalPanel>
+      ) : null}
 
       <MetalPanel>
         <Text style={styles.sectionTitle}>Category Breakdown</Text>
@@ -253,7 +327,37 @@ export function SoulMatchDetailsScreen({
       </MetalPanel>
 
       <MetalButton title="Back to recommendations" onPress={() => navigation.goBack()} />
+      <SoulMatchUpgradeSheet
+        visible={upgradeVisible}
+        selectedTier={requestedTier}
+        onClose={() => setUpgradeVisible(false)}
+        onContinueFree={() => setUpgradeVisible(false)}
+        onSelectTier={(tier) => {
+          setUpgradeVisible(false);
+          setRequestedTier(tier);
+          navigation.navigate('Payments');
+        }}
+      />
     </ScrollView>
+  );
+}
+
+function ExpandableSection({ title, text }: { title: string; text?: string | null }) {
+  const [open, setOpen] = useState(false);
+  if (!text) {
+    return null;
+  }
+  return (
+    <View style={styles.expandSection}>
+      <TouchableOpacity
+        style={styles.expandHeader}
+        onPress={() => setOpen((prev) => !prev)}
+      >
+        <Text style={styles.expandTitle}>{title}</Text>
+        <Text style={styles.expandToggle}>{open ? 'Hide' : 'Show'}</Text>
+      </TouchableOpacity>
+      {open ? <Text style={styles.body}>{text}</Text> : null}
+    </View>
   );
 }
 
@@ -343,6 +447,35 @@ const styles = StyleSheet.create({
     color: theme.palette.titanium,
     ...theme.typography.subtitle,
     marginBottom: theme.spacing.sm,
+  },
+  body: {
+    color: theme.palette.pearl,
+    ...theme.typography.body,
+  },
+  timingLabel: {
+    color: theme.palette.silver,
+    ...theme.typography.caption,
+    marginTop: theme.spacing.xs,
+  },
+  unlockText: {
+    marginTop: theme.spacing.xs,
+    color: theme.palette.glow,
+    ...theme.typography.caption,
+  },
+  expandSection: {
+    marginTop: theme.spacing.sm,
+  },
+  expandHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  expandTitle: {
+    color: theme.palette.silver,
+    ...theme.typography.caption,
+  },
+  expandToggle: {
+    color: theme.palette.glow,
+    ...theme.typography.caption,
   },
   mentorText: {
     color: theme.palette.platinum,
