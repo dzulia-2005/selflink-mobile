@@ -18,10 +18,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { likeComment, normalizeLikesApiError, unlikeComment } from '@api/likes';
 import { GiftPickerSheet } from '@components/gifts/GiftPickerSheet';
+import { GiftBurstOverlay } from '@components/gifts/GiftBurstOverlay';
 import { useToast } from '@context/ToastContext';
 import { useAuthStore } from '@store/authStore';
 import { theme } from '@theme';
 import { normalizeGiftRenderData } from '@utils/gifts';
+import { useGiftBurst } from '@hooks/useGiftBurst';
 
 import { CommentComposer } from './CommentComposer';
 import { CommentItem } from './CommentItem';
@@ -62,6 +64,7 @@ export function CommentsBottomSheet({
     {},
   );
   const [giftTargetId, setGiftTargetId] = useState<string | null>(null);
+  const { burst, triggerGiftBurst, clearGiftBurst } = useGiftBurst();
   const commentLikeCooldownRef = useRef<Record<string, number>>({});
   const commentLikePendingRef = useRef<Record<string, boolean>>({});
 
@@ -230,11 +233,14 @@ export function CommentsBottomSheet({
   }, []);
 
   const handleGiftSent = useCallback(
-    (_gift, quantity: number, status?: 'pending' | 'synced' | 'failed') => {
+    (gift, quantity: number, status?: 'pending' | 'synced' | 'failed') => {
       if (!giftTargetId) {
         return;
       }
       if (status === 'pending') {
+        if (gift) {
+          triggerGiftBurst(gift);
+        }
         setCommentReactions((prev) => {
           const current = prev[giftTargetId] ?? {
             liked: false,
@@ -256,7 +262,7 @@ export function CommentsBottomSheet({
         setGiftSyncByComment((prev) => ({ ...prev, [giftTargetId]: false }));
       }
     },
-    [giftTargetId],
+    [giftTargetId, triggerGiftBurst],
   );
 
   const renderItem = useCallback(
@@ -366,6 +372,12 @@ export function CommentsBottomSheet({
         target={giftTargetId ? { type: 'comment', id: giftTargetId } : null}
         onClose={() => setGiftTargetId(null)}
         onGiftSent={handleGiftSent}
+      />
+      <GiftBurstOverlay
+        visible={Boolean(burst)}
+        gift={burst?.gift ?? null}
+        burstKey={burst?.key}
+        onComplete={clearGiftBurst}
       />
     </Modal>
   );

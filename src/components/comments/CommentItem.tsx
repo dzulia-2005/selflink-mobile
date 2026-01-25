@@ -1,10 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import { memo, useMemo } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { UserAvatar } from '@components/UserAvatar';
 import { CommentContent } from '@components/comments/CommentContent';
 import type { CommentWithOptimistic } from '@components/comments/types';
+import { useReactionPulse } from '@hooks/useReactionPulse';
 import { theme } from '@theme';
 
 type Props = {
@@ -41,6 +42,7 @@ function CommentItemComponent({
     () => formatTimestamp(comment.created_at),
     [comment.created_at],
   );
+  const giftPulse = useReactionPulse(giftCount);
   return (
     <View
       style={[styles.row, comment.__optimistic ? styles.rowOptimistic : null]}
@@ -74,14 +76,16 @@ function CommentItemComponent({
             onPress={onGiftPress}
             disabled={!onGiftPress}
           >
-            <Ionicons
-              name="gift-outline"
-              size={14}
-              color={theme.reels.textSecondary}
-            />
-            <Text style={styles.actionText}>
+            <Animated.View style={giftPulse.animatedStyle}>
+              <Ionicons
+                name="gift-outline"
+                size={14}
+                color={theme.reels.textSecondary}
+              />
+            </Animated.View>
+            <Animated.Text style={[styles.actionText, giftPulse.animatedStyle]}>
               {giftCount > 0 ? giftCount : ''}
-            </Text>
+            </Animated.Text>
             {giftSyncing ? <Text style={styles.syncText}>Syncing…</Text> : null}
           </TouchableOpacity>
         </View>
