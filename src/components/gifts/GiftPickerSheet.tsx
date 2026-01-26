@@ -306,7 +306,7 @@ export function GiftPickerSheet({ visible, target, onClose, onGiftSent }: Props)
             />
             {selectedGift ? (
               <View style={styles.preview}>
-                <GiftMedia gift={selectedGift} size="lg" showLabel />
+                <GiftMedia gift={selectedGift} size="lg" showLabel renderMode="preview" />
                 <Text style={styles.previewPrice}>
                   {selectedGift.name} • {formatPrice(selectedGift.price_slc_cents)}
                 </Text>

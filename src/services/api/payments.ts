@@ -7,6 +7,7 @@ export type GiftType = {
   price_cents: number;
   art_url?: string;
   metadata?: Record<string, unknown>;
+  effects?: Record<string, unknown>;
 };
 
 export type GiftTypeListResponse = {

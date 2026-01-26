@@ -9,6 +9,7 @@ import { GiftMedia } from '@components/gifts/GiftMedia';
 import { useReactionPulse } from '@hooks/useReactionPulse';
 import { theme } from '@theme';
 import type { GiftPreview } from '@utils/gifts';
+import type { GiftCardEffects } from '@utils/giftEffects';
 
 type Props = {
   comment: CommentWithOptimistic;
@@ -17,6 +18,7 @@ type Props = {
   giftCount?: number;
   giftSyncing?: boolean;
   giftPreviews?: GiftPreview[];
+  giftEffects?: GiftCardEffects | null;
   onLikePress?: () => void;
   onGiftPress?: () => void;
 };
@@ -39,6 +41,7 @@ function CommentItemComponent({
   giftCount = 0,
   giftSyncing = false,
   giftPreviews = [],
+  giftEffects = null,
   onLikePress,
   onGiftPress,
 }: Props) {
@@ -48,16 +51,49 @@ function CommentItemComponent({
   );
   const giftPulse = useReactionPulse(giftCount);
   const showGiftPreview = giftPreviews.length > 0;
+  const badge = giftEffects?.badge;
+  const rowEffectStyle = useMemo(() => {
+    if (!giftEffects) {
+      return null;
+    }
+    const border = giftEffects.borderGlow;
+    const highlight = giftEffects.highlight;
+    const style: Record<string, unknown> = {};
+    if (border?.color) {
+      style.borderColor = border.color;
+      style.borderWidth = Math.max(1, border.thickness ?? 1.5);
+      style.shadowColor = border.color;
+      style.shadowOpacity = 0.2;
+      style.shadowRadius = 10;
+    }
+    if (highlight?.color) {
+      style.backgroundColor = highlight.color;
+    } else if (highlight) {
+      style.backgroundColor = 'rgba(56, 189, 248, 0.08)';
+    }
+    return Object.keys(style).length ? style : null;
+  }, [giftEffects]);
 
   return (
     <View
-      style={[styles.row, comment.__optimistic ? styles.rowOptimistic : null]}
+      style={[
+        styles.row,
+        comment.__optimistic ? styles.rowOptimistic : null,
+        rowEffectStyle,
+      ]}
     >
       <UserAvatar uri={comment.author.photo} label={comment.author.name} size={34} />
       <View style={styles.body}>
         <View style={styles.header}>
           <Text style={styles.author}>{comment.author.name}</Text>
           {timestamp ? <Text style={styles.meta}>{timestamp}</Text> : null}
+          {badge?.text ? (
+            <View style={styles.badge}>
+              <Text style={styles.badgeText} numberOfLines={1}>
+                {badge.text}
+              </Text>
+            </View>
+          ) : null}
         </View>
         <CommentContent
           text={comment.body}
@@ -132,6 +168,21 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: 8,
     alignItems: 'center',
+  },
+  badge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 999,
+    backgroundColor: 'rgba(56,189,248,0.16)',
+    borderWidth: 1,
+    borderColor: 'rgba(56,189,248,0.4)',
+    marginLeft: 6,
+    maxWidth: 120,
+  },
+  badgeText: {
+    fontSize: 10,
+    color: theme.reels.textPrimary,
+    fontWeight: '700',
   },
   author: {
     color: theme.reels.textPrimary,

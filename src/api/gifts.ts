@@ -9,6 +9,15 @@ export type GiftType = {
   kind?: 'static' | 'animated' | string;
   media_url?: string | null;
   animation_url?: string | null;
+  effects?: {
+    version?: number;
+    effects?: Array<Record<string, unknown>>;
+    persist?: {
+      mode?: string;
+      window_seconds?: number;
+    };
+    [key: string]: unknown;
+  };
   price_slc_cents?: number;
   is_active?: boolean;
   [key: string]: unknown;

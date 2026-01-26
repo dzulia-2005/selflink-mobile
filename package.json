@@ -10,7 +10,7 @@
     "lint": "DISABLE_REANIMATED_PLUGIN=1 eslint . --ext .ts,.tsx --max-warnings=0",
     "test": "jest --watchAll=false --runInBand",
     "typecheck": "tsc --noEmit",
-    "postinstall": "node scripts/patch-jest-expo.js"
+    "postinstall": "node scripts/patch-jest-expo.js && node scripts/patch-react-native-iap.js"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^2.2.0",
@@ -30,6 +30,7 @@
     "expo-status-bar": "~3.0.9",
     "expo-system-ui": "~6.0.9",
     "expo-video": "~3.0.15",
+    "lottie-react-native": "~7.1.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-native": "0.81.5",
