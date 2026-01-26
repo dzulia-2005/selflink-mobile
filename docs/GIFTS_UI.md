@@ -16,6 +16,7 @@ Mobile expects these fields when present:
 - `kind` (`static` or `animated`)
 - `media_url` (string | null) — static image URL
 - `animation_url` (string | null) — animated image URL
+- `effects` (JSON | null) — optional UI effects configuration
 - `price_slc_cents` (number)
 - `is_active` (boolean)
 
@@ -23,7 +24,8 @@ Mobile expects these fields when present:
 
 - Gift thumbnails and previews are rendered by `GiftMedia`
   - File: `src/components/gifts/GiftMedia.tsx`
-- Animated media is used **only** when it is an image format (GIF/WebP).
+- Animated media uses Lottie when `animation_url` is a Lottie JSON.
+- If `animation_url` is a GIF/WebP, it renders via `Image`.
 - Video formats (mp4/webm/mov) are not auto-played in lists; if only a video
   URL exists, the UI falls back to the static `media_url` or a placeholder.
 
@@ -31,6 +33,7 @@ Mobile expects these fields when present:
 
 - Static: png, jpg, jpeg, webp
 - Animated (image): gif, webp
+- Lottie: json (remote)
 - Video: mp4/webm/mov (not auto-played; used only for future enhancements)
 
 ## Send animation (sender feedback)
@@ -59,9 +62,31 @@ When a gift is successfully sent:
    - `kind`
    - `media_url` (static)
    - `animation_url` (animated image, optional)
+   - `effects` (optional JSON for persistent card effects)
    - `price_slc_cents`
    - `is_active = true`
 2) Mobile will render it automatically in the gift picker grid.
+
+## Effects-driven styling (data-only)
+
+The mobile UI can apply subtle card effects when `GiftType.effects` is present
+and the gift appears in `recent_gifts`.
+
+Supported effect types:
+- `border_glow`
+- `highlight`
+- `badge`
+
+Persistence:
+- `persist.mode = "none"` → no persistent card styling (burst only)
+- `persist.mode = "window"` → apply styles for `window_seconds` after gift time
+
+Resolver:
+- `src/utils/giftEffects.ts` computes active effects from `recent_gifts`
+  and the embedded `gift_type.effects`.
+  - `border_glow` → card border/shadow tint
+  - `highlight` → subtle background tint
+  - `badge` → small label pill in header
 
 ## API endpoints used
 
