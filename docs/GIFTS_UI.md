@@ -81,6 +81,10 @@ Persistence:
 - `persist.mode = "none"` → no persistent card styling (burst only)
 - `persist.mode = "window"` → apply styles for `window_seconds` after gift time
 
+Relative URLs:
+- `effects.animation` may be a relative path (e.g. `/media/gifts/...`).
+  Mobile resolves this against `EXPO_PUBLIC_API_BASE_URL`.
+
 Resolver:
 - `src/utils/giftEffects.ts` computes active effects from `recent_gifts`
   and the embedded `gift_type.effects`.

@@ -6,6 +6,7 @@ import { UserAvatar } from '@components/UserAvatar';
 import { CommentContent } from '@components/comments/CommentContent';
 import type { CommentWithOptimistic } from '@components/comments/types';
 import { GiftMedia } from '@components/gifts/GiftMedia';
+import { GiftOverlayEffect } from '@components/gifts/GiftOverlayEffect';
 import { useReactionPulse } from '@hooks/useReactionPulse';
 import { theme } from '@theme';
 import type { GiftPreview } from '@utils/gifts';
@@ -82,6 +83,7 @@ function CommentItemComponent({
         rowEffectStyle,
       ]}
     >
+      <GiftOverlayEffect effect={giftEffects?.overlay} borderRadius={12} />
       <UserAvatar uri={comment.author.photo} label={comment.author.name} size={34} />
       <View style={styles.body}>
         <View style={styles.header}>
@@ -155,6 +157,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 10,
     paddingVertical: 10,
+    position: 'relative',
   },
   rowOptimistic: {
     opacity: 0.6,

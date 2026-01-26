@@ -411,6 +411,7 @@ export function CommentsBottomSheet({
       const giftEffects = resolveActiveCardEffects({
         now: Date.now(),
         recentGifts: (item as any)?.recent_gifts ?? [],
+        targetType: 'comment',
       });
       return (
         <CommentItem

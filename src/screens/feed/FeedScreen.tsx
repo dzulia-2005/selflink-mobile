@@ -374,6 +374,7 @@ export function FeedScreen() {
           const giftEffects = resolveActiveCardEffects({
             now: Date.now(),
             recentGifts: (item.post as any)?.recent_gifts ?? [],
+            targetType: 'post',
           });
           return (
             <FeedPostCard

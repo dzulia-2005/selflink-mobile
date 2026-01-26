@@ -62,4 +62,24 @@ describe('giftEffects', () => {
     expect(effects.highlight).toBeUndefined();
     expect(effects.badge).toBeUndefined();
   });
+
+  it('resolves overlay animation with relative url', () => {
+    const now = Date.parse('2025-01-01T00:00:10Z');
+    const effects = resolveActiveCardEffects({
+      now,
+      targetType: 'post',
+      recentGifts: [
+        {
+          created_at: '2025-01-01T00:00:00Z',
+          gift_type: {
+            effects: {
+              persist: { mode: 'window', window_seconds: 60 },
+              effects: [{ type: 'overlay', scope: 'post', animation: '/media/gifts/shine.json' }],
+            },
+          },
+        },
+      ],
+    });
+    expect(effects.overlay?.animationUrl).toContain('/media/gifts/shine.json');
+  });
 });

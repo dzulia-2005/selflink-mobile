@@ -15,6 +15,7 @@ import {
 import { followUser, unfollowUser } from '@api/users';
 import { PostContent } from '@components/PostContent';
 import { GiftMedia } from '@components/gifts/GiftMedia';
+import { GiftOverlayEffect } from '@components/gifts/GiftOverlayEffect';
 import { usePulseAnimation } from '@hooks/usePulseAnimation';
 import type { Post } from '@schemas/social';
 import { useAuthStore } from '@store/authStore';
@@ -222,6 +223,7 @@ function FeedPostCardComponent({
           style={styles.cardGradient}
         >
           <View style={[styles.cardInner, cardEffectStyle]}>
+            <GiftOverlayEffect effect={giftEffects?.overlay} borderRadius={22} />
             <View style={styles.header}>
               <TouchableOpacity onPress={handleOpenProfile} activeOpacity={0.9}>
                 <View style={styles.avatarWrap}>
@@ -456,6 +458,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderWidth: 1,
     borderColor: theme.feed.cardBorder,
+    position: 'relative',
   },
   header: {
     flexDirection: 'row',

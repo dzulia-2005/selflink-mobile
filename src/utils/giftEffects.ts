@@ -1,3 +1,5 @@
+import { API_BASE_URL } from '@config/env';
+
 type RawEffectsConfig = {
   version?: number;
   effects?: Array<Record<string, unknown>>;
@@ -34,10 +36,23 @@ export type BadgeEffect = GiftEffectBase & {
   tone?: string;
 };
 
+export type OverlayEffect = GiftEffectBase & {
+  type: 'overlay';
+  animationUrl?: string;
+  opacity?: number;
+  zIndex?: number;
+  clipToBounds?: boolean;
+  scale?: number;
+  loop?: boolean;
+  fit?: 'cover' | 'contain';
+  durationMs?: number;
+};
+
 export type GiftCardEffects = {
   borderGlow?: BorderGlowEffect;
   highlight?: HighlightEffect;
   badge?: BadgeEffect;
+  overlay?: OverlayEffect;
 };
 
 type ParsedGiftEffects = {
@@ -113,14 +128,37 @@ export const pickHighestPriorityEffect = <T extends GiftEffectBase>(effects: T[]
 type ResolveParams = {
   now?: number;
   recentGifts?: unknown;
+  targetType?: 'post' | 'comment';
 };
 
-export const resolveActiveCardEffects = ({ now, recentGifts }: ResolveParams): GiftCardEffects => {
+const resolveRelativeUrl = (value: unknown, baseUrl: string) => {
+  if (typeof value !== 'string') {
+    return undefined;
+  }
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return undefined;
+  }
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+    return trimmed;
+  }
+  if (trimmed.startsWith('/')) {
+    return `${baseUrl.replace(/\/+$/, '')}${trimmed}`;
+  }
+  return trimmed;
+};
+
+export const resolveActiveCardEffects = ({
+  now,
+  recentGifts,
+  targetType,
+}: ResolveParams): GiftCardEffects => {
   const entries = Array.isArray(recentGifts) ? recentGifts : [];
   const nowMs = typeof now === 'number' ? now : Date.now();
   const borderGlow: BorderGlowEffect[] = [];
   const highlights: HighlightEffect[] = [];
   const badges: BadgeEffect[] = [];
+  const overlays: OverlayEffect[] = [];
 
   entries.forEach((entry) => {
     if (!entry || typeof entry !== 'object') {
@@ -153,6 +191,11 @@ export const resolveActiveCardEffects = ({ now, recentGifts }: ResolveParams): G
       const effectType =
         typeof (effect as any).type === 'string' ? (effect as any).type : '';
       const priority = toNumber((effect as any).priority);
+      const scope =
+        typeof (effect as any).scope === 'string' ? (effect as any).scope : undefined;
+      if (scope && targetType && scope !== targetType) {
+        return;
+      }
       switch (effectType) {
         case 'border_glow':
           borderGlow.push({
@@ -195,6 +238,29 @@ export const resolveActiveCardEffects = ({ now, recentGifts }: ResolveParams): G
           });
           break;
         }
+        case 'overlay': {
+          overlays.push({
+            type: 'overlay',
+            animationUrl: resolveRelativeUrl(
+              (effect as any).animation,
+              API_BASE_URL,
+            ),
+            opacity: toNumber((effect as any).opacity) || undefined,
+            zIndex: toNumber((effect as any).z_index) || undefined,
+            clipToBounds: Boolean((effect as any).clip_to_bounds),
+            scale: toNumber((effect as any).scale) || undefined,
+            loop: (effect as any).loop !== undefined ? Boolean((effect as any).loop) : undefined,
+            fit:
+              (effect as any).fit === 'contain' || (effect as any).fit === 'cover'
+                ? (effect as any).fit
+                : undefined,
+            durationMs: toNumber((effect as any).duration_ms) || undefined,
+            priority,
+            createdAt,
+            expiresAt,
+          });
+          break;
+        }
         default:
           break;
       }
@@ -205,5 +271,6 @@ export const resolveActiveCardEffects = ({ now, recentGifts }: ResolveParams): G
     borderGlow: pickHighestPriorityEffect(borderGlow),
     highlight: pickHighestPriorityEffect(highlights),
     badge: pickHighestPriorityEffect(badges),
+    overlay: pickHighestPriorityEffect(overlays),
   };
 };
