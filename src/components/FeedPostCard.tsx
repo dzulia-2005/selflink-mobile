@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { memo, useCallback, useEffect, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
   Animated,
@@ -21,6 +21,7 @@ import { useAuthStore } from '@store/authStore';
 import { useFeedStore } from '@store/feedStore';
 import { theme } from '@theme';
 import type { GiftPreview } from '@utils/gifts';
+import type { GiftCardEffects } from '@utils/giftEffects';
 
 import { UserAvatar } from './UserAvatar';
 import { useEntranceAnimation, usePressScaleAnimation } from '../styles/animations';
@@ -34,6 +35,7 @@ interface Props {
   giftCount?: number;
   giftSyncing?: boolean;
   giftPreviews?: GiftPreview[];
+  giftEffects?: GiftCardEffects | null;
 }
 
 const AnimatedPressable = Animated.createAnimatedComponent(RNPressable);
@@ -47,6 +49,7 @@ function FeedPostCardComponent({
   giftCount = 0,
   giftSyncing = false,
   giftPreviews = [],
+  giftEffects = null,
 }: Props) {
   const navigation = useNavigation<any>();
   const currentUserId = useAuthStore((state) => state.currentUser?.id);
@@ -73,6 +76,30 @@ function FeedPostCardComponent({
     }
     return Boolean(flags.following || flags.is_following);
   });
+
+  const cardEffectStyle = useMemo(() => {
+    if (!giftEffects) {
+      return null;
+    }
+    const border = giftEffects.borderGlow;
+    const highlight = giftEffects.highlight;
+    const style: Record<string, unknown> = {};
+    if (border?.color) {
+      style.borderColor = border.color;
+      style.borderWidth = Math.max(1, border.thickness ?? 1.5);
+      style.shadowColor = border.color;
+      style.shadowOpacity = 0.3;
+      style.shadowRadius = 12;
+    }
+    if (highlight?.color) {
+      style.backgroundColor = highlight.color;
+    } else if (highlight) {
+      style.backgroundColor = 'rgba(56, 189, 248, 0.08)';
+    }
+    return Object.keys(style).length ? style : null;
+  }, [giftEffects]);
+
+  const badge = giftEffects?.badge;
 
   const handleLikeToggle = useCallback(async () => {
     if (likePending) {
@@ -194,7 +221,7 @@ function FeedPostCardComponent({
           end={{ x: 1, y: 1 }}
           style={styles.cardGradient}
         >
-          <View style={styles.cardInner}>
+          <View style={[styles.cardInner, cardEffectStyle]}>
             <View style={styles.header}>
               <TouchableOpacity onPress={handleOpenProfile} activeOpacity={0.9}>
                 <View style={styles.avatarWrap}>
@@ -212,6 +239,13 @@ function FeedPostCardComponent({
                   {new Date(post.created_at).toLocaleString()}
                 </Text>
               </TouchableOpacity>
+              {badge?.text ? (
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText} numberOfLines={1}>
+                    {badge.text}
+                  </Text>
+                </View>
+              ) : null}
               {post.author.id !== currentUserId && (
                 <TouchableOpacity
                   style={styles.followButton}
@@ -427,6 +461,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 12,
     alignItems: 'center',
+  },
+  badge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+    backgroundColor: 'rgba(56,189,248,0.16)',
+    borderWidth: 1,
+    borderColor: 'rgba(56,189,248,0.4)',
+    marginLeft: 6,
+    maxWidth: 120,
+  },
+  badgeText: {
+    fontSize: 11,
+    color: theme.feed.textPrimary,
+    fontWeight: '700',
   },
   avatarWrap: {
     padding: 2,

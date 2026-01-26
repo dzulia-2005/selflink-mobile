@@ -26,6 +26,7 @@ import { useToast } from '@context/ToastContext';
 import { useAuthStore } from '@store/authStore';
 import { theme } from '@theme';
 import { normalizeGiftRenderData } from '@utils/gifts';
+import { resolveActiveCardEffects } from '@utils/giftEffects';
 import { createRealtimeDedupeStore } from '@utils/realtimeDedupe';
 import { areStringArraysEqual, buildChannelList } from '@utils/realtimeChannels';
 import { useGiftBurst } from '@hooks/useGiftBurst';
@@ -407,6 +408,10 @@ export function CommentsBottomSheet({
     ({ item }: { item: CommentWithOptimistic }) => {
       const key = String(item.id);
       const reaction = commentReactions[key];
+      const giftEffects = resolveActiveCardEffects({
+        now: Date.now(),
+        recentGifts: (item as any)?.recent_gifts ?? [],
+      });
       return (
         <CommentItem
           comment={item}
@@ -415,6 +420,7 @@ export function CommentsBottomSheet({
           giftCount={reaction?.giftCount ?? 0}
           giftPreviews={reaction?.giftPreviews ?? []}
           giftSyncing={giftSyncByComment[key] ?? false}
+          giftEffects={giftEffects}
           onLikePress={() => handleToggleCommentLike(item.id)}
           onGiftPress={() => handleOpenGiftPicker(item.id)}
         />

@@ -34,6 +34,7 @@ import { useFeedStore } from '@store/feedStore';
 import { useAuthStore } from '@store/authStore';
 import { theme } from '@theme';
 import { normalizeGiftRenderData, type GiftPreview } from '@utils/gifts';
+import { resolveActiveCardEffects } from '@utils/giftEffects';
 import { createRealtimeDedupeStore } from '@utils/realtimeDedupe';
 import { areStringArraysEqual, buildChannelList } from '@utils/realtimeChannels';
 import { useGiftBurst } from '@hooks/useGiftBurst';
@@ -369,7 +370,11 @@ export function FeedScreen() {
   const renderItem = useCallback(
     ({ item }: { item: FeedItem }) => {
       switch (item.type) {
-        case 'post':
+        case 'post': {
+          const giftEffects = resolveActiveCardEffects({
+            now: Date.now(),
+            recentGifts: (item.post as any)?.recent_gifts ?? [],
+          });
           return (
             <FeedPostCard
               post={item.post}
@@ -384,8 +389,10 @@ export function FeedScreen() {
               giftCount={giftCountsByPost[String(item.post.id)] ?? 0}
               giftSyncing={giftSyncByPost[String(item.post.id)] ?? false}
               giftPreviews={giftRecentByPost[String(item.post.id)] ?? []}
+              giftEffects={giftEffects}
             />
           );
+        }
         case 'mentor_insight':
           return <MentorFeedCard data={item.mentor} />;
         case 'matrix_insight':
