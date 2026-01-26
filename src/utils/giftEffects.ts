@@ -158,7 +158,11 @@ export const resolveActiveCardEffects = ({ now, recentGifts }: ResolveParams): G
           borderGlow.push({
             type: 'border_glow',
             color: typeof (effect as any).color === 'string' ? (effect as any).color : undefined,
-            thickness: toNumber((effect as any).thickness) || undefined,
+            thickness:
+              toNumber((effect as any).thickness) ||
+              (toNumber((effect as any).intensity) > 0
+                ? 1 + toNumber((effect as any).intensity) * 2
+                : undefined),
             pulse: Boolean((effect as any).pulse),
             priority,
             createdAt,

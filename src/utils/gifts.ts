@@ -2,6 +2,7 @@ export type GiftPreview = {
   id?: number | string;
   name?: string;
   mediaUrl?: string | null;
+  artUrl?: string | null;
   animationUrl?: string | null;
   kind?: string;
   quantity?: number;
@@ -90,6 +91,12 @@ const normalizeRecent = (raw: unknown): GiftPreview[] => {
       const mediaUrl =
         (typeof record.media_url === 'string' && record.media_url) ||
         (typeof giftType?.media_url === 'string' && giftType.media_url) ||
+        (typeof record.art_url === 'string' && record.art_url) ||
+        (typeof giftType?.art_url === 'string' && giftType.art_url) ||
+        null;
+      const artUrl =
+        (typeof record.art_url === 'string' && record.art_url) ||
+        (typeof giftType?.art_url === 'string' && giftType.art_url) ||
         null;
       const animationUrl =
         (typeof record.animation_url === 'string' && record.animation_url) ||
@@ -105,6 +112,7 @@ const normalizeRecent = (raw: unknown): GiftPreview[] => {
         id: typeof id === 'string' || typeof id === 'number' ? id : undefined,
         name,
         mediaUrl,
+        artUrl,
         animationUrl,
         kind,
         quantity,

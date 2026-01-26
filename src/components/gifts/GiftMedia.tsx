@@ -33,7 +33,12 @@ const LOTTIE_EXT = /\.(json|lottie)(\?|$)/i;
 const extractMedia = (gift: GiftLike) => {
   const record = gift as GiftType & GiftPreview;
   return {
-    mediaUrl: record.media_url ?? record.mediaUrl ?? null,
+    mediaUrl:
+      record.media_url ??
+      record.mediaUrl ??
+      record.art_url ??
+      (record as GiftPreview).artUrl ??
+      null,
     animationUrl: record.animation_url ?? record.animationUrl ?? null,
     kind: record.kind,
   };
@@ -43,6 +48,12 @@ export const getGiftPrimaryMedia = (gift: GiftLike): GiftMediaInfo => {
   const { mediaUrl, animationUrl, kind } = extractMedia(gift);
   const isAnimatedKind = kind === 'animated';
   if (animationUrl) {
+    if (LOTTIE_EXT.test(animationUrl)) {
+      if (mediaUrl) {
+        return { url: mediaUrl, animated: false };
+      }
+      return { url: null, animated: isAnimatedKind };
+    }
     if (!VIDEO_EXT.test(animationUrl)) {
       const animated = isAnimatedKind || ANIMATED_IMAGE_EXT.test(animationUrl);
       return { url: animationUrl, animated };
