@@ -97,7 +97,7 @@ export function GiftBurstOverlay({ visible, gift, burstKey, onComplete }: Props)
         ]}
       />
       <Animated.View style={[styles.card, { opacity, transform: [{ scale }] }]}>
-        <GiftMedia gift={gift} size="md" />
+        <GiftMedia gift={gift} size="md" renderMode="burst" />
       </Animated.View>
     </View>
   );

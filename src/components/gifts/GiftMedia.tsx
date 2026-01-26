@@ -1,5 +1,6 @@
 import { Image, StyleSheet, Text, View, type ViewStyle } from 'react-native';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ComponentType } from 'react';
+import LottieView from 'lottie-react-native';
 
 import type { GiftType } from '@api/gifts';
 import type { GiftPreview } from '@utils/gifts';
@@ -10,11 +11,13 @@ import { getGiftThemeTier } from './giftTheme';
 type GiftLike = GiftType | GiftPreview;
 
 export type GiftMediaSize = 'sm' | 'md' | 'lg';
+export type GiftMediaRenderMode = 'thumbnail' | 'preview' | 'burst';
 
 type GiftMediaProps = {
   gift: GiftLike;
   size?: GiftMediaSize;
   showLabel?: boolean;
+  renderMode?: GiftMediaRenderMode;
   style?: ViewStyle;
 };
 
@@ -25,6 +28,7 @@ type GiftMediaInfo = {
 
 const VIDEO_EXT = /\.(mp4|webm|mov|m4v)(\?|$)/i;
 const ANIMATED_IMAGE_EXT = /\.(gif|webp)(\?|$)/i;
+const LOTTIE_EXT = /\.(json|lottie)(\?|$)/i;
 
 const extractMedia = (gift: GiftLike) => {
   const record = gift as GiftType & GiftPreview;
@@ -65,11 +69,26 @@ const sizeMap: Record<GiftMediaSize, number> = {
   lg: 110,
 };
 
-export function GiftMedia({ gift, size = 'md', showLabel, style }: GiftMediaProps) {
+export function GiftMedia({
+  gift,
+  size = 'md',
+  showLabel,
+  renderMode = 'thumbnail',
+  style,
+}: GiftMediaProps) {
   const [error, setError] = useState(false);
+  const [lottieError, setLottieError] = useState(false);
   const { url } = useMemo(() => getGiftPrimaryMedia(gift), [gift]);
+  const { animationUrl, kind } = useMemo(() => extractMedia(gift), [gift]);
   const dimension = sizeMap[size];
   const tier = getGiftThemeTier(gift);
+  const allowAnimation = kind === 'animated' || Boolean(animationUrl);
+  const useLottie =
+    allowAnimation &&
+    Boolean(animationUrl) &&
+    !lottieError &&
+    LOTTIE_EXT.test(animationUrl ?? '') &&
+    renderMode !== 'thumbnail';
 
   const frameStyle = useMemo(() => {
     switch (tier) {
@@ -91,10 +110,21 @@ export function GiftMedia({ gift, size = 'md', showLabel, style }: GiftMediaProp
     }
   }, [tier]);
 
+  const Lottie = LottieView as unknown as ComponentType<any>;
+
   return (
     <View style={[styles.wrapper, frameStyle, style]}>
       <View style={styles.mediaWrap}>
-        {url && !error ? (
+        {useLottie && animationUrl ? (
+          <Lottie
+            source={{ uri: animationUrl }}
+            autoPlay
+            loop
+            style={{ width: dimension, height: dimension }}
+            onAnimationFinish={() => {}}
+            onError={() => setLottieError(true)}
+          />
+        ) : url && !error ? (
           <Image
             source={{ uri: url }}
             style={{ width: dimension, height: dimension, borderRadius: dimension / 4 }}
