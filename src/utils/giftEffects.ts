@@ -1,4 +1,4 @@
-import { API_BASE_URL } from '@config/env';
+import { API_BASE_URL, env } from '@config/env';
 
 type RawEffectsConfig = {
   version?: number;
@@ -77,7 +77,7 @@ const toNumber = (value: unknown) => {
 
 export const parseGiftEffects = (raw: unknown): ParsedGiftEffects => {
   if (!raw || typeof raw !== 'object') {
-    return { version: 1, effects: [], persist: { mode: 'none', windowSeconds: 0 } };
+    return { version: 2, effects: [], persist: { mode: 'none', windowSeconds: 0 } };
   }
   const record = raw as RawEffectsConfig;
   const persist = record.persist ?? {};
@@ -85,7 +85,7 @@ export const parseGiftEffects = (raw: unknown): ParsedGiftEffects => {
     persist.mode === 'window' ? 'window' : 'none';
   const windowSeconds = toNumber(persist.window_seconds);
   return {
-    version: typeof record.version === 'number' ? record.version : 1,
+    version: typeof record.version === 'number' ? record.version : 2,
     effects: Array.isArray(record.effects) ? record.effects : [],
     persist: {
       mode,
@@ -194,6 +194,12 @@ export const resolveActiveCardEffects = ({
       const scope =
         typeof (effect as any).scope === 'string' ? (effect as any).scope : undefined;
       if (scope && targetType && scope !== targetType) {
+        return;
+      }
+      if (!effectType || !['border_glow','highlight','badge','overlay'].includes(effectType)) {
+        if (env.giftEffectsDebug) {
+          console.log('giftEffects: ignoring unsupported effect', { type: effectType });
+        }
         return;
       }
       switch (effectType) {
