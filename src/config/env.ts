@@ -155,6 +155,14 @@ const rawIapSkus =
   (typeof extra.iapSkus === 'string' ? extra.iapSkus : undefined);
 const iapSkus = parseEnvList(rawIapSkus);
 
+const rawGiftEffectsDebug =
+  process.env.EXPO_PUBLIC_GIFT_EFFECTS_DEBUG ??
+  (typeof extra.giftEffectsDebug === 'string' ? extra.giftEffectsDebug : undefined);
+const giftEffectsDebug =
+  typeof rawGiftEffectsDebug === 'string'
+    ? ['1', 'true', 'yes', 'on'].includes(rawGiftEffectsDebug.trim().toLowerCase())
+    : false;
+
 export const env = {
   backendUrl: API_BASE_URL,
   apiBaseUrl: API_BASE_URL,
@@ -167,4 +175,5 @@ export const env = {
   stripePublishableKey,
   googleMapsApiKey,
   iapSkus,
+  giftEffectsDebug,
 };

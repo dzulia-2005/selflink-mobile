@@ -27,6 +27,18 @@ describe('GiftMedia helpers', () => {
     expect(media.url).toBe('https://cdn.example.com/burst.png');
   });
 
+  it('falls back to static image when animation is lottie json', () => {
+    const gift = {
+      id: 4,
+      name: 'Glow',
+      animation_url: 'https://cdn.example.com/glow.json',
+      media_url: 'https://cdn.example.com/glow.png',
+      kind: 'animated',
+    };
+    const media = getGiftPrimaryMedia(gift);
+    expect(media.url).toBe('https://cdn.example.com/glow.png');
+  });
+
   it('uses static media when no animation exists', () => {
     const gift = {
       id: 3,
