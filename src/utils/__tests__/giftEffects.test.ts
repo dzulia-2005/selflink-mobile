@@ -2,6 +2,7 @@ import {
   parseGiftEffects,
   pickHighestPriorityEffect,
   resolveActiveCardEffects,
+  resolveEffectsFromGiftEvent,
 } from '@utils/giftEffects';
 
 describe('giftEffects', () => {
@@ -81,5 +82,36 @@ describe('giftEffects', () => {
       ],
     });
     expect(effects.overlay?.animationUrl).toContain('/media/gifts/shine.json');
+  });
+
+  it('uses server_time for window persistence', () => {
+    const effects = resolveEffectsFromGiftEvent({
+      giftType: {
+        name: 'Glow',
+        effects: {
+          persist: { mode: 'window', window_seconds: 10 },
+          effects: [{ type: 'badge', text: 'Live' }],
+        },
+      },
+      createdAt: '2025-01-01T00:00:00Z',
+      serverTime: '2025-01-01T00:00:05Z',
+    });
+    expect(effects.badge?.text).toBe('Live');
+  });
+
+  it('respects expires_at over window', () => {
+    const effects = resolveEffectsFromGiftEvent({
+      giftType: {
+        name: 'Glow',
+        effects: {
+          persist: { mode: 'window', window_seconds: 60 },
+          effects: [{ type: 'badge', text: 'Expired' }],
+        },
+      },
+      createdAt: '2025-01-01T00:00:00Z',
+      serverTime: '2025-01-01T00:01:30Z',
+      expiresAt: '2025-01-01T00:00:30Z',
+    });
+    expect(effects.badge).toBeUndefined();
   });
 });
