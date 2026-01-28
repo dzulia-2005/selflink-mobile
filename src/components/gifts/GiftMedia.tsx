@@ -4,6 +4,7 @@ import LottieView from 'lottie-react-native';
 
 import type { GiftType } from '@api/gifts';
 import type { GiftPreview } from '@utils/gifts';
+import { canRenderLottie, isLottieJsonUrl } from '@utils/lottieGuard';
 import { theme } from '@theme';
 
 import { getGiftThemeTier } from './giftTheme';
@@ -94,12 +95,19 @@ export function GiftMedia({
   const dimension = sizeMap[size];
   const tier = getGiftThemeTier(gift);
   const allowAnimation = kind === 'animated' || Boolean(animationUrl);
+  const isLottieUrl = isLottieJsonUrl(animationUrl);
+  const lottieSupported = canRenderLottie();
+  if (__DEV__ && isLottieUrl && !lottieSupported && renderMode !== 'thumbnail') {
+    // eslint-disable-next-line no-console
+    console.debug('[GiftMedia] Lottie unsupported, falling back to static media.');
+  }
   const useLottie =
     allowAnimation &&
     Boolean(animationUrl) &&
     !lottieError &&
-    LOTTIE_EXT.test(animationUrl ?? '') &&
-    renderMode !== 'thumbnail';
+    isLottieUrl &&
+    renderMode !== 'thumbnail' &&
+    lottieSupported;
 
   const frameStyle = useMemo(() => {
     switch (tier) {
@@ -145,6 +153,9 @@ export function GiftMedia({
         ) : (
           <View style={[styles.placeholder, { width: dimension, height: dimension }]}>
             <Text style={styles.placeholderText}>★</Text>
+            {!lottieSupported && isLottieUrl && renderMode !== 'thumbnail' ? (
+              <Text style={styles.placeholderHint}>Update to view animation</Text>
+            ) : null}
           </View>
         )}
       </View>
@@ -183,6 +194,11 @@ const styles = StyleSheet.create({
   placeholderText: {
     color: theme.reels.textPrimary,
     fontSize: 24,
+  },
+  placeholderHint: {
+    marginTop: 4,
+    fontSize: 9,
+    color: theme.reels.textSecondary,
   },
   label: {
     marginTop: 6,
