@@ -1,4 +1,4 @@
-import { API_BASE_URL, env } from '@config/env';
+import { normalizeAssetUrl } from '@utils/urls';
 
 type RawEffectsConfig = {
   version?: number;
@@ -131,21 +131,9 @@ type ResolveParams = {
   targetType?: 'post' | 'comment';
 };
 
-const resolveRelativeUrl = (value: unknown, baseUrl: string) => {
-  if (typeof value !== 'string') {
-    return undefined;
-  }
-  const trimmed = value.trim();
-  if (!trimmed) {
-    return undefined;
-  }
-  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
-    return trimmed;
-  }
-  if (trimmed.startsWith('/')) {
-    return `${baseUrl.replace(/\/+$/, '')}${trimmed}`;
-  }
-  return trimmed;
+const resolveRelativeUrl = (value: unknown) => {
+  const normalized = normalizeAssetUrl(value);
+  return normalized || undefined;
 };
 
 export const resolveActiveCardEffects = ({
@@ -247,10 +235,7 @@ export const resolveActiveCardEffects = ({
         case 'overlay': {
           overlays.push({
             type: 'overlay',
-            animationUrl: resolveRelativeUrl(
-              (effect as any).animation,
-              API_BASE_URL,
-            ),
+            animationUrl: resolveRelativeUrl((effect as any).animation),
             opacity: toNumber((effect as any).opacity) || undefined,
             zIndex: toNumber((effect as any).z_index) || undefined,
             clipToBounds: Boolean((effect as any).clip_to_bounds),
@@ -385,17 +370,14 @@ export const resolveEffectsFromGiftEvent = ({
         break;
       }
       case 'overlay': {
-        overlays.push({
-          type: 'overlay',
-          animationUrl: resolveRelativeUrl(
-            (effect as any).animation,
-            API_BASE_URL,
-          ),
-          opacity: toNumber((effect as any).opacity) || undefined,
-          zIndex: toNumber((effect as any).z_index) || undefined,
-          clipToBounds: Boolean((effect as any).clip_to_bounds),
-          scale: toNumber((effect as any).scale) || undefined,
-          loop: (effect as any).loop !== undefined ? Boolean((effect as any).loop) : undefined,
+          overlays.push({
+            type: 'overlay',
+            animationUrl: resolveRelativeUrl((effect as any).animation),
+            opacity: toNumber((effect as any).opacity) || undefined,
+            zIndex: toNumber((effect as any).z_index) || undefined,
+            clipToBounds: Boolean((effect as any).clip_to_bounds),
+            scale: toNumber((effect as any).scale) || undefined,
+            loop: (effect as any).loop !== undefined ? Boolean((effect as any).loop) : undefined,
           fit:
             (effect as any).fit === 'contain' || (effect as any).fit === 'cover'
               ? (effect as any).fit

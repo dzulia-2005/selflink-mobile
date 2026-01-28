@@ -5,6 +5,7 @@ import LottieView from 'lottie-react-native';
 import type { GiftType } from '@api/gifts';
 import type { GiftPreview } from '@utils/gifts';
 import { canRenderLottie, isLottieJsonUrl } from '@utils/lottieGuard';
+import { normalizeAssetUrl } from '@utils/urls';
 import { theme } from '@theme';
 
 import { getGiftThemeTier } from './giftTheme';
@@ -35,12 +36,15 @@ const extractMedia = (gift: GiftLike) => {
   const record = gift as GiftType & GiftPreview;
   return {
     mediaUrl:
-      record.media_url ??
-      record.mediaUrl ??
-      record.art_url ??
-      (record as GiftPreview).artUrl ??
-      null,
-    animationUrl: record.animation_url ?? record.animationUrl ?? null,
+      normalizeAssetUrl(
+        record.media_url ??
+          record.mediaUrl ??
+          record.art_url ??
+          (record as GiftPreview).artUrl ??
+          '',
+      ) || null,
+    animationUrl:
+      normalizeAssetUrl(record.animation_url ?? record.animationUrl ?? '') || null,
     kind: record.kind,
   };
 };
