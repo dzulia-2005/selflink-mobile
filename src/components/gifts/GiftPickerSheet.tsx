@@ -256,9 +256,10 @@ export function GiftPickerSheet({ visible, target, onClose, onGiftSent }: Props)
         gift={item}
         selected={selectedGift?.id === item.id}
         onPress={() => setSelectedGift(item)}
+        styles={styles}
       />
     ),
-    [selectedGift?.id],
+    [selectedGift?.id, styles],
   );
 
   if (!visible || !target) {
@@ -518,9 +519,10 @@ type GiftTileProps = {
   gift: GiftType;
   selected: boolean;
   onPress: () => void;
+  styles: ReturnType<typeof createStyles>;
 };
 
-function GiftTile({ gift, selected, onPress }: GiftTileProps) {
+function GiftTile({ gift, selected, onPress, styles }: GiftTileProps) {
   const press = usePressScaleAnimation(0.96);
   const animated = isAnimatedGift(gift);
   return (
