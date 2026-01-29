@@ -1,6 +1,7 @@
+import { useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import { theme } from '@theme/index';
+import { useTheme } from '@theme';
 
 type Props = {
   title: string;
@@ -10,6 +11,41 @@ type Props = {
 };
 
 export function EmptyState({ title, description, actionLabel, onAction }: Props) {
+  const { theme } = useTheme();
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: theme.spacing.lg,
+          gap: theme.spacing.sm,
+        },
+        title: {
+          color: theme.text.primary,
+          ...theme.typography.subtitle,
+        },
+        description: {
+          color: theme.text.muted,
+          ...theme.typography.body,
+          textAlign: 'center',
+        },
+        button: {
+          marginTop: theme.spacing.sm,
+          paddingHorizontal: theme.spacing.md,
+          paddingVertical: theme.spacing.sm,
+          borderRadius: theme.radii.md,
+          borderWidth: 1,
+          borderColor: theme.colors.border,
+        },
+        buttonLabel: {
+          color: theme.text.primary,
+          ...theme.typography.button,
+        },
+      }),
+    [theme],
+  );
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{title}</Text>
@@ -22,33 +58,3 @@ export function EmptyState({ title, description, actionLabel, onAction }: Props)
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: theme.spacing.lg,
-    gap: theme.spacing.sm,
-  },
-  title: {
-    color: theme.text.primary,
-    ...theme.typography.subtitle,
-  },
-  description: {
-    color: theme.text.muted,
-    ...theme.typography.body,
-    textAlign: 'center',
-  },
-  button: {
-    marginTop: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
-    borderRadius: theme.radii.md,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  buttonLabel: {
-    color: theme.text.primary,
-    ...theme.typography.button,
-  },
-});

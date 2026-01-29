@@ -8,7 +8,7 @@ import type { CommentWithOptimistic } from '@components/comments/types';
 import { GiftMedia } from '@components/gifts/GiftMedia';
 import { GiftOverlayEffect } from '@components/gifts/GiftOverlayEffect';
 import { useReactionPulse } from '@hooks/useReactionPulse';
-import { theme } from '@theme';
+import { useTheme, type Theme } from '@theme';
 import type { GiftPreview } from '@utils/gifts';
 import type { GiftCardEffects } from '@utils/giftEffects';
 
@@ -46,6 +46,8 @@ function CommentItemComponent({
   onLikePress,
   onGiftPress,
 }: Props) {
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const timestamp = useMemo(
     () => formatTimestamp(comment.created_at),
     [comment.created_at],
@@ -152,7 +154,8 @@ function CommentItemComponent({
 
 export const CommentItem = memo(CommentItemComponent);
 
-const styles = StyleSheet.create({
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
   row: {
     flexDirection: 'row',
     gap: 10,
@@ -225,4 +228,4 @@ const styles = StyleSheet.create({
     color: theme.reels.textSecondary,
     fontSize: 10,
   },
-});
+  });

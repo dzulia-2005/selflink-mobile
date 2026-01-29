@@ -15,7 +15,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { MetalButton } from '@components/MetalButton';
 import { MetalPanel } from '@components/MetalPanel';
-import { theme } from '@theme';
+import { useTheme, type Theme } from '@theme';
 import type { SoulmatchTier } from '@utils/soulmatchUpgradeGate';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -67,6 +67,8 @@ export function SoulMatchUpgradeSheet({
   onContinueFree,
   previewText,
 }: Props) {
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const insets = useSafeAreaInsets();
   const translateY = useRef(new Animated.Value(SHEET_HEIGHT)).current;
   const closingRef = useRef(false);
@@ -221,7 +223,8 @@ export function SoulMatchUpgradeSheet({
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
   backdrop: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0,0,0,0.55)',
@@ -358,4 +361,4 @@ const styles = StyleSheet.create({
     color: theme.palette.titanium,
     ...theme.typography.caption,
   },
-});
+  });

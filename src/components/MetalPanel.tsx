@@ -1,8 +1,8 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import { ReactNode } from 'react';
+import { ReactNode, useMemo } from 'react';
 import { StyleSheet, View, ViewStyle } from 'react-native';
 
-import { theme } from '@theme/index';
+import { useTheme } from '@theme';
 
 type Props = {
   children: ReactNode;
@@ -11,6 +11,27 @@ type Props = {
 };
 
 export function MetalPanel({ children, glow = false, style }: Props) {
+  const { theme } = useTheme();
+
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          borderRadius: theme.radius.lg,
+          padding: theme.spacing.lg,
+          ...theme.shadow.panel,
+        },
+        inner: {
+          borderRadius: theme.radius.md,
+        },
+        glow: {
+          borderWidth: 1,
+          borderColor: theme.palette.glow,
+        },
+      }),
+    [theme],
+  );
+
   return (
     <LinearGradient
       colors={theme.gradients.panel}
@@ -22,18 +43,3 @@ export function MetalPanel({ children, glow = false, style }: Props) {
     </LinearGradient>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    borderRadius: theme.radius.lg,
-    padding: theme.spacing.lg,
-    ...theme.shadow.panel,
-  },
-  inner: {
-    borderRadius: theme.radius.md,
-  },
-  glow: {
-    borderWidth: 1,
-    borderColor: theme.palette.glow,
-  },
-});

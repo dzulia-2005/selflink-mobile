@@ -9,7 +9,7 @@ import { UserAvatar } from '@components/UserAvatar';
 import { VideoPostPlayer } from '@components/VideoPostPlayer';
 import type { Post } from '@schemas/social';
 import { useAuthStore } from '@store/authStore';
-import { theme } from '@theme';
+import { useTheme, type Theme } from '@theme';
 
 import { usePressScaleAnimation } from '../styles/animations';
 
@@ -57,6 +57,8 @@ function SoulReelItemComponent({
   onProfile,
   index,
 }: Props) {
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const insets = useSafeAreaInsets();
   const overlayAnim = useRef(new Animated.Value(isActive ? 1 : 0)).current;
   const infoOpacity = useRef(new Animated.Value(0)).current;
@@ -293,7 +295,8 @@ function SoulReelItemComponent({
 
 export const SoulReelItem = memo(SoulReelItemComponent);
 
-const styles = StyleSheet.create({
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
   container: {
     width: '100%',
     backgroundColor: theme.reels.backgroundEnd,
@@ -427,4 +430,4 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(148,163,184,0.4)',
   },
-});
+  });

@@ -1,6 +1,7 @@
+import { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { theme } from '@theme/index';
+import { useTheme, type Theme } from '@theme';
 
 type Props = {
   label: string;
@@ -8,6 +9,8 @@ type Props = {
 };
 
 export function BadgePill({ label, tone = 'default' }: Props) {
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const background =
     tone === 'positive'
       ? theme.palette.glow
@@ -22,14 +25,15 @@ export function BadgePill({ label, tone = 'default' }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  pill: {
-    paddingHorizontal: theme.spacing.sm,
-    paddingVertical: theme.spacing.xs,
-    borderRadius: theme.radius.pill,
-  },
-  text: {
-    ...theme.typography.caption,
-    fontWeight: '700',
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    pill: {
+      paddingHorizontal: theme.spacing.sm,
+      paddingVertical: theme.spacing.xs,
+      borderRadius: theme.radius.pill,
+    },
+    text: {
+      ...theme.typography.caption,
+      fontWeight: '700',
+    },
+  });

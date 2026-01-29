@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import { chatTheme } from '@theme/chat';
-import { theme } from '@theme/index';
+import { createChatTheme } from '@theme/chat';
+import { useTheme, type Theme } from '@theme';
 
 type InlineToken = { type: 'text' | 'bold' | 'italic'; value: string };
 
@@ -103,6 +103,9 @@ type Props = {
 };
 
 export function MentorMessageContent({ text, collapsibleLines }: Props) {
+  const { theme } = useTheme();
+  const chatTheme = useMemo(() => createChatTheme(theme), [theme]);
+  const styles = useMemo(() => createStyles(theme, chatTheme), [theme, chatTheme]);
   const [collapsed, setCollapsed] = useState(true);
   const safeText = sanitize(text);
   const lineLimit = collapsibleLines ?? COLLAPSE_LINE_THRESHOLD;
@@ -184,7 +187,8 @@ const renderInline = (text: string) => {
   });
 };
 
-const styles = StyleSheet.create({
+const createStyles = (theme: Theme, chatTheme: ReturnType<typeof createChatTheme>) =>
+  StyleSheet.create({
   container: {
     gap: chatTheme.spacing.sm,
   },
@@ -230,4 +234,4 @@ const styles = StyleSheet.create({
     color: theme.palette.azure,
     fontWeight: '600',
   },
-});
+  });

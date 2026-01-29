@@ -1,8 +1,8 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { theme } from '@theme/index';
+import { useTheme, type Theme } from '@theme';
 
 type Tone = 'info' | 'error';
 
@@ -15,17 +15,6 @@ type Props = {
   onDismiss?: () => void;
 };
 
-const toneMap: Record<Tone, { colors: readonly [string, string]; text: string }> = {
-  info: {
-    colors: ['#E0F2FE', '#BFDBFE'] as const,
-    text: theme.palette.titanium,
-  },
-  error: {
-    colors: ['#FEE2E2', '#FCA5A5'] as const,
-    text: '#7F1D1D',
-  },
-};
-
 export const MetalToast = memo(function MetalToast({
   visible,
   message,
@@ -34,6 +23,22 @@ export const MetalToast = memo(function MetalToast({
   onAction,
   onDismiss,
 }: Props) {
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
+  const toneMap = useMemo(
+    () => ({
+      info: {
+        colors: ['#E0F2FE', '#BFDBFE'] as const,
+        text: theme.palette.titanium,
+      },
+      error: {
+        colors: ['#FEE2E2', '#FCA5A5'] as const,
+        text: '#7F1D1D',
+      },
+    }),
+    [theme],
+  );
+
   if (!visible) {
     return null;
   }
@@ -67,36 +72,37 @@ export const MetalToast = memo(function MetalToast({
   );
 });
 
-const styles = StyleSheet.create({
-  container: {
-    borderRadius: theme.radius.md,
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
-    ...theme.shadow.panel,
-    marginBottom: theme.spacing.sm,
-  },
-  message: {
-    ...theme.typography.body,
-  },
-  actions: {
-    marginTop: theme.spacing.xs,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    gap: theme.spacing.sm,
-  },
-  actionButton: {
-    paddingHorizontal: theme.spacing.xs,
-    paddingVertical: 4,
-  },
-  actionText: {
-    fontWeight: '600',
-  },
-  closeButton: {
-    paddingHorizontal: theme.spacing.xs,
-    paddingVertical: 4,
-  },
-  closeText: {
-    fontSize: 14,
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    container: {
+      borderRadius: theme.radius.md,
+      paddingHorizontal: theme.spacing.md,
+      paddingVertical: theme.spacing.sm,
+      ...theme.shadow.panel,
+      marginBottom: theme.spacing.sm,
+    },
+    message: {
+      ...theme.typography.body,
+    },
+    actions: {
+      marginTop: theme.spacing.xs,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'flex-end',
+      gap: theme.spacing.sm,
+    },
+    actionButton: {
+      paddingHorizontal: theme.spacing.xs,
+      paddingVertical: 4,
+    },
+    actionText: {
+      fontWeight: '600',
+    },
+    closeButton: {
+      paddingHorizontal: theme.spacing.xs,
+      paddingVertical: 4,
+    },
+    closeText: {
+      fontSize: 14,
+    },
+  });

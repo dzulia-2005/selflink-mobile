@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 import {
   ActivityIndicator,
   StyleSheet,
@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 
 import { UserAvatar } from '@components/UserAvatar';
-import { theme } from '@theme';
+import { useTheme, type Theme } from '@theme';
 
 type Props = {
   value: string;
@@ -32,6 +32,8 @@ function CommentComposerComponent({
   avatarLabel,
   placeholder = 'Add a comment…',
 }: Props) {
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const canSend = Boolean(value.trim()) && !disabled && !pending;
   return (
     <View style={styles.container}>
@@ -69,7 +71,8 @@ function CommentComposerComponent({
 
 export const CommentComposer = memo(CommentComposerComponent);
 
-const styles = StyleSheet.create({
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'flex-end',
@@ -106,4 +109,4 @@ const styles = StyleSheet.create({
     color: '#0B1120',
     fontWeight: '800',
   },
-});
+  });

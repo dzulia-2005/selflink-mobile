@@ -6,7 +6,7 @@ import type { GiftType } from '@api/gifts';
 import type { GiftPreview } from '@utils/gifts';
 import { canRenderLottie, isLottieJsonUrl } from '@utils/lottieGuard';
 import { normalizeAssetUrl } from '@utils/urls';
-import { theme } from '@theme';
+import { useTheme, type Theme } from '@theme';
 
 import { getGiftThemeTier } from './giftTheme';
 
@@ -92,6 +92,8 @@ export function GiftMedia({
   renderMode = 'thumbnail',
   style,
 }: GiftMediaProps) {
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const [error, setError] = useState(false);
   const [lottieError, setLottieError] = useState(false);
   const { url } = useMemo(() => getGiftPrimaryMedia(gift), [gift]);
@@ -172,7 +174,8 @@ export function GiftMedia({
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
   wrapper: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -210,4 +213,4 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontSize: 12,
   },
-});
+  });

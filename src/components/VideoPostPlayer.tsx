@@ -5,7 +5,7 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import type { PostVideo } from '@schemas/social';
-import { theme } from '@theme';
+import { useTheme, type Theme } from '@theme';
 
 type Props = {
   source: PostVideo;
@@ -42,6 +42,8 @@ function VideoPostPlayerComponent({
   mutedDefault,
   onMuteChange,
 }: Props) {
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const AUTOPLAY_ENABLED = true;
   const safeIsFocused = useSafeIsFocused();
   const screenFocused = isScreenFocused ?? safeIsFocused;
@@ -245,7 +247,8 @@ function VideoPostPlayerComponent({
 
 export const VideoPostPlayer = memo(VideoPostPlayerComponent);
 
-const styles = StyleSheet.create({
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
   container: {
     borderRadius: 20,
     overflow: 'hidden',
@@ -343,4 +346,4 @@ const styles = StyleSheet.create({
     fontSize: 12,
     letterSpacing: 0.3,
   },
-});
+  });

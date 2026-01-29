@@ -16,7 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { MetalButton } from '@components/MetalButton';
 import { env } from '@config/env';
-import { theme } from '@theme/index';
+import { useTheme, type Theme } from '@theme';
 
 type Coordinate = { latitude: number; longitude: number };
 
@@ -39,6 +39,8 @@ export function BirthLocationMapModal({
   onConfirm,
   onCancel,
 }: Props) {
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const [markerCoord, setMarkerCoord] = useState<Coordinate | null>(null);
   const [mapReady, setMapReady] = useState(false);
   const [mapError, setMapError] = useState<string | null>(null);
@@ -226,7 +228,8 @@ export function BirthLocationMapModal({
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
   backdrop: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.85)',
@@ -351,4 +354,4 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   markerBounce: {},
-});
+  });
