@@ -72,3 +72,8 @@ rad.json
 *.flf
 prompt.txt
 MASTER-ROADMAP-MOBILE.txt
+
+# Expo
+.expo
+dist/
+web-build/
