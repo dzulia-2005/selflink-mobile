@@ -1,8 +1,9 @@
 import { StyleSheet, View } from 'react-native';
-import { useMemo } from 'react';
+import { useMemo, type ComponentType } from 'react';
 import LottieView from 'lottie-react-native';
 
 import type { OverlayEffect } from '@utils/giftEffects';
+import { canRenderLottie, isLottieJsonUrl } from '@utils/lottieGuard';
 
 type Props = {
   effect?: OverlayEffect;
@@ -11,7 +12,13 @@ type Props = {
 
 export function GiftOverlayEffect({ effect, borderRadius = 0 }: Props) {
   const animationUrl = effect?.animationUrl;
-  if (!effect || !animationUrl) {
+  const isLottieUrl = isLottieJsonUrl(animationUrl);
+  const lottieSupported = canRenderLottie();
+  if (!effect || !animationUrl || !isLottieUrl || !lottieSupported) {
+    if (__DEV__ && effect && animationUrl && isLottieUrl && !lottieSupported) {
+      // eslint-disable-next-line no-console
+      console.debug('[GiftOverlayEffect] Lottie unsupported, skipping overlay.');
+    }
     return null;
   }
   const opacity = typeof effect.opacity === 'number' ? effect.opacity : 0.9;
@@ -19,6 +26,7 @@ export function GiftOverlayEffect({ effect, borderRadius = 0 }: Props) {
   const scale = typeof effect.scale === 'number' ? effect.scale : 1;
   const loop = effect.loop !== false;
   const resizeMode = effect.fit === 'contain' ? 'contain' : 'cover';
+  const Lottie = LottieView as unknown as ComponentType<any>;
 
   const clipStyle = useMemo(
     () =>
@@ -30,7 +38,7 @@ export function GiftOverlayEffect({ effect, borderRadius = 0 }: Props) {
 
   return (
     <View style={[styles.overlay, { zIndex }, clipStyle]} pointerEvents="none">
-      <LottieView
+      <Lottie
         source={{ uri: animationUrl }}
         autoPlay
         loop={loop}

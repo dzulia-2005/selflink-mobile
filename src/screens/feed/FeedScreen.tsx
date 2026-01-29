@@ -34,7 +34,11 @@ import { useFeedStore } from '@store/feedStore';
 import { useAuthStore } from '@store/authStore';
 import { theme } from '@theme';
 import { normalizeGiftRenderData, type GiftPreview } from '@utils/gifts';
-import { resolveActiveCardEffects } from '@utils/giftEffects';
+import {
+  filterActiveEffects,
+  resolveActiveCardEffects,
+  resolveEffectsFromGiftEvent,
+} from '@utils/giftEffects';
 import { createRealtimeDedupeStore } from '@utils/realtimeDedupe';
 import { areStringArraysEqual, buildChannelList } from '@utils/realtimeChannels';
 import { useGiftBurst } from '@hooks/useGiftBurst';
@@ -75,9 +79,13 @@ export function FeedScreen() {
   const [giftRecentByPost, setGiftRecentByPost] = useState<
     Record<string, GiftPreview[]>
   >({});
+  const [giftEffectsByPost, setGiftEffectsByPost] = useState<Record<string, any>>(
+    {},
+  );
   const { burst, triggerGiftBurst, clearGiftBurst } = useGiftBurst();
   const giftRealtimeRef = useRef<ReturnType<typeof connectRealtime> | null>(null);
   const giftDedupeRef = useRef(createRealtimeDedupeStore(200));
+  const warnedMissingEffectsRef = useRef(false);
   const [visibleGiftChannels, setVisibleGiftChannels] = useState<string[]>([]);
   const visibleGiftChannelsRef = useRef<string[]>([]);
   const appStateRef = useRef<AppStateStatus>(AppState.currentState);
@@ -310,6 +318,8 @@ export function FeedScreen() {
       const giftType = record.gift_type as GiftPreview | undefined;
       const quantity =
         typeof record.quantity === 'number' ? record.quantity : 1;
+      const serverTime = record.server_time as string | number | undefined;
+      const expiresAt = record.expires_at as string | number | undefined;
 
       if (sender?.id != null && currentUserId != null && sender.id === currentUserId) {
         return;
@@ -317,6 +327,23 @@ export function FeedScreen() {
 
       if (giftType) {
         triggerGiftBurst(giftType);
+      }
+
+      if (giftType && (giftType as any).effects) {
+        const effects = resolveEffectsFromGiftEvent({
+          giftType,
+          createdAt: record.created_at as string | number | undefined,
+          targetType: 'post',
+          serverTime,
+          expiresAt,
+        });
+        if (Object.keys(effects).length) {
+          setGiftEffectsByPost((prev) => ({ ...prev, [targetId]: effects }));
+        }
+      } else if (__DEV__ && !warnedMissingEffectsRef.current) {
+        warnedMissingEffectsRef.current = true;
+        // eslint-disable-next-line no-console
+        console.warn('[GiftRealtime] gift_type.effects missing in event payload.');
       }
 
       setGiftCountsByPost((prev) => {
@@ -371,11 +398,17 @@ export function FeedScreen() {
     ({ item }: { item: FeedItem }) => {
       switch (item.type) {
         case 'post': {
-          const giftEffects = resolveActiveCardEffects({
-            now: Date.now(),
+          const now = Date.now();
+          const realtimeEffects = filterActiveEffects(
+            giftEffectsByPost[String(item.post.id)],
+            now,
+          );
+          const fallbackEffects = resolveActiveCardEffects({
+            now,
             recentGifts: (item.post as any)?.recent_gifts ?? [],
             targetType: 'post',
           });
+          const giftEffects = realtimeEffects ?? fallbackEffects;
           return (
             <FeedPostCard
               post={item.post}

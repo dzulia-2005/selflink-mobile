@@ -26,7 +26,11 @@ import { useToast } from '@context/ToastContext';
 import { useAuthStore } from '@store/authStore';
 import { theme } from '@theme';
 import { normalizeGiftRenderData } from '@utils/gifts';
-import { resolveActiveCardEffects } from '@utils/giftEffects';
+import {
+  filterActiveEffects,
+  resolveActiveCardEffects,
+  resolveEffectsFromGiftEvent,
+} from '@utils/giftEffects';
 import { createRealtimeDedupeStore } from '@utils/realtimeDedupe';
 import { areStringArraysEqual, buildChannelList } from '@utils/realtimeChannels';
 import { useGiftBurst } from '@hooks/useGiftBurst';
@@ -79,12 +83,14 @@ export function CommentsBottomSheet({
   const [giftSyncByComment, setGiftSyncByComment] = useState<Record<string, boolean>>(
     {},
   );
+  const [commentEffects, setCommentEffects] = useState<Record<string, any>>({});
   const [giftTargetId, setGiftTargetId] = useState<string | null>(null);
   const { burst, triggerGiftBurst, clearGiftBurst } = useGiftBurst();
   const commentLikeCooldownRef = useRef<Record<string, number>>({});
   const commentLikePendingRef = useRef<Record<string, boolean>>({});
   const realtimeRef = useRef<ReturnType<typeof connectRealtime> | null>(null);
   const giftDedupeRef = useRef(createRealtimeDedupeStore(200));
+  const warnedMissingEffectsRef = useRef(false);
   const [visibleCommentChannels, setVisibleCommentChannels] = useState<string[]>([]);
   const visibleCommentChannelsRef = useRef<string[]>([]);
   const appStateRef = useRef<AppStateStatus>(AppState.currentState);
@@ -182,6 +188,8 @@ export function CommentsBottomSheet({
       const giftType = record.gift_type as any;
       const quantity =
         typeof record.quantity === 'number' ? record.quantity : 1;
+      const serverTime = record.server_time as string | number | undefined;
+      const expiresAt = record.expires_at as string | number | undefined;
 
       if (sender?.id != null && currentUser?.id != null && sender.id === currentUser.id) {
         return;
@@ -189,6 +197,23 @@ export function CommentsBottomSheet({
 
       if (giftType) {
         triggerGiftBurst(giftType);
+      }
+
+      if (giftType && (giftType as any).effects) {
+        const effects = resolveEffectsFromGiftEvent({
+          giftType,
+          createdAt: record.created_at as string | number | undefined,
+          targetType: 'comment',
+          serverTime,
+          expiresAt,
+        });
+        if (Object.keys(effects).length) {
+          setCommentEffects((prev) => ({ ...prev, [commentId]: effects }));
+        }
+      } else if (__DEV__ && !warnedMissingEffectsRef.current) {
+        warnedMissingEffectsRef.current = true;
+        // eslint-disable-next-line no-console
+        console.warn('[GiftRealtime] gift_type.effects missing in event payload.');
       }
 
       setCommentReactions((prev) => {
@@ -408,11 +433,17 @@ export function CommentsBottomSheet({
     ({ item }: { item: CommentWithOptimistic }) => {
       const key = String(item.id);
       const reaction = commentReactions[key];
-      const giftEffects = resolveActiveCardEffects({
-        now: Date.now(),
+      const now = Date.now();
+      const realtimeEffects = filterActiveEffects(
+        commentEffects[key],
+        now,
+      );
+      const fallbackEffects = resolveActiveCardEffects({
+        now,
         recentGifts: (item as any)?.recent_gifts ?? [],
         targetType: 'comment',
       });
+      const giftEffects = realtimeEffects ?? fallbackEffects;
       return (
         <CommentItem
           comment={item}

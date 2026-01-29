@@ -1,3 +1,5 @@
+import { normalizeAssetUrl } from '@utils/urls';
+
 export type GiftPreview = {
   id?: number | string;
   name?: string;
@@ -89,19 +91,25 @@ const normalizeRecent = (raw: unknown): GiftPreview[] => {
         (typeof giftType?.name === 'string' && giftType.name) ||
         undefined;
       const mediaUrl =
-        (typeof record.media_url === 'string' && record.media_url) ||
-        (typeof giftType?.media_url === 'string' && giftType.media_url) ||
-        (typeof record.art_url === 'string' && record.art_url) ||
-        (typeof giftType?.art_url === 'string' && giftType.art_url) ||
-        null;
+        normalizeAssetUrl(
+          (typeof record.media_url === 'string' && record.media_url) ||
+            (typeof giftType?.media_url === 'string' && giftType.media_url) ||
+            (typeof record.art_url === 'string' && record.art_url) ||
+            (typeof giftType?.art_url === 'string' && giftType.art_url) ||
+            '',
+        ) || null;
       const artUrl =
-        (typeof record.art_url === 'string' && record.art_url) ||
-        (typeof giftType?.art_url === 'string' && giftType.art_url) ||
-        null;
+        normalizeAssetUrl(
+          (typeof record.art_url === 'string' && record.art_url) ||
+            (typeof giftType?.art_url === 'string' && giftType.art_url) ||
+            '',
+        ) || null;
       const animationUrl =
-        (typeof record.animation_url === 'string' && record.animation_url) ||
-        (typeof giftType?.animation_url === 'string' && giftType.animation_url) ||
-        null;
+        normalizeAssetUrl(
+          (typeof record.animation_url === 'string' && record.animation_url) ||
+            (typeof giftType?.animation_url === 'string' && giftType.animation_url) ||
+            '',
+        ) || null;
       const kind =
         (typeof record.kind === 'string' && record.kind) ||
         (typeof giftType?.kind === 'string' && giftType.kind) ||

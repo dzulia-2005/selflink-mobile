@@ -55,8 +55,8 @@ function patchPromiseUtils() {
 
   if (!updated.includes('val safeCode = code ?: PromiseUtils.E_UNKNOWN')) {
     updated = updated.replace(
-      'fun Promise.safeReject(code: String?, message: String?, throwable: Throwable?) {',
-      'fun Promise.safeReject(code: String?, message: String?, throwable: Throwable?) {\n    val safeCode = code ?: PromiseUtils.E_UNKNOWN'
+      /fun Promise\.safeReject\(\s*code: String\?,\s*message: String\?,\s*throwable: Throwable\?,\s*\)\s*\{/m,
+      match => `${match}\n    val safeCode = code ?: PromiseUtils.E_UNKNOWN`
     );
     updated = updated.replace(
       'this.reject(code, message, throwable)',
