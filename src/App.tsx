@@ -1,18 +1,17 @@
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useColorScheme } from 'react-native';
 
 import { ToastProvider } from '@context/ToastContext';
 import { RootNavigator } from '@navigation/RootNavigator';
-import { theme } from '@theme/index';
+import { ThemeProvider, useTheme } from '@theme';
 
-export default function App() {
-  const colorScheme = useColorScheme();
+function AppShell() {
+  const { resolved, theme } = useTheme();
   const [isReady, setIsReady] = useState(false);
 
   const statusBarStyle = useMemo(
-    () => (colorScheme === 'light' ? 'dark' : 'light'),
-    [colorScheme],
+    () => (resolved === 'light' ? 'dark' : 'light'),
+    [resolved],
   );
 
   const prepare = useCallback(async () => {
@@ -25,13 +24,23 @@ export default function App() {
   }, [prepare]);
 
   if (!isReady) {
-    return <StatusBar style={statusBarStyle} backgroundColor={theme.palette.midnight} />;
+    return (
+      <StatusBar style={statusBarStyle} backgroundColor={theme.colors.background} />
+    );
   }
 
   return (
     <ToastProvider>
-      <StatusBar style={statusBarStyle} backgroundColor={theme.palette.midnight} />
+      <StatusBar style={statusBarStyle} backgroundColor={theme.colors.background} />
       <RootNavigator />
     </ToastProvider>
+  );
+}
+
+export default function App() {
+  return (
+    <ThemeProvider>
+      <AppShell />
+    </ThemeProvider>
   );
 }

@@ -1,11 +1,13 @@
 import { NavigationContainer, DarkTheme, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { useColorScheme, ActivityIndicator, StyleSheet, View, Text } from 'react-native';
+import { ActivityIndicator, StyleSheet, View, Text } from 'react-native';
+import { useMemo } from 'react';
 
 import { useAuthHydration } from '@hooks/useAuthHydration';
 import { useMessagingSync } from '@hooks/useMessagingSync';
 import { PersonalMapScreen } from '@screens/onboarding/PersonalMapScreen';
 import { useAuthStore } from '@store/authStore';
+import { useTheme } from '@theme';
 
 import { AuthNavigator } from './AuthNavigator';
 import { MainTabsNavigator } from './MainTabsNavigator';
@@ -27,16 +29,19 @@ function OnboardingNavigator() {
 }
 
 function SplashScreen() {
+  const { theme } = useTheme();
   return (
-    <View style={styles.splashContainer}>
-      <ActivityIndicator size="large" />
-      <Text style={styles.splashText}>Preparing SelfLink…</Text>
+    <View style={[styles.splashContainer, { backgroundColor: theme.colors.background }]}>
+      <ActivityIndicator size="large" color={theme.text.primary} />
+      <Text style={[styles.splashText, { color: theme.text.primary }]}>
+        Preparing SelfLink…
+      </Text>
     </View>
   );
 }
 
 export function RootNavigator() {
-  const colorScheme = useColorScheme();
+  const { resolved, theme } = useTheme();
   const isHydrated = useAuthHydration();
   const accessToken = useAuthStore((state) => state.accessToken);
   const hasCompletedPersonalMap = useAuthStore((state) => state.hasCompletedPersonalMap);
@@ -50,8 +55,23 @@ export function RootNavigator() {
     return <SplashScreen />;
   }
 
+  const navigationTheme = useMemo(() => {
+    const base = resolved === 'dark' ? DarkTheme : DefaultTheme;
+    return {
+      ...base,
+      colors: {
+        ...base.colors,
+        background: theme.colors.background,
+        card: theme.colors.surface,
+        text: theme.text.primary,
+        border: theme.colors.border,
+        primary: theme.colors.primary,
+      },
+    };
+  }, [resolved, theme]);
+
   return (
-    <NavigationContainer theme={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <NavigationContainer theme={navigationTheme}>
       <RootStack.Navigator screenOptions={{ headerShown: false }}>
         {!isAuthenticated && <RootStack.Screen name="Auth" component={AuthNavigator} />}
         {needsOnboarding && (
