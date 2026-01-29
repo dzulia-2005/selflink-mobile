@@ -27,7 +27,7 @@ import type { Comment, Post } from '@schemas/social';
 import type { VideoFeedItem } from '@schemas/videoFeed';
 import { useFeedStore } from '@store/feedStore';
 import { useVideoFeedStore } from '@store/videoFeedStore';
-import { theme } from '@theme';
+import { useTheme, type Theme } from '@theme';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -52,6 +52,8 @@ const useSafeIsFocused = () => {
 };
 
 export function SoulReelsScreen() {
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const navigation = useSafeNavigation<any>();
   const isFocused = useSafeIsFocused();
   const insets = useSafeAreaInsets();
@@ -549,7 +551,8 @@ export function SoulReelsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.reels.backgroundEnd,
@@ -724,4 +727,4 @@ const styles = StyleSheet.create({
     color: '#0B1120',
     fontWeight: '800',
   },
-});
+  });

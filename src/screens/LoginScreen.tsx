@@ -1,7 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -18,11 +18,13 @@ import { useToast } from '@context/ToastContext';
 import { useAuth } from '@hooks/useAuth';
 import type { AuthStackParamList } from '@navigation/types';
 import { loginWithPassword } from '@services/api/auth';
-import { theme } from '@theme/index';
+import { useTheme, type Theme } from '@theme';
 
 type LoginScreenNavigation = NativeStackNavigationProp<AuthStackParamList, 'Login'>;
 
 export function LoginScreen() {
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const { signIn } = useAuth();
   const navigation = useNavigation<LoginScreenNavigation>();
   const [email, setEmail] = useState('');
@@ -110,7 +112,8 @@ export function LoginScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: theme.palette.midnight,
@@ -154,4 +157,4 @@ const styles = StyleSheet.create({
     color: theme.palette.titanium,
     marginBottom: theme.spacing.sm,
   },
-});
+  });

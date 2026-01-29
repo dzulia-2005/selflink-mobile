@@ -32,7 +32,7 @@ import type { Post } from '@schemas/social';
 import { connectRealtime, type RealtimePayload } from '@realtime/index';
 import { useFeedStore } from '@store/feedStore';
 import { useAuthStore } from '@store/authStore';
-import { theme } from '@theme';
+import { useTheme, type Theme } from '@theme';
 import { normalizeGiftRenderData, type GiftPreview } from '@utils/gifts';
 import {
   filterActiveEffects,
@@ -46,6 +46,8 @@ import { useGiftBurst } from '@hooks/useGiftBurst';
 type FeedTab = FeedMode | 'reels';
 
 export function FeedScreen() {
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<any>();
   const isFocused = useIsFocused();
@@ -719,7 +721,8 @@ export function FeedScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.feed.backgroundEnd,
@@ -923,4 +926,4 @@ const styles = StyleSheet.create({
     color: '#0B1120',
     fontWeight: '700',
   },
-});
+  });

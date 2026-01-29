@@ -1,7 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import {
   Alert,
   KeyboardAvoidingView,
@@ -15,11 +15,13 @@ import {
 
 import type { AuthStackParamList } from '@navigation/types';
 import { useAuthStore } from '@store/authStore';
-import { theme } from '@theme';
+import { useTheme, type Theme } from '@theme';
 
 type Navigation = NativeStackNavigationProp<AuthStackParamList, 'Login'>;
 
 export function LoginScreen() {
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const navigation = useNavigation<Navigation>();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -108,7 +110,8 @@ export function LoginScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
   gradient: {
     flex: 1,
   },
@@ -178,4 +181,4 @@ const styles = StyleSheet.create({
     color: theme.text.secondary,
     ...theme.typography.body,
   },
-});
+  });

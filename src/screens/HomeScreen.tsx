@@ -1,7 +1,7 @@
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { useNavigation } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Image,
   ImageStyle,
@@ -21,11 +21,13 @@ import { useToast } from '@context/ToastContext';
 import { useAuth } from '@hooks/useAuth';
 import { useBackendHealth } from '@hooks/useBackendHealth';
 import type { MainTabsParamList } from '@navigation/types';
-import { theme } from '@theme/index';
+import { useTheme, type Theme } from '@theme';
 
 type HomeNavigation = BottomTabNavigationProp<MainTabsParamList>;
 
 export function HomeScreen() {
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const navigation = useNavigation<HomeNavigation>();
   const { status, error, refresh } = useBackendHealth();
   const { user, signOut, profileError, refreshProfile } = useAuth();
@@ -158,7 +160,8 @@ type Styles = {
   buttonRow: ViewStyle;
 };
 
-const styles = StyleSheet.create<Styles>({
+const createStyles = (theme: Theme) =>
+  StyleSheet.create<Styles>({
   safeArea: {
     flex: 1,
     backgroundColor: theme.palette.midnight,
@@ -209,4 +212,4 @@ const styles = StyleSheet.create<Styles>({
   buttonRow: {
     gap: theme.spacing.sm,
   },
-});
+  });

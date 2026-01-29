@@ -48,7 +48,7 @@ import {
   type MessagingState,
   type ThreadTypingStatus,
 } from '@store/messagingStore';
-import { theme } from '@theme';
+import { useTheme, type Theme } from '@theme';
 
 interface RouteParams {
   threadId: string;
@@ -112,6 +112,8 @@ const logTypingError = (label: string, error: unknown) => {
 };
 
 export function ChatScreen() {
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const navigation = useNavigation<any>();
   const route = useRoute<ChatRoute>();
   const threadId = route.params.threadId;
@@ -797,7 +799,8 @@ export function ChatScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
   container: {
     flex: 1,
     paddingTop: 6,
@@ -984,4 +987,4 @@ const styles = StyleSheet.create({
   destructiveText: {
     color: '#DC2626',
   },
-});
+  });

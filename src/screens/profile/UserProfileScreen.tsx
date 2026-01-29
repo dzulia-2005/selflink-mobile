@@ -1,6 +1,6 @@
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import * as Clipboard from 'expo-clipboard';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -17,7 +17,7 @@ import { UserAvatar } from '@components/UserAvatar';
 import { useToast } from '@context/ToastContext';
 import { useAuthStore } from '@store/authStore';
 import { useMessagingStore } from '@store/messagingStore';
-import { theme } from '@theme';
+import { useTheme, type Theme } from '@theme';
 
 interface RouteParams {
   userId: number;
@@ -33,6 +33,8 @@ const formatAccountKey = (value: string) => {
 };
 
 export function UserProfileScreen() {
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const navigation = useNavigation<any>();
   const route = useRoute<ProfileRoute>();
   const [profile, setProfile] = useState<UserSummary | null>(null);
@@ -258,7 +260,8 @@ export function UserProfileScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
@@ -359,4 +362,4 @@ const styles = StyleSheet.create({
   actionLabel: { fontWeight: '700', color: theme.feed.textPrimary },
   primaryLabel: { color: '#0B1120' },
   disabledButton: { opacity: 0.7 },
-});
+  });
