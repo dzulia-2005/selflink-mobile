@@ -22,7 +22,7 @@ import {
   type DailyMentorHistoryItem,
 } from '@services/api/mentor';
 import { useAuthStore } from '@store/authStore';
-import { theme } from '@theme/index';
+import { useTheme, type Theme } from '@theme';
 
 const todayString = () => new Date().toISOString().slice(0, 10);
 const makePreview = (value: string) => {
@@ -41,6 +41,8 @@ type DailyMentorReply = {
 
 export function DailyMentorScreen() {
   const toast = useToast();
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const navigation =
     useNavigation<NativeStackNavigationProp<MentorStackParamList, 'DailyMentor'>>();
   const currentUser = useAuthStore((state) => state.currentUser);
@@ -238,6 +240,11 @@ export function DailyMentorScreen() {
     [openSession],
   );
 
+  const Separator = useCallback(
+    () => <View style={{ height: theme.spacing.sm }} />,
+    [theme.spacing.sm],
+  );
+
   const hasHistory = history.length > 0;
 
   return (
@@ -423,12 +430,11 @@ function DailyMentorHeader({
   );
 }
 
-const Separator = () => <View style={{ height: theme.spacing.sm }} />;
-
-const styles = StyleSheet.create({
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F0A14',
+    backgroundColor: theme.palette.midnight,
   },
   flex: {
     flex: 1,
@@ -466,7 +472,7 @@ const styles = StyleSheet.create({
     ...theme.typography.body,
   },
   card: {
-    backgroundColor: '#131024',
+    backgroundColor: theme.palette.charcoal,
     borderRadius: theme.radii.lg,
     padding: theme.spacing.lg,
     gap: theme.spacing.md,

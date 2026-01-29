@@ -22,11 +22,13 @@ import { MentorStackParamList } from '@navigation/types';
 import { BirthDataPayload } from '@schemas/astro';
 import { createOrUpdateNatalChart } from '@services/api/astro';
 import { useAuthStore } from '@store/authStore';
-import { theme } from '@theme/index';
+import { useTheme, type Theme } from '@theme';
 
 export function BirthDataScreen() {
   const navigation =
     useNavigation<NativeStackNavigationProp<MentorStackParamList, 'BirthData'>>();
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const toast = useToast();
   const personalMap = useAuthStore((state) => state.personalMap);
   const currentUser = useAuthStore((state) => state.currentUser);
@@ -361,7 +363,8 @@ export function BirthDataScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: theme.palette.midnight,

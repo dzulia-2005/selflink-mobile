@@ -26,8 +26,8 @@ import {
   type MentorHistoryMessage,
 } from '@services/api/mentorSessions';
 import { useAuthStore } from '@store/authStore';
-import { chatTheme } from '@theme/chat';
-import { theme } from '@theme/index';
+import { createChatTheme } from '@theme/chat';
+import { useTheme, type Theme } from '@theme';
 
 type ChatMessage = Omit<MentorHistoryMessage, 'id'> & { id: string };
 
@@ -66,6 +66,9 @@ const formatTime = (value: string) => {
 export function MentorChatScreen() {
   const toast = useToast();
   const insets = useSafeAreaInsets();
+  const { theme } = useTheme();
+  const chatTheme = useMemo(() => createChatTheme(theme), [theme]);
+  const styles = useMemo(() => createStyles(theme, chatTheme), [theme, chatTheme]);
   const currentUser = useAuthStore((state) => state.currentUser);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
@@ -540,7 +543,8 @@ export function MentorChatScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: Theme, chatTheme: ReturnType<typeof createChatTheme>) =>
+  StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: chatTheme.background,

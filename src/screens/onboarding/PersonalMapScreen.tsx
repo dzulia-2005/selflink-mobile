@@ -14,7 +14,7 @@ import {
 
 import type { OnboardingStackParamList, RootStackParamList } from '@navigation/types';
 import { useAuthStore } from '@store/authStore';
-import { theme } from '@theme';
+import { useTheme, type Theme } from '@theme';
 
 const initialFormState = {
   first_name: '',
@@ -30,6 +30,8 @@ type FormState = typeof initialFormState;
 export function PersonalMapScreen() {
   const navigation =
     useNavigation<NativeStackNavigationProp<OnboardingStackParamList, 'PersonalMap'>>();
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const personalMap = useAuthStore((state) => state.personalMap);
   const currentUser = useAuthStore((state) => state.currentUser);
   const savePersonalMap = useAuthStore((state) => state.savePersonalMap);
@@ -205,6 +207,8 @@ type InputProps = {
 };
 
 function Input({ label, value, onChangeText, required, error }: InputProps) {
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   return (
     <View style={styles.inputGroup}>
       <Text style={styles.inputLabel}>
@@ -215,7 +219,7 @@ function Input({ label, value, onChangeText, required, error }: InputProps) {
         value={value}
         onChangeText={onChangeText}
         placeholder={label}
-        placeholderTextColor="#64748B"
+        placeholderTextColor={theme.text.secondary}
         style={[styles.input, error ? styles.inputError : null]}
       />
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
@@ -223,7 +227,8 @@ function Input({ label, value, onChangeText, required, error }: InputProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
   gradient: { flex: 1 },
   container: {
     flexGrow: 1,

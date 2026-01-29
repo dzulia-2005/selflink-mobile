@@ -29,7 +29,7 @@ import { ErrorView, LoadingView } from '@components/StateViews';
 import { MentorStackParamList } from '@navigation/types';
 import { Aspect, NatalChart, PlanetPosition } from '@schemas/astro';
 import { getMyNatalChart } from '@services/api/astro';
-import { theme } from '@theme/index';
+import { useTheme, type Theme } from '@theme';
 
 const BASE_PLANET_ORDER = [
   'sun',
@@ -156,6 +156,8 @@ export function NatalChartScreen({
 }: NatalChartScreenProps) {
   const navigation =
     useNavigation<NativeStackNavigationProp<MentorStackParamList, 'NatalChart'>>();
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const [chart, setChart] = useState<NatalChart | null>(prefetchedChart);
   const [loading, setLoading] = useState(!prefetchedChart);
   const [error, setError] = useState<string | null>(null);
@@ -375,7 +377,8 @@ export function NatalChartScreen({
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: theme.palette.midnight,

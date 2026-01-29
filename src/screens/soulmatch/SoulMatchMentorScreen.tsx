@@ -20,13 +20,15 @@ import { useMentorStream } from '@hooks/useMentorStream';
 import { SoulMatchStackParamList } from '@navigation/types';
 import { fetchSoulmatchMentor } from '@services/api/mentor';
 import { useAuthStore } from '@store/authStore';
-import { theme } from '@theme/index';
+import { useTheme, type Theme } from '@theme';
 import { normalizeApiError } from '@utils/apiErrors';
 
 type Route = RouteProp<SoulMatchStackParamList, 'SoulMatchMentor'>;
 type Nav = NativeStackNavigationProp<SoulMatchStackParamList>;
 
 export function SoulMatchMentorScreen() {
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const route = useRoute<Route>();
   const navigation = useNavigation<Nav>();
   const { userId, displayName } = route.params;
@@ -230,7 +232,8 @@ export function SoulMatchMentorScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.palette.midnight,
@@ -323,4 +326,4 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: theme.spacing.sm,
   },
-});
+  });

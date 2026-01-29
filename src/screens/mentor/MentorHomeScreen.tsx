@@ -1,17 +1,20 @@
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ScrollView, StyleSheet, Text } from 'react-native';
+import { useMemo } from 'react';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { MetalButton } from '@components/MetalButton';
 import { MetalPanel } from '@components/MetalPanel';
 import { MentorStackParamList } from '@navigation/types';
-import { theme } from '@theme/index';
+import { useTheme, type Theme } from '@theme';
 
 export function MentorHomeScreen() {
   const navigation =
     useNavigation<NativeStackNavigationProp<MentorStackParamList, 'MentorHome'>>();
   const insets = useSafeAreaInsets();
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -71,7 +74,8 @@ export function MentorHomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: theme.palette.midnight,

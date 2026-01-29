@@ -22,7 +22,7 @@ import { SoulMatchStackParamList } from '@navigation/types';
 import { SoulmatchResult } from '@schemas/soulmatch';
 import { fetchSoulmatchMentor, fetchSoulmatchWith } from '@services/api/soulmatch';
 import { useAuthStore } from '@store/authStore';
-import { theme } from '@theme/index';
+import { useTheme, type Theme } from '@theme';
 import { normalizeApiError } from '@utils/apiErrors';
 import { buildBadges, formatScore, scoreTone } from '@utils/soulmatch';
 import { SoulMatchUpgradeSheet } from '@components/soulmatch/SoulMatchUpgradeSheet';
@@ -40,6 +40,8 @@ export function SoulMatchDetailsScreen({
   prefetchedData = null,
   skipAutoLoad = false,
 }: Props) {
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const navigation = useNavigation<Nav>();
   const route = useRoute<Route>();
   const { userId, displayName, explainLevel = 'free' } = route.params;
@@ -361,7 +363,8 @@ function ExpandableSection({ title, text }: { title: string; text?: string | nul
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.palette.midnight,
@@ -498,4 +501,4 @@ const styles = StyleSheet.create({
     ...theme.typography.body,
     textAlign: 'center',
   },
-});
+  });
