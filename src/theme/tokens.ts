@@ -361,7 +361,7 @@ const lightTheme = {
 
 export type Theme = typeof darkTheme;
 
-export const themes = {
+export const themes: Record<ThemeName, Theme> = {
   light: lightTheme,
   dark: darkTheme,
-} as const;
+};
