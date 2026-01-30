@@ -1,11 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { memo } from 'react';
+import React, { memo, useMemo } from 'react';
 import { Animated, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { useBubbleAnimation } from '@hooks/useBubbleAnimation';
 import { useReactionPulse } from '@hooks/useReactionPulse';
 import type { Message, MessageReactionSummary } from '@schemas/messaging';
-import { theme } from '@theme';
+import { useTheme, type Theme } from '@theme';
 
 type Props = {
   message: Message;
@@ -30,6 +30,8 @@ const ChatBubbleComponent: React.FC<Props> = ({
   disableActions,
   onRetry,
 }) => {
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const radius = getRadius(isOwn, isFirstInGroup, isLastInGroup);
   const { animatedStyle: bubbleAnimatedStyle } = useBubbleAnimation(isOwn);
 
@@ -264,7 +266,8 @@ const getRadius = (isOwn: boolean, isFirst: boolean, isLast: boolean) => {
   return base;
 };
 
-const styles = StyleSheet.create({
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
   container: {
     paddingHorizontal: 12,
     marginVertical: 4,
@@ -439,7 +442,7 @@ const styles = StyleSheet.create({
   errorIcon: {
     marginRight: 6,
   },
-});
+  });
 
 export const ChatBubble = memo(ChatBubbleComponent);
 export default ChatBubble;

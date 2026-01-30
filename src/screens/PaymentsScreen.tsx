@@ -18,11 +18,13 @@ import { useToast } from '@context/ToastContext';
 import { usePaymentsCatalog } from '@hooks/usePaymentsCatalog';
 import type { MainTabsParamList } from '@navigation/types';
 import { createStripeCheckoutSession } from '@services/api/payments';
-import { theme } from '@theme/index';
+import { useTheme, type Theme } from '@theme';
 
 type PaymentsNavigation = BottomTabNavigationProp<MainTabsParamList, 'Payments'>;
 
 export function PaymentsScreen() {
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const navigation = useNavigation<PaymentsNavigation>();
   const { gifts, plans, activeSubscription, loading, refresh } = usePaymentsCatalog();
   const toast = useToast();
@@ -199,7 +201,8 @@ export function PaymentsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: theme.palette.midnight,
@@ -275,4 +278,4 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: theme.palette.midnight + '90',
   },
-});
+  });

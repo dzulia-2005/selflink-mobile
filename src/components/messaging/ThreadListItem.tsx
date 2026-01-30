@@ -3,6 +3,7 @@ import React, { memo, useMemo } from 'react';
 import { Image, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import type { Thread } from '@schemas/messaging';
+import { useTheme, type Theme } from '@theme';
 import { normalizeAvatarUrl } from '@utils/avatar';
 
 type Props = {
@@ -18,6 +19,8 @@ const ThreadListItemComponent: React.FC<Props> = ({
   onPress,
   onLongPress,
 }) => {
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const unread = thread.unread_count ?? 0;
   const hasUnread = unread > 0;
 
@@ -109,7 +112,8 @@ function formatTime(iso?: string | null): string {
   return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
   wrapper: {
     paddingHorizontal: 12,
     paddingVertical: 4,
@@ -213,7 +217,7 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontWeight: '700',
   },
-});
+  });
 
 export const ThreadListItem = memo(ThreadListItemComponent);
 export default ThreadListItem;

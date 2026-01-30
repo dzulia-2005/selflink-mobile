@@ -23,13 +23,15 @@ import { useThreads } from '@hooks/useThreads';
 import { useUsersDirectory } from '@hooks/useUsersDirectory';
 import type { MainTabsParamList, MessagesStackParamList } from '@navigation/types';
 import type { UserProfile } from '@services/api/user';
-import { theme } from '@theme/index';
+import { useTheme, type Theme } from '@theme';
 
 type InboxNavigation = BottomTabNavigationProp<MainTabsParamList, 'Inbox'>;
 
 export function InboxScreen() {
   const navigation = useNavigation<InboxNavigation>();
   const toast = useToast();
+  const { theme, resolved } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const { user: authUser } = useAuth();
   const { threads, loading, refreshing, loadMore, hasMore, refresh, createThread } =
     useThreads();
@@ -136,7 +138,7 @@ export function InboxScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar style="light" />
+      <StatusBar style={resolved === 'dark' ? 'light' : 'dark'} />
       <View style={styles.hero}>
         <Text style={styles.title}>Inbox</Text>
         <Text style={styles.subtitle}>
@@ -157,7 +159,11 @@ export function InboxScreen() {
           }
         }}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor="#fff" />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={refresh}
+            tintColor={theme.palette.platinum}
+          />
         }
         ListFooterComponent={
           loading ? (
@@ -276,7 +282,8 @@ export function InboxScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: theme.palette.midnight,

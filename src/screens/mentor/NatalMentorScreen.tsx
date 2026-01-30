@@ -16,10 +16,12 @@ import { LoadingView } from '@components/StateViews';
 import { useToast } from '@context/ToastContext';
 import { useMentorStream } from '@hooks/useMentorStream';
 import { useAuthStore } from '@store/authStore';
-import { theme } from '@theme/index';
+import { useTheme, type Theme } from '@theme';
 
 export function NatalMentorScreen() {
   const toast = useToast();
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const currentUser = useAuthStore((state) => state.currentUser);
   const [mentorText, setMentorText] = useState<string | null>(null);
   const [prompt, setPrompt] = useState(
@@ -174,7 +176,8 @@ export function NatalMentorScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.palette.midnight,

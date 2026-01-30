@@ -15,11 +15,13 @@ import { followUser, searchUsers, unfollowUser, UserSummary } from '@api/users';
 import { UserAvatar } from '@components/UserAvatar';
 import { useToast } from '@context/ToastContext';
 import { useAuthStore } from '@store/authStore';
-import { theme } from '@theme';
+import { useTheme, type Theme } from '@theme';
 
 export function SearchProfilesScreen() {
   const navigation = useNavigation<any>();
   const toast = useToast();
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<UserSummary[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -176,6 +178,7 @@ export function SearchProfilesScreen() {
           value={query}
           onChangeText={setQuery}
           style={styles.input}
+          placeholderTextColor={theme.feed.textMuted}
           autoCapitalize="none"
         />
       </View>
@@ -192,7 +195,8 @@ export function SearchProfilesScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,

@@ -2,7 +2,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import * as Clipboard from 'expo-clipboard';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { getRecipientId, savePersonalMapProfile } from '@api/users';
@@ -11,7 +11,7 @@ import { useToast } from '@context/ToastContext';
 import { useAvatarPicker } from '@hooks/useAvatarPicker';
 import { ProfileStackParamList } from '@navigation/types';
 import { useAuthStore } from '@store/authStore';
-import { theme } from '@theme';
+import { useTheme, type Theme, type ThemeMode } from '@theme';
 
 const formatAccountKey = (value: string) => {
   if (value.length <= 14) {
@@ -33,6 +33,8 @@ export function ProfileScreen() {
   const fetchProfile = useAuthStore((state) => state.fetchProfile);
   const navigation =
     useNavigation<NativeStackNavigationProp<ProfileStackParamList, 'ProfileHome'>>();
+  const { theme, mode, setMode } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
 
   const handleLogout = useCallback(async () => {
     await logout();
@@ -115,6 +117,14 @@ export function ProfileScreen() {
     }
   }, [recipientId, toast]);
 
+  const handleSelectTheme = useCallback(
+    async (nextMode: ThemeMode) => {
+      await setMode(nextMode);
+      toast.push({ message: 'Theme updated', tone: 'info', duration: 1200 });
+    },
+    [setMode, toast],
+  );
+
   if (!currentUser) {
     return (
       <View style={styles.emptyState}>
@@ -171,15 +181,61 @@ export function ProfileScreen() {
               <Text style={styles.copyLabel}>Copy</Text>
             </TouchableOpacity>
           </View>
+          <Text style={styles.sectionTitle}>Appearance</Text>
+          <View style={styles.appearanceCard}>
+            {(['system', 'light', 'dark'] as ThemeMode[]).map((value) => {
+              const selected = mode === value;
+              return (
+                <TouchableOpacity
+                  key={value}
+                  style={[
+                    styles.appearanceOption,
+                    selected && styles.appearanceOptionActive,
+                  ]}
+                  onPress={() => handleSelectTheme(value)}
+                  activeOpacity={0.85}
+                >
+                  <Text
+                    style={[
+                      styles.appearanceLabel,
+                      selected && styles.appearanceLabelActive,
+                    ]}
+                  >
+                    {value === 'system'
+                      ? 'System'
+                      : value === 'light'
+                        ? 'Light'
+                        : 'Dark'}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
           <Text style={styles.sectionTitle}>Personal map</Text>
           {hasCompletedPersonalMap && personalMap ? (
             <View style={styles.mapGrid}>
-              <InfoRow label="First name" value={personalMap.first_name} />
-              <InfoRow label="Last name" value={personalMap.last_name} />
-              <InfoRow label="Birth date" value={personalMap.birth_date ?? 'N/A'} />
-              <InfoRow label="Birth time" value={personalMap.birth_time ?? 'N/A'} />
-              <InfoRow label="Birth city" value={personalMap.birth_place_city} />
-              <InfoRow label="Country" value={personalMap.birth_place_country} />
+              <InfoRow styles={styles} label="First name" value={personalMap.first_name} />
+              <InfoRow styles={styles} label="Last name" value={personalMap.last_name} />
+              <InfoRow
+                styles={styles}
+                label="Birth date"
+                value={personalMap.birth_date ?? 'N/A'}
+              />
+              <InfoRow
+                styles={styles}
+                label="Birth time"
+                value={personalMap.birth_time ?? 'N/A'}
+              />
+              <InfoRow
+                styles={styles}
+                label="Birth city"
+                value={personalMap.birth_place_city}
+              />
+              <InfoRow
+                styles={styles}
+                label="Country"
+                value={personalMap.birth_place_country}
+              />
             </View>
           ) : (
             <Text style={styles.meta}>
@@ -210,9 +266,10 @@ export function ProfileScreen() {
 type InfoRowProps = {
   label: string;
   value: string;
+  styles: ReturnType<typeof createStyles>;
 };
 
-function InfoRow({ label, value }: InfoRowProps) {
+function InfoRow({ label, value, styles }: InfoRowProps) {
   return (
     <View style={styles.infoRow}>
       <Text style={styles.infoLabel}>{label}</Text>
@@ -221,144 +278,178 @@ function InfoRow({ label, value }: InfoRowProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-  },
-  container: {
-    padding: theme.spacing.xl,
-    gap: theme.spacing.lg,
-  },
-  card: {
-    borderRadius: theme.radii.lg,
-    padding: theme.spacing.xl,
-    alignItems: 'center',
-    gap: theme.spacing.md,
-    ...theme.shadows.card,
-  },
-  editPhotoButton: {
-    marginTop: theme.spacing.xs,
-    paddingVertical: theme.spacing.xs,
-    paddingHorizontal: theme.spacing.md,
-    borderRadius: theme.radii.pill,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.3)',
-    backgroundColor: 'rgba(15, 23, 42, 0.4)',
-  },
-  editPhotoButtonDisabled: {
-    opacity: 0.6,
-  },
-  editPhotoLabel: {
-    color: theme.text.primary,
-    fontWeight: '600',
-  },
-  name: {
-    ...theme.typography.headingL,
-    color: theme.text.primary,
-  },
-  handle: {
-    color: theme.text.secondary,
-  },
-  meta: {
-    color: theme.text.secondary,
-    textAlign: 'center',
-  },
-  recipientCard: {
-    alignSelf: 'stretch',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: theme.spacing.md,
-    marginTop: theme.spacing.sm,
-    padding: theme.spacing.md,
-    borderRadius: theme.radii.md,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
-    backgroundColor: 'rgba(15, 23, 42, 0.35)',
-  },
-  recipientInfo: {
-    flex: 1,
-    gap: theme.spacing.xs,
-  },
-  recipientLabel: {
-    color: theme.text.muted,
-    ...theme.typography.caption,
-  },
-  recipientValue: {
-    color: theme.text.primary,
-    fontWeight: '700',
-  },
-  recipientHint: {
-    color: theme.text.secondary,
-    ...theme.typography.caption,
-  },
-  copyButton: {
-    paddingVertical: theme.spacing.xs,
-    paddingHorizontal: theme.spacing.md,
-    borderRadius: theme.radii.pill,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.3)',
-    backgroundColor: 'rgba(255,255,255,0.08)',
-  },
-  copyButtonDisabled: {
-    opacity: 0.6,
-  },
-  copyLabel: {
-    color: theme.text.primary,
-    fontWeight: '600',
-  },
-  sectionTitle: {
-    alignSelf: 'flex-start',
-    marginTop: theme.spacing.lg,
-    color: theme.text.primary,
-    ...theme.typography.headingM,
-  },
-  mapGrid: {
-    alignSelf: 'stretch',
-    gap: theme.spacing.sm,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  infoLabel: {
-    color: theme.text.muted,
-  },
-  infoValue: {
-    color: theme.text.primary,
-    fontWeight: '600',
-  },
-  logoutButton: {
-    marginTop: theme.spacing.xl,
-    alignSelf: 'stretch',
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: theme.radii.md,
-    paddingVertical: theme.spacing.md,
-    alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.04)',
-  },
-  logoutLabel: {
-    color: theme.colors.error,
-    ...theme.typography.button,
-  },
-  editButton: {
-    marginTop: theme.spacing.md,
-    alignSelf: 'stretch',
-    paddingVertical: theme.spacing.sm,
-    borderRadius: theme.radii.md,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.3)',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.08)',
-  },
-  emptyState: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: theme.colors.background,
-  },
-  emptyStateText: {
-    color: theme.text.secondary,
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    screen: {
+      flex: 1,
+    },
+    container: {
+      padding: theme.spacing.xl,
+      gap: theme.spacing.lg,
+    },
+    card: {
+      borderRadius: theme.radii.lg,
+      padding: theme.spacing.xl,
+      alignItems: 'center',
+      gap: theme.spacing.md,
+      backgroundColor: theme.colors.surface,
+      ...theme.shadows.card,
+    },
+    editPhotoButton: {
+      marginTop: theme.spacing.xs,
+      paddingVertical: theme.spacing.xs,
+      paddingHorizontal: theme.spacing.md,
+      borderRadius: theme.radii.pill,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.surfaceAlt,
+    },
+    editPhotoButtonDisabled: {
+      opacity: 0.6,
+    },
+    editPhotoLabel: {
+      color: theme.text.primary,
+      fontWeight: '600',
+    },
+    name: {
+      ...theme.typography.headingL,
+      color: theme.text.primary,
+    },
+    handle: {
+      color: theme.text.secondary,
+    },
+    meta: {
+      color: theme.text.secondary,
+      textAlign: 'center',
+    },
+    recipientCard: {
+      alignSelf: 'stretch',
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: theme.spacing.md,
+      marginTop: theme.spacing.sm,
+      padding: theme.spacing.md,
+      borderRadius: theme.radii.md,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.surfaceAlt,
+    },
+    recipientInfo: {
+      flex: 1,
+      gap: theme.spacing.xs,
+    },
+    recipientLabel: {
+      color: theme.text.muted,
+      ...theme.typography.caption,
+    },
+    recipientValue: {
+      color: theme.text.primary,
+      fontWeight: '700',
+    },
+    recipientHint: {
+      color: theme.text.secondary,
+      ...theme.typography.caption,
+    },
+    copyButton: {
+      paddingVertical: theme.spacing.xs,
+      paddingHorizontal: theme.spacing.md,
+      borderRadius: theme.radii.pill,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.surface,
+    },
+    copyButtonDisabled: {
+      opacity: 0.6,
+    },
+    copyLabel: {
+      color: theme.text.primary,
+      fontWeight: '600',
+    },
+    appearanceCard: {
+      alignSelf: 'stretch',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      gap: theme.spacing.sm,
+      padding: theme.spacing.md,
+      borderRadius: theme.radii.md,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.surfaceAlt,
+    },
+    appearanceOption: {
+      flex: 1,
+      paddingVertical: theme.spacing.sm,
+      borderRadius: theme.radii.md,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      alignItems: 'center',
+      backgroundColor: theme.colors.surface,
+    },
+    appearanceOptionActive: {
+      borderColor: theme.colors.primary,
+      backgroundColor: theme.colors.surfaceAlt,
+    },
+    appearanceLabel: {
+      color: theme.text.secondary,
+      ...theme.typography.caption,
+    },
+    appearanceLabelActive: {
+      color: theme.text.primary,
+      fontWeight: '700',
+    },
+    sectionTitle: {
+      alignSelf: 'flex-start',
+      marginTop: theme.spacing.lg,
+      color: theme.text.primary,
+      ...theme.typography.headingM,
+    },
+    mapGrid: {
+      alignSelf: 'stretch',
+      gap: theme.spacing.sm,
+    },
+    infoRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+    },
+    infoLabel: {
+      color: theme.text.muted,
+    },
+    infoValue: {
+      color: theme.text.primary,
+      fontWeight: '600',
+    },
+    logoutButton: {
+      marginTop: theme.spacing.xl,
+      alignSelf: 'stretch',
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      borderRadius: theme.radii.md,
+      paddingVertical: theme.spacing.md,
+      alignItems: 'center',
+      backgroundColor: theme.colors.surfaceAlt,
+    },
+    logoutLabel: {
+      color: theme.colors.error,
+      ...theme.typography.button,
+    },
+    editButton: {
+      marginTop: theme.spacing.md,
+      alignSelf: 'stretch',
+      paddingVertical: theme.spacing.sm,
+      borderRadius: theme.radii.md,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      alignItems: 'center',
+      backgroundColor: theme.colors.surface,
+    },
+    emptyState: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.background,
+    },
+    emptyStateText: {
+      color: theme.text.secondary,
+    },
+  });

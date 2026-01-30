@@ -3,7 +3,7 @@ import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { MetalPanel } from '@components/MetalPanel';
 import type { UserProfile } from '@services/api/user';
-import { theme } from '@theme/index';
+import { useTheme } from '@theme';
 import { normalizeAvatarUrl } from '@utils/avatar';
 
 type Props = {
@@ -17,6 +17,7 @@ export const UserCard = memo(function UserCard({
   onToggleFollow,
   pending = false,
 }: Props) {
+  const { theme } = useTheme();
   const following = Boolean(
     (user.flags as Record<string, unknown> & { following?: boolean })?.following,
   );
@@ -31,6 +32,71 @@ export const UserCard = memo(function UserCard({
     }
     return (user.handle ?? user.email ?? '?').slice(0, 2).toUpperCase();
   }, [user.name, user.handle, user.email]);
+
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        row: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: theme.spacing.md,
+        },
+        avatar: {
+          width: AVATAR_SIZE,
+          height: AVATAR_SIZE,
+          borderRadius: AVATAR_SIZE / 2,
+        },
+        avatarPlaceholder: {
+          width: AVATAR_SIZE,
+          height: AVATAR_SIZE,
+          borderRadius: AVATAR_SIZE / 2,
+          backgroundColor: theme.palette.graphite,
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+        initials: {
+          color: theme.text.primary,
+          ...theme.typography.subtitle,
+        },
+        copy: {
+          flex: 1,
+          gap: 2,
+        },
+        name: {
+          color: theme.text.primary,
+          ...theme.typography.subtitle,
+        },
+        handle: {
+          color: theme.text.muted,
+          ...theme.typography.caption,
+        },
+        bio: {
+          color: theme.text.secondary,
+          ...theme.typography.caption,
+          lineHeight: 16,
+        },
+        followButton: {
+          paddingHorizontal: theme.spacing.md,
+          paddingVertical: theme.spacing.xs,
+          borderRadius: theme.radius.full,
+          borderWidth: 1,
+        },
+        follow: {
+          borderColor: theme.text.primary,
+        },
+        following: {
+          borderColor: theme.palette.azure,
+        },
+        followText: {
+          color: theme.text.primary,
+          ...theme.typography.caption,
+        },
+        disabled: {
+          opacity: 0.6,
+        },
+      }),
+    [theme],
+  );
 
   return (
     <MetalPanel glow={following}>
@@ -67,64 +133,3 @@ export const UserCard = memo(function UserCard({
 });
 
 const AVATAR_SIZE = 52;
-
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.md,
-  },
-  avatar: {
-    width: AVATAR_SIZE,
-    height: AVATAR_SIZE,
-    borderRadius: AVATAR_SIZE / 2,
-  },
-  avatarPlaceholder: {
-    width: AVATAR_SIZE,
-    height: AVATAR_SIZE,
-    borderRadius: AVATAR_SIZE / 2,
-    backgroundColor: theme.palette.graphite,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  initials: {
-    color: theme.palette.platinum,
-    ...theme.typography.subtitle,
-  },
-  copy: {
-    flex: 1,
-    gap: 2,
-  },
-  name: {
-    color: theme.palette.platinum,
-    ...theme.typography.subtitle,
-  },
-  handle: {
-    color: theme.palette.silver,
-    ...theme.typography.caption,
-  },
-  bio: {
-    color: theme.palette.titanium,
-    ...theme.typography.caption,
-    lineHeight: 16,
-  },
-  followButton: {
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.xs,
-    borderRadius: theme.radius.full,
-    borderWidth: 1,
-  },
-  follow: {
-    borderColor: theme.palette.platinum,
-  },
-  following: {
-    borderColor: theme.palette.azure,
-  },
-  followText: {
-    color: theme.palette.platinum,
-    ...theme.typography.caption,
-  },
-  disabled: {
-    opacity: 0.6,
-  },
-});

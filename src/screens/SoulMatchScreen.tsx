@@ -1,15 +1,18 @@
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
+import { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { MetalButton } from '@components/MetalButton';
 import { MetalPanel } from '@components/MetalPanel';
 import { SoulMatchStackParamList } from '@navigation/types';
-import { theme } from '@theme/index';
+import { useTheme, type Theme } from '@theme';
 
 export function SoulMatchScreen() {
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const navigation = useNavigation<NativeStackNavigationProp<SoulMatchStackParamList>>();
 
   return (
@@ -36,7 +39,8 @@ export function SoulMatchScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: theme.palette.midnight,
@@ -65,4 +69,4 @@ const styles = StyleSheet.create({
     ...theme.typography.body,
     marginBottom: theme.spacing.sm,
   },
-});
+  });

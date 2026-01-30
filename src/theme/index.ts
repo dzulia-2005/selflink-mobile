@@ -1,2 +1,3 @@
-export { theme } from '../theme';
-export type { Theme } from '../theme';
+export { useTheme, ThemeProvider } from './ThemeProvider';
+export { themes } from './tokens';
+export type { Theme, ThemeMode, ThemeName } from './tokens';

@@ -24,7 +24,7 @@ import { GiftPickerSheet } from '@components/gifts/GiftPickerSheet';
 import { GiftBurstOverlay } from '@components/gifts/GiftBurstOverlay';
 import { useToast } from '@context/ToastContext';
 import { useAuthStore } from '@store/authStore';
-import { theme } from '@theme';
+import { useTheme, type Theme } from '@theme';
 import { normalizeGiftRenderData } from '@utils/gifts';
 import {
   filterActiveEffects,
@@ -62,6 +62,8 @@ export function CommentsBottomSheet({
   onClose,
   onCommentCountChange,
 }: Props) {
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const insets = useSafeAreaInsets();
   const toast = useToast();
   const currentUser = useAuthStore((state) => state.currentUser);
@@ -579,7 +581,8 @@ export function CommentsBottomSheet({
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
   wrapper: {
     flex: 1,
     justifyContent: 'flex-end',
@@ -647,4 +650,4 @@ const styles = StyleSheet.create({
     marginTop: 6,
     fontSize: 12,
   },
-});
+  });

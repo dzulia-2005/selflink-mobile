@@ -2,7 +2,7 @@ import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -29,7 +29,7 @@ import {
   sendTypingSignal,
   TypingStatus,
 } from '@services/api/threads';
-import { theme } from '@theme';
+import { useTheme, type Theme } from '@theme';
 
 type MessagesRoute = RouteProp<MessagesStackParamList, 'Chat'>;
 type MessagesNavigation = NativeStackNavigationProp<MessagesStackParamList, 'Chat'>;
@@ -53,6 +53,8 @@ const logTypingWarning = (label: string, error: unknown) => {
 };
 
 export function MessagesScreen() {
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const route = useRoute<MessagesRoute>();
   const navigation = useNavigation<MessagesNavigation>();
   const toast = useToast();
@@ -338,7 +340,8 @@ export function MessagesScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
   gradient: {
     flex: 1,
   },
@@ -410,4 +413,4 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
     ...theme.typography.body,
   },
-});
+  });

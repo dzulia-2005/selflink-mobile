@@ -1,8 +1,8 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
 
-import { theme } from '@theme/index';
+import { useTheme, type Theme } from '@theme';
 
 type Props = {
   value: number;
@@ -13,6 +13,8 @@ type Props = {
 const clampValue = (val: number) => Math.max(0, Math.min(100, val));
 
 export function CompatibilityBar({ value, label, size = 'md' }: Props) {
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const animated = useRef(new Animated.Value(0)).current;
   const height = size === 'sm' ? 8 : 12;
 
@@ -46,7 +48,8 @@ export function CompatibilityBar({ value, label, size = 'md' }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
   wrapper: {
     gap: theme.spacing.xs,
     flex: 1,
@@ -68,4 +71,4 @@ const styles = StyleSheet.create({
     height: '100%',
     borderRadius: theme.radius.pill,
   },
-});
+  });

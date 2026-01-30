@@ -1,10 +1,10 @@
-import { ReactNode } from 'react';
+import { ReactNode, useMemo } from 'react';
 import { StyleSheet, Text, View, ViewStyle } from 'react-native';
 
 import { PLANET_COLORS } from '@components/astro/AstroWheel';
 import { MetalPanel } from '@components/MetalPanel';
 import { Aspect, HousePosition, PlanetPosition } from '@schemas/astro';
-import { theme } from '@theme/index';
+import { useTheme, type Theme } from '@theme';
 
 type SectionPanelProps = {
   title: string;
@@ -74,6 +74,7 @@ function SectionPanel({
   action,
   style,
 }: SectionPanelProps) {
+  const styles = useNatalStyles();
   return (
     <MetalPanel glow={glow} style={style}>
       <View style={styles.sectionHeader}>
@@ -91,6 +92,7 @@ function SectionPanel({
 }
 
 function PlacementRow({ label, value, detail, tag }: PlacementRowProps) {
+  const styles = useNatalStyles();
   return (
     <View style={styles.row}>
       <View style={styles.rowLabelBlock}>
@@ -112,6 +114,7 @@ export function CoreIdentityCard({
   placements: { label: string; placement?: PlanetPosition }[];
   formatPlacement: (placement?: PlanetPosition) => string;
 }) {
+  const styles = useNatalStyles();
   return (
     <SectionPanel
       title="Core Identity"
@@ -130,6 +133,7 @@ export function CoreIdentityCard({
 }
 
 export function KeyAnglesCard({ houses, formatPlacement }: AnglesCardProps) {
+  const styles = useNatalStyles();
   const angleLabels: { key: string; label: string }[] = [
     { key: '1', label: 'Ascendant' },
     { key: '7', label: 'Descendant' },
@@ -160,6 +164,7 @@ export function PlanetsCard({
   getHouseLabel,
   retrogradeTag,
 }: PlanetsCardProps) {
+  const styles = useNatalStyles();
   return (
     <SectionPanel
       title="Planets"
@@ -184,6 +189,7 @@ export function PlanetsCard({
 }
 
 export function HousesCard({ houses, formatPlacement }: HousesCardProps) {
+  const styles = useNatalStyles();
   const sorted = Object.keys(houses).sort((a, b) => Number(a) - Number(b));
   return (
     <SectionPanel
@@ -202,6 +208,7 @@ export function HousesCard({ houses, formatPlacement }: HousesCardProps) {
 }
 
 export function AspectsCard({ aspects, renderAspect }: AspectsCardProps) {
+  const styles = useNatalStyles();
   return (
     <SectionPanel
       title="Aspects"
@@ -221,6 +228,8 @@ export function AspectsCard({ aspects, renderAspect }: AspectsCardProps) {
 }
 
 export function ElementBalanceCard({ elements }: ElementBalanceCardProps) {
+  const styles = useNatalStyles();
+  const { theme } = useTheme();
   const maxCount = Math.max(...elements.map((item) => item.count), 1);
   const palette = [
     theme.palette.amethyst,
@@ -257,6 +266,8 @@ export function ElementBalanceCard({ elements }: ElementBalanceCardProps) {
 }
 
 export function PlanetLegend({ planetKeys }: PlanetLegendProps) {
+  const styles = useNatalStyles();
+  const { theme } = useTheme();
   if (planetKeys.length === 0) {
     return null;
   }
@@ -286,6 +297,7 @@ export function SelectedPlanetCard({
   formatPlacement,
   retrogradeTag,
 }: SelectedPlanetProps) {
+  const styles = useNatalStyles();
   if (!planetKey || !placement) {
     return null;
   }
@@ -304,7 +316,8 @@ export function SelectedPlanetCard({
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -404,4 +417,9 @@ const styles = StyleSheet.create({
     height: 12,
     borderRadius: 6,
   },
-});
+  });
+
+function useNatalStyles() {
+  const { theme } = useTheme();
+  return useMemo(() => createStyles(theme), [theme]);
+}

@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -15,9 +15,11 @@ import { MetalPanel } from '@components/MetalPanel';
 import { useToast } from '@context/ToastContext';
 import { useAuth } from '@hooks/useAuth';
 import { registerUser } from '@services/api/auth';
-import { theme } from '@theme/index';
+import { useTheme, type Theme } from '@theme';
 
 export function RegisterScreen() {
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const { signIn } = useAuth();
   const toast = useToast();
   const [name, setName] = useState('');
@@ -142,7 +144,8 @@ export function RegisterScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: theme.palette.midnight,
@@ -177,4 +180,4 @@ const styles = StyleSheet.create({
     color: theme.palette.titanium,
     marginBottom: theme.spacing.sm,
   },
-});
+  });

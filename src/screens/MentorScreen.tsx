@@ -1,20 +1,22 @@
 import { StatusBar } from 'expo-status-bar';
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { ScrollView, StyleSheet, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { MetalButton } from '@components/MetalButton';
 import { MetalPanel } from '@components/MetalPanel';
-import { theme } from '@theme/index';
+import { useTheme, type Theme } from '@theme';
 
 export function MentorScreen() {
+  const { theme, resolved } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const handleStartSession = useCallback(() => {
     // TODO: Integrate mentor session start via backend API
   }, []);
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar style="light" />
+      <StatusBar style={resolved === 'dark' ? 'light' : 'dark'} />
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.headline}>Mentor Session</Text>
         <Text style={styles.subtitle}>
@@ -35,7 +37,8 @@ export function MentorScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: theme.palette.midnight,

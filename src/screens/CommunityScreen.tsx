@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -14,9 +14,11 @@ import { MetalPanel } from '@components/MetalPanel';
 import { UserCard } from '@components/UserCard';
 import { useUsersDirectory } from '@hooks/useUsersDirectory';
 import type { UserProfile } from '@services/api/user';
-import { theme } from '@theme/index';
+import { useTheme, type Theme } from '@theme';
 
 export function CommunityScreen() {
+  const { theme, resolved } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const {
     users,
     search,
@@ -63,7 +65,7 @@ export function CommunityScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar style="light" />
+      <StatusBar style={resolved === 'dark' ? 'light' : 'dark'} />
       <FlatList
         ListHeaderComponent={
           <>
@@ -118,7 +120,8 @@ export function CommunityScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: theme.palette.midnight,

@@ -1,8 +1,11 @@
+import { useMemo } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
-import { theme } from '@theme/index';
+import { useTheme, type Theme } from '@theme';
 
 export function LoadingView({ message }: { message?: string }) {
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   return (
     <View style={styles.centered}>
       <ActivityIndicator size="large" color={theme.colors.primary} />
@@ -20,6 +23,8 @@ export function ErrorView({
   actionLabel?: string;
   onRetry?: () => void;
 }) {
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   return (
     <View style={styles.centered}>
       <Text style={[styles.text, styles.errorText]}>{message}</Text>
@@ -32,7 +37,8 @@ export function ErrorView({
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
   centered: {
     flex: 1,
     alignItems: 'center',
@@ -52,4 +58,4 @@ const styles = StyleSheet.create({
     color: theme.colors.primary,
     ...theme.typography.button,
   },
-});
+  });

@@ -1,5 +1,5 @@
 import { useNavigation } from '@react-navigation/native';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, StyleSheet, Text, View } from 'react-native';
 
 import ThreadListItem from '@components/messaging/ThreadListItem';
@@ -11,9 +11,11 @@ import {
   selectThreads,
   useMessagingStore,
 } from '@store/messagingStore';
-import { theme } from '@theme';
+import { useTheme, type Theme } from '@theme';
 
 export function ThreadsScreen() {
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const navigation = useNavigation<any>();
   const threads = useMessagingStore(selectThreads);
   const isLoading = useMessagingStore(selectIsLoadingThreads);
@@ -134,35 +136,61 @@ export function ThreadsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  list: {
-    flex: 1,
-    backgroundColor: '#F8FAFC',
-  },
-  listContent: {
-    paddingVertical: 8,
-  },
-  separator: {
-    height: StyleSheet.hairlineWidth,
-    backgroundColor: '#E2E8F0',
-  },
-  centered: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
-  emptyContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 32,
-    backgroundColor: '#F8FAFC',
-  },
-  emptyTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: theme.palette.graphite,
-    marginBottom: 8,
-  },
-  emptySubtitle: {
-    textAlign: 'center',
-    color: theme.palette.silver,
-    fontSize: 14,
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+    },
+    list: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+    },
+    listContent: {
+      paddingVertical: 8,
+    },
+    separator: {
+      height: StyleSheet.hairlineWidth,
+      backgroundColor: theme.colors.border,
+    },
+    centered: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 24,
+    },
+    loading: {
+      marginTop: theme.spacing.lg,
+    },
+    empty: {
+      padding: theme.spacing.lg,
+      alignItems: 'center',
+    },
+    emptyText: {
+      color: theme.text.muted,
+      ...theme.typography.body,
+    },
+    emptyContainer: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: 32,
+      backgroundColor: theme.colors.background,
+    },
+    emptyTitle: {
+      fontSize: 18,
+      fontWeight: '600',
+      color: theme.text.primary,
+      marginBottom: 8,
+    },
+    emptySubtitle: {
+      textAlign: 'center',
+      color: theme.text.muted,
+      fontSize: 14,
+    },
+    error: {
+      padding: theme.spacing.lg,
+      color: theme.colors.error,
+      ...theme.typography.body,
+    },
+  });

@@ -1,16 +1,18 @@
 import { Ionicons } from '@expo/vector-icons';
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
 
 import { useAuth } from '@hooks/useAuth';
 import type { Message } from '@services/api/messages';
-import { theme } from '@theme/index';
+import { useTheme, type Theme } from '@theme';
 
 type Props = {
   message: Message;
 };
 
 export const MessageBubble = memo(function MessageBubble({ message }: Props) {
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const { user } = useAuth();
   const isOwn = user?.id && Number(user.id) === message.sender.id;
   const attachments = Array.isArray(message.attachments) ? message.attachments : [];
@@ -62,62 +64,63 @@ export const MessageBubble = memo(function MessageBubble({ message }: Props) {
   );
 });
 
-const styles = StyleSheet.create({
-  container: {
-    maxWidth: '80%',
-    padding: theme.spacing.md,
-    borderRadius: theme.radius.lg,
-    marginVertical: theme.spacing.xs / 2,
-  },
-  own: {
-    alignSelf: 'flex-end',
-    backgroundColor: theme.palette.azure + '22',
-    borderBottomRightRadius: theme.radius.sm,
-  },
-  other: {
-    alignSelf: 'flex-start',
-    backgroundColor: theme.palette.obsidian,
-    borderBottomLeftRadius: theme.radius.sm,
-  },
-  sender: {
-    color: theme.palette.silver,
-    ...theme.typography.caption,
-    marginBottom: 4,
-  },
-  body: {
-    color: theme.palette.platinum,
-    ...theme.typography.body,
-  },
-  timestamp: {
-    color: theme.palette.graphite,
-    ...theme.typography.caption,
-    marginTop: 4,
-  },
-  attachmentsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginTop: 6,
-  },
-  imageThumb: {
-    width: 140,
-    height: 140,
-    borderRadius: 12,
-    backgroundColor: '#1f2937',
-  },
-  videoChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 10,
-    backgroundColor: '#e5e7eb',
-    alignSelf: 'flex-start',
-  },
-  videoLabel: {
-    marginLeft: 6,
-    color: '#0f172a',
-    fontWeight: '600',
-    fontSize: 12,
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    container: {
+      maxWidth: '80%',
+      padding: theme.spacing.md,
+      borderRadius: theme.radius.lg,
+      marginVertical: theme.spacing.xs / 2,
+    },
+    own: {
+      alignSelf: 'flex-end',
+      backgroundColor: theme.palette.azure + '22',
+      borderBottomRightRadius: theme.radius.sm,
+    },
+    other: {
+      alignSelf: 'flex-start',
+      backgroundColor: theme.colors.surfaceAlt,
+      borderBottomLeftRadius: theme.radius.sm,
+    },
+    sender: {
+      color: theme.text.muted,
+      ...theme.typography.caption,
+      marginBottom: 4,
+    },
+    body: {
+      color: theme.text.primary,
+      ...theme.typography.body,
+    },
+    timestamp: {
+      color: theme.text.muted,
+      ...theme.typography.caption,
+      marginTop: 4,
+    },
+    attachmentsRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
+      marginTop: 6,
+    },
+    imageThumb: {
+      width: 140,
+      height: 140,
+      borderRadius: 12,
+      backgroundColor: theme.colors.surfaceAlt,
+    },
+    videoChip: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+      borderRadius: 10,
+      backgroundColor: theme.colors.border,
+      alignSelf: 'flex-start',
+    },
+    videoLabel: {
+      marginLeft: 6,
+      color: theme.text.primary,
+      fontWeight: '600',
+      fontSize: 12,
+    },
+  });

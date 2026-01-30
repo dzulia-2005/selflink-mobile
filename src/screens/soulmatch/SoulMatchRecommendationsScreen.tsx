@@ -25,7 +25,7 @@ import {
   type SoulmatchRecommendationsMeta,
 } from '@services/api/soulmatch';
 import { useAuthStore } from '@store/authStore';
-import { theme } from '@theme/index';
+import { useTheme, type Theme } from '@theme';
 import { normalizeApiError } from '@utils/apiErrors';
 import {
   normalizeSoulmatchRecommendations,
@@ -218,6 +218,8 @@ export function SoulMatchRecommendationsScreen({
   initialItems = [],
   skipAutoLoad = false,
 }: Props) {
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const navigation = useNavigation<Nav>();
   const toast = useToast();
   const logout = useAuthStore((state) => state.logout);
@@ -434,7 +436,8 @@ export function SoulMatchRecommendationsScreen({
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.palette.midnight,
@@ -605,4 +608,4 @@ const styles = StyleSheet.create({
     color: theme.palette.pearl,
     ...theme.typography.caption,
   },
-});
+  });

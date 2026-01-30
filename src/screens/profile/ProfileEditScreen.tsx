@@ -1,6 +1,6 @@
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -21,7 +21,7 @@ import { ProfileStackParamList } from '@navigation/types';
 import { ProfileSettings } from '@schemas/profile';
 import { fetchProfileSettings, updateProfileSettings } from '@services/api/profile';
 import { useAuthStore } from '@store/authStore';
-import { theme } from '@theme/index';
+import { useTheme, type Theme } from '@theme';
 
 type Nav = NativeStackNavigationProp<ProfileStackParamList, 'ProfileEdit'>;
 
@@ -57,6 +57,8 @@ const LIFESTYLE = [
 const LOVE_LANG = ['words', 'quality_time', 'acts', 'gifts', 'touch'];
 
 export function ProfileEditScreen() {
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const navigation = useNavigation<Nav>();
   const currentUser = useAuthStore((state) => state.currentUser);
   const setCurrentUser = useAuthStore((state) => state.setCurrentUser);
@@ -289,7 +291,8 @@ export function ProfileEditScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: theme.palette.midnight,
@@ -360,4 +363,4 @@ const styles = StyleSheet.create({
     color: theme.text.primary,
     ...theme.typography.subtitle,
   },
-});
+  });

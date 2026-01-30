@@ -47,7 +47,7 @@ import {
 import { createStripeCheckout, normalizeStripeApiError } from '@api/stripeCheckout';
 import { getWallet, Wallet } from '@services/api/payments';
 import { env } from '@config/env';
-import { theme } from '@theme/index';
+import { useTheme, type Theme } from '@theme';
 import { parseDollarsToCents } from '@utils/currency';
 import {
   endIapConnection,
@@ -257,6 +257,8 @@ const formatTimestamp = (raw: string) => {
 };
 
 export function WalletLedgerScreen() {
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const toast = useToast();
   const navigation = useNavigation<any>();
   const logout = useAuthStore((state) => state.logout);
@@ -2531,7 +2533,8 @@ export function WalletLedgerScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: theme.palette.midnight,
@@ -2758,4 +2761,4 @@ const styles = StyleSheet.create({
     color: theme.palette.silver,
     ...theme.typography.button,
   },
-});
+  });

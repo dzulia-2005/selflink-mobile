@@ -1,16 +1,16 @@
-import { theme } from '../theme';
+import type { Theme } from './tokens';
 
-export const chatTheme = {
-  background: theme.palette.midnight,
+export const createChatTheme = (theme: Theme) => ({
+  background: theme.colors.background,
   backgroundGradient: [
-    'rgba(7,12,28,0.92)',
-    'rgba(5,8,18,0.96)',
-    'rgba(2,6,23,1)',
+    theme.colors.background,
+    theme.colors.background,
+    theme.colors.background,
   ] as const,
-  surface: theme.palette.charcoal,
+  surface: theme.colors.surface,
   header: {
-    title: theme.palette.platinum,
-    subtitle: theme.palette.silver,
+    title: theme.text.primary,
+    subtitle: theme.text.muted,
     iconBackground: [theme.palette.glow, theme.palette.azure] as const,
     shadow: {
       shadowColor: '#000',
@@ -24,13 +24,13 @@ export const chatTheme = {
     user: {
       background: theme.palette.azure,
       border: theme.palette.azure,
-      text: theme.palette.pearl,
-      timestamp: theme.palette.platinum,
+      text: theme.text.inverted,
+      timestamp: theme.text.secondary,
     },
     mentor: {
-      background: '#0F172A',
-      text: theme.palette.platinum,
-      timestamp: theme.palette.silver,
+      background: theme.colors.surfaceAlt,
+      text: theme.text.primary,
+      timestamp: theme.text.muted,
       shadow: {
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 6 },
@@ -40,7 +40,7 @@ export const chatTheme = {
       },
     },
     system: {
-      text: theme.palette.silver,
+      text: theme.text.muted,
     },
     radius: 20,
     maxWidth: '85%',
@@ -66,10 +66,10 @@ export const chatTheme = {
     },
   },
   input: {
-    background: '#0B1222',
-    border: '#1E293B',
-    placeholder: theme.palette.silver,
-    text: theme.palette.platinum,
+    background: theme.colors.surface,
+    border: theme.colors.border,
+    placeholder: theme.text.muted,
+    text: theme.text.primary,
     shadow: {
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 10 },
@@ -78,6 +78,6 @@ export const chatTheme = {
       elevation: 12,
     },
   },
-};
+});
 
-export type ChatTheme = typeof chatTheme;
+export type ChatTheme = ReturnType<typeof createChatTheme>;

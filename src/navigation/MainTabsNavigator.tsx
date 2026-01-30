@@ -31,6 +31,7 @@ import { SoulMatchScreen } from '@screens/SoulMatchScreen';
 import { SoulReelsScreen } from '@screens/video/SoulReelsScreen';
 import { WalletLedgerScreen } from '@screens/WalletLedgerScreen';
 import { useMessagingStore } from '@store/messagingStore';
+import { useTheme } from '@theme';
 
 import type {
   MainTabsParamList,
@@ -42,12 +43,10 @@ import type {
 } from './types';
 
 const SELF_LINK_GREEN = '#16a34a';
-const TAB_BAR_BG = '#020617';
-const TAB_BAR_BORDER = '#1E1B4B';
 
 // const HIDDEN_TAB_OPTIONS = { tabBarButton: () => null };
 
-export const MESSAGE_BADGE_STYLE: StyleProp<TextStyle> = {
+const createBadgeStyle = (textColor: string, backgroundColor: string) => ({
   minWidth: 20,
   height: 20,
   borderRadius: 10,
@@ -56,9 +55,9 @@ export const MESSAGE_BADGE_STYLE: StyleProp<TextStyle> = {
   textAlign: 'center',
   fontSize: 12,
   fontWeight: '700',
-  color: '#fff',
-  backgroundColor: SELF_LINK_GREEN,
-};
+  color: textColor,
+  backgroundColor,
+});
 
 const Tab = createBottomTabNavigator<MainTabsParamList>();
 const FeedStack = createNativeStackNavigator<FeedStackParamList>();
@@ -113,8 +112,15 @@ const createTabBarIcon =
 const MessagesHeader = () => <TopBar title="Messages" />;
 
 function FeedStackNavigator() {
+  const { theme } = useTheme();
   return (
-    <FeedStack.Navigator>
+    <FeedStack.Navigator
+      screenOptions={{
+        headerStyle: { backgroundColor: theme.colors.background },
+        headerTintColor: theme.text.primary,
+        headerShadowVisible: false,
+      }}
+    >
       <FeedStack.Screen
         name="FeedHome"
         component={FeedScreen}
@@ -150,8 +156,15 @@ function FeedStackNavigator() {
 }
 
 function MessagesStackNavigator() {
+  const { theme } = useTheme();
   return (
-    <MessagesStack.Navigator>
+    <MessagesStack.Navigator
+      screenOptions={{
+        headerStyle: { backgroundColor: theme.colors.background },
+        headerTintColor: theme.text.primary,
+        headerShadowVisible: false,
+      }}
+    >
       <MessagesStack.Screen
         name="Threads"
         component={ThreadsScreen}
@@ -167,8 +180,15 @@ function MessagesStackNavigator() {
 }
 
 function ProfileStackNavigator() {
+  const { theme } = useTheme();
   return (
-    <ProfileStack.Navigator>
+    <ProfileStack.Navigator
+      screenOptions={{
+        headerStyle: { backgroundColor: theme.colors.background },
+        headerTintColor: theme.text.primary,
+        headerShadowVisible: false,
+      }}
+    >
       <ProfileStack.Screen
         name="ProfileHome"
         component={ProfileScreen}
@@ -194,8 +214,15 @@ function ProfileStackNavigator() {
 }
 
 function MentorStackNavigator() {
+  const { theme } = useTheme();
   return (
-    <MentorStack.Navigator>
+    <MentorStack.Navigator
+      screenOptions={{
+        headerStyle: { backgroundColor: theme.colors.background },
+        headerTintColor: theme.text.primary,
+        headerShadowVisible: false,
+      }}
+    >
       <MentorStack.Screen
         name="MentorHome"
         component={MentorHomeScreen}
@@ -236,8 +263,15 @@ function MentorStackNavigator() {
 }
 
 function SoulMatchStackNavigator() {
+  const { theme } = useTheme();
   return (
-    <SoulMatchStack.Navigator>
+    <SoulMatchStack.Navigator
+      screenOptions={{
+        headerStyle: { backgroundColor: theme.colors.background },
+        headerTintColor: theme.text.primary,
+        headerShadowVisible: false,
+      }}
+    >
       <SoulMatchStack.Screen
         name="SoulMatchHome"
         component={SoulMatchScreen}
@@ -269,10 +303,23 @@ type TopBarProps = {
 
 function TopBar({ title, rightLabel }: TopBarProps) {
   const insets = useSafeAreaInsets();
+  const { theme } = useTheme();
 
   return (
-    <SafeAreaView style={[topBarStyles.safeArea, { paddingTop: insets.top }]}>
-      <TabBarTop title={title} rightLabel={rightLabel} topPadding={insets.top} />
+    <SafeAreaView
+      style={[
+        topBarStyles.safeArea,
+        { paddingTop: insets.top, backgroundColor: theme.colors.background },
+      ]}
+    >
+      <TabBarTop
+        title={title}
+        rightLabel={rightLabel}
+        topPadding={insets.top}
+        tintColor={theme.text.primary}
+        actionColor={theme.colors.primary}
+        backgroundColor={theme.colors.background}
+      />
     </SafeAreaView>
   );
 }
@@ -281,18 +328,35 @@ type TabBarTopProps = {
   title: string;
   rightLabel?: string;
   topPadding: number;
+  tintColor: string;
+  actionColor: string;
+  backgroundColor: string;
 };
 
-function TabBarTop({ title, rightLabel, topPadding }: TabBarTopProps) {
+function TabBarTop({
+  title,
+  rightLabel,
+  topPadding,
+  tintColor,
+  actionColor,
+  backgroundColor,
+}: TabBarTopProps) {
   const navigation = useNavigation<any>();
   const clampedTop = Math.max(topPadding, 8);
 
   return (
-    <View style={[topBarStyles.container, { paddingTop: Math.min(clampedTop, 12) }]}>
-      <Text style={topBarStyles.title}>{title}</Text>
+    <View
+      style={[
+        topBarStyles.container,
+        { paddingTop: Math.min(clampedTop, 12), backgroundColor },
+      ]}
+    >
+      <Text style={[topBarStyles.title, { color: tintColor }]}>{title}</Text>
       {rightLabel ? (
         <TouchableOpacity onPress={() => navigation.navigate('SearchProfiles')}>
-          <Text style={topBarStyles.action}>{rightLabel}</Text>
+          <Text style={[topBarStyles.action, { color: actionColor }]}>
+            {rightLabel}
+          </Text>
         </TouchableOpacity>
       ) : (
         <View style={topBarStyles.placeholder} />
@@ -302,6 +366,7 @@ function TabBarTop({ title, rightLabel, topPadding }: TabBarTopProps) {
 }
 
 export function MainTabsNavigator() {
+  const { theme } = useTheme();
   const insets = useSafeAreaInsets();
   const safeBottom = Math.max(insets.bottom, 12);
   const tabHeight = 56 + safeBottom;
@@ -311,20 +376,22 @@ export function MainTabsNavigator() {
       totalUnread > 0 ? (totalUnread > 99 ? '99+' : String(totalUnread)) : undefined;
     return {
       tabBarBadge: badge,
-      tabBarBadgeStyle: badge ? MESSAGE_BADGE_STYLE : undefined,
+      tabBarBadgeStyle: badge
+        ? (createBadgeStyle(theme.text.inverted, SELF_LINK_GREEN) as StyleProp<TextStyle>)
+        : undefined,
       headerShown: false,
     };
-  }, [totalUnread]);
+  }, [totalUnread, theme]);
 
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarActiveTintColor: SELF_LINK_GREEN,
-        tabBarInactiveTintColor: '#9CA3AF',
+        tabBarInactiveTintColor: theme.text.muted,
         tabBarStyle: {
-          backgroundColor: TAB_BAR_BG,
-          borderTopColor: TAB_BAR_BORDER,
+          backgroundColor: theme.colors.background,
+          borderTopColor: theme.colors.border,
           borderTopWidth: StyleSheet.hairlineWidth,
           height: tabHeight,
           paddingBottom: safeBottom,

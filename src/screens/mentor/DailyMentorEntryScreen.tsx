@@ -1,5 +1,5 @@
 import { RouteProp, useRoute } from '@react-navigation/native';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -14,7 +14,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useToast } from '@context/ToastContext';
 import { MentorStackParamList } from '@navigation/types';
 import { fetchDailyMentorSession, type DailyMentorSession } from '@services/api/mentor';
-import { theme } from '@theme/index';
+import { useTheme, type Theme } from '@theme';
 
 type RouteProps = RouteProp<MentorStackParamList, 'DailyMentorEntry'>;
 
@@ -22,6 +22,8 @@ export function DailyMentorEntryScreen() {
   const { params } = useRoute<RouteProps>();
   const toast = useToast();
   const insets = useSafeAreaInsets();
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
 
   const [session, setSession] = useState<DailyMentorSession | null>(null);
   const [loading, setLoading] = useState(true);
@@ -113,14 +115,15 @@ export function DailyMentorEntryScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
   flex: {
     flex: 1,
-    backgroundColor: '#0F0A14',
+    backgroundColor: theme.palette.midnight,
   },
   container: {
     flex: 1,
-    backgroundColor: '#0F0A14',
+    backgroundColor: theme.palette.midnight,
   },
   content: {
     padding: theme.spacing.lg,
@@ -141,7 +144,7 @@ const styles = StyleSheet.create({
     ...theme.typography.body,
   },
   card: {
-    backgroundColor: '#131024',
+    backgroundColor: theme.palette.charcoal,
     borderRadius: theme.radii.lg,
     padding: theme.spacing.lg,
     gap: theme.spacing.sm,

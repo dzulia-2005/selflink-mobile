@@ -26,7 +26,7 @@ import { GiftMedia, isAnimatedGift } from '@components/gifts/GiftMedia';
 import { MetalButton } from '@components/MetalButton';
 import { useToast } from '@context/ToastContext';
 import { useAuthStore } from '@store/authStore';
-import { theme } from '@theme';
+import { useTheme, type Theme } from '@theme';
 import { usePressScaleAnimation } from '../../styles/animations';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -68,6 +68,8 @@ const formatPrice = (cents?: number) => {
 const clampQuantity = (value: number) => Math.max(1, Math.min(50, value));
 
 export function GiftPickerSheet({ visible, target, onClose, onGiftSent }: Props) {
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const insets = useSafeAreaInsets();
   const toast = useToast();
   const logout = useAuthStore((state) => state.logout);
@@ -254,9 +256,10 @@ export function GiftPickerSheet({ visible, target, onClose, onGiftSent }: Props)
         gift={item}
         selected={selectedGift?.id === item.id}
         onPress={() => setSelectedGift(item)}
+        styles={styles}
       />
     ),
-    [selectedGift?.id],
+    [selectedGift?.id, styles],
   );
 
   if (!visible || !target) {
@@ -352,7 +355,8 @@ export function GiftPickerSheet({ visible, target, onClose, onGiftSent }: Props)
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
   backdrop: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0,0,0,0.45)',
@@ -509,15 +513,16 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     paddingVertical: 24,
   },
-});
+  });
 
 type GiftTileProps = {
   gift: GiftType;
   selected: boolean;
   onPress: () => void;
+  styles: ReturnType<typeof createStyles>;
 };
 
-function GiftTile({ gift, selected, onPress }: GiftTileProps) {
+function GiftTile({ gift, selected, onPress, styles }: GiftTileProps) {
   const press = usePressScaleAnimation(0.96);
   const animated = isAnimatedGift(gift);
   return (

@@ -1,10 +1,10 @@
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import { Animated, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import type { SoulMatchFeedCard as SoulMatchFeedCardData } from '@schemas/feed';
-import { theme } from '@theme';
+import { useTheme, type Theme } from '@theme';
 
 import { UserAvatar } from './UserAvatar';
 import { useEntranceAnimation, usePressScaleAnimation } from '../styles/animations';
@@ -16,6 +16,8 @@ type Props = {
 const AVATAR_SIZE = 48;
 
 function SoulMatchFeedCardComponent({ data }: Props) {
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const navigation = useNavigation<any>();
   const tabNavigation = navigation.getParent();
   const entrance = useEntranceAnimation();
@@ -101,7 +103,8 @@ function SoulMatchFeedCardComponent({ data }: Props) {
 
 export const SoulMatchFeedCard = memo(SoulMatchFeedCardComponent);
 
-const styles = StyleSheet.create({
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
   wrapper: {
     marginBottom: 14,
   },
@@ -208,4 +211,4 @@ const styles = StyleSheet.create({
     color: '#0B1120',
     fontWeight: '700',
   },
-});
+  });

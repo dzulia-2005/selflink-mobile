@@ -20,7 +20,7 @@ import { usePulseAnimation } from '@hooks/usePulseAnimation';
 import type { Post } from '@schemas/social';
 import { useAuthStore } from '@store/authStore';
 import { useFeedStore } from '@store/feedStore';
-import { theme } from '@theme';
+import { useTheme, type Theme } from '@theme';
 import type { GiftPreview } from '@utils/gifts';
 import type { GiftCardEffects } from '@utils/giftEffects';
 
@@ -52,6 +52,8 @@ function FeedPostCardComponent({
   giftPreviews = [],
   giftEffects = null,
 }: Props) {
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const navigation = useNavigation<any>();
   const currentUserId = useAuthStore((state) => state.currentUser?.id);
   const logout = useAuthStore((state) => state.logout);
@@ -435,7 +437,8 @@ function FeedPostCardComponent({
 
 export const FeedPostCard = memo(FeedPostCardComponent);
 
-const styles = StyleSheet.create({
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
   wrapper: {
     marginBottom: 14,
   },
@@ -610,4 +613,4 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 0, height: 4 },
     textShadowRadius: 12,
   },
-});
+  });
