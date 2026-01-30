@@ -71,7 +71,151 @@ const baseRadii = {
   full: 9999,
 };
 
-const darkTheme = {
+export type Theme = {
+  palette: typeof darkPalette;
+  colors: {
+    primary: string;
+    secondary: string;
+    background: string;
+    surface: string;
+    surfaceAlt: string;
+    border: string;
+    success: string;
+    warning: string;
+    error: string;
+  };
+  text: {
+    primary: string;
+    secondary: string;
+    muted: string;
+    inverted: string;
+  };
+  gradients: {
+    appBackground: readonly string[];
+    card: readonly string[];
+    cta: readonly string[];
+    accent: readonly string[];
+    matrix: readonly string[];
+    nebulaPurple: readonly string[];
+    cosmicBlue: readonly string[];
+    matrixGlow: readonly string[];
+    soulPink: readonly string[];
+    mentorGold: readonly string[];
+    button: readonly string[];
+    buttonActive: readonly string[];
+    buttonDisabled: readonly string[];
+    panel: readonly string[];
+    messagingBackground: readonly string[];
+    messagingOutgoing: readonly string[];
+    messagingIncoming: readonly string[];
+  };
+  spacing: typeof spacing;
+  radii: typeof baseRadii;
+  radius: typeof baseRadii;
+  typography: typeof typography;
+  messaging: {
+    backgroundStart: string;
+    backgroundEnd: string;
+    outgoingBorder: string;
+    outgoingTile: string;
+    outgoingInner: string;
+    incomingTile: string;
+    incomingBorder: string;
+    ink: string;
+    subduedInk: string;
+    placeholder: string;
+    errorBg: string;
+    errorBorder: string;
+  };
+  shadows: {
+    card: {
+      shadowColor: string;
+      shadowOffset: { width: number; height: number };
+      shadowOpacity: number;
+      shadowRadius: number;
+      elevation: number;
+    };
+    button: {
+      shadowColor: string;
+      shadowOffset: { width: number; height: number };
+      shadowOpacity: number;
+      shadowRadius: number;
+      elevation: number;
+    };
+    cosmic: {
+      shadowColor: string;
+      shadowOffset: { width: number; height: number };
+      shadowOpacity: number;
+      shadowRadius: number;
+      elevation: number;
+    };
+    soft: {
+      shadowColor: string;
+      shadowOffset: { width: number; height: number };
+      shadowOpacity: number;
+      shadowRadius: number;
+      elevation: number;
+    };
+  };
+  shadow: {
+    panel: {
+      shadowColor: string;
+      shadowOffset: { width: number; height: number };
+      shadowOpacity: number;
+      shadowRadius: number;
+      elevation: number;
+    };
+    button: {
+      shadowColor: string;
+      shadowOffset: { width: number; height: number };
+      shadowOpacity: number;
+      shadowRadius: number;
+      elevation: number;
+    };
+    soft: {
+      shadowColor: string;
+      shadowOffset: { width: number; height: number };
+      shadowOpacity: number;
+      shadowRadius: number;
+      elevation: number;
+    };
+  };
+  rhythm: {
+    cardMargin: number;
+    cardRadius: number;
+    verticalRhythm: number;
+    cosmicPadding: number;
+  };
+  reels: {
+    backgroundStart: string;
+    backgroundEnd: string;
+    overlayGlass: string;
+    textPrimary: string;
+    textSecondary: string;
+    accentLike: string;
+    accentIcon: string;
+  };
+  feed: {
+    backgroundStart: string;
+    backgroundEnd: string;
+    glass: string;
+    border: string;
+    glow: string;
+    textPrimary: string;
+    textMuted: string;
+    accentBlue: string;
+    accentCyan: string;
+    cardBackground: string;
+    cardBorder: string;
+    cardGlow: string;
+    textSecondary: string;
+    actionBorder: string;
+    actionLikedBorder: string;
+    actionLikedBackground: string;
+  };
+};
+
+const darkTheme: Theme = {
   palette: darkPalette,
   colors: {
     primary: '#7C3AED',
@@ -215,7 +359,7 @@ const darkTheme = {
   },
 };
 
-const lightTheme = {
+const lightTheme: Theme = {
   palette: lightPalette,
   colors: {
     primary: '#7C3AED',
@@ -359,9 +503,7 @@ const lightTheme = {
   },
 };
 
-export type Theme = typeof darkTheme;
-
-export const themes = {
+export const themes: Record<ThemeName, Theme> = {
   light: lightTheme,
   dark: darkTheme,
-} as const;
+};
