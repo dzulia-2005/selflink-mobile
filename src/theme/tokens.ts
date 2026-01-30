@@ -90,7 +90,25 @@ export type Theme = {
     muted: string;
     inverted: string;
   };
-  gradients: typeof gradients;
+  gradients: {
+    appBackground: readonly string[];
+    card: readonly string[];
+    cta: readonly string[];
+    accent: readonly string[];
+    matrix: readonly string[];
+    nebulaPurple: readonly string[];
+    cosmicBlue: readonly string[];
+    matrixGlow: readonly string[];
+    soulPink: readonly string[];
+    mentorGold: readonly string[];
+    button: readonly string[];
+    buttonActive: readonly string[];
+    buttonDisabled: readonly string[];
+    panel: readonly string[];
+    messagingBackground: readonly string[];
+    messagingOutgoing: readonly string[];
+    messagingIncoming: readonly string[];
+  };
   spacing: typeof spacing;
   radii: typeof baseRadii;
   radius: typeof baseRadii;
