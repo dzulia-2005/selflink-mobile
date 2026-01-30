@@ -319,6 +319,8 @@ function DailyMentorHeader({
   historyLoading,
   hasHistory,
 }: HeaderProps) {
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   return (
     <View style={styles.content}>
       <View style={styles.headerBlock}>
