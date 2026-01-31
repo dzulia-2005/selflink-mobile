@@ -8,6 +8,7 @@ export type SoulmatchComponents = {
 };
 
 export type SoulmatchExplainLevel = 'free' | 'premium' | 'premium_plus';
+export type SoulmatchMode = 'compat' | 'dating';
 
 export type SoulmatchExplanation = {
   short?: string;

@@ -44,7 +44,7 @@ export function SoulMatchDetailsScreen({
   const styles = useMemo(() => createStyles(theme), [theme]);
   const navigation = useNavigation<Nav>();
   const route = useRoute<Route>();
-  const { userId, displayName, explainLevel = 'free' } = route.params;
+  const { userId, displayName, explainLevel = 'free', mode = 'compat' } = route.params;
   const toast = useToast();
   const logout = useAuthStore((state) => state.logout);
   const userTier: SoulmatchTier = 'free';
@@ -69,7 +69,7 @@ export function SoulMatchDetailsScreen({
       if (typeof __DEV__ !== 'undefined' && __DEV__) {
         console.debug('SoulMatch: detail fetch start', { userId });
       }
-      const result = await fetchSoulmatchWith(userId, { explainLevel });
+      const result = await fetchSoulmatchWith(userId, { explainLevel, mode });
       setData(result);
       if (typeof __DEV__ !== 'undefined' && __DEV__) {
         console.debug('SoulMatch: detail fetch ok', {
@@ -91,7 +91,7 @@ export function SoulMatchDetailsScreen({
     } finally {
       setLoading(false);
     }
-  }, [explainLevel, logout, toast, userId]);
+  }, [explainLevel, logout, mode, toast, userId]);
 
   useEffect(() => {
     navigation.setOptions?.({ title });
