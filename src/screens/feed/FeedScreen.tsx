@@ -34,6 +34,7 @@ import { useFeedStore } from '@store/feedStore';
 import { useAuthStore } from '@store/authStore';
 import { useTheme, type Theme } from '@theme';
 import { normalizeGiftRenderData, type GiftPreview } from '@utils/gifts';
+import type { GiftType } from '@api/gifts';
 import {
   filterActiveEffects,
   resolveActiveCardEffects,
@@ -92,10 +93,6 @@ export function FeedScreen() {
   const visibleGiftChannelsRef = useRef<string[]>([]);
   const appStateRef = useRef<AppStateStatus>(AppState.currentState);
   const [isAppActive, setIsAppActive] = useState(appStateRef.current === 'active');
-  const videoExtraData = useMemo(
-    () => ({ activeVideoPostId, isFocused }),
-    [activeVideoPostId, giftCountsByPost, handleOpenComments, handleOpenGiftPicker, isFocused],
-  );
   const viewabilityConfig = useRef({
     itemVisiblePercentThreshold: 80,
   });
@@ -200,7 +197,7 @@ export function FeedScreen() {
   }, []);
 
   const handleGiftSent = useCallback(
-    (gift, quantity: number, status?: 'pending' | 'synced' | 'failed') => {
+    (gift: GiftType, quantity: number, status?: 'pending' | 'synced' | 'failed') => {
       const key = String(giftPost?.id ?? '');
       if (!key) {
         return;
@@ -230,6 +227,11 @@ export function FeedScreen() {
       }
     },
     [giftPost?.id, triggerGiftBurst],
+  );
+
+  const videoExtraData = useMemo(
+    () => ({ activeVideoPostId, isFocused }),
+    [activeVideoPostId, giftCountsByPost, handleOpenComments, handleOpenGiftPicker, isFocused],
   );
 
   useEffect(() => {
