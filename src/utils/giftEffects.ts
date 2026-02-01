@@ -1,4 +1,5 @@
 import { normalizeAssetUrl } from '@utils/urls';
+import { env } from '@config/env';
 
 type RawEffectsConfig = {
   version?: number;

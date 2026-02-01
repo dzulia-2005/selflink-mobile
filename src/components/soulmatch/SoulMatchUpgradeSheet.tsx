@@ -263,7 +263,7 @@ const createStyles = (theme: Theme) =>
   },
   title: {
     color: theme.palette.platinum,
-    ...theme.typography.headingS,
+    ...theme.typography.headingM,
   },
   subtitle: {
     color: theme.palette.silver,

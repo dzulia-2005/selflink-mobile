@@ -3,9 +3,9 @@ import { normalizeSoulmatchRecommendations, normalizeSoulmatchRecsResponse } fro
 describe('normalizeSoulmatchRecommendations', () => {
   it('filters entries without user or score', () => {
     const { items, dropped } = normalizeSoulmatchRecommendations([
-      { user: null, score: 90 },
-      { user: { id: 2, name: 'Test', handle: 'test' }, score: NaN },
-      { user: { id: 3, name: 'Valid', handle: 'valid' }, score: 82 },
+      { user: null as any, score: 90 },
+      { user: { id: 2, name: 'Test', handle: 'test', photo: '' }, score: NaN },
+      { user: { id: 3, name: 'Valid', handle: 'valid', photo: '' }, score: 82 },
     ]);
     expect(items).toHaveLength(1);
     expect(items[0].user.id).toBe(3);
@@ -15,7 +15,7 @@ describe('normalizeSoulmatchRecommendations', () => {
 
   it('drops entries missing user id', () => {
     const { items, dropped } = normalizeSoulmatchRecommendations([
-      { user: { name: 'MissingId', handle: 'missing' }, score: 70 },
+      { user: { name: 'MissingId', handle: 'missing', photo: '' } as any, score: 70 },
     ]);
     expect(items).toHaveLength(0);
     expect(dropped.missing_user_id).toBe(1);
@@ -23,8 +23,8 @@ describe('normalizeSoulmatchRecommendations', () => {
 
   it('dedupes by user id', () => {
     const { items, dropped } = normalizeSoulmatchRecommendations([
-      { user: { id: 1, name: 'A', handle: 'a' }, score: 70 },
-      { user: { id: 1, name: 'A', handle: 'a' }, score: 75 },
+      { user: { id: 1, name: 'A', handle: 'a', photo: '' }, score: 70 },
+      { user: { id: 1, name: 'A', handle: 'a', photo: '' }, score: 75 },
     ]);
     expect(items).toHaveLength(1);
     expect(items[0].score).toBe(70);
@@ -33,7 +33,7 @@ describe('normalizeSoulmatchRecommendations', () => {
 
   it('fills fallback handle when missing', () => {
     const { items } = normalizeSoulmatchRecommendations([
-      { user: { id: 5, name: 'Jane Doe' }, score: 88 },
+      { user: { id: 5, name: 'Jane Doe', photo: '' } as any, score: 88 },
     ]);
     expect(items).toHaveLength(1);
     expect(items[0].user.handle).toBe('janedoe');
@@ -41,14 +41,22 @@ describe('normalizeSoulmatchRecommendations', () => {
 
   it('falls back lens_label from lens', () => {
     const { items } = normalizeSoulmatchRecommendations([
-      { user: { id: 7, name: 'Lens', handle: 'lens' }, score: 77, lens: 'timing_focus' },
+      {
+        user: { id: 7, name: 'Lens', handle: 'lens', photo: '' },
+        score: 77,
+        lens: 'timing_focus',
+      },
     ]);
     expect(items[0].lens_label).toBe('Timing Focus');
   });
 
   it('falls back explanation.short from reason', () => {
     const { items } = normalizeSoulmatchRecommendations([
-      { user: { id: 8, name: 'Why', handle: 'why' }, score: 81, reason: 'Because.' },
+      {
+        user: { id: 8, name: 'Why', handle: 'why', photo: '' },
+        score: 81,
+        reason: 'Because.',
+      },
     ]);
     expect(items[0].explanation?.short).toBe('Because.');
   });
@@ -57,7 +65,7 @@ describe('normalizeSoulmatchRecommendations', () => {
 describe('normalizeSoulmatchRecsResponse', () => {
   it('handles array payloads', () => {
     const payload = [
-      { user: { id: 1, name: 'A', handle: 'a' }, score: 70 },
+      { user: { id: 1, name: 'A', handle: 'a', photo: '' }, score: 70 },
     ];
     const normalized = normalizeSoulmatchRecsResponse(payload as any);
     expect(normalized.results).toHaveLength(1);
@@ -65,7 +73,7 @@ describe('normalizeSoulmatchRecsResponse', () => {
 
   it('handles wrapper payloads with meta', () => {
     const payload = {
-      results: [{ user: { id: 2, name: 'B', handle: 'b' }, score: 80 }],
+      results: [{ user: { id: 2, name: 'B', handle: 'b', photo: '' }, score: 80 }],
       meta: { reason: 'no_candidates' },
     };
     const normalized = normalizeSoulmatchRecsResponse(payload as any);

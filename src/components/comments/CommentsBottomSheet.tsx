@@ -20,6 +20,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { likeComment, normalizeLikesApiError, unlikeComment } from '@api/likes';
+import type { GiftType } from '@api/gifts';
 import { GiftPickerSheet } from '@components/gifts/GiftPickerSheet';
 import { GiftBurstOverlay } from '@components/gifts/GiftBurstOverlay';
 import { useToast } from '@context/ToastContext';
@@ -393,7 +394,7 @@ export function CommentsBottomSheet({
   }, []);
 
   const handleGiftSent = useCallback(
-    (gift, quantity: number, status?: 'pending' | 'synced' | 'failed') => {
+    (gift: GiftType, quantity: number, status?: 'pending' | 'synced' | 'failed') => {
       if (!giftTargetId) {
         return;
       }

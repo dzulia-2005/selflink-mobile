@@ -107,7 +107,7 @@ const ChatBubbleComponent: React.FC<Props> = ({
         ]}
       >
         {message.reactions.map((reaction) => (
-          <ReactionChip key={reaction.emoji} reaction={reaction} />
+          <ReactionChip key={reaction.emoji} reaction={reaction} styles={styles} />
         ))}
       </View>
     );
@@ -208,8 +208,10 @@ const ChatBubbleComponent: React.FC<Props> = ({
 
 const ReactionChip = memo(function ReactionChip({
   reaction,
+  styles,
 }: {
   reaction: MessageReactionSummary;
+  styles: ReturnType<typeof createStyles>;
 }) {
   const triggerKey = `${reaction.emoji}:${reaction.count}:${
     reaction.reactedByCurrentUser ? 'me' : 'other'
