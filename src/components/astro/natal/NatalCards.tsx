@@ -204,6 +204,7 @@ export function HousesCard({ houses, formatPlacement }: HousesCardProps) {
 }
 
 export function AspectsCard({ aspects, renderAspect }: AspectsCardProps) {
+  const styles = useNatalStyles();
   return (
     <SectionPanel
       title="Aspects"
