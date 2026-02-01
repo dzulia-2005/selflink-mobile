@@ -88,7 +88,14 @@ export const findIapMintInLedger = (
     if (!isMintCredit(entry) || !matchesProvider(entry, ctx.platform)) {
       return false;
     }
-    return getEntryExternalId(entry) === expectedExternalId;
+    if (getEntryExternalId(entry) !== expectedExternalId) {
+      return false;
+    }
+    const timestamp = getEntryTimestampMs(entry);
+    if (timestamp !== null && timestamp < ctx.startedAtMs) {
+      return false;
+    }
+    return true;
   });
   if (byExternalId) {
     return byExternalId;
