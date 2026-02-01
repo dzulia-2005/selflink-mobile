@@ -244,7 +244,7 @@ export function SoulMatchDetailsScreen({
             <Text style={styles.body}>{data.explanation.short}</Text>
           ) : null}
           {showFull ? (
-            <ExpandableSection title="More" text={data.explanation?.full} />
+            <ExpandableSection title="More" text={data.explanation?.full} styles={styles} />
           ) : lockedFull ? (
             <TouchableOpacity
               onPress={() => {
@@ -259,6 +259,7 @@ export function SoulMatchDetailsScreen({
             <ExpandableSection
               title="How to approach"
               text={data.explanation?.strategy}
+              styles={styles}
             />
           ) : lockedStrategy ? (
             <TouchableOpacity
@@ -344,7 +345,15 @@ export function SoulMatchDetailsScreen({
   );
 }
 
-function ExpandableSection({ title, text }: { title: string; text?: string | null }) {
+function ExpandableSection({
+  title,
+  text,
+  styles,
+}: {
+  title: string;
+  text?: string | null;
+  styles: ReturnType<typeof createStyles>;
+}) {
   const [open, setOpen] = useState(false);
   if (!text) {
     return null;

@@ -437,14 +437,17 @@ export function SoulMatchRecommendationsScreen({
                   <TouchableOpacity
                     key={option.value}
                     style={[styles.explainPill, active && styles.explainPillActive]}
-                onPress={() => {
-                  if (isExplainLevelLocked(option.value, userTier)) {
-                    setRequestedTier(requiredTierForExplain(option.value));
-                    setUpgradeVisible(true);
-                    return;
-                  }
-                  setExplainLevel(option.value);
-                }}
+                  onPress={() => {
+                    if (isExplainLevelLocked(option.value, userTier)) {
+                      const required = requiredTierForExplain(option.value);
+                      if (required !== 'free') {
+                        setRequestedTier(required);
+                        setUpgradeVisible(true);
+                      }
+                      return;
+                    }
+                    setExplainLevel(option.value);
+                  }}
               >
                     <Text style={[styles.explainPillText, active && styles.explainPillTextActive]}>
                       {option.label}
@@ -497,7 +500,7 @@ export function SoulMatchRecommendationsScreen({
         onSelectTier={(tier) => {
           setUpgradeVisible(false);
           setRequestedTier(tier);
-          navigation.navigate('Payments');
+          navigation.getParent()?.navigate('Payments' as never);
         }}
       />
     </View>
