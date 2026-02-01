@@ -128,7 +128,7 @@ export function MentorMessageContent({ text, collapsibleLines }: Props) {
         if (block.type === 'heading') {
           return (
             <Text key={`heading-${idx}`} style={styles.heading}>
-              {renderInline(block.text)}
+              {renderInline(block.text, styles)}
             </Text>
           );
         }
@@ -138,7 +138,7 @@ export function MentorMessageContent({ text, collapsibleLines }: Props) {
               {block.items.map((item, itemIdx) => (
                 <View style={styles.listItem} key={`item-${itemIdx}`}>
                   <Text style={styles.bullet}>•</Text>
-                  <Text style={styles.listItemText}>{renderInline(item)}</Text>
+                  <Text style={styles.listItemText}>{renderInline(item, styles)}</Text>
                 </View>
               ))}
             </View>
@@ -146,7 +146,7 @@ export function MentorMessageContent({ text, collapsibleLines }: Props) {
         }
         return (
           <Text key={`paragraph-${idx}`} style={styles.paragraph}>
-            {renderInline(block.text)}
+            {renderInline(block.text, styles)}
           </Text>
         );
       })}
@@ -163,7 +163,10 @@ export function MentorMessageContent({ text, collapsibleLines }: Props) {
   );
 }
 
-const renderInline = (text: string) => {
+const renderInline = (
+  text: string,
+  styles: ReturnType<typeof createStyles>,
+) => {
   const tokens = tokenizeInline(text);
   if (tokens.length === 0) {
     return text;
