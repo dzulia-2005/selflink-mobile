@@ -1,9 +1,13 @@
+import React, { useCallback, useMemo } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useCallback, useMemo, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import { LoginDefaultValues } from '../components/loginDefaultValues';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { LoginSchema } from '../components/schema';
+import { useAuthStore } from '@store/authStore';
+import { useTheme, type Theme } from '@theme';
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
@@ -12,35 +16,30 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { LoginTypes, Navigation } from '../types/index.type';
 
-import type { AuthStackParamList } from '@navigation/types';
-import { useAuthStore } from '@store/authStore';
-import { useTheme, type Theme } from '@theme';
 
-type Navigation = NativeStackNavigationProp<AuthStackParamList, 'Login'>;
 
-export function LoginScreen() {
+export const LoginScreen = () => {
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
   const navigation = useNavigation<Navigation>();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const login = useAuthStore((state) => state.login);
   const isAuthenticating = useAuthStore((state) => state.isAuthenticating);
-  const error = useAuthStore((state) => state.error);
-  const setError = useAuthStore((state) => state.setError);
 
-  const handleSubmit = useCallback(async () => {
-    if (!email || !password) {
-      Alert.alert('Missing info', 'Please enter your email and password.');
-      return;
-    }
+  const {control,handleSubmit,formState:{errors}} = useForm({
+    defaultValues:LoginDefaultValues,
+    resolver:zodResolver(LoginSchema),
+  });
+
+
+  const handleSubmitClick = async (payload:LoginTypes) => {
     try {
-      await login({ email, password });
-    } catch (err) {
-      console.warn('login failed', err);
+      await login(payload);
+    } catch (error) {
+      console.warn('Login Failed',error);
     }
-  }, [email, password, login]);
+  };
 
   const handleNavigateRegister = useCallback(() => {
     navigation.navigate('Register');
@@ -56,39 +55,45 @@ export function LoginScreen() {
           <LinearGradient colors={theme.gradients.accent} style={styles.cardAccent} />
           <Text style={styles.title}>Welcome back</Text>
           <Text style={styles.subtitle}>Sign in to continue to SelfLink</Text>
-          <TextInput
-            placeholder="Email"
-            placeholderTextColor={theme.text.muted}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            style={styles.input}
-            value={email}
-            onChangeText={(text) => {
-              setEmail(text);
-              if (error) {
-                setError(null);
-              }
-            }}
+
+          <Controller
+            name='email'
+            control={control}
+            render={({field:{onChange,value}})=>(
+              <TextInput
+                placeholder="Email"
+                placeholderTextColor={theme.text.muted}
+                autoCapitalize="none"
+                keyboardType="email-address"
+                style={styles.input}
+                value={value}
+                onChangeText={onChange}
+              />
+            )}
           />
-          <TextInput
-            placeholder="Password"
-            placeholderTextColor={theme.text.muted}
-            secureTextEntry
-            style={styles.input}
-            value={password}
-            onChangeText={(text) => {
-              setPassword(text);
-              if (error) {
-                setError(null);
-              }
-            }}
+          {errors.email ? <Text style={styles.errorText}>{errors.email.message}</Text> : null}
+
+          <Controller
+            name='password'
+            control={control}
+            render={({field:{onChange,value}})=>(
+              <TextInput
+                placeholder="Password"
+                placeholderTextColor={theme.text.muted}
+                secureTextEntry
+                style={styles.input}
+                value={value}
+                onChangeText={onChange}
+              />
+            )}
           />
-          {error ? <Text style={styles.errorText}>{error}</Text> : null}
+          {errors.password ? <Text style={styles.errorText}>{errors.password.message}</Text> : null}
+
           <TouchableOpacity
             style={styles.buttonWrapper}
-            onPress={handleSubmit}
             disabled={isAuthenticating}
             activeOpacity={0.9}
+            onPress={handleSubmit(handleSubmitClick)}
           >
             <LinearGradient
               colors={theme.gradients.cta}
@@ -108,7 +113,9 @@ export function LoginScreen() {
       </KeyboardAvoidingView>
     </LinearGradient>
   );
-}
+};
+
+export default LoginScreen;
 
 const createStyles = (theme: Theme) =>
   StyleSheet.create({
