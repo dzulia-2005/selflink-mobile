@@ -17,32 +17,32 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import type { GiftType } from '@api/gifts';
+import { CommentsBottomSheet } from '@components/comments/CommentsBottomSheet';
 import { FeedPostCard } from '@components/FeedPostCard';
+import { GiftBurstOverlay } from '@components/gifts/GiftBurstOverlay';
+import { GiftPickerSheet } from '@components/gifts/GiftPickerSheet';
 import { MatrixFeedCard } from '@components/MatrixFeedCard';
 import { MentorFeedCard } from '@components/MentorFeedCard';
 import { InsightSkeleton } from '@components/skeleton/InsightSkeleton';
 import { PostSkeleton } from '@components/skeleton/PostSkeleton';
 import { SoulMatchSkeleton } from '@components/skeleton/SoulMatchSkeleton';
 import { SoulMatchFeedCard } from '@components/SoulMatchFeedCard';
-import { CommentsBottomSheet } from '@components/comments/CommentsBottomSheet';
-import { GiftBurstOverlay } from '@components/gifts/GiftBurstOverlay';
-import { GiftPickerSheet } from '@components/gifts/GiftPickerSheet';
+import { useGiftBurst } from '@hooks/useGiftBurst';
+import { connectRealtime, type RealtimePayload } from '@realtime/index';
 import type { FeedItem, FeedMode } from '@schemas/feed';
 import type { Post } from '@schemas/social';
-import { connectRealtime, type RealtimePayload } from '@realtime/index';
-import { useFeedStore } from '@store/feedStore';
 import { useAuthStore } from '@store/authStore';
+import { useFeedStore } from '@store/feedStore';
 import { useTheme, type Theme } from '@theme';
-import { normalizeGiftRenderData, type GiftPreview } from '@utils/gifts';
-import type { GiftType } from '@api/gifts';
 import {
   filterActiveEffects,
   resolveActiveCardEffects,
   resolveEffectsFromGiftEvent,
 } from '@utils/giftEffects';
-import { createRealtimeDedupeStore } from '@utils/realtimeDedupe';
+import { normalizeGiftRenderData, type GiftPreview } from '@utils/gifts';
 import { areStringArraysEqual, buildChannelList } from '@utils/realtimeChannels';
-import { useGiftBurst } from '@hooks/useGiftBurst';
+import { createRealtimeDedupeStore } from '@utils/realtimeDedupe';
 
 type FeedTab = FeedMode | 'reels';
 
@@ -75,16 +75,12 @@ export function FeedScreen() {
   const [activeVideoPostId, setActiveVideoPostId] = useState<string | null>(null);
   const [commentPost, setCommentPost] = useState<Post | null>(null);
   const [giftPost, setGiftPost] = useState<Post | null>(null);
-  const [giftCountsByPost, setGiftCountsByPost] = useState<Record<string, number>>(
-    {},
-  );
+  const [giftCountsByPost, setGiftCountsByPost] = useState<Record<string, number>>({});
   const [giftSyncByPost, setGiftSyncByPost] = useState<Record<string, boolean>>({});
-  const [giftRecentByPost, setGiftRecentByPost] = useState<
-    Record<string, GiftPreview[]>
-  >({});
-  const [giftEffectsByPost, setGiftEffectsByPost] = useState<Record<string, any>>(
+  const [giftRecentByPost, setGiftRecentByPost] = useState<Record<string, GiftPreview[]>>(
     {},
   );
+  const [giftEffectsByPost, setGiftEffectsByPost] = useState<Record<string, any>>({});
   const { burst, triggerGiftBurst, clearGiftBurst } = useGiftBurst();
   const giftRealtimeRef = useRef<ReturnType<typeof connectRealtime> | null>(null);
   const giftDedupeRef = useRef(createRealtimeDedupeStore(200));
@@ -214,9 +210,7 @@ export function FeedScreen() {
           const current = prev[key] ?? [];
           return {
             ...prev,
-            [key]: gift
-              ? [gift as any, ...current].slice(0, 4)
-              : current,
+            [key]: gift ? [gift as any, ...current].slice(0, 4) : current,
           };
         });
         setGiftSyncByPost((prev) => ({ ...prev, [key]: true }));
@@ -231,7 +225,7 @@ export function FeedScreen() {
 
   const videoExtraData = useMemo(
     () => ({ activeVideoPostId, isFocused }),
-    [activeVideoPostId, giftCountsByPost, handleOpenComments, handleOpenGiftPicker, isFocused],
+    [activeVideoPostId, isFocused],
   );
 
   useEffect(() => {
@@ -320,8 +314,7 @@ export function FeedScreen() {
       }
       const sender = record.sender as { id?: number } | undefined;
       const giftType = record.gift_type as GiftPreview | undefined;
-      const quantity =
-        typeof record.quantity === 'number' ? record.quantity : 1;
+      const quantity = typeof record.quantity === 'number' ? record.quantity : 1;
       const serverTime = record.server_time as string | number | undefined;
       const expiresAt = record.expires_at as string | number | undefined;
 
@@ -346,7 +339,7 @@ export function FeedScreen() {
         }
       } else if (__DEV__ && !warnedMissingEffectsRef.current) {
         warnedMissingEffectsRef.current = true;
-        // eslint-disable-next-line no-console
+
         console.warn('[GiftRealtime] gift_type.effects missing in event payload.');
       }
 
@@ -379,7 +372,14 @@ export function FeedScreen() {
       unsubscribe();
       connection.disconnect();
     };
-  }, [giftChannelsKey, handleGiftRealtime, isAppActive, isFocused, token, visibleGiftChannels]);
+  }, [
+    giftChannelsKey,
+    handleGiftRealtime,
+    isAppActive,
+    isFocused,
+    token,
+    visibleGiftChannels,
+  ]);
 
   useEffect(() => {
     if (isFocused && activeTab === 'reels') {
@@ -396,7 +396,14 @@ export function FeedScreen() {
       default:
         return [theme.feed.accentBlue, theme.feed.accentCyan] as const;
     }
-  }, [activeTab]);
+  }, [
+    activeTab,
+    theme.colors.secondary,
+    theme.feed.accentBlue,
+    theme.feed.accentCyan,
+    theme.feed.textPrimary,
+    theme.palette.graphite,
+  ]);
 
   const renderItem = useCallback(
     ({ item }: { item: FeedItem }) => {
@@ -441,10 +448,22 @@ export function FeedScreen() {
           return null;
       }
     },
-    [activeVideoPostId, isFocused],
+    [
+      activeVideoPostId,
+      giftCountsByPost,
+      giftEffectsByPost,
+      giftRecentByPost,
+      giftSyncByPost,
+      handleOpenComments,
+      handleOpenGiftPicker,
+      isFocused,
+    ],
   );
 
-  const renderSeparator = useCallback(() => <View style={styles.separator} />, []);
+  const renderSeparator = useCallback(
+    () => <View style={styles.separator} />,
+    [styles.separator],
+  );
 
   const renderEmpty = useCallback(() => {
     if (isLoading) {
@@ -461,7 +480,14 @@ export function FeedScreen() {
         </TouchableOpacity>
       </View>
     );
-  }, [isLoading, navigation]);
+  }, [
+    isLoading,
+    navigation,
+    styles.emptyState,
+    styles.emptyText,
+    styles.primaryButton,
+    styles.primaryButtonLabel,
+  ]);
 
   const showInitialSkeleton = isLoading && items.length === 0;
 
@@ -475,7 +501,7 @@ export function FeedScreen() {
         <SoulMatchSkeleton />
       </View>
     );
-  }, []);
+  }, [styles.skeletonList]);
 
   const renderFooter = useCallback(() => {
     if (!isPaging) {
@@ -486,7 +512,7 @@ export function FeedScreen() {
         <PostSkeleton hasMedia={false} />
       </View>
     );
-  }, [isPaging]);
+  }, [isPaging, styles.footerSkeletons]);
 
   const errorContent =
     error && items.length === 0 ? (
@@ -512,12 +538,12 @@ export function FeedScreen() {
         return;
       }
       const visiblePosts = viewableItems
-        .filter((token) => token.isViewable && token.item?.type === 'post')
-        .map((token) => {
-          if (token.item?.type !== 'post') {
+        .filter((viewToken) => viewToken.isViewable && viewToken.item?.type === 'post')
+        .map((viewToken) => {
+          if (viewToken.item?.type !== 'post') {
             return null;
           }
-          const postId = token.item.post.id;
+          const postId = viewToken.item.post.id;
           return postId ? String(postId) : null;
         })
         .filter((id): id is string => Boolean(id));
@@ -526,19 +552,19 @@ export function FeedScreen() {
 
       const visibleVideos = viewableItems
         .filter(
-          (token) =>
-            token.isViewable &&
-            token.item?.type === 'post' &&
-            Boolean((token.item as any)?.post?.video?.url),
+          (viewToken) =>
+            viewToken.isViewable &&
+            viewToken.item?.type === 'post' &&
+            Boolean((viewToken.item as any)?.post?.video?.url),
         )
-        .map((token) => {
-          if (token.item?.type !== 'post') {
-            return { id: null, index: token.index ?? 0 };
+        .map((viewToken) => {
+          if (viewToken.item?.type !== 'post') {
+            return { id: null, index: viewToken.index ?? 0 };
           }
-          const postId = token.item.post.id;
+          const postId = viewToken.item.post.id;
           return {
             id: postId ? String(postId) : null,
-            index: token.index ?? 0,
+            index: viewToken.index ?? 0,
           };
         })
         .filter((item) => item.id !== null);
@@ -725,207 +751,207 @@ export function FeedScreen() {
 
 const createStyles = (theme: Theme) =>
   StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: theme.feed.backgroundEnd,
-  },
-  halo: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    height: 260,
-    opacity: 0.55,
-  },
-  content: {
-    flex: 1,
-  },
-  headerArea: {
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  headerTitle: {
-    color: theme.feed.textPrimary,
-    fontSize: 24,
-    fontWeight: '800',
-    letterSpacing: 0.3,
-  },
-  searchButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(59,130,246,0.14)',
-    borderWidth: 1,
-    borderColor: theme.feed.border,
-    shadowColor: theme.feed.accentBlue,
-    shadowOpacity: 0.35,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 6,
-  },
-  searchIcon: {
-    color: theme.feed.accentBlue,
-  },
-  modeSwitch: {
-    marginTop: 14,
-    borderRadius: 22,
-    padding: 6,
-    backgroundColor: 'rgba(148,163,184,0.08)',
-    borderWidth: 1,
-    borderColor: 'rgba(148,163,184,0.2)',
-    overflow: 'hidden',
-  },
-  modeTrack: {
-    position: 'absolute',
-    top: 6,
-    bottom: 6,
-    left: 6,
-    right: 6,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255,255,255,0.02)',
-  },
-  modeIndicator: {
-    position: 'absolute',
-    top: 0,
-    bottom: 0,
-    left: 0,
-    borderRadius: 16,
-    shadowColor: theme.feed.accentBlue,
-    shadowOpacity: 0.25,
-    shadowRadius: 16,
-    elevation: 6,
-  },
-  modeIndicatorGradient: {
-    ...StyleSheet.absoluteFillObject,
-    borderRadius: 16,
-  },
-  modeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  modeButton: {
-    flex: 1,
-    paddingVertical: 10,
-    alignItems: 'center',
-  },
-  modeLabel: {
-    color: theme.feed.textMuted,
-    fontWeight: '700',
-    letterSpacing: 0.2,
-  },
-  modeLabelActive: {
-    color: theme.feed.textPrimary,
-  },
-  dividerGlow: {
-    height: 1,
-    marginTop: 14,
-    marginHorizontal: 4,
-  },
-  listContent: {
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 80,
-  },
-  listContentWithFab: {
-    paddingBottom: 140,
-  },
-  separator: {
-    height: 14,
-  },
-  emptyState: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 32,
-    gap: 14,
-  },
-  emptyText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: theme.feed.textPrimary,
-    textAlign: 'center',
-  },
-  primaryButton: {
-    backgroundColor: theme.feed.accentBlue,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 20,
-    shadowColor: theme.feed.accentBlue,
-    shadowOpacity: 0.35,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 8,
-  },
-  primaryButtonLabel: {
-    color: '#fff',
-    fontWeight: '700',
-  },
-  fab: {
-    position: 'absolute',
-    right: 16,
-    bottom: 18,
-    width: 58,
-    height: 58,
-    borderRadius: 29,
-    backgroundColor: theme.feed.accentBlue,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: theme.feed.accentBlue,
-    shadowOpacity: 0.4,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 10,
-  },
-  fabText: {
-    color: '#fff',
-    fontSize: 30,
-    marginTop: -2,
-  },
-  skeletonList: {
-    paddingHorizontal: 16,
-    paddingTop: 12,
-  },
-  footerSkeletons: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-  },
-  errorState: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-  },
-  errorCard: {
-    borderRadius: 20,
-    padding: 18,
-    backgroundColor: theme.feed.glass,
-    borderWidth: 1,
-    borderColor: theme.feed.border,
-  },
-  errorTitle: {
-    color: theme.feed.textPrimary,
-    fontSize: 18,
-    fontWeight: '700',
-    marginBottom: 6,
-  },
-  errorSubtitle: {
-    color: theme.feed.textMuted,
-    marginBottom: 12,
-  },
-  retryButton: {
-    backgroundColor: theme.feed.accentCyan,
-    borderRadius: 12,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    alignSelf: 'flex-start',
-  },
-  retryLabel: {
-    color: '#0B1120',
-    fontWeight: '700',
-  },
+    container: {
+      flex: 1,
+      backgroundColor: theme.feed.backgroundEnd,
+    },
+    halo: {
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      top: 0,
+      height: 260,
+      opacity: 0.55,
+    },
+    content: {
+      flex: 1,
+    },
+    headerArea: {
+      paddingHorizontal: 16,
+      paddingBottom: 12,
+    },
+    headerRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    headerTitle: {
+      color: theme.feed.textPrimary,
+      fontSize: 24,
+      fontWeight: '800',
+      letterSpacing: 0.3,
+    },
+    searchButton: {
+      width: 42,
+      height: 42,
+      borderRadius: 21,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: 'rgba(59,130,246,0.14)',
+      borderWidth: 1,
+      borderColor: theme.feed.border,
+      shadowColor: theme.feed.accentBlue,
+      shadowOpacity: 0.35,
+      shadowRadius: 10,
+      shadowOffset: { width: 0, height: 6 },
+      elevation: 6,
+    },
+    searchIcon: {
+      color: theme.feed.accentBlue,
+    },
+    modeSwitch: {
+      marginTop: 14,
+      borderRadius: 22,
+      padding: 6,
+      backgroundColor: 'rgba(148,163,184,0.08)',
+      borderWidth: 1,
+      borderColor: 'rgba(148,163,184,0.2)',
+      overflow: 'hidden',
+    },
+    modeTrack: {
+      position: 'absolute',
+      top: 6,
+      bottom: 6,
+      left: 6,
+      right: 6,
+      borderRadius: 16,
+      backgroundColor: 'rgba(255,255,255,0.02)',
+    },
+    modeIndicator: {
+      position: 'absolute',
+      top: 0,
+      bottom: 0,
+      left: 0,
+      borderRadius: 16,
+      shadowColor: theme.feed.accentBlue,
+      shadowOpacity: 0.25,
+      shadowRadius: 16,
+      elevation: 6,
+    },
+    modeIndicatorGradient: {
+      ...StyleSheet.absoluteFillObject,
+      borderRadius: 16,
+    },
+    modeRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    modeButton: {
+      flex: 1,
+      paddingVertical: 10,
+      alignItems: 'center',
+    },
+    modeLabel: {
+      color: theme.feed.textMuted,
+      fontWeight: '700',
+      letterSpacing: 0.2,
+    },
+    modeLabelActive: {
+      color: theme.feed.textPrimary,
+    },
+    dividerGlow: {
+      height: 1,
+      marginTop: 14,
+      marginHorizontal: 4,
+    },
+    listContent: {
+      paddingHorizontal: 16,
+      paddingTop: 12,
+      paddingBottom: 80,
+    },
+    listContentWithFab: {
+      paddingBottom: 140,
+    },
+    separator: {
+      height: 14,
+    },
+    emptyState: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 32,
+      gap: 14,
+    },
+    emptyText: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: theme.feed.textPrimary,
+      textAlign: 'center',
+    },
+    primaryButton: {
+      backgroundColor: theme.feed.accentBlue,
+      paddingHorizontal: 20,
+      paddingVertical: 12,
+      borderRadius: 20,
+      shadowColor: theme.feed.accentBlue,
+      shadowOpacity: 0.35,
+      shadowRadius: 12,
+      shadowOffset: { width: 0, height: 8 },
+      elevation: 8,
+    },
+    primaryButtonLabel: {
+      color: '#fff',
+      fontWeight: '700',
+    },
+    fab: {
+      position: 'absolute',
+      right: 16,
+      bottom: 18,
+      width: 58,
+      height: 58,
+      borderRadius: 29,
+      backgroundColor: theme.feed.accentBlue,
+      alignItems: 'center',
+      justifyContent: 'center',
+      shadowColor: theme.feed.accentBlue,
+      shadowOpacity: 0.4,
+      shadowRadius: 14,
+      shadowOffset: { width: 0, height: 10 },
+      elevation: 10,
+    },
+    fabText: {
+      color: '#fff',
+      fontSize: 30,
+      marginTop: -2,
+    },
+    skeletonList: {
+      paddingHorizontal: 16,
+      paddingTop: 12,
+    },
+    footerSkeletons: {
+      paddingHorizontal: 16,
+      paddingVertical: 8,
+    },
+    errorState: {
+      paddingHorizontal: 16,
+      paddingVertical: 10,
+    },
+    errorCard: {
+      borderRadius: 20,
+      padding: 18,
+      backgroundColor: theme.feed.glass,
+      borderWidth: 1,
+      borderColor: theme.feed.border,
+    },
+    errorTitle: {
+      color: theme.feed.textPrimary,
+      fontSize: 18,
+      fontWeight: '700',
+      marginBottom: 6,
+    },
+    errorSubtitle: {
+      color: theme.feed.textMuted,
+      marginBottom: 12,
+    },
+    retryButton: {
+      backgroundColor: theme.feed.accentCyan,
+      borderRadius: 12,
+      paddingVertical: 10,
+      paddingHorizontal: 14,
+      alignSelf: 'flex-start',
+    },
+    retryLabel: {
+      color: '#0B1120',
+      fontWeight: '700',
+    },
   });

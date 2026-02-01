@@ -41,32 +41,32 @@ export function SoulMatchScreen() {
 
 const createStyles = (theme: Theme) =>
   StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: theme.palette.midnight,
-  },
-  content: {
-    paddingHorizontal: theme.spacing.lg,
-    paddingTop: theme.spacing.xl,
-    paddingBottom: theme.spacing.xl,
-    gap: theme.spacing.lg,
-  },
-  headline: {
-    color: theme.palette.platinum,
-    ...theme.typography.title,
-  },
-  subtitle: {
-    color: theme.palette.silver,
-    ...theme.typography.body,
-  },
-  panelTitle: {
-    color: theme.palette.titanium,
-    ...theme.typography.subtitle,
-    marginBottom: theme.spacing.sm,
-  },
-  cardText: {
-    color: theme.palette.silver,
-    ...theme.typography.body,
-    marginBottom: theme.spacing.sm,
-  },
+    safeArea: {
+      flex: 1,
+      backgroundColor: theme.palette.midnight,
+    },
+    content: {
+      paddingHorizontal: theme.spacing.lg,
+      paddingTop: theme.spacing.xl,
+      paddingBottom: theme.spacing.xl,
+      gap: theme.spacing.lg,
+    },
+    headline: {
+      color: theme.palette.platinum,
+      ...theme.typography.title,
+    },
+    subtitle: {
+      color: theme.palette.silver,
+      ...theme.typography.body,
+    },
+    panelTitle: {
+      color: theme.palette.titanium,
+      ...theme.typography.subtitle,
+      marginBottom: theme.spacing.sm,
+    },
+    cardText: {
+      color: theme.palette.silver,
+      ...theme.typography.body,
+      marginBottom: theme.spacing.sm,
+    },
   });

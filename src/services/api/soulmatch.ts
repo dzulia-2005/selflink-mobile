@@ -1,4 +1,8 @@
-import { SoulmatchExplainLevel, SoulmatchMode, SoulmatchResult } from '@schemas/soulmatch';
+import {
+  SoulmatchExplainLevel,
+  SoulmatchMode,
+  SoulmatchResult,
+} from '@schemas/soulmatch';
 import { apiClient } from '@services/api/client';
 
 export type SoulmatchRecommendationsMeta = {
@@ -42,7 +46,11 @@ export async function fetchRecommendations(options?: {
 
 export async function fetchSoulmatchWith(
   userId: number,
-  options?: { explainLevel?: SoulmatchExplainLevel; mode?: SoulmatchMode; includeMeta?: boolean },
+  options?: {
+    explainLevel?: SoulmatchExplainLevel;
+    mode?: SoulmatchMode;
+    includeMeta?: boolean;
+  },
 ): Promise<SoulmatchResult> {
   const query = buildQuery({
     explain: options?.explainLevel,

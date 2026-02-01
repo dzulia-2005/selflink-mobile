@@ -112,73 +112,73 @@ export function LoginScreen() {
 
 const createStyles = (theme: Theme) =>
   StyleSheet.create({
-  gradient: {
-    flex: 1,
-  },
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    padding: theme.spacing.xl,
-  },
-  card: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.radii.lg,
-    padding: theme.spacing.xl,
-    gap: theme.spacing.lg,
-    overflow: 'hidden',
-    ...theme.shadows.card,
-  },
-  cardAccent: {
-    position: 'absolute',
-    top: -40,
-    right: -60,
-    width: 180,
-    height: 180,
-    opacity: 0.15,
-    borderRadius: 90,
-  },
-  title: {
-    color: theme.text.primary,
-    ...theme.typography.headingL,
-  },
-  subtitle: {
-    color: theme.text.secondary,
-    ...theme.typography.subtitle,
-  },
-  input: {
-    backgroundColor: theme.colors.surfaceAlt,
-    borderRadius: theme.radii.md,
-    padding: theme.spacing.lg,
-    color: theme.text.primary,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  buttonWrapper: {
-    borderRadius: theme.radii.lg,
-    ...theme.shadows.button,
-  },
-  button: {
-    paddingVertical: theme.spacing.md,
-    borderRadius: theme.radii.lg,
-    alignItems: 'center',
-  },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  buttonLabel: {
-    color: theme.text.primary,
-    ...theme.typography.button,
-  },
-  errorText: {
-    color: theme.colors.error,
-    textAlign: 'center',
-  },
-  footerLink: {
-    alignItems: 'center',
-    marginTop: theme.spacing.md,
-  },
-  footerText: {
-    color: theme.text.secondary,
-    ...theme.typography.body,
-  },
+    gradient: {
+      flex: 1,
+    },
+    container: {
+      flex: 1,
+      justifyContent: 'center',
+      padding: theme.spacing.xl,
+    },
+    card: {
+      backgroundColor: theme.colors.surface,
+      borderRadius: theme.radii.lg,
+      padding: theme.spacing.xl,
+      gap: theme.spacing.lg,
+      overflow: 'hidden',
+      ...theme.shadows.card,
+    },
+    cardAccent: {
+      position: 'absolute',
+      top: -40,
+      right: -60,
+      width: 180,
+      height: 180,
+      opacity: 0.15,
+      borderRadius: 90,
+    },
+    title: {
+      color: theme.text.primary,
+      ...theme.typography.headingL,
+    },
+    subtitle: {
+      color: theme.text.secondary,
+      ...theme.typography.subtitle,
+    },
+    input: {
+      backgroundColor: theme.colors.surfaceAlt,
+      borderRadius: theme.radii.md,
+      padding: theme.spacing.lg,
+      color: theme.text.primary,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+    },
+    buttonWrapper: {
+      borderRadius: theme.radii.lg,
+      ...theme.shadows.button,
+    },
+    button: {
+      paddingVertical: theme.spacing.md,
+      borderRadius: theme.radii.lg,
+      alignItems: 'center',
+    },
+    buttonDisabled: {
+      opacity: 0.6,
+    },
+    buttonLabel: {
+      color: theme.text.primary,
+      ...theme.typography.button,
+    },
+    errorText: {
+      color: theme.colors.error,
+      textAlign: 'center',
+    },
+    footerLink: {
+      alignItems: 'center',
+      marginTop: theme.spacing.md,
+    },
+    footerText: {
+      color: theme.text.secondary,
+      ...theme.typography.body,
+    },
   });

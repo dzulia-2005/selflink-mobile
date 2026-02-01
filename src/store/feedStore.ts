@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
-import * as socialApi from '@api/social';
 import { likePost as likePostApi, unlikePost as unlikePostApi } from '@api/likes';
+import * as socialApi from '@api/social';
 import type { AddCommentPayload } from '@api/social';
 import type { FeedItem, FeedMode } from '@schemas/feed';
 import type { Comment } from '@schemas/social';

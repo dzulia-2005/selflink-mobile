@@ -342,75 +342,75 @@ export function MessagesScreen() {
 
 const createStyles = (theme: Theme) =>
   StyleSheet.create({
-  gradient: {
-    flex: 1,
-  },
-  safeArea: {
-    flex: 1,
-    backgroundColor: 'transparent',
-    padding: theme.spacing.md,
-    gap: theme.spacing.md,
-  },
-  heroTitle: {
-    color: theme.palette.platinum,
-    ...theme.typography.title,
-  },
-  heroSubtitle: {
-    color: theme.palette.silver,
-    ...theme.typography.body,
-  },
-  actionRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: theme.spacing.sm,
-  },
-  typingText: {
-    color: theme.palette.silver,
-    ...theme.typography.caption,
-    marginTop: theme.spacing.xs,
-  },
-  list: {
-    flex: 1,
-  },
-  listContent: {
-    paddingBottom: theme.spacing.lg,
-  },
-  empty: {
-    alignItems: 'center',
-    gap: theme.spacing.xs,
-    paddingVertical: theme.spacing.xl,
-  },
-  emptyTitle: {
-    color: theme.palette.platinum,
-    ...theme.typography.subtitle,
-  },
-  emptyCopy: {
-    color: theme.palette.silver,
-    ...theme.typography.body,
-    textAlign: 'center',
-  },
-  loader: {
-    paddingVertical: theme.spacing.md,
-  },
-  composer: {
-    flexDirection: 'row',
-    gap: theme.spacing.sm,
-    alignItems: 'flex-end',
-    backgroundColor: theme.colors.surfaceAlt,
-    borderRadius: theme.radii.md,
-    padding: theme.spacing.sm,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  input: {
-    flex: 1,
-    minHeight: 48,
-    maxHeight: 120,
-    borderRadius: theme.radii.md,
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
-    color: theme.text.primary,
-    backgroundColor: theme.colors.surface,
-    ...theme.typography.body,
-  },
+    gradient: {
+      flex: 1,
+    },
+    safeArea: {
+      flex: 1,
+      backgroundColor: 'transparent',
+      padding: theme.spacing.md,
+      gap: theme.spacing.md,
+    },
+    heroTitle: {
+      color: theme.palette.platinum,
+      ...theme.typography.title,
+    },
+    heroSubtitle: {
+      color: theme.palette.silver,
+      ...theme.typography.body,
+    },
+    actionRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: theme.spacing.sm,
+    },
+    typingText: {
+      color: theme.palette.silver,
+      ...theme.typography.caption,
+      marginTop: theme.spacing.xs,
+    },
+    list: {
+      flex: 1,
+    },
+    listContent: {
+      paddingBottom: theme.spacing.lg,
+    },
+    empty: {
+      alignItems: 'center',
+      gap: theme.spacing.xs,
+      paddingVertical: theme.spacing.xl,
+    },
+    emptyTitle: {
+      color: theme.palette.platinum,
+      ...theme.typography.subtitle,
+    },
+    emptyCopy: {
+      color: theme.palette.silver,
+      ...theme.typography.body,
+      textAlign: 'center',
+    },
+    loader: {
+      paddingVertical: theme.spacing.md,
+    },
+    composer: {
+      flexDirection: 'row',
+      gap: theme.spacing.sm,
+      alignItems: 'flex-end',
+      backgroundColor: theme.colors.surfaceAlt,
+      borderRadius: theme.radii.md,
+      padding: theme.spacing.sm,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+    },
+    input: {
+      flex: 1,
+      minHeight: 48,
+      maxHeight: 120,
+      borderRadius: theme.radii.md,
+      paddingHorizontal: theme.spacing.md,
+      paddingVertical: theme.spacing.sm,
+      color: theme.text.primary,
+      backgroundColor: theme.colors.surface,
+      ...theme.typography.body,
+    },
   });

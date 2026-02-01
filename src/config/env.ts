@@ -58,7 +58,9 @@ export const API_HTTP_BASE_URL = apiHttpBaseUrl;
 const rawIpayBaseUrl =
   process.env.EXPO_PUBLIC_IPAY_BASE_URL ??
   (typeof extra.ipayBaseUrl === 'string' ? extra.ipayBaseUrl : undefined);
-const ipayBaseUrl = rawIpayBaseUrl ? trimTrailingSlash(String(rawIpayBaseUrl).trim()) : '';
+const ipayBaseUrl = rawIpayBaseUrl
+  ? trimTrailingSlash(String(rawIpayBaseUrl).trim())
+  : '';
 
 const parseEnvList = (raw: unknown): string[] | undefined => {
   if (typeof raw !== 'string') {

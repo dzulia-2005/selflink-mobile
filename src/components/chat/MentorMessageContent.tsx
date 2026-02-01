@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import { createChatTheme } from '@theme/chat';
 import { useTheme, type Theme } from '@theme';
+import { createChatTheme } from '@theme/chat';
 
 type InlineToken = { type: 'text' | 'bold' | 'italic'; value: string };
 
@@ -163,10 +163,7 @@ export function MentorMessageContent({ text, collapsibleLines }: Props) {
   );
 }
 
-const renderInline = (
-  text: string,
-  styles: ReturnType<typeof createStyles>,
-) => {
+const renderInline = (text: string, styles: ReturnType<typeof createStyles>) => {
   const tokens = tokenizeInline(text);
   if (tokens.length === 0) {
     return text;
@@ -192,49 +189,49 @@ const renderInline = (
 
 const createStyles = (theme: Theme, chatTheme: ReturnType<typeof createChatTheme>) =>
   StyleSheet.create({
-  container: {
-    gap: chatTheme.spacing.sm,
-  },
-  heading: {
-    color: chatTheme.bubble.mentor.text,
-    ...chatTheme.typography.heading,
-  },
-  paragraph: {
-    color: chatTheme.bubble.mentor.text,
-    ...chatTheme.typography.body,
-  },
-  list: {
-    gap: 6,
-  },
-  listItem: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 8,
-  },
-  bullet: {
-    color: chatTheme.bubble.mentor.text,
-    ...chatTheme.typography.body,
-    lineHeight: chatTheme.typography.body.lineHeight,
-  },
-  listItemText: {
-    flex: 1,
-    color: chatTheme.bubble.mentor.text,
-    ...chatTheme.typography.body,
-  },
-  bold: {
-    fontWeight: '700',
-    color: chatTheme.bubble.mentor.text,
-  },
-  italic: {
-    fontStyle: 'italic',
-    color: chatTheme.bubble.mentor.text,
-  },
-  toggle: {
-    alignSelf: 'flex-start',
-    paddingVertical: 4,
-  },
-  toggleText: {
-    color: theme.palette.azure,
-    fontWeight: '600',
-  },
+    container: {
+      gap: chatTheme.spacing.sm,
+    },
+    heading: {
+      color: chatTheme.bubble.mentor.text,
+      ...chatTheme.typography.heading,
+    },
+    paragraph: {
+      color: chatTheme.bubble.mentor.text,
+      ...chatTheme.typography.body,
+    },
+    list: {
+      gap: 6,
+    },
+    listItem: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: 8,
+    },
+    bullet: {
+      color: chatTheme.bubble.mentor.text,
+      ...chatTheme.typography.body,
+      lineHeight: chatTheme.typography.body.lineHeight,
+    },
+    listItemText: {
+      flex: 1,
+      color: chatTheme.bubble.mentor.text,
+      ...chatTheme.typography.body,
+    },
+    bold: {
+      fontWeight: '700',
+      color: chatTheme.bubble.mentor.text,
+    },
+    italic: {
+      fontStyle: 'italic',
+      color: chatTheme.bubble.mentor.text,
+    },
+    toggle: {
+      alignSelf: 'flex-start',
+      paddingVertical: 4,
+    },
+    toggleText: {
+      color: theme.palette.azure,
+      fontWeight: '600',
+    },
   });

@@ -114,109 +114,111 @@ function formatTime(iso?: string | null): string {
 
 const createStyles = (theme: Theme) =>
   StyleSheet.create({
-  wrapper: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-  },
-  card: {
-    flexDirection: 'row',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 16,
-    backgroundColor: '#FFFFFF',
-    alignItems: 'center',
-    ...(Platform.OS === 'ios'
-      ? {
-          shadowColor: '#000',
-          shadowOpacity: 0.06,
-          shadowRadius: 8,
-          shadowOffset: { width: 0, height: 3 },
-        }
-      : { elevation: 2 }),
-  },
-  avatarContainer: {
-    marginRight: 12,
-    position: 'relative',
-  },
-  avatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-  },
-  avatarFallback: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#E2E8F0',
-  },
-  statusDot: {
-    position: 'absolute',
-    bottom: 2,
-    right: 2,
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    borderWidth: 2,
-    borderColor: '#ffffff',
-  },
-  statusOnline: {
-    backgroundColor: '#22c55e',
-  },
-  statusOffline: {
-    backgroundColor: '#9CA3AF',
-  },
-  content: {
-    flex: 1,
-  },
-  topRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  name: {
-    flex: 1,
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#0F172A',
-  },
-  nameUnread: {
-    color: '#0f766e',
-  },
-  time: {
-    marginLeft: 8,
-    fontSize: 11,
-    color: '#9CA3AF',
-  },
-  bottomRow: {
-    marginTop: 2,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  preview: {
-    flex: 1,
-    fontSize: 13,
-    color: '#6B7280',
-  },
-  previewUnread: {
-    color: '#111827',
-    fontWeight: '500',
-  },
-  badge: {
-    marginLeft: 8,
-    minWidth: 20,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 999,
-    backgroundColor: '#0f766e',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  badgeText: {
-    fontSize: 11,
-    color: '#ffffff',
-    fontWeight: '700',
-  },
+    wrapper: {
+      paddingHorizontal: 12,
+      paddingVertical: 4,
+    },
+    card: {
+      flexDirection: 'row',
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      borderRadius: 16,
+      backgroundColor: theme.colors.surface,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      alignItems: 'center',
+      ...(Platform.OS === 'ios'
+        ? {
+            shadowColor: '#000',
+            shadowOpacity: 0.06,
+            shadowRadius: 8,
+            shadowOffset: { width: 0, height: 3 },
+          }
+        : { elevation: 2 }),
+    },
+    avatarContainer: {
+      marginRight: 12,
+      position: 'relative',
+    },
+    avatar: {
+      width: 44,
+      height: 44,
+      borderRadius: 22,
+    },
+    avatarFallback: {
+      width: 44,
+      height: 44,
+      borderRadius: 22,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: '#E2E8F0',
+    },
+    statusDot: {
+      position: 'absolute',
+      bottom: 2,
+      right: 2,
+      width: 10,
+      height: 10,
+      borderRadius: 5,
+      borderWidth: 2,
+      borderColor: '#ffffff',
+    },
+    statusOnline: {
+      backgroundColor: '#22c55e',
+    },
+    statusOffline: {
+      backgroundColor: '#9CA3AF',
+    },
+    content: {
+      flex: 1,
+    },
+    topRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    name: {
+      flex: 1,
+      fontSize: 15,
+      fontWeight: '600',
+      color: '#0F172A',
+    },
+    nameUnread: {
+      color: '#0f766e',
+    },
+    time: {
+      marginLeft: 8,
+      fontSize: 11,
+      color: '#9CA3AF',
+    },
+    bottomRow: {
+      marginTop: 2,
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    preview: {
+      flex: 1,
+      fontSize: 13,
+      color: '#6B7280',
+    },
+    previewUnread: {
+      color: '#111827',
+      fontWeight: '500',
+    },
+    badge: {
+      marginLeft: 8,
+      minWidth: 20,
+      paddingHorizontal: 6,
+      paddingVertical: 2,
+      borderRadius: 999,
+      backgroundColor: '#0f766e',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    badgeText: {
+      fontSize: 11,
+      color: '#ffffff',
+      fontWeight: '700',
+    },
   });
 
 export const ThreadListItem = memo(ThreadListItemComponent);

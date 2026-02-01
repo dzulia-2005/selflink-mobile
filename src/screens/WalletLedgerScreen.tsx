@@ -1,5 +1,6 @@
-import { StatusBar } from 'expo-status-bar';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import * as Clipboard from 'expo-clipboard';
+import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -18,14 +19,8 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
 
-import { EmptyState } from '@components/EmptyState';
-import { ErrorState } from '@components/ErrorState';
-import { MetalButton } from '@components/MetalButton';
-import { MetalPanel } from '@components/MetalPanel';
-import { useToast } from '@context/ToastContext';
-import { useAuthStore } from '@store/authStore';
+import { createBtcpayCheckout, normalizeBtcpayApiError } from '@api/btcpayCheckout';
 import {
   SlcBalance,
   SlcLedgerEntry,
@@ -36,19 +31,33 @@ import {
   spendSlc,
   transferSlc,
 } from '@api/coin';
-import { createBtcpayCheckout, normalizeBtcpayApiError } from '@api/btcpayCheckout';
-import { createIpayCheckout } from '@api/ipay';
 import {
   normalizeIapApiError,
   verifyIapPurchase,
   type IapPlatform,
   type VerifyIapRequest,
 } from '@api/iap';
+import { createIpayCheckout } from '@api/ipay';
 import { createStripeCheckout, normalizeStripeApiError } from '@api/stripeCheckout';
-import { getWallet, Wallet } from '@services/api/payments';
+import { EmptyState } from '@components/EmptyState';
+import { ErrorState } from '@components/ErrorState';
+import { MetalButton } from '@components/MetalButton';
+import { MetalPanel } from '@components/MetalPanel';
 import { env } from '@config/env';
+import { useToast } from '@context/ToastContext';
+import { getWallet, Wallet } from '@services/api/payments';
+import { useAuthStore } from '@store/authStore';
 import { useTheme, type Theme } from '@theme';
+import {
+  createBtcpayPollSession,
+  shouldCompleteBtcpayPolling,
+} from '@utils/btcpayPolling';
 import { parseDollarsToCents } from '@utils/currency';
+import {
+  createIapPollSession,
+  shouldCompleteIapPolling,
+  type IapPurchaseContext,
+} from '@utils/iapPolling';
 import {
   endIapConnection,
   fetchIapProducts,
@@ -65,15 +74,6 @@ import {
   type IapPurchaseError,
 } from '@utils/iapPurchase';
 import { createIpayPollSession, shouldCompleteIpayPolling } from '@utils/ipayPolling';
-import {
-  createIapPollSession,
-  shouldCompleteIapPolling,
-  type IapPurchaseContext,
-} from '@utils/iapPolling';
-import {
-  createBtcpayPollSession,
-  shouldCompleteBtcpayPolling,
-} from '@utils/btcpayPolling';
 import {
   createStripePollSession,
   shouldCompleteStripePolling,
@@ -172,10 +172,7 @@ const parseApiError = (error: unknown): ParsedApiError => {
 
 const isAuthStatus = (status?: number) => status === 401 || status === 403;
 
-const normalizeWalletError = (
-  error: unknown,
-  fallback: string,
-): ParsedApiError => {
+const normalizeWalletError = (error: unknown, fallback: string): ParsedApiError => {
   const parsed = parseApiError(error);
   let message = parsed.message || fallback;
   if (isAuthStatus(parsed.status)) {
@@ -219,8 +216,7 @@ const formatCounterparty = (entry: SlcLedgerEntry) => {
     typeof metadata.sender_user_id === 'number' ? metadata.sender_user_id : undefined;
   const reference =
     typeof metadata.reference === 'string' ? metadata.reference : undefined;
-  const provider =
-    typeof metadata.provider === 'string' ? metadata.provider : undefined;
+  const provider = typeof metadata.provider === 'string' ? metadata.provider : undefined;
 
   if (eventType === 'transfer') {
     if (entry.direction === 'DEBIT' && toUserId) {
@@ -291,13 +287,12 @@ export function WalletLedgerScreen() {
   const [spendNoteInput, setSpendNoteInput] = useState('');
   const [spendReference, setSpendReference] = useState(defaultSpendReference);
   const [spendError, setSpendError] = useState<string | null>(null);
-  const [spendFieldErrors, setSpendFieldErrors] = useState<
-    Record<string, string[]> | null
-  >(null);
+  const [spendFieldErrors, setSpendFieldErrors] = useState<Record<
+    string,
+    string[]
+  > | null>(null);
   const [spending, setSpending] = useState(false);
-  const [spendThrottleUntil, setSpendThrottleUntil] = useState<number | null>(
-    null,
-  );
+  const [spendThrottleUntil, setSpendThrottleUntil] = useState<number | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [iapVisible, setIapVisible] = useState(false);
   const [iapProducts, setIapProducts] = useState<IapProduct[]>([]);
@@ -311,33 +306,28 @@ export function WalletLedgerScreen() {
   const [iapFinalizeFailed, setIapFinalizeFailed] = useState(false);
   const [ipayVisible, setIpayVisible] = useState(false);
   const [ipayAmountInput, setIpayAmountInput] = useState('');
-  const [ipayCurrency, setIpayCurrency] = useState<IpayCurrency>(
-    IPAY_CURRENCIES[0],
-  );
+  const [ipayCurrency, setIpayCurrency] = useState<IpayCurrency>(IPAY_CURRENCIES[0]);
   const [ipayError, setIpayError] = useState<string | null>(null);
-  const [ipayFieldErrors, setIpayFieldErrors] = useState<
-    Record<string, string[]> | null
-  >(null);
+  const [ipayFieldErrors, setIpayFieldErrors] = useState<Record<string, string[]> | null>(
+    null,
+  );
   const [ipayLoading, setIpayLoading] = useState(false);
-  const [pendingIpayReference, setPendingIpayReference] = useState<string | null>(
-    null,
-  );
-  const [pendingIpayBalance, setPendingIpayBalance] = useState<number | null>(
-    null,
-  );
+  const [pendingIpayReference, setPendingIpayReference] = useState<string | null>(null);
+  const [pendingIpayBalance, setPendingIpayBalance] = useState<number | null>(null);
   const [btcpayVisible, setBtcpayVisible] = useState(false);
   const [btcpayAmountInput, setBtcpayAmountInput] = useState('');
   const [btcpayCurrency, setBtcpayCurrency] = useState<BtcpayCurrency>(
     BTCPAY_CURRENCIES[0],
   );
   const [btcpayError, setBtcpayError] = useState<string | null>(null);
-  const [btcpayFieldErrors, setBtcpayFieldErrors] = useState<
-    Record<string, string[]> | null
-  >(null);
+  const [btcpayFieldErrors, setBtcpayFieldErrors] = useState<Record<
+    string,
+    string[]
+  > | null>(null);
   const [btcpayLoading, setBtcpayLoading] = useState(false);
-  const [pendingBtcpayReference, setPendingBtcpayReference] = useState<
-    string | null
-  >(null);
+  const [pendingBtcpayReference, setPendingBtcpayReference] = useState<string | null>(
+    null,
+  );
   const [pendingBtcpayExpectedAmount, setPendingBtcpayExpectedAmount] = useState<
     number | null
   >(null);
@@ -350,13 +340,14 @@ export function WalletLedgerScreen() {
     STRIPE_CURRENCIES[0],
   );
   const [stripeError, setStripeError] = useState<string | null>(null);
-  const [stripeFieldErrors, setStripeFieldErrors] = useState<
-    Record<string, string[]> | null
-  >(null);
+  const [stripeFieldErrors, setStripeFieldErrors] = useState<Record<
+    string,
+    string[]
+  > | null>(null);
   const [stripeLoading, setStripeLoading] = useState(false);
-  const [pendingStripeReference, setPendingStripeReference] = useState<
-    string | null
-  >(null);
+  const [pendingStripeReference, setPendingStripeReference] = useState<string | null>(
+    null,
+  );
   const [pendingStripeStartBalance, setPendingStripeStartBalance] = useState<
     number | null
   >(null);
@@ -612,10 +603,7 @@ export function WalletLedgerScreen() {
           });
         }
       } catch (error) {
-        const normalized = normalizeCoinApiError(
-          error,
-          'Unable to refresh SLC balance.',
-        );
+        const normalized = normalizeCoinApiError(error, 'Unable to refresh SLC balance.');
         if (normalized.status === 429) {
           stopIapPolling();
           toast.push({ tone: 'error', message: normalized.message });
@@ -656,54 +644,57 @@ export function WalletLedgerScreen() {
     ipayPollSessionRef.current.stop();
   }, []);
 
-  const runIpayPollAttempt = useCallback(async (sessionId: number) => {
-    if (!pendingIpayReference) {
-      stopIpayPolling();
-      return;
-    }
-    if (pendingIpayBalance === null) {
-      return;
-    }
-    if (!ipayPollSessionRef.current.isActive(sessionId)) {
-      return;
-    }
-    try {
-      const data = await getSlcBalance();
+  const runIpayPollAttempt = useCallback(
+    async (sessionId: number) => {
+      if (!pendingIpayReference) {
+        stopIpayPolling();
+        return;
+      }
+      if (pendingIpayBalance === null) {
+        return;
+      }
       if (!ipayPollSessionRef.current.isActive(sessionId)) {
         return;
       }
-      setCoinBalance(data);
-      if (shouldCompleteIpayPolling(pendingIpayBalance, data.balance_cents)) {
-        setPendingIpayReference(null);
-        setPendingIpayBalance(null);
-        stopIpayPolling();
-        await refreshCoinData();
-        toast.push({
-          tone: 'info',
-          message: 'SLC balance updated.',
-        });
+      try {
+        const data = await getSlcBalance();
+        if (!ipayPollSessionRef.current.isActive(sessionId)) {
+          return;
+        }
+        setCoinBalance(data);
+        if (shouldCompleteIpayPolling(pendingIpayBalance, data.balance_cents)) {
+          setPendingIpayReference(null);
+          setPendingIpayBalance(null);
+          stopIpayPolling();
+          await refreshCoinData();
+          toast.push({
+            tone: 'info',
+            message: 'SLC balance updated.',
+          });
+        }
+      } catch (error) {
+        const normalized = normalizeCoinApiError(error, 'Unable to refresh SLC balance.');
+        if (normalized.status === 429) {
+          stopIpayPolling();
+          toast.push({ tone: 'error', message: normalized.message });
+          return;
+        }
+        if (isAuthStatus(normalized.status)) {
+          stopIpayPolling();
+          handleAuthError(normalized.message);
+          return;
+        }
       }
-    } catch (error) {
-      const normalized = normalizeCoinApiError(error, 'Unable to refresh SLC balance.');
-      if (normalized.status === 429) {
-        stopIpayPolling();
-        toast.push({ tone: 'error', message: normalized.message });
-        return;
-      }
-      if (isAuthStatus(normalized.status)) {
-        stopIpayPolling();
-        handleAuthError(normalized.message);
-        return;
-      }
-    }
-  }, [
-    handleAuthError,
-    pendingIpayBalance,
-    pendingIpayReference,
-    refreshCoinData,
-    stopIpayPolling,
-    toast,
-  ]);
+    },
+    [
+      handleAuthError,
+      pendingIpayBalance,
+      pendingIpayReference,
+      refreshCoinData,
+      stopIpayPolling,
+      toast,
+    ],
+  );
 
   const scheduleIpayPolling = useCallback(() => {
     if (!pendingIpayReference) {
@@ -773,10 +764,7 @@ export function WalletLedgerScreen() {
           });
         }
       } catch (error) {
-        const normalized = normalizeCoinApiError(
-          error,
-          'Unable to refresh SLC balance.',
-        );
+        const normalized = normalizeCoinApiError(error, 'Unable to refresh SLC balance.');
         if (normalized.status === 429) {
           stopBtcpayPolling();
           toast.push({ tone: 'error', message: normalized.message });
@@ -820,7 +808,13 @@ export function WalletLedgerScreen() {
         });
       }
     });
-  }, [clearBtcpayPending, pendingBtcpayReference, runBtcpayPollAttempt, stopBtcpayPolling, toast]);
+  }, [
+    clearBtcpayPending,
+    pendingBtcpayReference,
+    runBtcpayPollAttempt,
+    stopBtcpayPolling,
+    toast,
+  ]);
 
   const stopStripePolling = useCallback(() => {
     stripePollSessionRef.current.stop();
@@ -882,10 +876,7 @@ export function WalletLedgerScreen() {
           });
         }
       } catch (error) {
-        const normalized = normalizeCoinApiError(
-          error,
-          'Unable to refresh SLC balance.',
-        );
+        const normalized = normalizeCoinApiError(error, 'Unable to refresh SLC balance.');
         if (normalized.status === 400 && /invalid cursor/i.test(normalized.message)) {
           stripeLedgerCursorRef.current = null;
           return;
@@ -1043,10 +1034,7 @@ export function WalletLedgerScreen() {
         }
         return { status: 'success' };
       } catch (error) {
-        const normalized = normalizeIapApiError(
-          error,
-          'Unable to verify purchase.',
-        );
+        const normalized = normalizeIapApiError(error, 'Unable to verify purchase.');
         if (isAuthStatus(normalized.status)) {
           handleAuthError(normalized.message);
           return { status: 'failed', error: normalized };
@@ -1163,7 +1151,7 @@ export function WalletLedgerScreen() {
           tone: 'info',
           message: 'Purchase already owned. Checking restores…',
         });
-        void handleRestoreIapPurchases();
+        handleRestoreIapPurchases().catch(() => undefined);
         return;
       }
       iapPurchaseInFlightRef.current = false;
@@ -1295,7 +1283,7 @@ export function WalletLedgerScreen() {
         setIapError('Unable to load in-app products.');
       })
       .finally(() => setIapProductsLoading(false));
-  }, [iapSelectedSku, iapSkus, iapVisible]);
+  }, [iapReady, iapSelectedSku, iapSkus, iapVisible]);
 
   const handleOpenSend = useCallback(() => {
     setFormError(null);
@@ -1825,9 +1813,7 @@ export function WalletLedgerScreen() {
         }
       >
         <Text style={styles.headline}>Wallet</Text>
-        <Text style={styles.subtitle}>
-          Track payments and SLC credits in one place.
-        </Text>
+        <Text style={styles.subtitle}>Track payments and SLC credits in one place.</Text>
 
         <MetalPanel glow>
           <View style={styles.panelHeader}>
@@ -1935,7 +1921,7 @@ export function WalletLedgerScreen() {
               <Text style={styles.pendingText}>
                 Awaiting Stripe payment confirmation. It may take a moment.
               </Text>
-              <MetalButton title="I&apos;ve paid" onPress={refreshCoinData} />
+              <MetalButton title="I've paid" onPress={refreshCoinData} />
             </View>
           ) : null}
           {hasPendingBtcpay ? (
@@ -1943,7 +1929,7 @@ export function WalletLedgerScreen() {
               <Text style={styles.pendingText}>
                 Awaiting BTCPay confirmation. It may take a moment.
               </Text>
-              <MetalButton title="I&apos;ve paid" onPress={refreshCoinData} />
+              <MetalButton title="I've paid" onPress={refreshCoinData} />
             </View>
           ) : null}
           {hasPendingIpay ? (
@@ -1951,7 +1937,7 @@ export function WalletLedgerScreen() {
               <Text style={styles.pendingText}>
                 Awaiting iPay confirmation. It may take a moment.
               </Text>
-              <MetalButton title="I&apos;ve paid" onPress={refreshCoinData} />
+              <MetalButton title="I've paid" onPress={refreshCoinData} />
             </View>
           ) : null}
         </MetalPanel>
@@ -2184,7 +2170,11 @@ export function WalletLedgerScreen() {
               <View style={styles.buttonRow}>
                 <MetalButton
                   title={
-                    spending ? 'Spending...' : isSpendThrottled ? 'Please wait...' : 'Spend'
+                    spending
+                      ? 'Spending...'
+                      : isSpendThrottled
+                        ? 'Please wait...'
+                        : 'Spend'
                   }
                   onPress={handleSubmitSpend}
                   disabled={spending || isSpendThrottled || !hasSpendReferences}
@@ -2349,10 +2339,7 @@ export function WalletLedgerScreen() {
                   onPress={handleSubmitStripe}
                   disabled={stripeLoading || stripeAmountCents <= 0}
                 />
-                <TouchableOpacity
-                  onPress={handleCloseStripe}
-                  style={styles.cancelButton}
-                >
+                <TouchableOpacity onPress={handleCloseStripe} style={styles.cancelButton}>
                   <Text style={styles.cancelText}>Cancel</Text>
                 </TouchableOpacity>
               </View>
@@ -2432,10 +2419,7 @@ export function WalletLedgerScreen() {
                   onPress={handleSubmitBtcpay}
                   disabled={btcpayLoading || btcpayAmountCents <= 0}
                 />
-                <TouchableOpacity
-                  onPress={handleCloseBtcpay}
-                  style={styles.cancelButton}
-                >
+                <TouchableOpacity onPress={handleCloseBtcpay} style={styles.cancelButton}>
                   <Text style={styles.cancelText}>Cancel</Text>
                 </TouchableOpacity>
               </View>
@@ -2535,230 +2519,230 @@ export function WalletLedgerScreen() {
 
 const createStyles = (theme: Theme) =>
   StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: theme.palette.midnight,
-  },
-  content: {
-    paddingHorizontal: theme.spacing.lg,
-    paddingTop: theme.spacing.xl,
-    paddingBottom: theme.spacing.xl,
-    gap: theme.spacing.lg,
-  },
-  headline: {
-    color: theme.palette.platinum,
-    ...theme.typography.title,
-  },
-  subtitle: {
-    color: theme.palette.silver,
-    ...theme.typography.body,
-  },
-  panelHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: theme.spacing.sm,
-  },
-  panelTitle: {
-    color: theme.palette.titanium,
-    ...theme.typography.subtitle,
-  },
-  panelAction: {
-    paddingHorizontal: theme.spacing.sm,
-    paddingVertical: theme.spacing.xs,
-  },
-  panelActionText: {
-    color: theme.palette.azure,
-    ...theme.typography.caption,
-    fontWeight: '600',
-  },
-  inlineLoading: {
-    paddingVertical: theme.spacing.md,
-  },
-  balanceValue: {
-    color: theme.palette.platinum,
-    ...theme.typography.headingL,
-  },
-  balanceUnit: {
-    color: theme.palette.silver,
-    ...theme.typography.caption,
-  },
-  balanceCaption: {
-    color: theme.palette.silver,
-    ...theme.typography.caption,
-    marginTop: theme.spacing.xs,
-  },
-  buttonRow: {
-    flexDirection: 'row',
-    gap: theme.spacing.sm,
-    flexWrap: 'wrap',
-    marginTop: theme.spacing.md,
-  },
-  pendingNotice: {
-    marginTop: theme.spacing.sm,
-    gap: theme.spacing.xs,
-  },
-  pendingText: {
-    color: theme.palette.silver,
-    ...theme.typography.caption,
-  },
-  ledgerRow: {
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: theme.palette.graphite,
-    paddingVertical: theme.spacing.md,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: theme.spacing.md,
-  },
-  ledgerRowFirst: {
-    borderTopWidth: 0,
-    paddingTop: 0,
-  },
-  ledgerInfo: {
-    flex: 1,
-    gap: theme.spacing.xs,
-  },
-  ledgerTitle: {
-    color: theme.palette.platinum,
-    ...theme.typography.body,
-    fontWeight: '600',
-  },
-  ledgerMeta: {
-    color: theme.palette.silver,
-    ...theme.typography.caption,
-  },
-  ledgerNote: {
-    color: theme.palette.titanium,
-    ...theme.typography.caption,
-  },
-  ledgerAmountBlock: {
-    alignItems: 'flex-end',
-    gap: theme.spacing.xs,
-  },
-  ledgerAmount: {
-    ...theme.typography.body,
-    fontWeight: '600',
-  },
-  ledgerAmountPositive: {
-    color: theme.palette.lime,
-  },
-  ledgerAmountNegative: {
-    color: theme.palette.ember,
-  },
-  ledgerTimestamp: {
-    color: theme.palette.silver,
-    ...theme.typography.caption,
-  },
-  loadMoreRow: {
-    marginTop: theme.spacing.md,
-    alignItems: 'flex-start',
-  },
-  modalBackdrop: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    backgroundColor: 'rgba(2, 6, 23, 0.7)',
-  },
-  modalContent: {
-    padding: theme.spacing.lg,
-  },
-  modalPanel: {
-    width: '100%',
-  },
-  modalTitle: {
-    color: theme.palette.platinum,
-    ...theme.typography.headingM,
-    marginBottom: theme.spacing.xs,
-  },
-  modalSubtitle: {
-    color: theme.palette.silver,
-    ...theme.typography.body,
-    marginBottom: theme.spacing.md,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: theme.palette.graphite,
-    backgroundColor: theme.palette.obsidian,
-    borderRadius: theme.radius.md,
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
-    color: theme.palette.platinum,
-    ...theme.typography.body,
-    marginBottom: theme.spacing.sm,
-  },
-  inputRow: {
-    flexDirection: 'row',
-    gap: theme.spacing.sm,
-    alignItems: 'center',
-    marginBottom: theme.spacing.sm,
-  },
-  inputGrow: {
-    flex: 1,
-    marginBottom: 0,
-  },
-  pasteButton: {
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
-    borderRadius: theme.radius.md,
-    borderWidth: 1,
-    borderColor: theme.palette.graphite,
-    backgroundColor: 'rgba(255,255,255,0.08)',
-  },
-  pasteLabel: {
-    color: theme.palette.platinum,
-    ...theme.typography.caption,
-    fontWeight: '600',
-  },
-  fieldLabel: {
-    color: theme.palette.silver,
-    ...theme.typography.caption,
-    marginBottom: theme.spacing.xs,
-  },
-  referenceList: {
-    gap: theme.spacing.xs,
-    marginBottom: theme.spacing.sm,
-  },
-  referenceOption: {
-    borderWidth: 1,
-    borderColor: theme.palette.graphite,
-    borderRadius: theme.radius.md,
-    backgroundColor: theme.palette.obsidian,
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
-  },
-  referenceOptionSelected: {
-    borderColor: theme.palette.azure,
-  },
-  referenceLabel: {
-    color: theme.palette.platinum,
-    ...theme.typography.body,
-  },
-  referenceLabelSelected: {
-    color: theme.palette.pearl,
-  },
-  fieldError: {
-    color: theme.palette.ember,
-    ...theme.typography.caption,
-    marginBottom: theme.spacing.sm,
-  },
-  formError: {
-    color: theme.palette.ember,
-    ...theme.typography.caption,
-    marginTop: theme.spacing.xs,
-  },
-  inlineLink: {
-    alignSelf: 'flex-start',
-    marginTop: theme.spacing.xs,
-  },
-  inlineLinkText: {
-    color: theme.palette.azure,
-    ...theme.typography.caption,
-  },
-  cancelButton: {
-    justifyContent: 'center',
-    paddingHorizontal: theme.spacing.sm,
-  },
-  cancelText: {
-    color: theme.palette.silver,
-    ...theme.typography.button,
-  },
+    safeArea: {
+      flex: 1,
+      backgroundColor: theme.palette.midnight,
+    },
+    content: {
+      paddingHorizontal: theme.spacing.lg,
+      paddingTop: theme.spacing.xl,
+      paddingBottom: theme.spacing.xl,
+      gap: theme.spacing.lg,
+    },
+    headline: {
+      color: theme.palette.platinum,
+      ...theme.typography.title,
+    },
+    subtitle: {
+      color: theme.palette.silver,
+      ...theme.typography.body,
+    },
+    panelHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: theme.spacing.sm,
+    },
+    panelTitle: {
+      color: theme.palette.titanium,
+      ...theme.typography.subtitle,
+    },
+    panelAction: {
+      paddingHorizontal: theme.spacing.sm,
+      paddingVertical: theme.spacing.xs,
+    },
+    panelActionText: {
+      color: theme.palette.azure,
+      ...theme.typography.caption,
+      fontWeight: '600',
+    },
+    inlineLoading: {
+      paddingVertical: theme.spacing.md,
+    },
+    balanceValue: {
+      color: theme.palette.platinum,
+      ...theme.typography.headingL,
+    },
+    balanceUnit: {
+      color: theme.palette.silver,
+      ...theme.typography.caption,
+    },
+    balanceCaption: {
+      color: theme.palette.silver,
+      ...theme.typography.caption,
+      marginTop: theme.spacing.xs,
+    },
+    buttonRow: {
+      flexDirection: 'row',
+      gap: theme.spacing.sm,
+      flexWrap: 'wrap',
+      marginTop: theme.spacing.md,
+    },
+    pendingNotice: {
+      marginTop: theme.spacing.sm,
+      gap: theme.spacing.xs,
+    },
+    pendingText: {
+      color: theme.palette.silver,
+      ...theme.typography.caption,
+    },
+    ledgerRow: {
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: theme.palette.graphite,
+      paddingVertical: theme.spacing.md,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      gap: theme.spacing.md,
+    },
+    ledgerRowFirst: {
+      borderTopWidth: 0,
+      paddingTop: 0,
+    },
+    ledgerInfo: {
+      flex: 1,
+      gap: theme.spacing.xs,
+    },
+    ledgerTitle: {
+      color: theme.palette.platinum,
+      ...theme.typography.body,
+      fontWeight: '600',
+    },
+    ledgerMeta: {
+      color: theme.palette.silver,
+      ...theme.typography.caption,
+    },
+    ledgerNote: {
+      color: theme.palette.titanium,
+      ...theme.typography.caption,
+    },
+    ledgerAmountBlock: {
+      alignItems: 'flex-end',
+      gap: theme.spacing.xs,
+    },
+    ledgerAmount: {
+      ...theme.typography.body,
+      fontWeight: '600',
+    },
+    ledgerAmountPositive: {
+      color: theme.palette.lime,
+    },
+    ledgerAmountNegative: {
+      color: theme.palette.ember,
+    },
+    ledgerTimestamp: {
+      color: theme.palette.silver,
+      ...theme.typography.caption,
+    },
+    loadMoreRow: {
+      marginTop: theme.spacing.md,
+      alignItems: 'flex-start',
+    },
+    modalBackdrop: {
+      flex: 1,
+      justifyContent: 'flex-end',
+      backgroundColor: 'rgba(2, 6, 23, 0.7)',
+    },
+    modalContent: {
+      padding: theme.spacing.lg,
+    },
+    modalPanel: {
+      width: '100%',
+    },
+    modalTitle: {
+      color: theme.palette.platinum,
+      ...theme.typography.headingM,
+      marginBottom: theme.spacing.xs,
+    },
+    modalSubtitle: {
+      color: theme.palette.silver,
+      ...theme.typography.body,
+      marginBottom: theme.spacing.md,
+    },
+    input: {
+      borderWidth: 1,
+      borderColor: theme.palette.graphite,
+      backgroundColor: theme.palette.obsidian,
+      borderRadius: theme.radius.md,
+      paddingHorizontal: theme.spacing.md,
+      paddingVertical: theme.spacing.sm,
+      color: theme.palette.platinum,
+      ...theme.typography.body,
+      marginBottom: theme.spacing.sm,
+    },
+    inputRow: {
+      flexDirection: 'row',
+      gap: theme.spacing.sm,
+      alignItems: 'center',
+      marginBottom: theme.spacing.sm,
+    },
+    inputGrow: {
+      flex: 1,
+      marginBottom: 0,
+    },
+    pasteButton: {
+      paddingHorizontal: theme.spacing.md,
+      paddingVertical: theme.spacing.sm,
+      borderRadius: theme.radius.md,
+      borderWidth: 1,
+      borderColor: theme.palette.graphite,
+      backgroundColor: 'rgba(255,255,255,0.08)',
+    },
+    pasteLabel: {
+      color: theme.palette.platinum,
+      ...theme.typography.caption,
+      fontWeight: '600',
+    },
+    fieldLabel: {
+      color: theme.palette.silver,
+      ...theme.typography.caption,
+      marginBottom: theme.spacing.xs,
+    },
+    referenceList: {
+      gap: theme.spacing.xs,
+      marginBottom: theme.spacing.sm,
+    },
+    referenceOption: {
+      borderWidth: 1,
+      borderColor: theme.palette.graphite,
+      borderRadius: theme.radius.md,
+      backgroundColor: theme.palette.obsidian,
+      paddingHorizontal: theme.spacing.md,
+      paddingVertical: theme.spacing.sm,
+    },
+    referenceOptionSelected: {
+      borderColor: theme.palette.azure,
+    },
+    referenceLabel: {
+      color: theme.palette.platinum,
+      ...theme.typography.body,
+    },
+    referenceLabelSelected: {
+      color: theme.palette.pearl,
+    },
+    fieldError: {
+      color: theme.palette.ember,
+      ...theme.typography.caption,
+      marginBottom: theme.spacing.sm,
+    },
+    formError: {
+      color: theme.palette.ember,
+      ...theme.typography.caption,
+      marginTop: theme.spacing.xs,
+    },
+    inlineLink: {
+      alignSelf: 'flex-start',
+      marginTop: theme.spacing.xs,
+    },
+    inlineLinkText: {
+      color: theme.palette.azure,
+      ...theme.typography.caption,
+    },
+    cancelButton: {
+      justifyContent: 'center',
+      paddingHorizontal: theme.spacing.sm,
+    },
+    cancelText: {
+      color: theme.palette.silver,
+      ...theme.typography.button,
+    },
   });

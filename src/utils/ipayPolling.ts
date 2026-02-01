@@ -31,7 +31,9 @@ export const createIpayPollSession = (): IpayPollSession => {
         if (!active || sessionId !== currentSession) {
           return;
         }
-        void onTick(currentSession, index === delays.length - 1);
+        Promise.resolve(onTick(currentSession, index === delays.length - 1)).catch(
+          () => undefined,
+        );
       }, delay),
     );
     return currentSession;

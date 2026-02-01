@@ -24,9 +24,7 @@ function AppShell() {
   }, [prepare]);
 
   if (!isReady) {
-    return (
-      <StatusBar style={statusBarStyle} backgroundColor={theme.colors.background} />
-    );
+    return <StatusBar style={statusBarStyle} backgroundColor={theme.colors.background} />;
   }
 
   return (

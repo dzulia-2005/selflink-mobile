@@ -293,74 +293,74 @@ export function ProfileEditScreen() {
 
 const createStyles = (theme: Theme) =>
   StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: theme.palette.midnight,
-  },
-  flex: {
-    flex: 1,
-  },
-  content: {
-    padding: theme.spacing.lg,
-  },
-  input: {
-    borderRadius: theme.radii.md,
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
-    backgroundColor: theme.palette.pearl,
-    color: theme.palette.titanium,
-    marginBottom: theme.spacing.sm,
-  },
-  multiline: {
-    minHeight: 80,
-    textAlignVertical: 'top',
-  },
-  actions: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: theme.spacing.sm,
-    marginTop: theme.spacing.md,
-  },
-  chipRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: theme.spacing.xs,
-    marginBottom: theme.spacing.sm,
-  },
-  chip: {
-    paddingHorizontal: theme.spacing.sm,
-    paddingVertical: theme.spacing.xs,
-    borderRadius: theme.radii.pill,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    backgroundColor: 'rgba(255,255,255,0.05)',
-  },
-  chipSelected: {
-    borderColor: theme.colors.primary,
-    backgroundColor: 'rgba(124, 58, 237, 0.15)',
-  },
-  chipLabel: {
-    color: theme.text.muted,
-    fontSize: 12,
-  },
-  chipLabelSelected: {
-    color: theme.text.primary,
-    fontWeight: '700',
-  },
-  label: {
-    color: theme.text.primary,
-    ...theme.typography.caption,
-    marginTop: theme.spacing.sm,
-    marginBottom: theme.spacing.xs,
-  },
-  loading: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: theme.palette.midnight,
-  },
-  loadingText: {
-    color: theme.text.primary,
-    ...theme.typography.subtitle,
-  },
+    safeArea: {
+      flex: 1,
+      backgroundColor: theme.palette.midnight,
+    },
+    flex: {
+      flex: 1,
+    },
+    content: {
+      padding: theme.spacing.lg,
+    },
+    input: {
+      borderRadius: theme.radii.md,
+      paddingHorizontal: theme.spacing.md,
+      paddingVertical: theme.spacing.sm,
+      backgroundColor: theme.palette.pearl,
+      color: theme.palette.titanium,
+      marginBottom: theme.spacing.sm,
+    },
+    multiline: {
+      minHeight: 80,
+      textAlignVertical: 'top',
+    },
+    actions: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      gap: theme.spacing.sm,
+      marginTop: theme.spacing.md,
+    },
+    chipRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: theme.spacing.xs,
+      marginBottom: theme.spacing.sm,
+    },
+    chip: {
+      paddingHorizontal: theme.spacing.sm,
+      paddingVertical: theme.spacing.xs,
+      borderRadius: theme.radii.pill,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      backgroundColor: 'rgba(255,255,255,0.05)',
+    },
+    chipSelected: {
+      borderColor: theme.colors.primary,
+      backgroundColor: 'rgba(124, 58, 237, 0.15)',
+    },
+    chipLabel: {
+      color: theme.text.muted,
+      fontSize: 12,
+    },
+    chipLabelSelected: {
+      color: theme.text.primary,
+      fontWeight: '700',
+    },
+    label: {
+      color: theme.text.primary,
+      ...theme.typography.caption,
+      marginTop: theme.spacing.sm,
+      marginBottom: theme.spacing.xs,
+    },
+    loading: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.palette.midnight,
+    },
+    loadingText: {
+      color: theme.text.primary,
+      ...theme.typography.subtitle,
+    },
   });

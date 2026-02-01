@@ -1,6 +1,6 @@
-import { StyleSheet, View } from 'react-native';
-import { useMemo, type ComponentType } from 'react';
 import LottieView from 'lottie-react-native';
+import { type ComponentType } from 'react';
+import { StyleSheet, View } from 'react-native';
 
 import type { OverlayEffect } from '@utils/giftEffects';
 import { canRenderLottie, isLottieJsonUrl } from '@utils/lottieGuard';
@@ -16,7 +16,6 @@ export function GiftOverlayEffect({ effect, borderRadius = 0 }: Props) {
   const lottieSupported = canRenderLottie();
   if (!effect || !animationUrl || !isLottieUrl || !lottieSupported) {
     if (__DEV__ && effect && animationUrl && isLottieUrl && !lottieSupported) {
-      // eslint-disable-next-line no-console
       console.debug('[GiftOverlayEffect] Lottie unsupported, skipping overlay.');
     }
     return null;
@@ -28,13 +27,9 @@ export function GiftOverlayEffect({ effect, borderRadius = 0 }: Props) {
   const resizeMode = effect.fit === 'contain' ? 'contain' : 'cover';
   const Lottie = LottieView as unknown as ComponentType<any>;
 
-  const clipStyle = useMemo(
-    () =>
-      effect.clipToBounds
-        ? { overflow: 'hidden' as const, borderRadius }
-        : undefined,
-    [borderRadius, effect.clipToBounds],
-  );
+  const clipStyle = effect.clipToBounds
+    ? { overflow: 'hidden' as const, borderRadius }
+    : undefined;
 
   return (
     <View style={[styles.overlay, { zIndex }, clipStyle]} pointerEvents="none">

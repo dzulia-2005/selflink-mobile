@@ -170,75 +170,75 @@ export function RegisterScreen() {
 
 const createStyles = (theme: Theme) =>
   StyleSheet.create({
-  gradient: {
-    flex: 1,
-  },
-  container: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingHorizontal: theme.spacing.xl,
-    paddingVertical: theme.spacing.xl,
-    paddingBottom: theme.spacing.xl * 2,
-  },
-  card: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.radii.lg,
-    padding: theme.spacing.xl,
-    gap: theme.spacing.lg,
-    overflow: 'hidden',
-    ...theme.shadows.card,
-  },
-  cardAccent: {
-    position: 'absolute',
-    top: -40,
-    left: -40,
-    width: 160,
-    height: 160,
-    opacity: 0.18,
-    borderRadius: 120,
-  },
-  title: {
-    color: theme.text.primary,
-    ...theme.typography.headingL,
-  },
-  subtitle: {
-    color: theme.text.secondary,
-    ...theme.typography.body,
-  },
-  input: {
-    backgroundColor: theme.colors.surfaceAlt,
-    borderRadius: theme.radii.md,
-    padding: theme.spacing.lg,
-    color: theme.text.primary,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  buttonWrapper: {
-    borderRadius: theme.radii.lg,
-    ...theme.shadows.button,
-  },
-  button: {
-    borderRadius: theme.radii.lg,
-    paddingVertical: theme.spacing.md,
-    alignItems: 'center',
-  },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  buttonLabel: {
-    color: theme.text.primary,
-    ...theme.typography.button,
-  },
-  errorText: {
-    color: theme.colors.error,
-    textAlign: 'center',
-  },
-  footerLink: {
-    alignItems: 'center',
-  },
-  footerText: {
-    color: theme.text.secondary,
-    ...theme.typography.body,
-  },
+    gradient: {
+      flex: 1,
+    },
+    container: {
+      flex: 1,
+    },
+    scrollContent: {
+      paddingHorizontal: theme.spacing.xl,
+      paddingVertical: theme.spacing.xl,
+      paddingBottom: theme.spacing.xl * 2,
+    },
+    card: {
+      backgroundColor: theme.colors.surface,
+      borderRadius: theme.radii.lg,
+      padding: theme.spacing.xl,
+      gap: theme.spacing.lg,
+      overflow: 'hidden',
+      ...theme.shadows.card,
+    },
+    cardAccent: {
+      position: 'absolute',
+      top: -40,
+      left: -40,
+      width: 160,
+      height: 160,
+      opacity: 0.18,
+      borderRadius: 120,
+    },
+    title: {
+      color: theme.text.primary,
+      ...theme.typography.headingL,
+    },
+    subtitle: {
+      color: theme.text.secondary,
+      ...theme.typography.body,
+    },
+    input: {
+      backgroundColor: theme.colors.surfaceAlt,
+      borderRadius: theme.radii.md,
+      padding: theme.spacing.lg,
+      color: theme.text.primary,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+    },
+    buttonWrapper: {
+      borderRadius: theme.radii.lg,
+      ...theme.shadows.button,
+    },
+    button: {
+      borderRadius: theme.radii.lg,
+      paddingVertical: theme.spacing.md,
+      alignItems: 'center',
+    },
+    buttonDisabled: {
+      opacity: 0.6,
+    },
+    buttonLabel: {
+      color: theme.text.primary,
+      ...theme.typography.button,
+    },
+    errorText: {
+      color: theme.colors.error,
+      textAlign: 'center',
+    },
+    footerLink: {
+      alignItems: 'center',
+    },
+    footerText: {
+      color: theme.text.secondary,
+      ...theme.typography.body,
+    },
   });

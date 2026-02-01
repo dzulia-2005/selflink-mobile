@@ -75,7 +75,9 @@ describe('giftEffects', () => {
           gift_type: {
             effects: {
               persist: { mode: 'window', window_seconds: 60 },
-              effects: [{ type: 'overlay', scope: 'post', animation: '/media/gifts/shine.json' }],
+              effects: [
+                { type: 'overlay', scope: 'post', animation: '/media/gifts/shine.json' },
+              ],
             },
           },
         },

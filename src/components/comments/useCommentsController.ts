@@ -105,12 +105,8 @@ export function useCommentsController({
           setComments(data);
           setHasMore(data.length > 0);
         } else {
-          const existing = new Set(
-            commentsRef.current.map((item) => String(item.id)),
-          );
-          const deduped = data.filter(
-            (item) => !existing.has(String(item.id)),
-          );
+          const existing = new Set(commentsRef.current.map((item) => String(item.id)));
+          const deduped = data.filter((item) => !existing.has(String(item.id)));
           setComments((prev) => prev.concat(deduped));
           setHasMore(deduped.length > 0);
         }
@@ -185,9 +181,7 @@ export function useCommentsController({
       );
       setInput(trimmed);
       setError(
-        submitError instanceof Error
-          ? submitError.message
-          : 'Unable to add comment.',
+        submitError instanceof Error ? submitError.message : 'Unable to add comment.',
       );
     } finally {
       setSubmitting(false);

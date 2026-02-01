@@ -354,9 +354,7 @@ function TabBarTop({
       <Text style={[topBarStyles.title, { color: tintColor }]}>{title}</Text>
       {rightLabel ? (
         <TouchableOpacity onPress={() => navigation.navigate('SearchProfiles')}>
-          <Text style={[topBarStyles.action, { color: actionColor }]}>
-            {rightLabel}
-          </Text>
+          <Text style={[topBarStyles.action, { color: actionColor }]}>{rightLabel}</Text>
         </TouchableOpacity>
       ) : (
         <View style={topBarStyles.placeholder} />

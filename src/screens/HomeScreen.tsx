@@ -162,54 +162,54 @@ type Styles = {
 
 const createStyles = (theme: Theme) =>
   StyleSheet.create<Styles>({
-  safeArea: {
-    flex: 1,
-    backgroundColor: theme.palette.midnight,
-  },
-  content: {
-    paddingHorizontal: theme.spacing.lg,
-    paddingBottom: theme.spacing.xl,
-    paddingTop: theme.spacing.lg,
-    gap: theme.spacing.xl,
-  },
-  hero: {
-    alignItems: 'center',
-    gap: theme.spacing.md,
-  },
-  logo: {
-    height: 68,
-    width: 68,
-  },
-  headline: {
-    color: theme.palette.platinum,
-    ...theme.typography.title,
-  },
-  subhead: {
-    color: theme.palette.silver,
-    textAlign: 'center',
-    ...theme.typography.body,
-  },
-  panelTitle: {
-    color: theme.palette.titanium,
-    ...theme.typography.subtitle,
-    marginBottom: theme.spacing.md,
-  },
-  subtitle: {
-    color: theme.palette.silver,
-    ...theme.typography.body,
-  },
-  statusHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: theme.spacing.sm,
-  },
-  statusError: {
-    color: theme.palette.ember,
-    ...theme.typography.body,
-    marginBottom: theme.spacing.sm,
-  },
-  buttonRow: {
-    gap: theme.spacing.sm,
-  },
+    safeArea: {
+      flex: 1,
+      backgroundColor: theme.palette.midnight,
+    },
+    content: {
+      paddingHorizontal: theme.spacing.lg,
+      paddingBottom: theme.spacing.xl,
+      paddingTop: theme.spacing.lg,
+      gap: theme.spacing.xl,
+    },
+    hero: {
+      alignItems: 'center',
+      gap: theme.spacing.md,
+    },
+    logo: {
+      height: 68,
+      width: 68,
+    },
+    headline: {
+      color: theme.palette.platinum,
+      ...theme.typography.title,
+    },
+    subhead: {
+      color: theme.palette.silver,
+      textAlign: 'center',
+      ...theme.typography.body,
+    },
+    panelTitle: {
+      color: theme.palette.titanium,
+      ...theme.typography.subtitle,
+      marginBottom: theme.spacing.md,
+    },
+    subtitle: {
+      color: theme.palette.silver,
+      ...theme.typography.body,
+    },
+    statusHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: theme.spacing.sm,
+    },
+    statusError: {
+      color: theme.palette.ember,
+      ...theme.typography.body,
+      marginBottom: theme.spacing.sm,
+    },
+    buttonRow: {
+      gap: theme.spacing.sm,
+    },
   });

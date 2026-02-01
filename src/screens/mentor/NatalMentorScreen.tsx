@@ -178,66 +178,66 @@ export function NatalMentorScreen() {
 
 const createStyles = (theme: Theme) =>
   StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: theme.palette.midnight,
-  },
-  content: {
-    padding: theme.spacing.lg,
-    gap: theme.spacing.lg,
-  },
-  headline: {
-    color: theme.palette.platinum,
-    ...theme.typography.headingL,
-  },
-  subtitle: {
-    color: theme.palette.silver,
-    ...theme.typography.body,
-  },
-  fieldLabel: {
-    color: theme.palette.platinum,
-    ...theme.typography.subtitle,
-    marginBottom: theme.spacing.sm,
-  },
-  input: {
-    minHeight: 120,
-    maxHeight: 200,
-    borderRadius: theme.radii.md,
-    backgroundColor: 'rgba(148, 163, 184, 0.12)',
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: theme.palette.titanium,
-    padding: theme.spacing.md,
-    color: theme.palette.platinum,
-    ...theme.typography.body,
-    marginBottom: theme.spacing.md,
-  },
-  submitButton: {
-    backgroundColor: theme.palette.rose,
-    paddingVertical: theme.spacing.md,
-    borderRadius: theme.radii.full,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  submitButtonDisabled: {
-    opacity: 0.6,
-  },
-  submitText: {
-    color: theme.palette.pearl,
-    fontWeight: '700',
-    fontSize: 16,
-  },
-  streamingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.sm,
-    marginTop: theme.spacing.sm,
-  },
-  body: {
-    color: theme.palette.platinum,
-    ...theme.typography.body,
-  },
-  centered: {
-    alignItems: 'center',
-    gap: theme.spacing.sm,
-  },
-});
+    container: {
+      flex: 1,
+      backgroundColor: theme.palette.midnight,
+    },
+    content: {
+      padding: theme.spacing.lg,
+      gap: theme.spacing.lg,
+    },
+    headline: {
+      color: theme.palette.platinum,
+      ...theme.typography.headingL,
+    },
+    subtitle: {
+      color: theme.palette.silver,
+      ...theme.typography.body,
+    },
+    fieldLabel: {
+      color: theme.palette.platinum,
+      ...theme.typography.subtitle,
+      marginBottom: theme.spacing.sm,
+    },
+    input: {
+      minHeight: 120,
+      maxHeight: 200,
+      borderRadius: theme.radii.md,
+      backgroundColor: 'rgba(148, 163, 184, 0.12)',
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.palette.titanium,
+      padding: theme.spacing.md,
+      color: theme.palette.platinum,
+      ...theme.typography.body,
+      marginBottom: theme.spacing.md,
+    },
+    submitButton: {
+      backgroundColor: theme.palette.rose,
+      paddingVertical: theme.spacing.md,
+      borderRadius: theme.radii.full,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    submitButtonDisabled: {
+      opacity: 0.6,
+    },
+    submitText: {
+      color: theme.palette.pearl,
+      fontWeight: '700',
+      fontSize: 16,
+    },
+    streamingRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.sm,
+      marginTop: theme.spacing.sm,
+    },
+    body: {
+      color: theme.palette.platinum,
+      ...theme.typography.body,
+    },
+    centered: {
+      alignItems: 'center',
+      gap: theme.spacing.sm,
+    },
+  });

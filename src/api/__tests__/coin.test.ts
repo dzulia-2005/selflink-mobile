@@ -8,6 +8,7 @@ import {
   spendSlc,
   transferSlc,
 } from '@api/coin';
+
 import { COIN_SPEND_REFERENCES } from '../../constants/coinSpendReferences';
 
 jest.mock('@api/client', () => ({
@@ -105,7 +106,10 @@ describe('coin api', () => {
   });
 
   it('maps transfer validation errors with detail and code', () => {
-    const error = createAxiosError(400, { detail: 'insufficient_funds', code: 'insufficient_funds' });
+    const error = createAxiosError(400, {
+      detail: 'insufficient_funds',
+      code: 'insufficient_funds',
+    });
 
     const parsed = normalizeCoinApiError(error);
 
@@ -125,7 +129,9 @@ describe('coin api', () => {
   });
 
   it('maps auth errors', () => {
-    const error = createAxiosError(401, { detail: 'Authentication credentials were not provided.' });
+    const error = createAxiosError(401, {
+      detail: 'Authentication credentials were not provided.',
+    });
 
     const parsed = normalizeCoinApiError(error);
 
@@ -134,7 +140,9 @@ describe('coin api', () => {
   });
 
   it('maps forbidden errors', () => {
-    const error = createAxiosError(403, { detail: 'You do not have permission to perform this action.' });
+    const error = createAxiosError(403, {
+      detail: 'You do not have permission to perform this action.',
+    });
 
     const parsed = normalizeCoinApiError(error);
 

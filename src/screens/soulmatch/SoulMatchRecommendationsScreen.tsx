@@ -16,10 +16,15 @@ import { LoadingOverlay } from '@components/LoadingOverlay';
 import { MetalPanel } from '@components/MetalPanel';
 import { BadgePill } from '@components/soulmatch/BadgePill';
 import { CompatibilityBar } from '@components/soulmatch/CompatibilityBar';
+import { SoulMatchUpgradeSheet } from '@components/soulmatch/SoulMatchUpgradeSheet';
 import { UserAvatar } from '@components/UserAvatar';
 import { useToast } from '@context/ToastContext';
 import { SoulMatchStackParamList } from '@navigation/types';
-import { SoulmatchExplainLevel, SoulmatchMode, SoulmatchResult } from '@schemas/soulmatch';
+import {
+  SoulmatchExplainLevel,
+  SoulmatchMode,
+  SoulmatchResult,
+} from '@schemas/soulmatch';
 import {
   fetchRecommendations,
   type SoulmatchRecommendationsMeta,
@@ -27,6 +32,7 @@ import {
 import { useAuthStore } from '@store/authStore';
 import { useTheme, type Theme } from '@theme';
 import { normalizeApiError } from '@utils/apiErrors';
+import { buildBadges, formatScore, scoreTone } from '@utils/soulmatch';
 import {
   normalizeSoulmatchRecommendations,
   normalizeSoulmatchRecsResponse,
@@ -38,8 +44,6 @@ import {
   requiredTierForExplain,
   type SoulmatchTier,
 } from '@utils/soulmatchUpgradeGate';
-import { buildBadges, formatScore, scoreTone } from '@utils/soulmatch';
-import { SoulMatchUpgradeSheet } from '@components/soulmatch/SoulMatchUpgradeSheet';
 
 type Nav = NativeStackNavigationProp<SoulMatchStackParamList>;
 
@@ -91,7 +95,6 @@ function RecommendationCard({
   onPress,
   index,
   showLensHeader,
-  explainLevel,
   userTier,
   onRequestUpgrade,
   styles,
@@ -100,7 +103,6 @@ function RecommendationCard({
   onPress: () => void;
   index: number;
   showLensHeader: boolean;
-  explainLevel: SoulmatchExplainLevel;
   userTier: SoulmatchTier;
   onRequestUpgrade: (tier: Exclude<SoulmatchTier, 'free'>) => void;
   styles: ReturnType<typeof createStyles>;
@@ -166,7 +168,9 @@ function RecommendationCard({
               <Text style={styles.timingLabel}>
                 Timing: {timingSummary || timingWindowLabel}
               </Text>
-              {timingWindowLabel && timingSummary && !isSectionLocked('timing', userTier) ? (
+              {timingWindowLabel &&
+              timingSummary &&
+              !isSectionLocked('timing', userTier) ? (
                 <Text style={styles.timingWindow}>{timingWindowLabel}</Text>
               ) : null}
               {trend && !isSectionLocked('timing', userTier) ? (
@@ -183,7 +187,11 @@ function RecommendationCard({
             </View>
           ) : null}
           {showFull ? (
-            <ExpandableSection title="More" text={item.explanation?.full} styles={styles} />
+            <ExpandableSection
+              title="More"
+              text={item.explanation?.full}
+              styles={styles}
+            />
           ) : lockedFull ? (
             <TouchableOpacity onPress={() => onRequestUpgrade('premium')}>
               <Text style={styles.unlockText}>Unlock to see more</Text>
@@ -249,9 +257,8 @@ export function SoulMatchRecommendationsScreen({
   const modeRef = useRef<SoulmatchMode>('compat');
   const userTier: SoulmatchTier = 'free';
   const [upgradeVisible, setUpgradeVisible] = useState(false);
-  const [requestedTier, setRequestedTier] = useState<Exclude<SoulmatchTier, 'free'>>(
-    'premium',
-  );
+  const [requestedTier, setRequestedTier] =
+    useState<Exclude<SoulmatchTier, 'free'>>('premium');
   const [items, setItems] = useState<SoulmatchResult[]>(
     normalizeSoulmatchRecommendations(initialItems as SoulmatchResult[]).items,
   );
@@ -259,45 +266,48 @@ export function SoulMatchRecommendationsScreen({
   const [refreshing, setRefreshing] = useState(false);
   const [showDebug, setShowDebug] = useState(true);
 
-  const load = useCallback(async (modeHint?: 'refresh') => {
-    if (skipAutoLoad && initialItems.length) {
-      return;
-    }
-    if (modeHint !== 'refresh') {
-      setLoading(true);
-    }
-    try {
-      if (typeof __DEV__ !== 'undefined' && __DEV__) {
-        console.debug('SoulMatch: recommendations fetch start', { explainLevel, mode });
-      }
-      const raw = await fetchRecommendations({ includeMeta: true, explainLevel, mode });
-      const normalized = normalizeSoulmatchRecsResponse(raw);
-      setItems(normalized.results);
-      setMeta(normalized.meta ?? null);
-      if (typeof __DEV__ !== 'undefined' && __DEV__) {
-        console.debug('SoulMatch: recommendations fetch ok', {
-          total: Array.isArray(raw) ? raw.length : raw?.results?.length ?? 0,
-          normalized: normalized.results.length,
-          dropped: normalized.dropped,
-          meta: normalized.meta,
-        });
-      }
-    } catch (error) {
-      const normalized = normalizeApiError(error, 'Unable to load recommendations.');
-      if (normalized.status === 401 || normalized.status === 403) {
-        toast.push({ message: normalized.message, tone: 'error', duration: 4000 });
-        logout();
+  const load = useCallback(
+    async (modeHint?: 'refresh') => {
+      if (skipAutoLoad && initialItems.length) {
         return;
       }
-      setMeta(null);
-      toast.push({ message: normalized.message, tone: 'error', duration: 4000 });
-      if (typeof __DEV__ !== 'undefined' && __DEV__) {
-        console.debug('SoulMatch: recommendations fetch error', normalized);
+      if (modeHint !== 'refresh') {
+        setLoading(true);
       }
-    } finally {
-      setLoading(false);
-    }
-  }, [explainLevel, initialItems.length, logout, mode, skipAutoLoad, toast]);
+      try {
+        if (typeof __DEV__ !== 'undefined' && __DEV__) {
+          console.debug('SoulMatch: recommendations fetch start', { explainLevel, mode });
+        }
+        const raw = await fetchRecommendations({ includeMeta: true, explainLevel, mode });
+        const normalized = normalizeSoulmatchRecsResponse(raw);
+        setItems(normalized.results);
+        setMeta(normalized.meta ?? null);
+        if (typeof __DEV__ !== 'undefined' && __DEV__) {
+          console.debug('SoulMatch: recommendations fetch ok', {
+            total: Array.isArray(raw) ? raw.length : (raw?.results?.length ?? 0),
+            normalized: normalized.results.length,
+            dropped: normalized.dropped,
+            meta: normalized.meta,
+          });
+        }
+      } catch (error) {
+        const normalized = normalizeApiError(error, 'Unable to load recommendations.');
+        if (normalized.status === 401 || normalized.status === 403) {
+          toast.push({ message: normalized.message, tone: 'error', duration: 4000 });
+          logout();
+          return;
+        }
+        setMeta(null);
+        toast.push({ message: normalized.message, tone: 'error', duration: 4000 });
+        if (typeof __DEV__ !== 'undefined' && __DEV__) {
+          console.debug('SoulMatch: recommendations fetch error', normalized);
+        }
+      } finally {
+        setLoading(false);
+      }
+    },
+    [explainLevel, initialItems.length, logout, mode, skipAutoLoad, toast],
+  );
 
   useFocusEffect(
     useCallback(() => {
@@ -328,13 +338,12 @@ export function SoulMatchRecommendationsScreen({
   const renderItem = ({ item, index }: { item: SoulmatchResult; index: number }) => {
     const currentLens = item.lens_label ?? item.lens;
     const previous = items[index - 1];
-    const previousLens = previous ? previous.lens_label ?? previous.lens : null;
+    const previousLens = previous ? (previous.lens_label ?? previous.lens) : null;
     const showLensHeader = Boolean(currentLens && currentLens !== previousLens);
     return (
       <RecommendationCard
         item={item}
         index={index}
-        explainLevel={explainLevel}
         showLensHeader={showLensHeader}
         userTier={userTier}
         onRequestUpgrade={(tier) => {
@@ -365,13 +374,15 @@ export function SoulMatchRecommendationsScreen({
     missing.includes('birth_place');
   const emptyReason = meta?.empty_reason ?? meta?.reason;
   const emptyDescription =
-    missingBirth || emptyReason === 'missing_birth_data' || emptyReason === 'chart_incomplete'
+    missingBirth ||
+    emptyReason === 'missing_birth_data' ||
+    emptyReason === 'chart_incomplete'
       ? 'Complete your birth data to get matches.'
       : emptyReason === 'missing_profile_fields'
         ? 'Complete your profile (gender and orientation) to get matches.'
-      : emptyReason === 'no_candidates'
-        ? 'No candidates yet — invite friends or try later.'
-        : 'Once your chart and profile are complete, recommendations will appear here.';
+        : emptyReason === 'no_candidates'
+          ? 'No candidates yet — invite friends or try later.'
+          : 'Once your chart and profile are complete, recommendations will appear here.';
 
   const displayItems =
     userTier === 'free' ? items.slice(0, FREE_RECOMMENDATION_LIMIT) : items;
@@ -405,9 +416,7 @@ export function SoulMatchRecommendationsScreen({
       ) : null}
       <FlatList
         data={displayItems}
-        keyExtractor={(item, index) =>
-          String(item.user?.id ?? item.user_id ?? index)
-        }
+        keyExtractor={(item, index) => String(item.user?.id ?? item.user_id ?? index)}
         ListHeaderComponent={
           <View style={styles.explainRow}>
             <View style={styles.modeRow}>
@@ -421,7 +430,12 @@ export function SoulMatchRecommendationsScreen({
                       style={[styles.explainPill, active && styles.explainPillActive]}
                       onPress={() => setMode(option.value)}
                     >
-                      <Text style={[styles.explainPillText, active && styles.explainPillTextActive]}>
+                      <Text
+                        style={[
+                          styles.explainPillText,
+                          active && styles.explainPillTextActive,
+                        ]}
+                      >
                         {option.label}
                       </Text>
                     </TouchableOpacity>
@@ -437,19 +451,24 @@ export function SoulMatchRecommendationsScreen({
                   <TouchableOpacity
                     key={option.value}
                     style={[styles.explainPill, active && styles.explainPillActive]}
-                  onPress={() => {
-                    if (isExplainLevelLocked(option.value, userTier)) {
-                      const required = requiredTierForExplain(option.value);
-                      if (required !== 'free') {
-                        setRequestedTier(required);
-                        setUpgradeVisible(true);
+                    onPress={() => {
+                      if (isExplainLevelLocked(option.value, userTier)) {
+                        const required = requiredTierForExplain(option.value);
+                        if (required !== 'free') {
+                          setRequestedTier(required);
+                          setUpgradeVisible(true);
+                        }
+                        return;
                       }
-                      return;
-                    }
-                    setExplainLevel(option.value);
-                  }}
-              >
-                    <Text style={[styles.explainPillText, active && styles.explainPillTextActive]}>
+                      setExplainLevel(option.value);
+                    }}
+                  >
+                    <Text
+                      style={[
+                        styles.explainPillText,
+                        active && styles.explainPillTextActive,
+                      ]}
+                    >
                       {option.label}
                     </Text>
                   </TouchableOpacity>
@@ -509,207 +528,207 @@ export function SoulMatchRecommendationsScreen({
 
 const createStyles = (theme: Theme) =>
   StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: theme.palette.midnight,
-  },
-  listContent: {
-    padding: theme.spacing.lg,
-    gap: theme.spacing.md,
-  },
-  explainRow: {
-    marginBottom: theme.spacing.sm,
-  },
-  modeRow: {
-    marginBottom: theme.spacing.sm,
-  },
-  explainLabel: {
-    color: theme.palette.silver,
-    ...theme.typography.caption,
-    marginBottom: theme.spacing.xs,
-  },
-  explainPills: {
-    flexDirection: 'row',
-    gap: theme.spacing.xs,
-  },
-  explainPill: {
-    paddingHorizontal: theme.spacing.sm,
-    paddingVertical: theme.spacing.xs,
-    borderRadius: theme.radius.pill,
-    backgroundColor: theme.palette.midnight,
-    borderWidth: 1,
-    borderColor: theme.palette.titanium,
-  },
-  explainPillActive: {
-    backgroundColor: theme.palette.glow,
-    borderColor: theme.palette.glow,
-  },
-  explainPillText: {
-    color: theme.palette.silver,
-    ...theme.typography.caption,
-  },
-  explainPillTextActive: {
-    color: theme.palette.midnight,
-    fontWeight: '700',
-  },
-  card: {
-    padding: theme.spacing.md,
-    borderWidth: 1,
-    borderColor: theme.palette.titanium,
-  },
-  lensHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.sm,
-    marginBottom: theme.spacing.sm,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.sm,
-  },
-  cardTitleBlock: {
-    flex: 1,
-  },
-  cardName: {
-    color: theme.palette.platinum,
-    ...theme.typography.subtitle,
-  },
-  cardHandle: {
-    color: theme.palette.silver,
-    ...theme.typography.caption,
-  },
-  lensReasonInline: {
-    color: theme.palette.silver,
-    ...theme.typography.caption,
-    marginTop: 2,
-  },
-  tags: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: theme.spacing.xs,
-    marginTop: theme.spacing.sm,
-  },
-  explainShort: {
-    marginTop: theme.spacing.sm,
-    color: theme.palette.pearl,
-    ...theme.typography.body,
-  },
-  timingRow: {
-    marginTop: theme.spacing.sm,
-    gap: 2,
-  },
-  timingLabel: {
-    color: theme.palette.silver,
-    ...theme.typography.caption,
-  },
-  timingWindow: {
-    color: theme.palette.titanium,
-    ...theme.typography.caption,
-  },
-  timingTrend: {
-    color: theme.palette.silver,
-    ...theme.typography.caption,
-  },
-  unlockLink: {
-    marginTop: theme.spacing.xs,
-  },
-  unlockText: {
-    color: theme.palette.glow,
-    ...theme.typography.caption,
-  },
-  expandSection: {
-    marginTop: theme.spacing.sm,
-  },
-  expandHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  expandTitle: {
-    color: theme.palette.silver,
-    ...theme.typography.caption,
-  },
-  expandToggle: {
-    color: theme.palette.glow,
-    ...theme.typography.caption,
-  },
-  expandBody: {
-    marginTop: theme.spacing.xs,
-    color: theme.palette.pearl,
-    ...theme.typography.body,
-  },
-  upgradeFooter: {
-    marginTop: theme.spacing.md,
-    padding: theme.spacing.md,
-    borderRadius: theme.radius.lg,
-    borderWidth: 1,
-    borderColor: theme.palette.glow,
-    backgroundColor: 'rgba(56,189,248,0.08)',
-    alignItems: 'center',
-  },
-  upgradeFooterTitle: {
-    color: theme.palette.platinum,
-    ...theme.typography.subtitle,
-  },
-  upgradeFooterSubtitle: {
-    color: theme.palette.silver,
-    ...theme.typography.caption,
-    marginTop: theme.spacing.xs,
-    textAlign: 'center',
-  },
-  debugPanel: {
-    marginHorizontal: theme.spacing.lg,
-    marginTop: theme.spacing.md,
-    marginBottom: theme.spacing.sm,
-    padding: theme.spacing.sm,
-    borderRadius: theme.radius.md,
-    borderWidth: 1,
-    borderColor: theme.palette.titanium,
-    backgroundColor: theme.palette.midnight,
-  },
-  debugHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: theme.spacing.xs,
-  },
-  debugTitle: {
-    color: theme.palette.silver,
-    ...theme.typography.caption,
-  },
-  debugToggle: {
-    color: theme.palette.glow,
-    ...theme.typography.caption,
-  },
-  debugLine: {
-    color: theme.palette.pearl,
-    fontFamily: 'monospace',
-    fontSize: 12,
-    marginTop: 2,
-  },
-  scorePill: {
-    paddingHorizontal: theme.spacing.sm,
-    paddingVertical: theme.spacing.xs,
-    borderRadius: theme.radius.pill,
-    backgroundColor: theme.palette.titanium,
-    borderWidth: 1,
-    borderColor: theme.palette.steel,
-  },
-  scorePillGood: {
-    backgroundColor: theme.palette.glow,
-    borderColor: theme.palette.glow,
-  },
-  scorePillText: {
-    color: theme.palette.pearl,
-    ...theme.typography.caption,
-  },
-  progressRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.sm,
-  },
-  scoreValue: {
-    color: theme.palette.pearl,
-    ...theme.typography.caption,
-  },
+    container: {
+      flex: 1,
+      backgroundColor: theme.palette.midnight,
+    },
+    listContent: {
+      padding: theme.spacing.lg,
+      gap: theme.spacing.md,
+    },
+    explainRow: {
+      marginBottom: theme.spacing.sm,
+    },
+    modeRow: {
+      marginBottom: theme.spacing.sm,
+    },
+    explainLabel: {
+      color: theme.palette.silver,
+      ...theme.typography.caption,
+      marginBottom: theme.spacing.xs,
+    },
+    explainPills: {
+      flexDirection: 'row',
+      gap: theme.spacing.xs,
+    },
+    explainPill: {
+      paddingHorizontal: theme.spacing.sm,
+      paddingVertical: theme.spacing.xs,
+      borderRadius: theme.radius.pill,
+      backgroundColor: theme.palette.midnight,
+      borderWidth: 1,
+      borderColor: theme.palette.titanium,
+    },
+    explainPillActive: {
+      backgroundColor: theme.palette.glow,
+      borderColor: theme.palette.glow,
+    },
+    explainPillText: {
+      color: theme.palette.silver,
+      ...theme.typography.caption,
+    },
+    explainPillTextActive: {
+      color: theme.palette.midnight,
+      fontWeight: '700',
+    },
+    card: {
+      padding: theme.spacing.md,
+      borderWidth: 1,
+      borderColor: theme.palette.titanium,
+    },
+    lensHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.sm,
+      marginBottom: theme.spacing.sm,
+    },
+    cardHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.sm,
+    },
+    cardTitleBlock: {
+      flex: 1,
+    },
+    cardName: {
+      color: theme.palette.platinum,
+      ...theme.typography.subtitle,
+    },
+    cardHandle: {
+      color: theme.palette.silver,
+      ...theme.typography.caption,
+    },
+    lensReasonInline: {
+      color: theme.palette.silver,
+      ...theme.typography.caption,
+      marginTop: 2,
+    },
+    tags: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: theme.spacing.xs,
+      marginTop: theme.spacing.sm,
+    },
+    explainShort: {
+      marginTop: theme.spacing.sm,
+      color: theme.palette.pearl,
+      ...theme.typography.body,
+    },
+    timingRow: {
+      marginTop: theme.spacing.sm,
+      gap: 2,
+    },
+    timingLabel: {
+      color: theme.palette.silver,
+      ...theme.typography.caption,
+    },
+    timingWindow: {
+      color: theme.palette.titanium,
+      ...theme.typography.caption,
+    },
+    timingTrend: {
+      color: theme.palette.silver,
+      ...theme.typography.caption,
+    },
+    unlockLink: {
+      marginTop: theme.spacing.xs,
+    },
+    unlockText: {
+      color: theme.palette.glow,
+      ...theme.typography.caption,
+    },
+    expandSection: {
+      marginTop: theme.spacing.sm,
+    },
+    expandHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+    },
+    expandTitle: {
+      color: theme.palette.silver,
+      ...theme.typography.caption,
+    },
+    expandToggle: {
+      color: theme.palette.glow,
+      ...theme.typography.caption,
+    },
+    expandBody: {
+      marginTop: theme.spacing.xs,
+      color: theme.palette.pearl,
+      ...theme.typography.body,
+    },
+    upgradeFooter: {
+      marginTop: theme.spacing.md,
+      padding: theme.spacing.md,
+      borderRadius: theme.radius.lg,
+      borderWidth: 1,
+      borderColor: theme.palette.glow,
+      backgroundColor: 'rgba(56,189,248,0.08)',
+      alignItems: 'center',
+    },
+    upgradeFooterTitle: {
+      color: theme.palette.platinum,
+      ...theme.typography.subtitle,
+    },
+    upgradeFooterSubtitle: {
+      color: theme.palette.silver,
+      ...theme.typography.caption,
+      marginTop: theme.spacing.xs,
+      textAlign: 'center',
+    },
+    debugPanel: {
+      marginHorizontal: theme.spacing.lg,
+      marginTop: theme.spacing.md,
+      marginBottom: theme.spacing.sm,
+      padding: theme.spacing.sm,
+      borderRadius: theme.radius.md,
+      borderWidth: 1,
+      borderColor: theme.palette.titanium,
+      backgroundColor: theme.palette.midnight,
+    },
+    debugHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: theme.spacing.xs,
+    },
+    debugTitle: {
+      color: theme.palette.silver,
+      ...theme.typography.caption,
+    },
+    debugToggle: {
+      color: theme.palette.glow,
+      ...theme.typography.caption,
+    },
+    debugLine: {
+      color: theme.palette.pearl,
+      fontFamily: 'monospace',
+      fontSize: 12,
+      marginTop: 2,
+    },
+    scorePill: {
+      paddingHorizontal: theme.spacing.sm,
+      paddingVertical: theme.spacing.xs,
+      borderRadius: theme.radius.pill,
+      backgroundColor: theme.palette.titanium,
+      borderWidth: 1,
+      borderColor: theme.palette.steel,
+    },
+    scorePillGood: {
+      backgroundColor: theme.palette.glow,
+      borderColor: theme.palette.glow,
+    },
+    scorePillText: {
+      color: theme.palette.pearl,
+      ...theme.typography.caption,
+    },
+    progressRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.sm,
+    },
+    scoreValue: {
+      color: theme.palette.pearl,
+      ...theme.typography.caption,
+    },
   });

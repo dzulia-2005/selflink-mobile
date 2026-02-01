@@ -1,7 +1,12 @@
-import { apiClient } from '@api/client';
 import { AxiosError } from 'axios';
 
-import { listGiftTypes, normalizeGiftApiError, sendCommentGift, sendPostGift } from '@api/gifts';
+import { apiClient } from '@api/client';
+import {
+  listGiftTypes,
+  normalizeGiftApiError,
+  sendCommentGift,
+  sendPostGift,
+} from '@api/gifts';
 
 jest.mock('@api/client', () => ({
   apiClient: {
@@ -58,21 +63,30 @@ describe('gifts api', () => {
   });
 
   it('maps insufficient funds error', () => {
-    const error = createAxiosError(400, { detail: 'insufficient_funds', code: 'insufficient_funds' });
+    const error = createAxiosError(400, {
+      detail: 'insufficient_funds',
+      code: 'insufficient_funds',
+    });
     const parsed = normalizeGiftApiError(error);
 
     expect(parsed.message).toBe('Not enough SLC.');
   });
 
   it('maps gift inactive error', () => {
-    const error = createAxiosError(400, { detail: 'gift_inactive', code: 'gift_inactive' });
+    const error = createAxiosError(400, {
+      detail: 'gift_inactive',
+      code: 'gift_inactive',
+    });
     const parsed = normalizeGiftApiError(error);
 
     expect(parsed.message).toBe('Gift not available.');
   });
 
   it('maps idempotency conflict error', () => {
-    const error = createAxiosError(400, { detail: 'idempotency_conflict', code: 'idempotency_conflict' });
+    const error = createAxiosError(400, {
+      detail: 'idempotency_conflict',
+      code: 'idempotency_conflict',
+    });
     const parsed = normalizeGiftApiError(error);
 
     expect(parsed.message).toBe('This gift request is already being processed.');

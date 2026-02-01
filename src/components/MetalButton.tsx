@@ -23,7 +23,13 @@ export function MetalButton({ title, icon, onPress, disabled = false }: Props) {
         : pressed
           ? theme.gradients.buttonActive
           : theme.gradients.button,
-    [disabled, pressed],
+    [
+      disabled,
+      pressed,
+      theme.gradients.button,
+      theme.gradients.buttonActive,
+      theme.gradients.buttonDisabled,
+    ],
   );
 
   const handlePressIn = useCallback(() => {

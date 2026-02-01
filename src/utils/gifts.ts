@@ -81,11 +81,7 @@ const normalizeRecent = (raw: unknown): GiftPreview[] => {
       }
       const record = item as Record<string, unknown>;
       const giftType = record.gift_type as Record<string, unknown> | undefined;
-      const id =
-        record.gift_type_id ??
-        record.gift_type ??
-        giftType?.id ??
-        record.id;
+      const id = record.gift_type_id ?? record.gift_type ?? giftType?.id ?? record.id;
       const name =
         (typeof record.name === 'string' && record.name) ||
         (typeof giftType?.name === 'string' && giftType.name) ||
@@ -114,8 +110,7 @@ const normalizeRecent = (raw: unknown): GiftPreview[] => {
         (typeof record.kind === 'string' && record.kind) ||
         (typeof giftType?.kind === 'string' && giftType.kind) ||
         undefined;
-      const quantity =
-        toNumber(record.quantity) || toNumber(record.count) || undefined;
+      const quantity = toNumber(record.quantity) || toNumber(record.count) || undefined;
       return {
         id: typeof id === 'string' || typeof id === 'number' ? id : undefined,
         name,

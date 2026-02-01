@@ -203,79 +203,79 @@ export function PaymentsScreen() {
 
 const createStyles = (theme: Theme) =>
   StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: theme.palette.midnight,
-  },
-  content: {
-    paddingHorizontal: theme.spacing.lg,
-    paddingTop: theme.spacing.xl,
-    paddingBottom: theme.spacing.xl,
-    gap: theme.spacing.lg,
-  },
-  headline: {
-    color: theme.palette.platinum,
-    ...theme.typography.title,
-  },
-  subtitle: {
-    color: theme.palette.silver,
-    ...theme.typography.body,
-  },
-  emphasis: {
-    color: theme.palette.platinum,
-    fontWeight: '600',
-  },
-  panelTitle: {
-    color: theme.palette.titanium,
-    ...theme.typography.subtitle,
-    marginBottom: theme.spacing.md,
-  },
-  body: {
-    color: theme.palette.titanium,
-    ...theme.typography.body,
-    marginBottom: theme.spacing.md,
-  },
-  caption: {
-    color: theme.palette.silver,
-    ...theme.typography.caption,
-    marginBottom: theme.spacing.md,
-  },
-  buttonRow: {
-    flexDirection: 'row',
-    gap: theme.spacing.sm,
-    flexWrap: 'wrap',
-  },
-  card: {
-    borderRadius: theme.radius.md,
-    borderWidth: 1,
-    borderColor: theme.palette.graphite,
-    padding: theme.spacing.md,
-    marginBottom: theme.spacing.md,
-    backgroundColor: theme.palette.obsidian,
-    gap: theme.spacing.xs,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: theme.spacing.xs,
-  },
-  cardTitle: {
-    color: theme.palette.platinum,
-    ...theme.typography.subtitle,
-  },
-  cardPrice: {
-    color: theme.palette.azure,
-    ...theme.typography.subtitle,
-  },
-  feature: {
-    color: theme.palette.silver,
-    ...theme.typography.caption,
-  },
-  loadingOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: theme.palette.midnight + '90',
-  },
+    safeArea: {
+      flex: 1,
+      backgroundColor: theme.palette.midnight,
+    },
+    content: {
+      paddingHorizontal: theme.spacing.lg,
+      paddingTop: theme.spacing.xl,
+      paddingBottom: theme.spacing.xl,
+      gap: theme.spacing.lg,
+    },
+    headline: {
+      color: theme.palette.platinum,
+      ...theme.typography.title,
+    },
+    subtitle: {
+      color: theme.palette.silver,
+      ...theme.typography.body,
+    },
+    emphasis: {
+      color: theme.palette.platinum,
+      fontWeight: '600',
+    },
+    panelTitle: {
+      color: theme.palette.titanium,
+      ...theme.typography.subtitle,
+      marginBottom: theme.spacing.md,
+    },
+    body: {
+      color: theme.palette.titanium,
+      ...theme.typography.body,
+      marginBottom: theme.spacing.md,
+    },
+    caption: {
+      color: theme.palette.silver,
+      ...theme.typography.caption,
+      marginBottom: theme.spacing.md,
+    },
+    buttonRow: {
+      flexDirection: 'row',
+      gap: theme.spacing.sm,
+      flexWrap: 'wrap',
+    },
+    card: {
+      borderRadius: theme.radius.md,
+      borderWidth: 1,
+      borderColor: theme.palette.graphite,
+      padding: theme.spacing.md,
+      marginBottom: theme.spacing.md,
+      backgroundColor: theme.palette.obsidian,
+      gap: theme.spacing.xs,
+    },
+    cardHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: theme.spacing.xs,
+    },
+    cardTitle: {
+      color: theme.palette.platinum,
+      ...theme.typography.subtitle,
+    },
+    cardPrice: {
+      color: theme.palette.azure,
+      ...theme.typography.subtitle,
+    },
+    feature: {
+      color: theme.palette.silver,
+      ...theme.typography.caption,
+    },
+    loadingOverlay: {
+      ...StyleSheet.absoluteFillObject,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.palette.midnight + '90',
+    },
   });

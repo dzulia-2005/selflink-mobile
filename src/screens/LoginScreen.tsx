@@ -114,47 +114,47 @@ export function LoginScreen() {
 
 const createStyles = (theme: Theme) =>
   StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: theme.palette.midnight,
-  },
-  flex: {
-    flex: 1,
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: theme.spacing.lg,
-    paddingTop: theme.spacing.xl,
-    gap: theme.spacing.lg,
-    justifyContent: 'center',
-  },
-  headline: {
-    color: theme.palette.platinum,
-    ...theme.typography.title,
-  },
-  subtitle: {
-    color: theme.palette.silver,
-    ...theme.typography.body,
-  },
-  panelTitle: {
-    color: theme.palette.titanium,
-    ...theme.typography.subtitle,
-    marginBottom: theme.spacing.md,
-  },
-  secondaryCta: {
-    marginTop: theme.spacing.md,
-    gap: theme.spacing.xs,
-  },
-  secondaryText: {
-    color: theme.palette.silver,
-    textAlign: 'center',
-  },
-  input: {
-    borderRadius: theme.radius.md,
-    paddingVertical: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.md,
-    backgroundColor: theme.palette.pearl,
-    color: theme.palette.titanium,
-    marginBottom: theme.spacing.sm,
-  },
+    safeArea: {
+      flex: 1,
+      backgroundColor: theme.palette.midnight,
+    },
+    flex: {
+      flex: 1,
+    },
+    content: {
+      flex: 1,
+      paddingHorizontal: theme.spacing.lg,
+      paddingTop: theme.spacing.xl,
+      gap: theme.spacing.lg,
+      justifyContent: 'center',
+    },
+    headline: {
+      color: theme.palette.platinum,
+      ...theme.typography.title,
+    },
+    subtitle: {
+      color: theme.palette.silver,
+      ...theme.typography.body,
+    },
+    panelTitle: {
+      color: theme.palette.titanium,
+      ...theme.typography.subtitle,
+      marginBottom: theme.spacing.md,
+    },
+    secondaryCta: {
+      marginTop: theme.spacing.md,
+      gap: theme.spacing.xs,
+    },
+    secondaryText: {
+      color: theme.palette.silver,
+      textAlign: 'center',
+    },
+    input: {
+      borderRadius: theme.radius.md,
+      paddingVertical: theme.spacing.sm,
+      paddingHorizontal: theme.spacing.md,
+      backgroundColor: theme.palette.pearl,
+      color: theme.palette.titanium,
+      marginBottom: theme.spacing.sm,
+    },
   });

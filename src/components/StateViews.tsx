@@ -39,23 +39,23 @@ export function ErrorView({
 
 const createStyles = (theme: Theme) =>
   StyleSheet.create({
-  centered: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: theme.spacing.lg,
-    gap: theme.spacing.sm,
-  },
-  text: {
-    color: theme.text.primary,
-    ...theme.typography.body,
-    textAlign: 'center',
-  },
-  errorText: {
-    color: theme.colors.error,
-  },
-  link: {
-    color: theme.colors.primary,
-    ...theme.typography.button,
-  },
+    centered: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: theme.spacing.lg,
+      gap: theme.spacing.sm,
+    },
+    text: {
+      color: theme.text.primary,
+      ...theme.typography.body,
+      textAlign: 'center',
+    },
+    errorText: {
+      color: theme.colors.error,
+    },
+    link: {
+      color: theme.colors.primary,
+      ...theme.typography.button,
+    },
   });

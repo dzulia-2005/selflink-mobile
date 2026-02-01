@@ -1,12 +1,12 @@
-import { Image, StyleSheet, Text, View, type ViewStyle } from 'react-native';
-import { useMemo, useState, type ComponentType } from 'react';
 import LottieView from 'lottie-react-native';
+import { useMemo, useState, type ComponentType } from 'react';
+import { Image, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 
 import type { GiftType } from '@api/gifts';
+import { useTheme, type Theme } from '@theme';
 import type { GiftPreview } from '@utils/gifts';
 import { canRenderLottie, isLottieJsonUrl } from '@utils/lottieGuard';
 import { normalizeAssetUrl } from '@utils/urls';
-import { useTheme, type Theme } from '@theme';
 
 import { getGiftThemeTier } from './giftTheme';
 
@@ -104,7 +104,6 @@ export function GiftMedia({
   const isLottieUrl = isLottieJsonUrl(animationUrl);
   const lottieSupported = canRenderLottie();
   if (__DEV__ && isLottieUrl && !lottieSupported && renderMode !== 'thumbnail') {
-    // eslint-disable-next-line no-console
     console.debug('[GiftMedia] Lottie unsupported, falling back to static media.');
   }
   const useLottie =
@@ -176,41 +175,41 @@ export function GiftMedia({
 
 const createStyles = (theme: Theme) =>
   StyleSheet.create({
-  wrapper: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 6,
-    borderRadius: 18,
-    borderWidth: 1,
-    backgroundColor: 'rgba(15,23,42,0.6)',
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 3,
-  },
-  mediaWrap: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  placeholder: {
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(148,163,184,0.2)',
-  },
-  placeholderText: {
-    color: theme.reels.textPrimary,
-    fontSize: 24,
-  },
-  placeholderHint: {
-    marginTop: 4,
-    fontSize: 9,
-    color: theme.reels.textSecondary,
-  },
-  label: {
-    marginTop: 6,
-    color: theme.reels.textPrimary,
-    fontWeight: '700',
-    fontSize: 12,
-  },
+    wrapper: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 6,
+      borderRadius: 18,
+      borderWidth: 1,
+      backgroundColor: 'rgba(15,23,42,0.6)',
+      shadowOpacity: 0.25,
+      shadowRadius: 8,
+      shadowOffset: { width: 0, height: 4 },
+      elevation: 3,
+    },
+    mediaWrap: {
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    placeholder: {
+      borderRadius: 12,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: 'rgba(148,163,184,0.2)',
+    },
+    placeholderText: {
+      color: theme.reels.textPrimary,
+      fontSize: 24,
+    },
+    placeholderHint: {
+      marginTop: 4,
+      fontSize: 9,
+      color: theme.reels.textSecondary,
+    },
+    label: {
+      marginTop: 6,
+      color: theme.reels.textPrimary,
+      fontWeight: '700',
+      fontSize: 12,
+    },
   });

@@ -55,7 +55,9 @@ describe('ipay api', () => {
   });
 
   it('maps field validation errors', () => {
-    const error = createAxiosError(400, { currency: ['Currency not supported for iPay.'] });
+    const error = createAxiosError(400, {
+      currency: ['Currency not supported for iPay.'],
+    });
 
     const parsed = normalizeIpayApiError(error);
 

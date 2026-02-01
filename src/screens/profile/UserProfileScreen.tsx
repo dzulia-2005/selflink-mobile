@@ -156,8 +156,8 @@ export function UserProfileScreen() {
     try {
       await Clipboard.setStringAsync(profile.account_key);
       toast.push({ message: 'Copied to clipboard', tone: 'info', duration: 1500 });
-    } catch (error) {
-      console.warn('UserProfile: failed to copy recipient id', error);
+    } catch (err) {
+      console.warn('UserProfile: failed to copy recipient id', err);
       toast.push({ message: 'Unable to copy right now.', tone: 'error' });
     }
   }, [profile?.account_key, toast]);
@@ -214,7 +214,9 @@ export function UserProfileScreen() {
         <View style={styles.recipientInfo}>
           <Text style={styles.recipientLabel}>Recipient ID (SLC)</Text>
           <Text style={styles.recipientValue}>
-            {hasRecipientId ? formatAccountKey(profile.account_key as string) : 'Not available'}
+            {hasRecipientId
+              ? formatAccountKey(profile.account_key as string)
+              : 'Not available'}
           </Text>
           {hasRecipientId ? (
             <Text style={styles.recipientHint}>Share this ID to receive SLC.</Text>
@@ -262,104 +264,104 @@ export function UserProfileScreen() {
 
 const createStyles = (theme: Theme) =>
   StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    gap: 16,
-    backgroundColor: theme.feed.backgroundEnd,
-  },
-  centered: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-    backgroundColor: theme.feed.cardBackground,
-    borderRadius: 18,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: theme.feed.cardBorder,
-  },
-  headerText: { flex: 1, gap: 6 },
-  name: { fontSize: 20, fontWeight: '800', color: theme.feed.textPrimary },
-  handle: { color: theme.feed.textSecondary },
-  bio: { color: theme.feed.textMuted },
-  statsRow: {
-    flexDirection: 'row',
-    gap: 12,
-    marginTop: 6,
-  },
-  stat: {
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderRadius: 12,
-    backgroundColor: theme.feed.glass,
-    borderWidth: 1,
-    borderColor: theme.feed.border,
-  },
-  statLabel: {
-    color: theme.feed.textSecondary,
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  statValue: {
-    color: theme.feed.textPrimary,
-    fontSize: 15,
-    fontWeight: '800',
-    marginTop: 2,
-  },
-  recipientCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 16,
-    backgroundColor: theme.feed.cardBackground,
-    borderRadius: 18,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: theme.feed.cardBorder,
-  },
-  recipientInfo: {
-    flex: 1,
-    gap: 4,
-  },
-  recipientLabel: {
-    color: theme.feed.textSecondary,
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  recipientValue: {
-    color: theme.feed.textPrimary,
-    fontSize: 15,
-    fontWeight: '800',
-  },
-  recipientHint: {
-    color: theme.feed.textMuted,
-    fontSize: 12,
-  },
-  copyButton: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: theme.feed.border,
-    backgroundColor: theme.feed.glass,
-  },
-  copyLabel: { fontWeight: '700', color: theme.feed.textPrimary },
-  actionsRow: { flexDirection: 'row', gap: 12 },
-  actionButton: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: theme.feed.border,
-    borderRadius: 16,
-    paddingVertical: 12,
-    alignItems: 'center',
-    backgroundColor: theme.feed.glass,
-  },
-  primaryButton: {
-    backgroundColor: theme.feed.accentBlue,
-    borderColor: theme.feed.accentBlue,
-  },
-  actionLabel: { fontWeight: '700', color: theme.feed.textPrimary },
-  primaryLabel: { color: '#0B1120' },
-  disabledButton: { opacity: 0.7 },
+    container: {
+      flex: 1,
+      padding: 16,
+      gap: 16,
+      backgroundColor: theme.feed.backgroundEnd,
+    },
+    centered: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 16,
+      backgroundColor: theme.feed.cardBackground,
+      borderRadius: 18,
+      padding: 14,
+      borderWidth: 1,
+      borderColor: theme.feed.cardBorder,
+    },
+    headerText: { flex: 1, gap: 6 },
+    name: { fontSize: 20, fontWeight: '800', color: theme.feed.textPrimary },
+    handle: { color: theme.feed.textSecondary },
+    bio: { color: theme.feed.textMuted },
+    statsRow: {
+      flexDirection: 'row',
+      gap: 12,
+      marginTop: 6,
+    },
+    stat: {
+      paddingVertical: 6,
+      paddingHorizontal: 10,
+      borderRadius: 12,
+      backgroundColor: theme.feed.glass,
+      borderWidth: 1,
+      borderColor: theme.feed.border,
+    },
+    statLabel: {
+      color: theme.feed.textSecondary,
+      fontSize: 12,
+      fontWeight: '700',
+    },
+    statValue: {
+      color: theme.feed.textPrimary,
+      fontSize: 15,
+      fontWeight: '800',
+      marginTop: 2,
+    },
+    recipientCard: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: 16,
+      backgroundColor: theme.feed.cardBackground,
+      borderRadius: 18,
+      padding: 14,
+      borderWidth: 1,
+      borderColor: theme.feed.cardBorder,
+    },
+    recipientInfo: {
+      flex: 1,
+      gap: 4,
+    },
+    recipientLabel: {
+      color: theme.feed.textSecondary,
+      fontSize: 12,
+      fontWeight: '700',
+    },
+    recipientValue: {
+      color: theme.feed.textPrimary,
+      fontSize: 15,
+      fontWeight: '800',
+    },
+    recipientHint: {
+      color: theme.feed.textMuted,
+      fontSize: 12,
+    },
+    copyButton: {
+      paddingVertical: 6,
+      paddingHorizontal: 12,
+      borderRadius: 14,
+      borderWidth: 1,
+      borderColor: theme.feed.border,
+      backgroundColor: theme.feed.glass,
+    },
+    copyLabel: { fontWeight: '700', color: theme.feed.textPrimary },
+    actionsRow: { flexDirection: 'row', gap: 12 },
+    actionButton: {
+      flex: 1,
+      borderWidth: 1,
+      borderColor: theme.feed.border,
+      borderRadius: 16,
+      paddingVertical: 12,
+      alignItems: 'center',
+      backgroundColor: theme.feed.glass,
+    },
+    primaryButton: {
+      backgroundColor: theme.feed.accentBlue,
+      borderColor: theme.feed.accentBlue,
+    },
+    actionLabel: { fontWeight: '700', color: theme.feed.textPrimary },
+    primaryLabel: { color: '#0B1120' },
+    disabledButton: { opacity: 0.7 },
   });

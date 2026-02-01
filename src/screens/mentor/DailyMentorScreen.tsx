@@ -237,7 +237,15 @@ export function DailyMentorScreen() {
         </Text>
       </TouchableOpacity>
     ),
-    [openSession],
+    [
+      openSession,
+      styles.historyDate,
+      styles.historyItem,
+      styles.historyPreview,
+      styles.historyReply,
+      styles.historySession,
+      styles.historyTopRow,
+    ],
   );
 
   const Separator = useCallback(
@@ -434,221 +442,221 @@ function DailyMentorHeader({
 
 const createStyles = (theme: Theme) =>
   StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: theme.palette.midnight,
-  },
-  flex: {
-    flex: 1,
-  },
-  content: {
-    padding: theme.spacing.lg,
-    gap: theme.spacing.lg,
-  },
-  listContent: {
-    paddingTop: 0,
-  },
-  headerBlock: {
-    gap: theme.spacing.sm,
-  },
-  pill: {
-    alignSelf: 'flex-start',
-    backgroundColor: 'rgba(244, 114, 182, 0.12)',
-    borderColor: 'rgba(244, 114, 182, 0.4)',
-    borderWidth: StyleSheet.hairlineWidth,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: theme.radii.pill,
-  },
-  pillText: {
-    color: theme.palette.rose,
-    fontWeight: '700',
-    fontSize: 12,
-  },
-  title: {
-    color: theme.palette.platinum,
-    ...theme.typography.headingL,
-  },
-  subtitle: {
-    color: theme.palette.silver,
-    ...theme.typography.body,
-  },
-  card: {
-    backgroundColor: theme.palette.charcoal,
-    borderRadius: theme.radii.lg,
-    padding: theme.spacing.lg,
-    gap: theme.spacing.md,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: 'rgba(244, 114, 182, 0.18)',
-  },
-  sectionLabel: {
-    color: theme.palette.platinum,
-    ...theme.typography.headingM,
-  },
-  input: {
-    minHeight: 140,
-    maxHeight: 200,
-    borderRadius: theme.radii.md,
-    backgroundColor: 'rgba(148, 163, 184, 0.12)',
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: theme.palette.titanium,
-    padding: theme.spacing.md,
-    color: theme.palette.platinum,
-    ...theme.typography.body,
-  },
-  dateRow: {
-    flexDirection: 'row',
-    gap: theme.spacing.sm,
-    alignItems: 'flex-end',
-  },
-  dateField: {
-    flex: 1,
-    gap: theme.spacing.xs,
-  },
-  fieldLabel: {
-    color: theme.palette.silver,
-    ...theme.typography.caption,
-  },
-  dateInput: {
-    borderRadius: theme.radii.md,
-    backgroundColor: 'rgba(148, 163, 184, 0.12)',
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: theme.palette.titanium,
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
-    color: theme.palette.platinum,
-    ...theme.typography.body,
-  },
-  todayButton: {
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
-    borderRadius: theme.radii.pill,
-    backgroundColor: 'rgba(244, 114, 182, 0.16)',
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: 'rgba(244, 114, 182, 0.4)',
-  },
-  todayText: {
-    color: theme.palette.rose,
-    fontWeight: '600',
-  },
-  submitButton: {
-    backgroundColor: theme.palette.rose,
-    paddingVertical: theme.spacing.md,
-    borderRadius: theme.radii.full,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  submitButtonDisabled: {
-    opacity: 0.5,
-  },
-  submitText: {
-    color: theme.palette.pearl,
-    fontWeight: '700',
-    fontSize: 16,
-  },
-  replyBlock: {
-    gap: theme.spacing.sm,
-    backgroundColor: 'rgba(244, 114, 182, 0.08)',
-    borderRadius: theme.radii.md,
-    padding: theme.spacing.md,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: 'rgba(244, 114, 182, 0.4)',
-  },
-  replyHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.sm,
-  },
-  replyTitle: {
-    color: theme.palette.platinum,
-    ...theme.typography.subtitle,
-    flex: 1,
-  },
-  streamingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.sm,
-  },
-  streamingText: {
-    color: theme.palette.platinum,
-    ...theme.typography.caption,
-  },
-  sessionTag: {
-    color: theme.palette.silver,
-    ...theme.typography.caption,
-  },
-  bulletRow: {
-    flexDirection: 'row',
-    gap: theme.spacing.sm,
-    alignItems: 'flex-start',
-  },
-  bullet: {
-    color: theme.palette.rose,
-    fontSize: 16,
-    lineHeight: 22,
-    marginTop: 2,
-  },
-  bulletText: {
-    color: theme.palette.platinum,
-    ...theme.typography.body,
-    flex: 1,
-  },
-  historyHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  historyHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: theme.spacing.lg,
-    marginTop: -theme.spacing.sm,
-  },
-  historyPlaceholder: {
-    paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.md,
-    gap: theme.spacing.xs,
-  },
-  refreshText: {
-    color: theme.palette.silver,
-    ...theme.typography.caption,
-  },
-  historyList: {
-    gap: theme.spacing.sm,
-  },
-  historyItem: {
-    padding: theme.spacing.md,
-    borderRadius: theme.radii.md,
-    backgroundColor: 'rgba(148, 163, 184, 0.08)',
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: 'rgba(148, 163, 184, 0.2)',
-    gap: theme.spacing.xs,
-  },
-  historyTopRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  historyDate: {
-    color: theme.palette.platinum,
-    fontWeight: '700',
-  },
-  historySession: {
-    color: theme.palette.silver,
-    ...theme.typography.caption,
-  },
-  historyPreview: {
-    color: theme.palette.platinum,
-    ...theme.typography.body,
-  },
-  historyReply: {
-    color: theme.palette.silver,
-    ...theme.typography.caption,
-  },
-  centered: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: theme.spacing.md,
-  },
-});
+    container: {
+      flex: 1,
+      backgroundColor: theme.palette.midnight,
+    },
+    flex: {
+      flex: 1,
+    },
+    content: {
+      padding: theme.spacing.lg,
+      gap: theme.spacing.lg,
+    },
+    listContent: {
+      paddingTop: 0,
+    },
+    headerBlock: {
+      gap: theme.spacing.sm,
+    },
+    pill: {
+      alignSelf: 'flex-start',
+      backgroundColor: 'rgba(244, 114, 182, 0.12)',
+      borderColor: 'rgba(244, 114, 182, 0.4)',
+      borderWidth: StyleSheet.hairlineWidth,
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      borderRadius: theme.radii.pill,
+    },
+    pillText: {
+      color: theme.palette.rose,
+      fontWeight: '700',
+      fontSize: 12,
+    },
+    title: {
+      color: theme.palette.platinum,
+      ...theme.typography.headingL,
+    },
+    subtitle: {
+      color: theme.palette.silver,
+      ...theme.typography.body,
+    },
+    card: {
+      backgroundColor: theme.palette.charcoal,
+      borderRadius: theme.radii.lg,
+      padding: theme.spacing.lg,
+      gap: theme.spacing.md,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: 'rgba(244, 114, 182, 0.18)',
+    },
+    sectionLabel: {
+      color: theme.palette.platinum,
+      ...theme.typography.headingM,
+    },
+    input: {
+      minHeight: 140,
+      maxHeight: 200,
+      borderRadius: theme.radii.md,
+      backgroundColor: 'rgba(148, 163, 184, 0.12)',
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.palette.titanium,
+      padding: theme.spacing.md,
+      color: theme.palette.platinum,
+      ...theme.typography.body,
+    },
+    dateRow: {
+      flexDirection: 'row',
+      gap: theme.spacing.sm,
+      alignItems: 'flex-end',
+    },
+    dateField: {
+      flex: 1,
+      gap: theme.spacing.xs,
+    },
+    fieldLabel: {
+      color: theme.palette.silver,
+      ...theme.typography.caption,
+    },
+    dateInput: {
+      borderRadius: theme.radii.md,
+      backgroundColor: 'rgba(148, 163, 184, 0.12)',
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.palette.titanium,
+      paddingHorizontal: theme.spacing.md,
+      paddingVertical: theme.spacing.sm,
+      color: theme.palette.platinum,
+      ...theme.typography.body,
+    },
+    todayButton: {
+      paddingHorizontal: theme.spacing.md,
+      paddingVertical: theme.spacing.sm,
+      borderRadius: theme.radii.pill,
+      backgroundColor: 'rgba(244, 114, 182, 0.16)',
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: 'rgba(244, 114, 182, 0.4)',
+    },
+    todayText: {
+      color: theme.palette.rose,
+      fontWeight: '600',
+    },
+    submitButton: {
+      backgroundColor: theme.palette.rose,
+      paddingVertical: theme.spacing.md,
+      borderRadius: theme.radii.full,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    submitButtonDisabled: {
+      opacity: 0.5,
+    },
+    submitText: {
+      color: theme.palette.pearl,
+      fontWeight: '700',
+      fontSize: 16,
+    },
+    replyBlock: {
+      gap: theme.spacing.sm,
+      backgroundColor: 'rgba(244, 114, 182, 0.08)',
+      borderRadius: theme.radii.md,
+      padding: theme.spacing.md,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: 'rgba(244, 114, 182, 0.4)',
+    },
+    replyHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.sm,
+    },
+    replyTitle: {
+      color: theme.palette.platinum,
+      ...theme.typography.subtitle,
+      flex: 1,
+    },
+    streamingRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.sm,
+    },
+    streamingText: {
+      color: theme.palette.platinum,
+      ...theme.typography.caption,
+    },
+    sessionTag: {
+      color: theme.palette.silver,
+      ...theme.typography.caption,
+    },
+    bulletRow: {
+      flexDirection: 'row',
+      gap: theme.spacing.sm,
+      alignItems: 'flex-start',
+    },
+    bullet: {
+      color: theme.palette.rose,
+      fontSize: 16,
+      lineHeight: 22,
+      marginTop: 2,
+    },
+    bulletText: {
+      color: theme.palette.platinum,
+      ...theme.typography.body,
+      flex: 1,
+    },
+    historyHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    historyHeaderRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: theme.spacing.lg,
+      marginTop: -theme.spacing.sm,
+    },
+    historyPlaceholder: {
+      paddingHorizontal: theme.spacing.lg,
+      paddingVertical: theme.spacing.md,
+      gap: theme.spacing.xs,
+    },
+    refreshText: {
+      color: theme.palette.silver,
+      ...theme.typography.caption,
+    },
+    historyList: {
+      gap: theme.spacing.sm,
+    },
+    historyItem: {
+      padding: theme.spacing.md,
+      borderRadius: theme.radii.md,
+      backgroundColor: 'rgba(148, 163, 184, 0.08)',
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: 'rgba(148, 163, 184, 0.2)',
+      gap: theme.spacing.xs,
+    },
+    historyTopRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    historyDate: {
+      color: theme.palette.platinum,
+      fontWeight: '700',
+    },
+    historySession: {
+      color: theme.palette.silver,
+      ...theme.typography.caption,
+    },
+    historyPreview: {
+      color: theme.palette.platinum,
+      ...theme.typography.body,
+    },
+    historyReply: {
+      color: theme.palette.silver,
+      ...theme.typography.caption,
+    },
+    centered: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: theme.spacing.md,
+    },
+  });

@@ -284,139 +284,139 @@ export function InboxScreen() {
 
 const createStyles = (theme: Theme) =>
   StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: theme.palette.midnight,
-  },
-  hero: {
-    paddingHorizontal: theme.spacing.lg,
-    paddingTop: theme.spacing.lg,
-    paddingBottom: theme.spacing.md,
-    gap: theme.spacing.xs,
-  },
-  title: {
-    color: theme.palette.platinum,
-    ...theme.typography.title,
-  },
-  subtitle: {
-    color: theme.palette.silver,
-    ...theme.typography.body,
-  },
-  list: {
-    padding: theme.spacing.lg,
-    gap: theme.spacing.sm,
-    paddingBottom: theme.spacing.xl,
-  },
-  panelTitle: {
-    color: theme.palette.titanium,
-    ...theme.typography.subtitle,
-    marginBottom: theme.spacing.sm,
-  },
-  helper: {
-    color: theme.palette.silver,
-    ...theme.typography.caption,
-    marginBottom: theme.spacing.sm,
-  },
-  input: {
-    borderRadius: theme.radius.md,
-    borderWidth: 1,
-    borderColor: theme.palette.graphite,
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
-    color: theme.palette.platinum,
-    backgroundColor: theme.palette.obsidian,
-    marginBottom: theme.spacing.sm,
-  },
-  messageInput: {
-    minHeight: 80,
-    textAlignVertical: 'top',
-  },
-  selectedWrap: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: theme.spacing.xs,
-    marginBottom: theme.spacing.sm,
-  },
-  selectedChip: {
-    backgroundColor: theme.palette.obsidian,
-    borderRadius: theme.radius.pill,
-    paddingHorizontal: theme.spacing.sm,
-    paddingVertical: theme.spacing.xs,
-    borderWidth: 1,
-    borderColor: theme.palette.graphite,
-  },
-  selectedChipText: {
-    color: theme.palette.platinum,
-    ...theme.typography.caption,
-  },
-  directoryList: {
-    gap: theme.spacing.xs,
-    marginBottom: theme.spacing.md,
-  },
-  userRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: theme.radius.md,
-    borderWidth: 1,
-    borderColor: theme.palette.graphite,
-    padding: theme.spacing.sm,
-    backgroundColor: theme.palette.obsidian,
-    gap: theme.spacing.sm,
-  },
-  userRowSelected: {
-    borderColor: theme.palette.azure,
-  },
-  userAvatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: theme.palette.graphite,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  userAvatarText: {
-    color: theme.palette.platinum,
-    ...theme.typography.caption,
-  },
-  userCopy: {
-    flex: 1,
-  },
-  userName: {
-    color: theme.palette.platinum,
-    ...theme.typography.subtitle,
-  },
-  userHandle: {
-    color: theme.palette.silver,
-    ...theme.typography.caption,
-  },
-  userAction: {
-    color: theme.palette.azure,
-    ...theme.typography.caption,
-  },
-  refreshDirectory: {
-    alignSelf: 'flex-start',
-    marginTop: theme.spacing.xs,
-  },
-  refreshText: {
-    color: theme.palette.azure,
-    ...theme.typography.caption,
-  },
-  loader: {
-    paddingVertical: theme.spacing.md,
-  },
-  empty: {
-    alignItems: 'center',
-    gap: theme.spacing.xs,
-    paddingVertical: theme.spacing.xl,
-  },
-  emptyTitle: {
-    color: theme.palette.platinum,
-    ...theme.typography.subtitle,
-  },
-  emptyCopy: {
-    color: theme.palette.silver,
-    ...theme.typography.body,
-    textAlign: 'center',
-    maxWidth: 280,
-  },
-});
+    safeArea: {
+      flex: 1,
+      backgroundColor: theme.palette.midnight,
+    },
+    hero: {
+      paddingHorizontal: theme.spacing.lg,
+      paddingTop: theme.spacing.lg,
+      paddingBottom: theme.spacing.md,
+      gap: theme.spacing.xs,
+    },
+    title: {
+      color: theme.palette.platinum,
+      ...theme.typography.title,
+    },
+    subtitle: {
+      color: theme.palette.silver,
+      ...theme.typography.body,
+    },
+    list: {
+      padding: theme.spacing.lg,
+      gap: theme.spacing.sm,
+      paddingBottom: theme.spacing.xl,
+    },
+    panelTitle: {
+      color: theme.palette.titanium,
+      ...theme.typography.subtitle,
+      marginBottom: theme.spacing.sm,
+    },
+    helper: {
+      color: theme.palette.silver,
+      ...theme.typography.caption,
+      marginBottom: theme.spacing.sm,
+    },
+    input: {
+      borderRadius: theme.radius.md,
+      borderWidth: 1,
+      borderColor: theme.palette.graphite,
+      paddingHorizontal: theme.spacing.md,
+      paddingVertical: theme.spacing.sm,
+      color: theme.palette.platinum,
+      backgroundColor: theme.palette.obsidian,
+      marginBottom: theme.spacing.sm,
+    },
+    messageInput: {
+      minHeight: 80,
+      textAlignVertical: 'top',
+    },
+    selectedWrap: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: theme.spacing.xs,
+      marginBottom: theme.spacing.sm,
+    },
+    selectedChip: {
+      backgroundColor: theme.palette.obsidian,
+      borderRadius: theme.radius.pill,
+      paddingHorizontal: theme.spacing.sm,
+      paddingVertical: theme.spacing.xs,
+      borderWidth: 1,
+      borderColor: theme.palette.graphite,
+    },
+    selectedChipText: {
+      color: theme.palette.platinum,
+      ...theme.typography.caption,
+    },
+    directoryList: {
+      gap: theme.spacing.xs,
+      marginBottom: theme.spacing.md,
+    },
+    userRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      borderRadius: theme.radius.md,
+      borderWidth: 1,
+      borderColor: theme.palette.graphite,
+      padding: theme.spacing.sm,
+      backgroundColor: theme.palette.obsidian,
+      gap: theme.spacing.sm,
+    },
+    userRowSelected: {
+      borderColor: theme.palette.azure,
+    },
+    userAvatar: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      backgroundColor: theme.palette.graphite,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    userAvatarText: {
+      color: theme.palette.platinum,
+      ...theme.typography.caption,
+    },
+    userCopy: {
+      flex: 1,
+    },
+    userName: {
+      color: theme.palette.platinum,
+      ...theme.typography.subtitle,
+    },
+    userHandle: {
+      color: theme.palette.silver,
+      ...theme.typography.caption,
+    },
+    userAction: {
+      color: theme.palette.azure,
+      ...theme.typography.caption,
+    },
+    refreshDirectory: {
+      alignSelf: 'flex-start',
+      marginTop: theme.spacing.xs,
+    },
+    refreshText: {
+      color: theme.palette.azure,
+      ...theme.typography.caption,
+    },
+    loader: {
+      paddingVertical: theme.spacing.md,
+    },
+    empty: {
+      alignItems: 'center',
+      gap: theme.spacing.xs,
+      paddingVertical: theme.spacing.xl,
+    },
+    emptyTitle: {
+      color: theme.palette.platinum,
+      ...theme.typography.subtitle,
+    },
+    emptyCopy: {
+      color: theme.palette.silver,
+      ...theme.typography.body,
+      textAlign: 'center',
+      maxWidth: 280,
+    },
+  });

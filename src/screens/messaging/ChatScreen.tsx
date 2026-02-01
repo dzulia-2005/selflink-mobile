@@ -232,7 +232,7 @@ export function ChatScreen() {
         <Text style={styles.headerLink}>Profile</Text>
       </TouchableOpacity>
     );
-  }, [navigation, otherUserId]);
+  }, [navigation, otherUserId, styles.headerLink]);
 
   useLayoutEffect(() => {
     if (!otherUserId) {
@@ -584,7 +584,15 @@ export function ChatScreen() {
         </View>
       );
     },
-    [currentUserKey, handleRetry, openMessageActions, pendingDeleteId, sortedMessages],
+    [
+      currentUserKey,
+      handleRetry,
+      openMessageActions,
+      pendingDeleteId,
+      sortedMessages,
+      styles.daySeparator,
+      styles.daySeparatorText,
+    ],
   );
 
   if (isLoading && messages.length === 0) {
@@ -801,190 +809,190 @@ export function ChatScreen() {
 
 const createStyles = (theme: Theme) =>
   StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingTop: 6,
-  },
-  listContent: {
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-  },
-  listFooter: {
-    height: 32,
-  },
-  replyContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#E5E7EB',
-    backgroundColor: '#FFFFFF',
-  },
-  replyTextContainer: {
-    flex: 1,
-    paddingRight: 12,
-  },
-  replyLabel: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#0f172a',
-  },
-  replyPreview: {
-    marginTop: 2,
-    color: '#475569',
-    fontSize: 12,
-  },
-  replyCloseButton: {
-    padding: 6,
-    borderRadius: 999,
-    backgroundColor: '#E5E7EB',
-  },
-  headerLink: {
-    color: '#2563EB',
-    fontWeight: '600',
-  },
-  centered: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  typingWrapper: {
-    paddingHorizontal: 12,
-    paddingBottom: 4,
-  },
-  inputBar: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
-    backgroundColor: '#FFFFFF',
-  },
-  attachmentButtons: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingRight: 6,
-  },
-  attachmentButton: {
-    padding: 6,
-  },
-  input: {
-    flex: 1,
-    maxHeight: 120,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 999,
-    backgroundColor: '#F9FAFB',
-    fontSize: 15,
-    color: theme.palette.graphite,
-    textAlignVertical: 'top',
-  },
-  sendButton: {
-    marginLeft: 8,
-    padding: 10,
-    borderRadius: 999,
-  },
-  attachmentsPreview: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    backgroundColor: '#FFFFFF',
-  },
-  attachmentsPreviewContent: {
-    alignItems: 'center',
-  },
-  attachmentChip: {
-    position: 'relative',
-    marginRight: 8,
-  },
-  attachmentThumb: {
-    width: 64,
-    height: 64,
-    borderRadius: 12,
-    backgroundColor: '#e5e7eb',
-  },
-  attachmentVideo: {
-    width: 96,
-    height: 64,
-    borderRadius: 12,
-    backgroundColor: '#e5e7eb',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
-    paddingHorizontal: 8,
-  },
-  attachmentLabel: {
-    marginLeft: 6,
-    color: '#111827',
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  removeAttachmentButton: {
-    position: 'absolute',
-    top: -6,
-    right: -6,
-    backgroundColor: '#EF4444',
-    borderRadius: 999,
-    padding: 4,
-  },
-  daySeparator: {
-    alignItems: 'center',
-    marginVertical: 8,
-  },
-  daySeparatorText: {
-    fontSize: 12,
-    color: '#6b7280',
-    backgroundColor: '#E5E7EB',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  actionBackdrop: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    backgroundColor: 'rgba(0,0,0,0.25)',
-  },
-  actionSheet: {
-    padding: 16,
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-  },
-  actionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#0f172a',
-    marginBottom: 8,
-  },
-  reactionRow: {
-    flexDirection: 'row',
-    marginBottom: 12,
-  },
-  reactionButton: {
-    marginRight: 10,
-    padding: 8,
-    borderRadius: 12,
-    backgroundColor: '#F1F5F9',
-  },
-  reactionEmoji: {
-    fontSize: 20,
-  },
-  actionButtonsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  actionButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-  },
-  actionButtonText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#0f172a',
-  },
-  destructiveText: {
-    color: '#DC2626',
-  },
+    container: {
+      flex: 1,
+      paddingTop: 6,
+    },
+    listContent: {
+      paddingVertical: 12,
+      paddingHorizontal: 12,
+    },
+    listFooter: {
+      height: 32,
+    },
+    replyContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: '#E5E7EB',
+      backgroundColor: '#FFFFFF',
+    },
+    replyTextContainer: {
+      flex: 1,
+      paddingRight: 12,
+    },
+    replyLabel: {
+      fontSize: 13,
+      fontWeight: '600',
+      color: '#0f172a',
+    },
+    replyPreview: {
+      marginTop: 2,
+      color: '#475569',
+      fontSize: 12,
+    },
+    replyCloseButton: {
+      padding: 6,
+      borderRadius: 999,
+      backgroundColor: '#E5E7EB',
+    },
+    headerLink: {
+      color: '#2563EB',
+      fontWeight: '600',
+    },
+    centered: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    typingWrapper: {
+      paddingHorizontal: 12,
+      paddingBottom: 4,
+    },
+    inputBar: {
+      flexDirection: 'row',
+      alignItems: 'flex-end',
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      borderTopWidth: 1,
+      borderTopColor: '#E5E7EB',
+      backgroundColor: '#FFFFFF',
+    },
+    attachmentButtons: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingRight: 6,
+    },
+    attachmentButton: {
+      padding: 6,
+    },
+    input: {
+      flex: 1,
+      maxHeight: 120,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      borderRadius: 999,
+      backgroundColor: '#F9FAFB',
+      fontSize: 15,
+      color: theme.palette.graphite,
+      textAlignVertical: 'top',
+    },
+    sendButton: {
+      marginLeft: 8,
+      padding: 10,
+      borderRadius: 999,
+    },
+    attachmentsPreview: {
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      backgroundColor: '#FFFFFF',
+    },
+    attachmentsPreviewContent: {
+      alignItems: 'center',
+    },
+    attachmentChip: {
+      position: 'relative',
+      marginRight: 8,
+    },
+    attachmentThumb: {
+      width: 64,
+      height: 64,
+      borderRadius: 12,
+      backgroundColor: '#e5e7eb',
+    },
+    attachmentVideo: {
+      width: 96,
+      height: 64,
+      borderRadius: 12,
+      backgroundColor: '#e5e7eb',
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexDirection: 'row',
+      paddingHorizontal: 8,
+    },
+    attachmentLabel: {
+      marginLeft: 6,
+      color: '#111827',
+      fontSize: 13,
+      fontWeight: '600',
+    },
+    removeAttachmentButton: {
+      position: 'absolute',
+      top: -6,
+      right: -6,
+      backgroundColor: '#EF4444',
+      borderRadius: 999,
+      padding: 4,
+    },
+    daySeparator: {
+      alignItems: 'center',
+      marginVertical: 8,
+    },
+    daySeparatorText: {
+      fontSize: 12,
+      color: '#6b7280',
+      backgroundColor: '#E5E7EB',
+      paddingHorizontal: 10,
+      paddingVertical: 4,
+      borderRadius: 12,
+    },
+    actionBackdrop: {
+      flex: 1,
+      justifyContent: 'flex-end',
+      backgroundColor: 'rgba(0,0,0,0.25)',
+    },
+    actionSheet: {
+      padding: 16,
+      backgroundColor: '#fff',
+      borderTopLeftRadius: 16,
+      borderTopRightRadius: 16,
+    },
+    actionTitle: {
+      fontSize: 16,
+      fontWeight: '700',
+      color: '#0f172a',
+      marginBottom: 8,
+    },
+    reactionRow: {
+      flexDirection: 'row',
+      marginBottom: 12,
+    },
+    reactionButton: {
+      marginRight: 10,
+      padding: 8,
+      borderRadius: 12,
+      backgroundColor: '#F1F5F9',
+    },
+    reactionEmoji: {
+      fontSize: 20,
+    },
+    actionButtonsRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+    },
+    actionButton: {
+      paddingVertical: 10,
+      paddingHorizontal: 12,
+    },
+    actionButtonText: {
+      fontSize: 15,
+      fontWeight: '600',
+      color: '#0f172a',
+    },
+    destructiveText: {
+      color: '#DC2626',
+    },
   });

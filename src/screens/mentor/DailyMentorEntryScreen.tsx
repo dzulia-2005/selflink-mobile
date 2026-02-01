@@ -117,61 +117,61 @@ export function DailyMentorEntryScreen() {
 
 const createStyles = (theme: Theme) =>
   StyleSheet.create({
-  flex: {
-    flex: 1,
-    backgroundColor: theme.palette.midnight,
-  },
-  container: {
-    flex: 1,
-    backgroundColor: theme.palette.midnight,
-  },
-  content: {
-    padding: theme.spacing.lg,
-    gap: theme.spacing.md,
-    paddingBottom: theme.spacing.xl,
-  },
-  topRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  title: {
-    color: theme.palette.platinum,
-    ...theme.typography.headingL,
-  },
-  subtitle: {
-    color: theme.palette.silver,
-    ...theme.typography.body,
-  },
-  card: {
-    backgroundColor: theme.palette.charcoal,
-    borderRadius: theme.radii.lg,
-    padding: theme.spacing.lg,
-    gap: theme.spacing.sm,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: 'rgba(244, 114, 182, 0.18)',
-  },
-  sectionLabel: {
-    color: theme.palette.platinum,
-    ...theme.typography.headingM,
-  },
-  body: {
-    color: theme.palette.platinum,
-    ...theme.typography.body,
-  },
-  bulletRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: theme.spacing.sm,
-  },
-  bullet: {
-    color: theme.palette.rose,
-    fontSize: 16,
-    lineHeight: 22,
-    marginTop: 2,
-  },
-  centered: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+    flex: {
+      flex: 1,
+      backgroundColor: theme.palette.midnight,
+    },
+    container: {
+      flex: 1,
+      backgroundColor: theme.palette.midnight,
+    },
+    content: {
+      padding: theme.spacing.lg,
+      gap: theme.spacing.md,
+      paddingBottom: theme.spacing.xl,
+    },
+    topRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    title: {
+      color: theme.palette.platinum,
+      ...theme.typography.headingL,
+    },
+    subtitle: {
+      color: theme.palette.silver,
+      ...theme.typography.body,
+    },
+    card: {
+      backgroundColor: theme.palette.charcoal,
+      borderRadius: theme.radii.lg,
+      padding: theme.spacing.lg,
+      gap: theme.spacing.sm,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: 'rgba(244, 114, 182, 0.18)',
+    },
+    sectionLabel: {
+      color: theme.palette.platinum,
+      ...theme.typography.headingM,
+    },
+    body: {
+      color: theme.palette.platinum,
+      ...theme.typography.body,
+    },
+    bulletRow: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: theme.spacing.sm,
+    },
+    bullet: {
+      color: theme.palette.rose,
+      fontSize: 16,
+      lineHeight: 22,
+      marginTop: 2,
+    },
+    centered: {
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+  });

@@ -270,180 +270,180 @@ const getRadius = (isOwn: boolean, isFirst: boolean, isLast: boolean) => {
 
 const createStyles = (theme: Theme) =>
   StyleSheet.create({
-  container: {
-    paddingHorizontal: 12,
-    marginVertical: 4,
-  },
-  containerLeft: {
-    alignItems: 'flex-start',
-  },
-  containerRight: {
-    alignItems: 'flex-end',
-  },
-  bubble: {
-    maxWidth: '82%',
-    borderWidth: 1,
-    borderRadius: 22,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  bubbleOwn: {
-    borderColor: theme.messaging.outgoingBorder,
-    backgroundColor: theme.messaging.outgoingTile,
-  },
-  bubbleOther: {
-    borderColor: theme.messaging.incomingBorder,
-    backgroundColor: theme.messaging.incomingTile,
-  },
-  innerTile: {
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 20,
-  },
-  innerOwn: {
-    backgroundColor: theme.messaging.outgoingInner,
-  },
-  innerOther: {
-    backgroundColor: 'rgba(255,255,255,0.85)',
-  },
-  bubbleContent: {
-    flexShrink: 1,
-    gap: 6,
-  },
-  textOwn: {
-    color: theme.messaging.ink,
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  textOther: {
-    color: theme.messaging.ink,
-    fontSize: 15,
-  },
-  metaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'flex-end',
-    marginTop: 4,
-    gap: 6,
-  },
-  timestamp: {
-    fontSize: 11,
-    color: theme.messaging.subduedInk,
-  },
-  statusIcon: {
-    marginLeft: 4,
-  },
-  retryWrapper: {
-    marginLeft: 2,
-  },
-  attachmentsContainer: {
-    marginBottom: 2,
-    gap: 8,
-  },
-  imageGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  imageThumb: {
-    width: 160,
-    height: 160,
-    borderRadius: 16,
-    backgroundColor: theme.messaging.placeholder,
-  },
-  videoChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 14,
-    backgroundColor: 'rgba(15,23,42,0.4)',
-    alignSelf: 'flex-start',
-  },
-  videoLabel: {
-    marginLeft: 8,
-    color: '#E2E8F0',
-    fontWeight: '700',
-    fontSize: 13,
-  },
-  replyPreview: {
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderRadius: 12,
-    marginBottom: 6,
-  },
-  replyPreviewOwn: {
-    backgroundColor: 'rgba(16,185,129,0.12)',
-  },
-  replyPreviewOther: {
-    backgroundColor: 'rgba(15,23,42,0.07)',
-  },
-  replySender: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: theme.messaging.ink,
-    marginBottom: 2,
-  },
-  replySnippet: {
-    fontSize: 12,
-    color: theme.messaging.subduedInk,
-  },
-  reactionsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: 6,
-  },
-  reactionsRowOwn: {
-    justifyContent: 'flex-end',
-  },
-  reactionsRowOther: {
-    justifyContent: 'flex-start',
-  },
-  reactionChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: 12,
-    backgroundColor: '#0f172a14',
-    marginRight: 6,
-    marginTop: 4,
-  },
-  reactionChipActive: {
-    backgroundColor: '#0ea5e933',
-  },
-  reactionText: {
-    fontSize: 12,
-    marginRight: 4,
-  },
-  reactionCount: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#0f172a',
-  },
-  errorChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'flex-start',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: theme.messaging.errorBorder,
-    backgroundColor: theme.messaging.errorBg,
-    marginTop: 4,
-  },
-  errorText: {
-    color: '#B91C1C',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  errorIcon: {
-    marginRight: 6,
-  },
+    container: {
+      paddingHorizontal: 12,
+      marginVertical: 4,
+    },
+    containerLeft: {
+      alignItems: 'flex-start',
+    },
+    containerRight: {
+      alignItems: 'flex-end',
+    },
+    bubble: {
+      maxWidth: '82%',
+      borderWidth: 1,
+      borderRadius: 22,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 3 },
+      shadowOpacity: 0.06,
+      shadowRadius: 8,
+      elevation: 3,
+    },
+    bubbleOwn: {
+      borderColor: theme.messaging.outgoingBorder,
+      backgroundColor: theme.messaging.outgoingTile,
+    },
+    bubbleOther: {
+      borderColor: theme.messaging.incomingBorder,
+      backgroundColor: theme.messaging.incomingTile,
+    },
+    innerTile: {
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      borderRadius: 20,
+    },
+    innerOwn: {
+      backgroundColor: theme.messaging.outgoingInner,
+    },
+    innerOther: {
+      backgroundColor: 'rgba(255,255,255,0.85)',
+    },
+    bubbleContent: {
+      flexShrink: 1,
+      gap: 6,
+    },
+    textOwn: {
+      color: theme.messaging.ink,
+      fontSize: 15,
+      fontWeight: '600',
+    },
+    textOther: {
+      color: theme.messaging.ink,
+      fontSize: 15,
+    },
+    metaRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      alignSelf: 'flex-end',
+      marginTop: 4,
+      gap: 6,
+    },
+    timestamp: {
+      fontSize: 11,
+      color: theme.messaging.subduedInk,
+    },
+    statusIcon: {
+      marginLeft: 4,
+    },
+    retryWrapper: {
+      marginLeft: 2,
+    },
+    attachmentsContainer: {
+      marginBottom: 2,
+      gap: 8,
+    },
+    imageGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
+    },
+    imageThumb: {
+      width: 160,
+      height: 160,
+      borderRadius: 16,
+      backgroundColor: theme.messaging.placeholder,
+    },
+    videoChip: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      borderRadius: 14,
+      backgroundColor: 'rgba(15,23,42,0.4)',
+      alignSelf: 'flex-start',
+    },
+    videoLabel: {
+      marginLeft: 8,
+      color: '#E2E8F0',
+      fontWeight: '700',
+      fontSize: 13,
+    },
+    replyPreview: {
+      paddingVertical: 6,
+      paddingHorizontal: 10,
+      borderRadius: 12,
+      marginBottom: 6,
+    },
+    replyPreviewOwn: {
+      backgroundColor: 'rgba(16,185,129,0.12)',
+    },
+    replyPreviewOther: {
+      backgroundColor: 'rgba(15,23,42,0.07)',
+    },
+    replySender: {
+      fontSize: 12,
+      fontWeight: '700',
+      color: theme.messaging.ink,
+      marginBottom: 2,
+    },
+    replySnippet: {
+      fontSize: 12,
+      color: theme.messaging.subduedInk,
+    },
+    reactionsRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      marginTop: 6,
+    },
+    reactionsRowOwn: {
+      justifyContent: 'flex-end',
+    },
+    reactionsRowOther: {
+      justifyContent: 'flex-start',
+    },
+    reactionChip: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 4,
+      paddingHorizontal: 8,
+      borderRadius: 12,
+      backgroundColor: '#0f172a14',
+      marginRight: 6,
+      marginTop: 4,
+    },
+    reactionChipActive: {
+      backgroundColor: '#0ea5e933',
+    },
+    reactionText: {
+      fontSize: 12,
+      marginRight: 4,
+    },
+    reactionCount: {
+      fontSize: 12,
+      fontWeight: '600',
+      color: '#0f172a',
+    },
+    errorChip: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      alignSelf: 'flex-start',
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: theme.messaging.errorBorder,
+      backgroundColor: theme.messaging.errorBg,
+      marginTop: 4,
+    },
+    errorText: {
+      color: '#B91C1C',
+      fontSize: 12,
+      fontWeight: '600',
+    },
+    errorIcon: {
+      marginRight: 6,
+    },
   });
 
 export const ChatBubble = memo(ChatBubbleComponent);
