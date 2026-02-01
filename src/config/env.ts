@@ -3,10 +3,10 @@ import Constants from 'expo-constants';
 const extra = Constants?.expoConfig?.extra ?? {};
 
 // FOR LOCAL TESTING PURPOSES ONLY:
-// const DEFAULT_API_BASE_URL = 'http://localhost:8000';
+// const DEFAULT_API_BASE_URL = 'http://192.168.0.104:8000/';
 // const API_VERSION_PATH = '/api/v1';
 // const DEFAULT_HEALTH_ENDPOINT = '/api/v1/health/';
-// const DEFAULT_REALTIME_URL = 'ws://localhost:8001/ws';
+// const DEFAULT_REALTIME_URL = 'ws://192.168.0.104:8001/ws';
 
 // FOR GLOBAL PRODUCTION USE:
 const DEFAULT_API_BASE_URL = 'https://api.self-link.com';

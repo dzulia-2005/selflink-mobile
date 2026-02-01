@@ -19,7 +19,7 @@ import { CompatibilityBar } from '@components/soulmatch/CompatibilityBar';
 import { UserAvatar } from '@components/UserAvatar';
 import { useToast } from '@context/ToastContext';
 import { SoulMatchStackParamList } from '@navigation/types';
-import { SoulmatchExplainLevel, SoulmatchResult } from '@schemas/soulmatch';
+import { SoulmatchExplainLevel, SoulmatchMode, SoulmatchResult } from '@schemas/soulmatch';
 import {
   fetchRecommendations,
   type SoulmatchRecommendationsMeta,
@@ -52,6 +52,11 @@ const EXPLAIN_LEVELS: Array<{ label: string; value: SoulmatchExplainLevel }> = [
   { label: 'Free', value: 'free' },
   { label: 'Premium', value: 'premium' },
   { label: 'Premium+', value: 'premium_plus' },
+];
+
+const MODE_LEVELS: Array<{ label: string; value: SoulmatchMode }> = [
+  { label: 'Compat', value: 'compat' },
+  { label: 'Dating', value: 'dating' },
 ];
 
 function AnimatedCard({ children, delay }: { children: React.ReactNode; delay: number }) {
@@ -226,6 +231,8 @@ export function SoulMatchRecommendationsScreen({
   const [meta, setMeta] = useState<SoulmatchRecommendationsMeta | null>(null);
   const [explainLevel, setExplainLevel] = useState<SoulmatchExplainLevel>('free');
   const explainRef = useRef<SoulmatchExplainLevel>('free');
+  const [mode, setMode] = useState<SoulmatchMode>('compat');
+  const modeRef = useRef<SoulmatchMode>('compat');
   const userTier: SoulmatchTier = 'free';
   const [upgradeVisible, setUpgradeVisible] = useState(false);
   const [requestedTier, setRequestedTier] = useState<Exclude<SoulmatchTier, 'free'>>(
@@ -236,19 +243,20 @@ export function SoulMatchRecommendationsScreen({
   );
   const [loading, setLoading] = useState(!initialItems.length);
   const [refreshing, setRefreshing] = useState(false);
+  const [showDebug, setShowDebug] = useState(true);
 
-  const load = useCallback(async (mode?: 'refresh') => {
+  const load = useCallback(async (modeHint?: 'refresh') => {
     if (skipAutoLoad && initialItems.length) {
       return;
     }
-    if (mode !== 'refresh') {
+    if (modeHint !== 'refresh') {
       setLoading(true);
     }
     try {
       if (typeof __DEV__ !== 'undefined' && __DEV__) {
-        console.debug('SoulMatch: recommendations fetch start', { explainLevel });
+        console.debug('SoulMatch: recommendations fetch start', { explainLevel, mode });
       }
-      const raw = await fetchRecommendations({ includeMeta: true, explainLevel });
+      const raw = await fetchRecommendations({ includeMeta: true, explainLevel, mode });
       const normalized = normalizeSoulmatchRecsResponse(raw);
       setItems(normalized.results);
       setMeta(normalized.meta ?? null);
@@ -275,7 +283,7 @@ export function SoulMatchRecommendationsScreen({
     } finally {
       setLoading(false);
     }
-  }, [explainLevel, initialItems.length, logout, skipAutoLoad, toast]);
+  }, [explainLevel, initialItems.length, logout, mode, skipAutoLoad, toast]);
 
   useFocusEffect(
     useCallback(() => {
@@ -289,12 +297,13 @@ export function SoulMatchRecommendationsScreen({
     if (skipAutoLoad && initialItems.length) {
       return;
     }
-    if (explainRef.current === explainLevel) {
+    if (explainRef.current === explainLevel && modeRef.current === mode) {
       return;
     }
     explainRef.current = explainLevel;
+    modeRef.current = mode;
     load('refresh').catch(() => undefined);
-  }, [explainLevel, initialItems.length, load, skipAutoLoad]);
+  }, [explainLevel, initialItems.length, load, mode, skipAutoLoad]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -323,6 +332,7 @@ export function SoulMatchRecommendationsScreen({
             userId: item.user.id,
             displayName: item.user.name || item.user.handle,
             explainLevel,
+            mode,
           })
         }
       />
@@ -342,6 +352,8 @@ export function SoulMatchRecommendationsScreen({
   const emptyDescription =
     missingBirth || emptyReason === 'missing_birth_data' || emptyReason === 'chart_incomplete'
       ? 'Complete your birth data to get matches.'
+      : emptyReason === 'missing_profile_fields'
+        ? 'Complete your profile (gender and orientation) to get matches.'
       : emptyReason === 'no_candidates'
         ? 'No candidates yet — invite friends or try later.'
         : 'Once your chart and profile are complete, recommendations will appear here.';
@@ -354,6 +366,28 @@ export function SoulMatchRecommendationsScreen({
 
   return (
     <View style={styles.container}>
+      {typeof __DEV__ !== 'undefined' && __DEV__ ? (
+        <View style={styles.debugPanel}>
+          <View style={styles.debugHeader}>
+            <Text style={styles.debugTitle}>SoulMatch Debug</Text>
+            <TouchableOpacity onPress={() => setShowDebug((prev) => !prev)}>
+              <Text style={styles.debugToggle}>{showDebug ? 'Hide' : 'Show'}</Text>
+            </TouchableOpacity>
+          </View>
+          {showDebug ? (
+            <View>
+              <Text style={styles.debugLine}>mode: {meta?.mode ?? '?'}</Text>
+              <Text style={styles.debugLine}>reason: {meta?.reason ?? '?'}</Text>
+              {meta?.missing_requirements?.length ? (
+                <Text style={styles.debugLine}>
+                  missing: {meta.missing_requirements.join(', ')}
+                </Text>
+              ) : null}
+              <Text style={styles.debugLine}>results: {items.length}</Text>
+            </View>
+          ) : null}
+        </View>
+      ) : null}
       <FlatList
         data={displayItems}
         keyExtractor={(item, index) =>
@@ -361,6 +395,25 @@ export function SoulMatchRecommendationsScreen({
         }
         ListHeaderComponent={
           <View style={styles.explainRow}>
+            <View style={styles.modeRow}>
+              <Text style={styles.explainLabel}>Mode</Text>
+              <View style={styles.explainPills}>
+                {MODE_LEVELS.map((option) => {
+                  const active = option.value === mode;
+                  return (
+                    <TouchableOpacity
+                      key={option.value}
+                      style={[styles.explainPill, active && styles.explainPillActive]}
+                      onPress={() => setMode(option.value)}
+                    >
+                      <Text style={[styles.explainPillText, active && styles.explainPillTextActive]}>
+                        {option.label}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
             <Text style={styles.explainLabel}>Explain</Text>
             <View style={styles.explainPills}>
               {EXPLAIN_LEVELS.map((option) => {
@@ -369,15 +422,15 @@ export function SoulMatchRecommendationsScreen({
                   <TouchableOpacity
                     key={option.value}
                     style={[styles.explainPill, active && styles.explainPillActive]}
-                    onPress={() => {
-                      if (isExplainLevelLocked(option.value, userTier)) {
-                        setRequestedTier(requiredTierForExplain(option.value));
-                        setUpgradeVisible(true);
-                        return;
-                      }
-                      setExplainLevel(option.value);
-                    }}
-                  >
+                onPress={() => {
+                  if (isExplainLevelLocked(option.value, userTier)) {
+                    setRequestedTier(requiredTierForExplain(option.value));
+                    setUpgradeVisible(true);
+                    return;
+                  }
+                  setExplainLevel(option.value);
+                }}
+              >
                     <Text style={[styles.explainPillText, active && styles.explainPillTextActive]}>
                       {option.label}
                     </Text>
@@ -447,6 +500,9 @@ const createStyles = (theme: Theme) =>
     gap: theme.spacing.md,
   },
   explainRow: {
+    marginBottom: theme.spacing.sm,
+  },
+  modeRow: {
     marginBottom: theme.spacing.sm,
   },
   explainLabel: {
@@ -582,6 +638,36 @@ const createStyles = (theme: Theme) =>
     ...theme.typography.caption,
     marginTop: theme.spacing.xs,
     textAlign: 'center',
+  },
+  debugPanel: {
+    marginHorizontal: theme.spacing.lg,
+    marginTop: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
+    padding: theme.spacing.sm,
+    borderRadius: theme.radius.md,
+    borderWidth: 1,
+    borderColor: theme.palette.titanium,
+    backgroundColor: theme.palette.midnight,
+  },
+  debugHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: theme.spacing.xs,
+  },
+  debugTitle: {
+    color: theme.palette.silver,
+    ...theme.typography.caption,
+  },
+  debugToggle: {
+    color: theme.palette.glow,
+    ...theme.typography.caption,
+  },
+  debugLine: {
+    color: theme.palette.pearl,
+    fontFamily: 'monospace',
+    fontSize: 12,
+    marginTop: 2,
   },
   scorePill: {
     paddingHorizontal: theme.spacing.sm,

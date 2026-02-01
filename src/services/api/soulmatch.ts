@@ -1,10 +1,11 @@
-import { SoulmatchExplainLevel, SoulmatchResult } from '@schemas/soulmatch';
+import { SoulmatchExplainLevel, SoulmatchMode, SoulmatchResult } from '@schemas/soulmatch';
 import { apiClient } from '@services/api/client';
 
 export type SoulmatchRecommendationsMeta = {
   missing_requirements?: string[];
   reason?: string;
   empty_reason?: string;
+  mode?: SoulmatchMode;
 };
 
 export type SoulmatchRecommendationsRaw =
@@ -24,10 +25,12 @@ const buildQuery = (params: Record<string, string | undefined>) => {
 export async function fetchRecommendations(options?: {
   includeMeta?: boolean;
   explainLevel?: SoulmatchExplainLevel;
+  mode?: SoulmatchMode;
 }): Promise<SoulmatchRecommendationsRaw> {
   const query = buildQuery({
     include_meta: options?.includeMeta ? '1' : undefined,
     explain: options?.explainLevel,
+    mode: options?.mode,
   });
   return apiClient.request<SoulmatchRecommendationsRaw>(
     `/soulmatch/recommendations/${query}`,
@@ -39,9 +42,13 @@ export async function fetchRecommendations(options?: {
 
 export async function fetchSoulmatchWith(
   userId: number,
-  options?: { explainLevel?: SoulmatchExplainLevel },
+  options?: { explainLevel?: SoulmatchExplainLevel; mode?: SoulmatchMode; includeMeta?: boolean },
 ): Promise<SoulmatchResult> {
-  const query = buildQuery({ explain: options?.explainLevel });
+  const query = buildQuery({
+    explain: options?.explainLevel,
+    mode: options?.mode,
+    include_meta: options?.includeMeta ? '1' : undefined,
+  });
   return apiClient.request<SoulmatchResult>(`/soulmatch/with/${userId}/${query}`, {
     method: 'GET',
   });

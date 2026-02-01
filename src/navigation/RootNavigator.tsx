@@ -51,10 +51,6 @@ export function RootNavigator() {
   const shouldSyncMessaging = isHydrated && isAuthenticated && !needsOnboarding;
   useMessagingSync(shouldSyncMessaging);
 
-  if (!isHydrated) {
-    return <SplashScreen />;
-  }
-
   const navigationTheme = useMemo(() => {
     const base = resolved === 'dark' ? DarkTheme : DefaultTheme;
     return {
@@ -69,6 +65,10 @@ export function RootNavigator() {
       },
     };
   }, [resolved, theme]);
+
+  if (!isHydrated) {
+    return <SplashScreen />;
+  }
 
   return (
     <NavigationContainer theme={navigationTheme}>
