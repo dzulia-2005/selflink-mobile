@@ -5,7 +5,7 @@ import { ActivityIndicator, StyleSheet, View, Text } from 'react-native';
 
 import { useAuthHydration } from '@hooks/useAuthHydration';
 import { useMessagingSync } from '@hooks/useMessagingSync';
-import { PersonalMapScreen } from '@screens/onboarding/PersonalMapScreen';
+import  PersonalMapScreen  from '@screens/onboarding/index';
 import { useAuthStore } from '@store/authStore';
 import { useTheme } from '@theme';
 
