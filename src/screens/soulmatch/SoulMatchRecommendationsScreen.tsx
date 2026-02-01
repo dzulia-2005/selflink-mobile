@@ -94,6 +94,7 @@ function RecommendationCard({
   explainLevel,
   userTier,
   onRequestUpgrade,
+  styles,
 }: {
   item: SoulmatchResult;
   onPress: () => void;
@@ -102,6 +103,7 @@ function RecommendationCard({
   explainLevel: SoulmatchExplainLevel;
   userTier: SoulmatchTier;
   onRequestUpgrade: (tier: Exclude<SoulmatchTier, 'free'>) => void;
+  styles: ReturnType<typeof createStyles>;
 }) {
   const target = item.user;
   const badges = useMemo(() => buildBadges(item, 3), [item]);
@@ -181,14 +183,18 @@ function RecommendationCard({
             </View>
           ) : null}
           {showFull ? (
-            <ExpandableSection title="More" text={item.explanation?.full} />
+            <ExpandableSection title="More" text={item.explanation?.full} styles={styles} />
           ) : lockedFull ? (
             <TouchableOpacity onPress={() => onRequestUpgrade('premium')}>
               <Text style={styles.unlockText}>Unlock to see more</Text>
             </TouchableOpacity>
           ) : null}
           {showStrategy ? (
-            <ExpandableSection title="How to approach" text={item.explanation?.strategy} />
+            <ExpandableSection
+              title="How to approach"
+              text={item.explanation?.strategy}
+              styles={styles}
+            />
           ) : lockedStrategy ? (
             <TouchableOpacity onPress={() => onRequestUpgrade('premium_plus')}>
               <Text style={styles.unlockText}>Unlock premium strategy</Text>
@@ -200,7 +206,15 @@ function RecommendationCard({
   );
 }
 
-function ExpandableSection({ title, text }: { title: string; text?: string | null }) {
+function ExpandableSection({
+  title,
+  text,
+  styles,
+}: {
+  title: string;
+  text?: string | null;
+  styles: ReturnType<typeof createStyles>;
+}) {
   const [open, setOpen] = useState(false);
   if (!text) {
     return null;
@@ -327,6 +341,7 @@ export function SoulMatchRecommendationsScreen({
           setRequestedTier(tier);
           setUpgradeVisible(true);
         }}
+        styles={styles}
         onPress={() =>
           navigation.navigate('SoulMatchDetail', {
             userId: item.user.id,
