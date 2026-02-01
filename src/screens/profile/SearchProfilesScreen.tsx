@@ -68,8 +68,8 @@ export function SearchProfilesScreen() {
       try {
         await Clipboard.setStringAsync(accountKey);
         toast.push({ message: 'Copied to clipboard', tone: 'info', duration: 1500 });
-      } catch (error) {
-        console.warn('SearchProfiles: copy recipient id failed', error);
+      } catch (err) {
+        console.warn('SearchProfiles: copy recipient id failed', err);
         toast.push({ message: 'Unable to copy right now.', tone: 'error' });
       }
     },
@@ -151,11 +151,31 @@ export function SearchProfilesScreen() {
         </View>
       </View>
     ),
-    [currentUserId, handleCopyRecipientId, handleFollowToggle, navigation],
+    [
+      currentUserId,
+      handleCopyRecipientId,
+      handleFollowToggle,
+      navigation,
+      styles.copyButton,
+      styles.copyButtonText,
+      styles.followButton,
+      styles.followButtonDisabled,
+      styles.followButtonText,
+      styles.resultActions,
+      styles.resultCounts,
+      styles.resultHandle,
+      styles.resultMeta,
+      styles.resultName,
+      styles.resultRow,
+      styles.userInfo,
+    ],
   );
 
   const keyExtractor = useCallback((item: UserSummary) => String(item.id), []);
-  const renderSeparator = useCallback(() => <View style={styles.separator} />, []);
+  const renderSeparator = useCallback(
+    () => <View style={styles.separator} />,
+    [styles.separator],
+  );
 
   const emptyComponent = useMemo(() => {
     if (isLoading || results.length > 0) {
@@ -168,7 +188,7 @@ export function SearchProfilesScreen() {
         </Text>
       </View>
     );
-  }, [isLoading, query, results.length]);
+  }, [isLoading, query, results.length, styles.empty, styles.emptyText]);
 
   return (
     <View style={styles.container}>
@@ -197,95 +217,95 @@ export function SearchProfilesScreen() {
 
 const createStyles = (theme: Theme) =>
   StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-  },
-  formRow: {
-    marginBottom: 12,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: theme.feed.border,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    color: theme.feed.textPrimary,
-    backgroundColor: theme.feed.glass,
-  },
-  loading: {
-    marginBottom: 12,
-  },
-  error: {
-    color: theme.palette.ember,
-    marginBottom: 12,
-  },
-  resultRow: {
-    paddingVertical: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 12,
-  },
-  userInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-    gap: 12,
-  },
-  resultMeta: { flex: 1 },
-  resultName: {
-    fontWeight: '700',
-    color: theme.feed.textPrimary,
-  },
-  resultHandle: {
-    color: theme.feed.textSecondary,
-  },
-  resultCounts: {
-    color: theme.feed.textMuted,
-    fontSize: 12,
-  },
-  resultActions: {
-    alignItems: 'flex-end',
-    gap: 8,
-  },
-  followButton: {
-    borderWidth: 1,
-    borderColor: theme.feed.border,
-    borderRadius: 14,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    backgroundColor: theme.feed.glass,
-  },
-  copyButton: {
-    borderWidth: 1,
-    borderColor: theme.feed.border,
-    borderRadius: 14,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    backgroundColor: theme.feed.cardBackground,
-  },
-  copyButtonText: {
-    fontWeight: '700',
-    color: theme.feed.textPrimary,
-    fontSize: 12,
-  },
-  followButtonDisabled: {
-    opacity: 0.6,
-  },
-  followButtonText: {
-    fontWeight: '700',
-    color: theme.feed.textPrimary,
-  },
-  separator: {
-    height: 1,
-    backgroundColor: theme.feed.cardBorder,
-  },
-  empty: {
-    padding: 24,
-    alignItems: 'center',
-  },
-  emptyText: {
-    color: theme.feed.textSecondary,
-  },
-});
+    container: {
+      flex: 1,
+      padding: 16,
+    },
+    formRow: {
+      marginBottom: 12,
+    },
+    input: {
+      borderWidth: 1,
+      borderColor: theme.feed.border,
+      borderRadius: 12,
+      paddingHorizontal: 14,
+      paddingVertical: 10,
+      color: theme.feed.textPrimary,
+      backgroundColor: theme.feed.glass,
+    },
+    loading: {
+      marginBottom: 12,
+    },
+    error: {
+      color: theme.palette.ember,
+      marginBottom: 12,
+    },
+    resultRow: {
+      paddingVertical: 12,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: 12,
+    },
+    userInfo: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      flex: 1,
+      gap: 12,
+    },
+    resultMeta: { flex: 1 },
+    resultName: {
+      fontWeight: '700',
+      color: theme.feed.textPrimary,
+    },
+    resultHandle: {
+      color: theme.feed.textSecondary,
+    },
+    resultCounts: {
+      color: theme.feed.textMuted,
+      fontSize: 12,
+    },
+    resultActions: {
+      alignItems: 'flex-end',
+      gap: 8,
+    },
+    followButton: {
+      borderWidth: 1,
+      borderColor: theme.feed.border,
+      borderRadius: 14,
+      paddingHorizontal: 14,
+      paddingVertical: 8,
+      backgroundColor: theme.feed.glass,
+    },
+    copyButton: {
+      borderWidth: 1,
+      borderColor: theme.feed.border,
+      borderRadius: 14,
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      backgroundColor: theme.feed.cardBackground,
+    },
+    copyButtonText: {
+      fontWeight: '700',
+      color: theme.feed.textPrimary,
+      fontSize: 12,
+    },
+    followButtonDisabled: {
+      opacity: 0.6,
+    },
+    followButtonText: {
+      fontWeight: '700',
+      color: theme.feed.textPrimary,
+    },
+    separator: {
+      height: 1,
+      backgroundColor: theme.feed.cardBorder,
+    },
+    empty: {
+      padding: 24,
+      alignItems: 'center',
+    },
+    emptyText: {
+      color: theme.feed.textSecondary,
+    },
+  });

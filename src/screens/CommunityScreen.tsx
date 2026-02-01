@@ -61,7 +61,7 @@ export function CommunityScreen() {
         </Text>
       </View>
     );
-  }, [loading]);
+  }, [loading, styles.emptyCopy, styles.emptyState, styles.emptyTitle]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -122,65 +122,65 @@ export function CommunityScreen() {
 
 const createStyles = (theme: Theme) =>
   StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: theme.palette.midnight,
-  },
-  hero: {
-    paddingHorizontal: theme.spacing.lg,
-    paddingTop: theme.spacing.lg,
-    paddingBottom: theme.spacing.md,
-    gap: theme.spacing.sm,
-  },
-  title: {
-    color: theme.palette.platinum,
-    ...theme.typography.title,
-  },
-  subtitle: {
-    color: theme.palette.silver,
-    ...theme.typography.body,
-  },
-  panelTitle: {
-    color: theme.palette.titanium,
-    ...theme.typography.subtitle,
-    marginBottom: theme.spacing.sm,
-  },
-  input: {
-    backgroundColor: theme.palette.obsidian,
-    borderRadius: theme.radius.md,
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
-    color: theme.palette.platinum,
-    borderWidth: 1,
-    borderColor: theme.palette.graphite,
-    ...theme.typography.body,
-  },
-  listContent: {
-    padding: theme.spacing.lg,
-    gap: theme.spacing.md,
-    paddingBottom: theme.spacing.xl,
-  },
-  loader: {
-    paddingVertical: theme.spacing.md,
-  },
-  loadingOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  emptyState: {
-    paddingVertical: theme.spacing.xl,
-    alignItems: 'center',
-    gap: theme.spacing.sm,
-  },
-  emptyTitle: {
-    color: theme.palette.platinum,
-    ...theme.typography.subtitle,
-  },
-  emptyCopy: {
-    color: theme.palette.silver,
-    textAlign: 'center',
-    ...theme.typography.body,
-    maxWidth: 280,
-  },
-});
+    safeArea: {
+      flex: 1,
+      backgroundColor: theme.palette.midnight,
+    },
+    hero: {
+      paddingHorizontal: theme.spacing.lg,
+      paddingTop: theme.spacing.lg,
+      paddingBottom: theme.spacing.md,
+      gap: theme.spacing.sm,
+    },
+    title: {
+      color: theme.palette.platinum,
+      ...theme.typography.title,
+    },
+    subtitle: {
+      color: theme.palette.silver,
+      ...theme.typography.body,
+    },
+    panelTitle: {
+      color: theme.palette.titanium,
+      ...theme.typography.subtitle,
+      marginBottom: theme.spacing.sm,
+    },
+    input: {
+      backgroundColor: theme.palette.obsidian,
+      borderRadius: theme.radius.md,
+      paddingHorizontal: theme.spacing.md,
+      paddingVertical: theme.spacing.sm,
+      color: theme.palette.platinum,
+      borderWidth: 1,
+      borderColor: theme.palette.graphite,
+      ...theme.typography.body,
+    },
+    listContent: {
+      padding: theme.spacing.lg,
+      gap: theme.spacing.md,
+      paddingBottom: theme.spacing.xl,
+    },
+    loader: {
+      paddingVertical: theme.spacing.md,
+    },
+    loadingOverlay: {
+      ...StyleSheet.absoluteFillObject,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    emptyState: {
+      paddingVertical: theme.spacing.xl,
+      alignItems: 'center',
+      gap: theme.spacing.sm,
+    },
+    emptyTitle: {
+      color: theme.palette.platinum,
+      ...theme.typography.subtitle,
+    },
+    emptyCopy: {
+      color: theme.palette.silver,
+      textAlign: 'center',
+      ...theme.typography.body,
+      maxWidth: 280,
+    },
+  });

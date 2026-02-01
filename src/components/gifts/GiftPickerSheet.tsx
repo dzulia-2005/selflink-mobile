@@ -1,3 +1,5 @@
+import { useNavigation } from '@react-navigation/native';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Animated,
@@ -10,9 +12,7 @@ import {
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
 
 import { getSlcBalance, listSlcLedger } from '@api/coin';
 import {
@@ -27,6 +27,7 @@ import { MetalButton } from '@components/MetalButton';
 import { useToast } from '@context/ToastContext';
 import { useAuthStore } from '@store/authStore';
 import { useTheme, type Theme } from '@theme';
+
 import { usePressScaleAnimation } from '../../styles/animations';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -56,7 +57,7 @@ let cachedAt = 0;
 const createIdempotencyKey = () =>
   'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (char) => {
     const rand = Math.floor(Math.random() * 16);
-    const value = char === 'x' ? rand : (rand & 0x3) | 0x8;
+    const value = char === 'x' ? rand : (rand % 4) + 8;
     return value.toString(16);
   });
 
@@ -168,8 +169,7 @@ export function GiftPickerSheet({ visible, target, onClose, onGiftSent }: Props)
   );
 
   const totalCents = (selectedGift?.price_slc_cents ?? 0) * quantity;
-  const cooldownActive =
-    cooldownUntil != null && cooldownUntil > Date.now() && !sending;
+  const cooldownActive = cooldownUntil != null && cooldownUntil > Date.now() && !sending;
 
   const handleSendGift = useCallback(async () => {
     if (!target || !selectedGift || sending || cooldownActive) {
@@ -336,7 +336,9 @@ export function GiftPickerSheet({ visible, target, onClose, onGiftSent }: Props)
                   </TouchableOpacity>
                 </View>
               </View>
-              <Text style={styles.totalText}>You will spend {formatPrice(totalCents)}</Text>
+              <Text style={styles.totalText}>
+                You will spend {formatPrice(totalCents)}
+              </Text>
               {error ? <Text style={styles.errorText}>{error}</Text> : null}
               {insufficientFunds ? (
                 <MetalButton title="Buy SLC" onPress={handleBuySlc} />
@@ -357,162 +359,162 @@ export function GiftPickerSheet({ visible, target, onClose, onGiftSent }: Props)
 
 const createStyles = (theme: Theme) =>
   StyleSheet.create({
-  backdrop: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.45)',
-  },
-  sheet: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(15,23,42,0.96)',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    borderWidth: 1,
-    borderColor: 'rgba(148,163,184,0.4)',
-    paddingHorizontal: 16,
-    paddingTop: 10,
-  },
-  handle: {
-    alignSelf: 'center',
-    width: 44,
-    height: 5,
-    borderRadius: 999,
-    backgroundColor: 'rgba(148,163,184,0.5)',
-    marginBottom: 8,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  title: {
-    color: theme.reels.textPrimary,
-    fontWeight: '800',
-    fontSize: 16,
-  },
-  closeLabel: {
-    color: theme.reels.textSecondary,
-    fontSize: 18,
-  },
-  centered: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  grid: {
-    paddingBottom: 12,
-  },
-  column: {
-    justifyContent: 'space-between',
-    gap: 10,
-  },
-  tile: {
-    flex: 1,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(148,163,184,0.3)',
-    padding: 8,
-    marginBottom: 10,
-    backgroundColor: 'rgba(15,23,42,0.6)',
-  },
-  tileSelected: {
-    borderColor: theme.feed.accentCyan,
-    shadowColor: theme.feed.accentCyan,
-    shadowOpacity: 0.35,
-    shadowRadius: 10,
-    elevation: 4,
-  },
-  tileMedia: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  tileName: {
-    marginTop: 6,
-    color: theme.reels.textPrimary,
-    fontWeight: '700',
-    fontSize: 12,
-  },
-  tilePrice: {
-    color: theme.reels.textSecondary,
-    fontSize: 11,
-    marginTop: 2,
-  },
-  tileBadge: {
-    marginTop: 4,
-    alignSelf: 'flex-start',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 999,
-    backgroundColor: 'rgba(34,211,238,0.15)',
-    color: theme.reels.textSecondary,
-    fontSize: 9,
-    fontWeight: '700',
-    letterSpacing: 0.2,
-  },
-  preview: {
-    alignItems: 'center',
-    paddingVertical: 8,
-    gap: 6,
-  },
-  previewPrice: {
-    color: theme.reels.textSecondary,
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  footer: {
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(148,163,184,0.25)',
-    paddingTop: 10,
-    gap: 8,
-  },
-  quantityRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  quantityLabel: {
-    color: theme.reels.textSecondary,
-    fontSize: 13,
-  },
-  quantityControls: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  quantityButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 10,
-    backgroundColor: 'rgba(148,163,184,0.2)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  quantityButtonText: {
-    color: theme.reels.textPrimary,
-    fontSize: 18,
-    fontWeight: '700',
-  },
-  quantityValue: {
-    color: theme.reels.textPrimary,
-    fontWeight: '700',
-    fontSize: 14,
-  },
-  totalText: {
-    color: theme.reels.textSecondary,
-    fontSize: 12,
-  },
-  errorText: {
-    color: '#FCA5A5',
-    fontSize: 12,
-  },
-  emptyText: {
-    color: theme.reels.textSecondary,
-    textAlign: 'center',
-    paddingVertical: 24,
-  },
+    backdrop: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor: 'rgba(0,0,0,0.45)',
+    },
+    sheet: {
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(15,23,42,0.96)',
+      borderTopLeftRadius: 24,
+      borderTopRightRadius: 24,
+      borderWidth: 1,
+      borderColor: 'rgba(148,163,184,0.4)',
+      paddingHorizontal: 16,
+      paddingTop: 10,
+    },
+    handle: {
+      alignSelf: 'center',
+      width: 44,
+      height: 5,
+      borderRadius: 999,
+      backgroundColor: 'rgba(148,163,184,0.5)',
+      marginBottom: 8,
+    },
+    header: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 8,
+    },
+    title: {
+      color: theme.reels.textPrimary,
+      fontWeight: '800',
+      fontSize: 16,
+    },
+    closeLabel: {
+      color: theme.reels.textSecondary,
+      fontSize: 18,
+    },
+    centered: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    grid: {
+      paddingBottom: 12,
+    },
+    column: {
+      justifyContent: 'space-between',
+      gap: 10,
+    },
+    tile: {
+      flex: 1,
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: 'rgba(148,163,184,0.3)',
+      padding: 8,
+      marginBottom: 10,
+      backgroundColor: 'rgba(15,23,42,0.6)',
+    },
+    tileSelected: {
+      borderColor: theme.feed.accentCyan,
+      shadowColor: theme.feed.accentCyan,
+      shadowOpacity: 0.35,
+      shadowRadius: 10,
+      elevation: 4,
+    },
+    tileMedia: {
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    tileName: {
+      marginTop: 6,
+      color: theme.reels.textPrimary,
+      fontWeight: '700',
+      fontSize: 12,
+    },
+    tilePrice: {
+      color: theme.reels.textSecondary,
+      fontSize: 11,
+      marginTop: 2,
+    },
+    tileBadge: {
+      marginTop: 4,
+      alignSelf: 'flex-start',
+      paddingHorizontal: 6,
+      paddingVertical: 2,
+      borderRadius: 999,
+      backgroundColor: 'rgba(34,211,238,0.15)',
+      color: theme.reels.textSecondary,
+      fontSize: 9,
+      fontWeight: '700',
+      letterSpacing: 0.2,
+    },
+    preview: {
+      alignItems: 'center',
+      paddingVertical: 8,
+      gap: 6,
+    },
+    previewPrice: {
+      color: theme.reels.textSecondary,
+      fontSize: 12,
+      fontWeight: '600',
+    },
+    footer: {
+      borderTopWidth: 1,
+      borderTopColor: 'rgba(148,163,184,0.25)',
+      paddingTop: 10,
+      gap: 8,
+    },
+    quantityRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    quantityLabel: {
+      color: theme.reels.textSecondary,
+      fontSize: 13,
+    },
+    quantityControls: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+    },
+    quantityButton: {
+      width: 32,
+      height: 32,
+      borderRadius: 10,
+      backgroundColor: 'rgba(148,163,184,0.2)',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    quantityButtonText: {
+      color: theme.reels.textPrimary,
+      fontSize: 18,
+      fontWeight: '700',
+    },
+    quantityValue: {
+      color: theme.reels.textPrimary,
+      fontWeight: '700',
+      fontSize: 14,
+    },
+    totalText: {
+      color: theme.reels.textSecondary,
+      fontSize: 12,
+    },
+    errorText: {
+      color: '#FCA5A5',
+      fontSize: 12,
+    },
+    emptyText: {
+      color: theme.reels.textSecondary,
+      textAlign: 'center',
+      paddingVertical: 24,
+    },
   });
 
 type GiftTileProps = {

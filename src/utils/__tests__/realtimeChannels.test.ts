@@ -1,4 +1,8 @@
-import { areStringArraysEqual, buildChannelList, diffChannelSets } from '@utils/realtimeChannels';
+import {
+  areStringArraysEqual,
+  buildChannelList,
+  diffChannelSets,
+} from '@utils/realtimeChannels';
 
 describe('realtimeChannels', () => {
   it('buildChannelList dedupes and sorts', () => {

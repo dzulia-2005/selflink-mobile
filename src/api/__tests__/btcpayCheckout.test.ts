@@ -1,7 +1,7 @@
 import { AxiosError } from 'axios';
 
-import { apiClient } from '@api/client';
 import { createBtcpayCheckout, normalizeBtcpayApiError } from '@api/btcpayCheckout';
+import { apiClient } from '@api/client';
 
 jest.mock('@api/client', () => ({
   apiClient: {

@@ -230,128 +230,128 @@ export function BirthLocationMapModal({
 
 const createStyles = (theme: Theme) =>
   StyleSheet.create({
-  backdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.85)',
-  },
-  modalContainer: {
-    flex: 1,
-    paddingHorizontal: theme.spacing.lg,
-    paddingBottom: theme.spacing.lg,
-    backgroundColor: 'rgba(5, 8, 18, 0.92)',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingTop: theme.spacing.sm,
-    marginBottom: theme.spacing.sm,
-  },
-  title: {
-    color: theme.palette.platinum,
-    ...theme.typography.subtitle,
-  },
-  iconButton: {
-    width: 44,
-    height: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 22,
-  },
-  iconPlaceholder: {
-    width: 44,
-    height: 44,
-  },
-  instructions: {
-    color: theme.palette.silver,
-    ...theme.typography.caption,
-    marginBottom: theme.spacing.sm,
-  },
-  mapCard: {
-    borderRadius: theme.radii.lg,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(37, 211, 211, 0.35)',
-    backgroundColor: '#0F0A14',
-    minHeight: 320,
-    marginBottom: theme.spacing.md,
-  },
-  map: {
-    flex: 1,
-  },
-  mapLoader: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: theme.spacing.lg,
-    gap: theme.spacing.sm,
-  },
-  loaderText: {
-    color: theme.palette.silver,
-    ...theme.typography.caption,
-  },
-  errorText: {
-    color: theme.palette.rose,
-    textAlign: 'center',
-    ...theme.typography.body,
-  },
-  summaryCard: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: theme.spacing.sm,
-    padding: theme.spacing.md,
-    borderRadius: theme.radii.lg,
-    borderWidth: 1,
-    borderColor: 'rgba(37, 211, 211, 0.35)',
-    backgroundColor: '#0F0A14',
-  },
-  summaryTitle: {
-    color: theme.palette.platinum,
-    ...theme.typography.caption,
-    fontWeight: '700',
-  },
-  summaryText: {
-    color: theme.palette.silver,
-    ...theme.typography.body,
-  },
-  summaryCoords: {
-    color: theme.palette.titanium,
-    ...theme.typography.caption,
-  },
-  summaryContent: {
-    flex: 1,
-  },
-  footer: {
-    marginTop: theme.spacing.md,
-    gap: theme.spacing.xs,
-  },
-  primaryButton: {
-    borderRadius: theme.radii.lg,
-  },
-  primaryButtonDisabled: {
-    opacity: 0.5,
-  },
-  primaryButtonContent: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: theme.spacing.md,
-  },
-  primaryLabel: {
-    color: theme.text.primary,
-    ...theme.typography.button,
-  },
-  cancelButton: {
-    alignItems: 'center',
-    paddingVertical: theme.spacing.sm,
-  },
-  cancelLabel: {
-    color: theme.palette.silver,
-    ...theme.typography.caption,
-  },
-  helperText: {
-    color: theme.palette.silver,
-    ...theme.typography.caption,
-    textAlign: 'center',
-  },
-  markerBounce: {},
+    backdrop: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.85)',
+    },
+    modalContainer: {
+      flex: 1,
+      paddingHorizontal: theme.spacing.lg,
+      paddingBottom: theme.spacing.lg,
+      backgroundColor: 'rgba(5, 8, 18, 0.92)',
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingTop: theme.spacing.sm,
+      marginBottom: theme.spacing.sm,
+    },
+    title: {
+      color: theme.palette.platinum,
+      ...theme.typography.subtitle,
+    },
+    iconButton: {
+      width: 44,
+      height: 44,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: 22,
+    },
+    iconPlaceholder: {
+      width: 44,
+      height: 44,
+    },
+    instructions: {
+      color: theme.palette.silver,
+      ...theme.typography.caption,
+      marginBottom: theme.spacing.sm,
+    },
+    mapCard: {
+      borderRadius: theme.radii.lg,
+      overflow: 'hidden',
+      borderWidth: 1,
+      borderColor: 'rgba(37, 211, 211, 0.35)',
+      backgroundColor: '#0F0A14',
+      minHeight: 320,
+      marginBottom: theme.spacing.md,
+    },
+    map: {
+      flex: 1,
+    },
+    mapLoader: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: theme.spacing.lg,
+      gap: theme.spacing.sm,
+    },
+    loaderText: {
+      color: theme.palette.silver,
+      ...theme.typography.caption,
+    },
+    errorText: {
+      color: theme.palette.rose,
+      textAlign: 'center',
+      ...theme.typography.body,
+    },
+    summaryCard: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: theme.spacing.sm,
+      padding: theme.spacing.md,
+      borderRadius: theme.radii.lg,
+      borderWidth: 1,
+      borderColor: 'rgba(37, 211, 211, 0.35)',
+      backgroundColor: '#0F0A14',
+    },
+    summaryTitle: {
+      color: theme.palette.platinum,
+      ...theme.typography.caption,
+      fontWeight: '700',
+    },
+    summaryText: {
+      color: theme.palette.silver,
+      ...theme.typography.body,
+    },
+    summaryCoords: {
+      color: theme.palette.titanium,
+      ...theme.typography.caption,
+    },
+    summaryContent: {
+      flex: 1,
+    },
+    footer: {
+      marginTop: theme.spacing.md,
+      gap: theme.spacing.xs,
+    },
+    primaryButton: {
+      borderRadius: theme.radii.lg,
+    },
+    primaryButtonDisabled: {
+      opacity: 0.5,
+    },
+    primaryButtonContent: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: theme.spacing.md,
+    },
+    primaryLabel: {
+      color: theme.text.primary,
+      ...theme.typography.button,
+    },
+    cancelButton: {
+      alignItems: 'center',
+      paddingVertical: theme.spacing.sm,
+    },
+    cancelLabel: {
+      color: theme.palette.silver,
+      ...theme.typography.caption,
+    },
+    helperText: {
+      color: theme.palette.silver,
+      ...theme.typography.caption,
+      textAlign: 'center',
+    },
+    markerBounce: {},
   });

@@ -12,7 +12,6 @@ export const canRenderLottie = (): boolean => {
     return cachedSupport;
   }
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const mod = require('lottie-react-native');
     const LottieView = mod?.default ?? mod?.LottieView ?? mod;
     cachedSupport = Boolean(LottieView);

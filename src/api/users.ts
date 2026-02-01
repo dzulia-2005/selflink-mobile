@@ -152,10 +152,7 @@ export async function getUserFollowing(userId: number | string): Promise<UserSum
   return data.map(mapUser);
 }
 
-export async function searchUsers(
-  query: string,
-  limit?: number,
-): Promise<UserSummary[]> {
+export async function searchUsers(query: string, limit?: number): Promise<UserSummary[]> {
   if (!query.trim()) {
     return [];
   }

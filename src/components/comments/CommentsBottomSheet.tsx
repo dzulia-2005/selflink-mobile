@@ -1,3 +1,4 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   AppState,
@@ -16,26 +17,25 @@ import {
   ViewToken,
   View,
 } from 'react-native';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { likeComment, normalizeLikesApiError, unlikeComment } from '@api/likes';
 import type { GiftType } from '@api/gifts';
-import { GiftPickerSheet } from '@components/gifts/GiftPickerSheet';
+import { likeComment, normalizeLikesApiError, unlikeComment } from '@api/likes';
 import { GiftBurstOverlay } from '@components/gifts/GiftBurstOverlay';
+import { GiftPickerSheet } from '@components/gifts/GiftPickerSheet';
 import { useToast } from '@context/ToastContext';
+import { useGiftBurst } from '@hooks/useGiftBurst';
+import { connectRealtime, type RealtimePayload } from '@realtime/index';
 import { useAuthStore } from '@store/authStore';
 import { useTheme, type Theme } from '@theme';
-import { normalizeGiftRenderData } from '@utils/gifts';
 import {
   filterActiveEffects,
   resolveActiveCardEffects,
   resolveEffectsFromGiftEvent,
 } from '@utils/giftEffects';
-import { createRealtimeDedupeStore } from '@utils/realtimeDedupe';
+import { normalizeGiftRenderData } from '@utils/gifts';
 import { areStringArraysEqual, buildChannelList } from '@utils/realtimeChannels';
-import { useGiftBurst } from '@hooks/useGiftBurst';
-import { connectRealtime, type RealtimePayload } from '@realtime/index';
+import { createRealtimeDedupeStore } from '@utils/realtimeDedupe';
 
 import { CommentComposer } from './CommentComposer';
 import { CommentItem } from './CommentItem';
@@ -83,9 +83,7 @@ export function CommentsBottomSheet({
       }
     >
   >({});
-  const [giftSyncByComment, setGiftSyncByComment] = useState<Record<string, boolean>>(
-    {},
-  );
+  const [giftSyncByComment, setGiftSyncByComment] = useState<Record<string, boolean>>({});
   const [commentEffects, setCommentEffects] = useState<Record<string, any>>({});
   const [giftTargetId, setGiftTargetId] = useState<string | null>(null);
   const { burst, triggerGiftBurst, clearGiftBurst } = useGiftBurst();
@@ -189,8 +187,7 @@ export function CommentsBottomSheet({
       }
       const sender = record.sender as { id?: number } | undefined;
       const giftType = record.gift_type as any;
-      const quantity =
-        typeof record.quantity === 'number' ? record.quantity : 1;
+      const quantity = typeof record.quantity === 'number' ? record.quantity : 1;
       const serverTime = record.server_time as string | number | undefined;
       const expiresAt = record.expires_at as string | number | undefined;
 
@@ -215,7 +212,7 @@ export function CommentsBottomSheet({
         }
       } else if (__DEV__ && !warnedMissingEffectsRef.current) {
         warnedMissingEffectsRef.current = true;
-        // eslint-disable-next-line no-console
+
         console.warn('[GiftRealtime] gift_type.effects missing in event payload.');
       }
 
@@ -250,7 +247,13 @@ export function CommentsBottomSheet({
       unsubscribe();
       connection.disconnect();
     };
-  }, [commentChannelsKey, handleGiftRealtime, isAppActive, token, visibleCommentChannels]);
+  }, [
+    commentChannelsKey,
+    handleGiftRealtime,
+    isAppActive,
+    token,
+    visibleCommentChannels,
+  ]);
 
   useEffect(() => {
     const handleAppStateChange = (next: AppStateStatus) => {
@@ -414,10 +417,7 @@ export function CommentsBottomSheet({
               ...current,
               giftCount: current.giftCount + quantity,
               giftPreviews: gift
-                ? [
-                    gift as any,
-                    ...(current.giftPreviews ?? []).slice(0, 2),
-                  ]
+                ? [gift as any, ...(current.giftPreviews ?? []).slice(0, 2)]
                 : current.giftPreviews,
             },
           };
@@ -437,10 +437,7 @@ export function CommentsBottomSheet({
       const key = String(item.id);
       const reaction = commentReactions[key];
       const now = Date.now();
-      const realtimeEffects = filterActiveEffects(
-        commentEffects[key],
-        now,
-      );
+      const realtimeEffects = filterActiveEffects(commentEffects[key], now);
       const fallbackEffects = resolveActiveCardEffects({
         now,
         recentGifts: (item as any)?.recent_gifts ?? [],
@@ -462,6 +459,7 @@ export function CommentsBottomSheet({
       );
     },
     [
+      commentEffects,
       commentReactions,
       giftSyncByComment,
       handleOpenGiftPicker,
@@ -478,9 +476,9 @@ export function CommentsBottomSheet({
         return;
       }
       const visibleIds = viewableItems
-        .filter((token) => token.isViewable)
-        .map((token) => {
-          const id = token.item?.id;
+        .filter((viewToken) => viewToken.isViewable)
+        .map((viewToken) => {
+          const id = viewToken.item?.id;
           return id != null ? String(id) : null;
         })
         .filter((id): id is string => Boolean(id));
@@ -584,71 +582,71 @@ export function CommentsBottomSheet({
 
 const createStyles = (theme: Theme) =>
   StyleSheet.create({
-  wrapper: {
-    flex: 1,
-    justifyContent: 'flex-end',
-  },
-  backdrop: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.45)',
-  },
-  sheet: {
-    backgroundColor: 'rgba(15,23,42,0.96)',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    borderWidth: 1,
-    borderColor: 'rgba(148,163,184,0.4)',
-    paddingHorizontal: 16,
-    paddingTop: 8,
-  },
-  handleArea: {
-    alignItems: 'center',
-    paddingVertical: 6,
-  },
-  handle: {
-    width: 42,
-    height: 5,
-    borderRadius: 999,
-    backgroundColor: 'rgba(148,163,184,0.5)',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 6,
-  },
-  title: {
-    color: theme.reels.textPrimary,
-    fontWeight: '800',
-    fontSize: 16,
-  },
-  closeLabel: {
-    color: theme.reels.textSecondary,
-    fontSize: 18,
-  },
-  listContainer: {
-    flex: 1,
-    paddingBottom: 6,
-  },
-  commentsList: {
-    paddingBottom: 12,
-  },
-  commentsListEmpty: {
-    flexGrow: 1,
-    justifyContent: 'center',
-  },
-  loader: {
-    paddingVertical: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  emptyText: {
-    textAlign: 'center',
-    color: theme.reels.textSecondary,
-  },
-  errorText: {
-    color: '#FCA5A5',
-    marginTop: 6,
-    fontSize: 12,
-  },
+    wrapper: {
+      flex: 1,
+      justifyContent: 'flex-end',
+    },
+    backdrop: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor: 'rgba(0,0,0,0.45)',
+    },
+    sheet: {
+      backgroundColor: 'rgba(15,23,42,0.96)',
+      borderTopLeftRadius: 24,
+      borderTopRightRadius: 24,
+      borderWidth: 1,
+      borderColor: 'rgba(148,163,184,0.4)',
+      paddingHorizontal: 16,
+      paddingTop: 8,
+    },
+    handleArea: {
+      alignItems: 'center',
+      paddingVertical: 6,
+    },
+    handle: {
+      width: 42,
+      height: 5,
+      borderRadius: 999,
+      backgroundColor: 'rgba(148,163,184,0.5)',
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingVertical: 6,
+    },
+    title: {
+      color: theme.reels.textPrimary,
+      fontWeight: '800',
+      fontSize: 16,
+    },
+    closeLabel: {
+      color: theme.reels.textSecondary,
+      fontSize: 18,
+    },
+    listContainer: {
+      flex: 1,
+      paddingBottom: 6,
+    },
+    commentsList: {
+      paddingBottom: 12,
+    },
+    commentsListEmpty: {
+      flexGrow: 1,
+      justifyContent: 'center',
+    },
+    loader: {
+      paddingVertical: 12,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    emptyText: {
+      textAlign: 'center',
+      color: theme.reels.textSecondary,
+    },
+    errorText: {
+      color: '#FCA5A5',
+      marginTop: 6,
+      fontSize: 12,
+    },
   });

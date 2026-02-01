@@ -3,7 +3,10 @@ import type {
   SoulmatchResult,
   SoulmatchTimingWindow,
 } from '@schemas/soulmatch';
-import type { SoulmatchRecommendationsMeta, SoulmatchRecommendationsRaw } from '@services/api/soulmatch';
+import type {
+  SoulmatchRecommendationsMeta,
+  SoulmatchRecommendationsRaw,
+} from '@services/api/soulmatch';
 
 type SoulmatchResultLike = Partial<SoulmatchResult> & {
   user?: Partial<SoulmatchResult['user']> | null;
@@ -123,7 +126,8 @@ export const normalizeSoulmatchRecommendations = (
     }
 
     const safeName = rawUser.name ?? rawUser.handle ?? `User ${userId}`;
-    const safeHandle = rawUser.handle ?? buildFallbackHandle(userId, rawUser.name ?? null);
+    const safeHandle =
+      rawUser.handle ?? buildFallbackHandle(userId, rawUser.name ?? null);
     const explanation = toExplanation(entry);
     const lensLabel = normalizeLensLabel(entry);
     const lensReasonShort =
@@ -146,7 +150,8 @@ export const normalizeSoulmatchRecommendations = (
       lens: typeof entry.lens === 'string' ? entry.lens : undefined,
       lens_label: lensLabel,
       lens_reason_short: lensReasonShort,
-      timing_score: typeof entry.timing_score === 'number' ? entry.timing_score : undefined,
+      timing_score:
+        typeof entry.timing_score === 'number' ? entry.timing_score : undefined,
       timing_summary:
         typeof entry.timing_summary === 'string' ? entry.timing_summary : undefined,
       timing_window: toTimingWindow(entry.timing_window),
@@ -171,7 +176,10 @@ export const normalizeSoulmatchRecsResponse = (
     return { results: normalized.items, dropped: normalized.dropped };
   }
   if (raw && typeof raw === 'object') {
-    const record = raw as { results?: SoulmatchResultLike[]; meta?: SoulmatchRecommendationsMeta };
+    const record = raw as {
+      results?: SoulmatchResultLike[];
+      meta?: SoulmatchRecommendationsMeta;
+    };
     const normalized = normalizeSoulmatchRecommendations(record.results ?? []);
     return { results: normalized.items, meta: record.meta, dropped: normalized.dropped };
   }

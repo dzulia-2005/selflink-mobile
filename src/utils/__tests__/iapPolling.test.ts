@@ -34,7 +34,9 @@ describe('iap polling helpers', () => {
   });
 
   it('completes when external id matches', () => {
-    const entries = [makeEntry({ event_id: 999, event_metadata: { external_id: 'tx_123' } })];
+    const entries = [
+      makeEntry({ event_id: 999, event_metadata: { external_id: 'tx_123' } }),
+    ];
     expect(shouldCompleteIapPolling(ctx, entries)).toBe(true);
   });
 

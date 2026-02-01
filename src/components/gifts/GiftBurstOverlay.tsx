@@ -1,8 +1,9 @@
-import { Animated, StyleSheet, View } from 'react-native';
 import { useEffect, useMemo, useRef } from 'react';
+import { Animated, StyleSheet, View } from 'react-native';
 
 import type { GiftType } from '@api/gifts';
 import type { GiftPreview } from '@utils/gifts';
+
 import { GiftMedia } from './GiftMedia';
 import { getGiftThemeTier } from './giftTheme';
 
@@ -92,7 +93,11 @@ export function GiftBurstOverlay({ visible, gift, burstKey, onComplete }: Props)
           {
             borderColor: glowColor,
             opacity: glow,
-            transform: [{ scale: glow.interpolate({ inputRange: [0, 1], outputRange: [0.7, 1.2] }) }],
+            transform: [
+              {
+                scale: glow.interpolate({ inputRange: [0, 1], outputRange: [0.7, 1.2] }),
+              },
+            ],
           },
         ]}
       />

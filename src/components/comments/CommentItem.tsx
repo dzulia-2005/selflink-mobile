@@ -2,15 +2,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { memo, useMemo } from 'react';
 import { Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import { UserAvatar } from '@components/UserAvatar';
 import { CommentContent } from '@components/comments/CommentContent';
 import type { CommentWithOptimistic } from '@components/comments/types';
 import { GiftMedia } from '@components/gifts/GiftMedia';
 import { GiftOverlayEffect } from '@components/gifts/GiftOverlayEffect';
+import { UserAvatar } from '@components/UserAvatar';
 import { useReactionPulse } from '@hooks/useReactionPulse';
 import { useTheme, type Theme } from '@theme';
-import type { GiftPreview } from '@utils/gifts';
 import type { GiftCardEffects } from '@utils/giftEffects';
+import type { GiftPreview } from '@utils/gifts';
 
 type Props = {
   comment: CommentWithOptimistic;
@@ -135,11 +135,7 @@ function CommentItemComponent({
             disabled={!onGiftPress}
           >
             <Animated.View style={giftPulse.animatedStyle}>
-              <Ionicons
-                name="gift-outline"
-                size={14}
-                color={theme.reels.textSecondary}
-              />
+              <Ionicons name="gift-outline" size={14} color={theme.reels.textSecondary} />
             </Animated.View>
             <Animated.Text style={[styles.actionText, giftPulse.animatedStyle]}>
               {giftCount > 0 ? giftCount : ''}
@@ -156,76 +152,76 @@ export const CommentItem = memo(CommentItemComponent);
 
 const createStyles = (theme: Theme) =>
   StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    gap: 10,
-    paddingVertical: 10,
-    position: 'relative',
-  },
-  rowOptimistic: {
-    opacity: 0.6,
-  },
-  body: {
-    flex: 1,
-    gap: 6,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 8,
-    alignItems: 'center',
-  },
-  badge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 999,
-    backgroundColor: 'rgba(56,189,248,0.16)',
-    borderWidth: 1,
-    borderColor: 'rgba(56,189,248,0.4)',
-    marginLeft: 6,
-    maxWidth: 120,
-  },
-  badgeText: {
-    fontSize: 10,
-    color: theme.reels.textPrimary,
-    fontWeight: '700',
-  },
-  author: {
-    color: theme.reels.textPrimary,
-    fontWeight: '700',
-    flexShrink: 1,
-  },
-  meta: {
-    color: theme.reels.textSecondary,
-    fontSize: 12,
-  },
-  actions: {
-    flexDirection: 'row',
-    gap: 16,
-    alignItems: 'center',
-    marginTop: 6,
-  },
-  giftPreviewRow: {
-    flexDirection: 'row',
-    gap: 6,
-    alignItems: 'center',
-    flexWrap: 'wrap',
-  },
-  giftPreviewItem: {
-    padding: 3,
-    borderRadius: 10,
-  },
-  actionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  actionText: {
-    color: theme.reels.textSecondary,
-    fontSize: 12,
-  },
-  syncText: {
-    color: theme.reels.textSecondary,
-    fontSize: 10,
-  },
+    row: {
+      flexDirection: 'row',
+      gap: 10,
+      paddingVertical: 10,
+      position: 'relative',
+    },
+    rowOptimistic: {
+      opacity: 0.6,
+    },
+    body: {
+      flex: 1,
+      gap: 6,
+    },
+    header: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      gap: 8,
+      alignItems: 'center',
+    },
+    badge: {
+      paddingHorizontal: 8,
+      paddingVertical: 2,
+      borderRadius: 999,
+      backgroundColor: 'rgba(56,189,248,0.16)',
+      borderWidth: 1,
+      borderColor: 'rgba(56,189,248,0.4)',
+      marginLeft: 6,
+      maxWidth: 120,
+    },
+    badgeText: {
+      fontSize: 10,
+      color: theme.reels.textPrimary,
+      fontWeight: '700',
+    },
+    author: {
+      color: theme.reels.textPrimary,
+      fontWeight: '700',
+      flexShrink: 1,
+    },
+    meta: {
+      color: theme.reels.textSecondary,
+      fontSize: 12,
+    },
+    actions: {
+      flexDirection: 'row',
+      gap: 16,
+      alignItems: 'center',
+      marginTop: 6,
+    },
+    giftPreviewRow: {
+      flexDirection: 'row',
+      gap: 6,
+      alignItems: 'center',
+      flexWrap: 'wrap',
+    },
+    giftPreviewItem: {
+      padding: 3,
+      borderRadius: 10,
+    },
+    actionButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+    },
+    actionText: {
+      color: theme.reels.textSecondary,
+      fontSize: 12,
+    },
+    syncText: {
+      color: theme.reels.textSecondary,
+      fontSize: 10,
+    },
   });

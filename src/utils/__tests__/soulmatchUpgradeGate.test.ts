@@ -26,9 +26,13 @@ describe('soulmatchUpgradeGate', () => {
   });
 
   it('gates recommendation index for free tier', () => {
-    expect(shouldGateRecommendationIndex(FREE_RECOMMENDATION_LIMIT - 1, 'free')).toBe(false);
+    expect(shouldGateRecommendationIndex(FREE_RECOMMENDATION_LIMIT - 1, 'free')).toBe(
+      false,
+    );
     expect(shouldGateRecommendationIndex(FREE_RECOMMENDATION_LIMIT, 'free')).toBe(true);
-    expect(shouldGateRecommendationIndex(FREE_RECOMMENDATION_LIMIT, 'premium')).toBe(false);
+    expect(shouldGateRecommendationIndex(FREE_RECOMMENDATION_LIMIT, 'premium')).toBe(
+      false,
+    );
   });
 
   it('locks sections by tier', () => {

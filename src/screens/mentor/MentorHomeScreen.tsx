@@ -1,7 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { ScrollView, StyleSheet, Text } from 'react-native';
 import { useMemo } from 'react';
+import { ScrollView, StyleSheet, Text } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { MetalButton } from '@components/MetalButton';
@@ -76,31 +76,31 @@ export function MentorHomeScreen() {
 
 const createStyles = (theme: Theme) =>
   StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: theme.palette.midnight,
-  },
-  container: {
-    backgroundColor: theme.palette.midnight,
-    padding: theme.spacing.lg,
-    gap: theme.spacing.md,
-  },
-  title: {
-    color: theme.palette.platinum,
-    ...theme.typography.headingL,
-  },
-  subtitle: {
-    color: theme.palette.silver,
-    ...theme.typography.body,
-  },
-  cardTitle: {
-    color: theme.palette.titanium,
-    ...theme.typography.subtitle,
-    marginBottom: theme.spacing.xs,
-  },
-  cardText: {
-    color: theme.palette.silver,
-    ...theme.typography.body,
-    marginBottom: theme.spacing.sm,
-  },
-});
+    safeArea: {
+      flex: 1,
+      backgroundColor: theme.palette.midnight,
+    },
+    container: {
+      backgroundColor: theme.palette.midnight,
+      padding: theme.spacing.lg,
+      gap: theme.spacing.md,
+    },
+    title: {
+      color: theme.palette.platinum,
+      ...theme.typography.headingL,
+    },
+    subtitle: {
+      color: theme.palette.silver,
+      ...theme.typography.body,
+    },
+    cardTitle: {
+      color: theme.palette.titanium,
+      ...theme.typography.subtitle,
+      marginBottom: theme.spacing.xs,
+    },
+    cardText: {
+      color: theme.palette.silver,
+      ...theme.typography.body,
+      marginBottom: theme.spacing.sm,
+    },
+  });

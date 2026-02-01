@@ -44,35 +44,21 @@ const normalizeLikeError = (
 export const normalizeLikesApiError = normalizeLikeError;
 
 export async function likePost(postId: string | number): Promise<LikeResponse> {
-  const { data } = await apiClient.post<LikeResponse>(
-    `/posts/${postId}/like/`,
-    {},
-  );
+  const { data } = await apiClient.post<LikeResponse>(`/posts/${postId}/like/`, {});
   return data;
 }
 
 export async function unlikePost(postId: string | number): Promise<LikeResponse> {
-  const { data } = await apiClient.delete<LikeResponse>(
-    `/posts/${postId}/unlike/`,
-  );
+  const { data } = await apiClient.delete<LikeResponse>(`/posts/${postId}/unlike/`);
   return data;
 }
 
-export async function likeComment(
-  commentId: string | number,
-): Promise<LikeResponse> {
-  const { data } = await apiClient.post<LikeResponse>(
-    `/comments/${commentId}/like/`,
-    {},
-  );
+export async function likeComment(commentId: string | number): Promise<LikeResponse> {
+  const { data } = await apiClient.post<LikeResponse>(`/comments/${commentId}/like/`, {});
   return data;
 }
 
-export async function unlikeComment(
-  commentId: string | number,
-): Promise<LikeResponse> {
-  const { data } = await apiClient.delete<LikeResponse>(
-    `/comments/${commentId}/unlike/`,
-  );
+export async function unlikeComment(commentId: string | number): Promise<LikeResponse> {
+  const { data } = await apiClient.delete<LikeResponse>(`/comments/${commentId}/unlike/`);
   return data;
 }

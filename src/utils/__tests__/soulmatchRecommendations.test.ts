@@ -1,4 +1,7 @@
-import { normalizeSoulmatchRecommendations, normalizeSoulmatchRecsResponse } from '@utils/soulmatchRecommendations';
+import {
+  normalizeSoulmatchRecommendations,
+  normalizeSoulmatchRecsResponse,
+} from '@utils/soulmatchRecommendations';
 
 describe('normalizeSoulmatchRecommendations', () => {
   it('filters entries without user or score', () => {
@@ -64,9 +67,7 @@ describe('normalizeSoulmatchRecommendations', () => {
 
 describe('normalizeSoulmatchRecsResponse', () => {
   it('handles array payloads', () => {
-    const payload = [
-      { user: { id: 1, name: 'A', handle: 'a', photo: '' }, score: 70 },
-    ];
+    const payload = [{ user: { id: 1, name: 'A', handle: 'a', photo: '' }, score: 70 }];
     const normalized = normalizeSoulmatchRecsResponse(payload as any);
     expect(normalized.results).toHaveLength(1);
   });

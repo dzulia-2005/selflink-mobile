@@ -15,6 +15,7 @@ import { MetalButton } from '@components/MetalButton';
 import { MetalPanel } from '@components/MetalPanel';
 import { BadgePill } from '@components/soulmatch/BadgePill';
 import { CompatibilityBar } from '@components/soulmatch/CompatibilityBar';
+import { SoulMatchUpgradeSheet } from '@components/soulmatch/SoulMatchUpgradeSheet';
 import { LoadingView } from '@components/StateViews';
 import { UserAvatar } from '@components/UserAvatar';
 import { useToast } from '@context/ToastContext';
@@ -25,7 +26,6 @@ import { useAuthStore } from '@store/authStore';
 import { useTheme, type Theme } from '@theme';
 import { normalizeApiError } from '@utils/apiErrors';
 import { buildBadges, formatScore, scoreTone } from '@utils/soulmatch';
-import { SoulMatchUpgradeSheet } from '@components/soulmatch/SoulMatchUpgradeSheet';
 import { isSectionLocked, type SoulmatchTier } from '@utils/soulmatchUpgradeGate';
 
 type Route = RouteProp<SoulMatchStackParamList, 'SoulMatchDetail'>;
@@ -49,7 +49,9 @@ export function SoulMatchDetailsScreen({
   const logout = useAuthStore((state) => state.logout);
   const userTier: SoulmatchTier = 'free';
   const [upgradeVisible, setUpgradeVisible] = useState(false);
-  const [requestedTier, setRequestedTier] = useState<'premium' | 'premium_plus'>('premium');
+  const [requestedTier, setRequestedTier] = useState<'premium' | 'premium_plus'>(
+    'premium',
+  );
   const [data, setData] = useState<SoulmatchResult | null>(prefetchedData);
   const [loading, setLoading] = useState(!prefetchedData);
   const [mentorText, setMentorText] = useState<string | null>(null);
@@ -134,7 +136,10 @@ export function SoulMatchDetailsScreen({
           : result,
       );
     } catch (error) {
-      const normalized = normalizeApiError(error, 'Mentor is unavailable. Try again later.');
+      const normalized = normalizeApiError(
+        error,
+        'Mentor is unavailable. Try again later.',
+      );
       if (normalized.status === 401 || normalized.status === 403) {
         toast.push({ message: normalized.message, tone: 'error' });
         logout();
@@ -244,7 +249,11 @@ export function SoulMatchDetailsScreen({
             <Text style={styles.body}>{data.explanation.short}</Text>
           ) : null}
           {showFull ? (
-            <ExpandableSection title="More" text={data.explanation?.full} styles={styles} />
+            <ExpandableSection
+              title="More"
+              text={data.explanation?.full}
+              styles={styles}
+            />
           ) : lockedFull ? (
             <TouchableOpacity
               onPress={() => {
@@ -280,7 +289,9 @@ export function SoulMatchDetailsScreen({
           {timingSummary ? <Text style={styles.body}>{timingSummary}</Text> : null}
           {!isSectionLocked('timing', userTier) ? (
             <>
-              {timingWindow ? <Text style={styles.timingLabel}>{timingWindow}</Text> : null}
+              {timingWindow ? (
+                <Text style={styles.timingLabel}>{timingWindow}</Text>
+              ) : null}
               {trend ? <Text style={styles.timingLabel}>{trend}</Text> : null}
             </>
           ) : timingWindow || trend ? (
@@ -374,140 +385,140 @@ function ExpandableSection({
 
 const createStyles = (theme: Theme) =>
   StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: theme.palette.midnight,
-  },
-  content: {
-    padding: theme.spacing.lg,
-    gap: theme.spacing.lg,
-  },
-  headline: {
-    color: theme.palette.platinum,
-    ...theme.typography.headingL,
-  },
-  subtitle: {
-    color: theme.palette.silver,
-    ...theme.typography.body,
-  },
-  headerBlock: {
-    alignItems: 'center',
-    gap: theme.spacing.sm,
-  },
-  heroPanel: {
-    width: '100%',
-    borderColor: theme.palette.glow,
-    borderWidth: 1,
-  },
-  heroScoreRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: theme.spacing.sm,
-  },
-  heroBar: {
-    gap: theme.spacing.xs,
-  },
-  scoreValue: {
-    color: theme.palette.platinum,
-    fontSize: 32,
-    fontWeight: '800',
-  },
-  scoreLabel: {
-    color: theme.palette.silver,
-    ...theme.typography.caption,
-  },
-  components: {
-    gap: theme.spacing.sm,
-  },
-  componentRow: {
-    gap: 4,
-    marginBottom: theme.spacing.sm,
-  },
-  componentHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  componentLabel: {
-    color: theme.palette.platinum,
-    textTransform: 'capitalize',
-    ...theme.typography.caption,
-  },
-  componentValue: {
-    color: theme.palette.silver,
-    ...theme.typography.caption,
-  },
-  tagRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: theme.spacing.xs,
-    marginTop: theme.spacing.sm,
-  },
-  tag: {
-    backgroundColor: theme.palette.titanium,
-    paddingHorizontal: theme.spacing.sm,
-    paddingVertical: theme.spacing.xs,
-    borderRadius: theme.radii.pill,
-  },
-  tagText: {
-    color: theme.palette.pearl,
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  sectionTitle: {
-    color: theme.palette.titanium,
-    ...theme.typography.subtitle,
-    marginBottom: theme.spacing.sm,
-  },
-  body: {
-    color: theme.palette.pearl,
-    ...theme.typography.body,
-  },
-  timingLabel: {
-    color: theme.palette.silver,
-    ...theme.typography.caption,
-    marginTop: theme.spacing.xs,
-  },
-  unlockText: {
-    marginTop: theme.spacing.xs,
-    color: theme.palette.glow,
-    ...theme.typography.caption,
-  },
-  expandSection: {
-    marginTop: theme.spacing.sm,
-  },
-  expandHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  expandTitle: {
-    color: theme.palette.silver,
-    ...theme.typography.caption,
-  },
-  expandToggle: {
-    color: theme.palette.glow,
-    ...theme.typography.caption,
-  },
-  mentorText: {
-    color: theme.palette.platinum,
-    ...theme.typography.body,
-  },
-  empty: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: theme.spacing.lg,
-    gap: theme.spacing.md,
-    backgroundColor: theme.palette.midnight,
-  },
-  emptyTitle: {
-    color: theme.palette.platinum,
-    ...theme.typography.subtitle,
-  },
-  emptySubtitle: {
-    color: theme.palette.silver,
-    ...theme.typography.body,
-    textAlign: 'center',
-  },
+    container: {
+      flex: 1,
+      backgroundColor: theme.palette.midnight,
+    },
+    content: {
+      padding: theme.spacing.lg,
+      gap: theme.spacing.lg,
+    },
+    headline: {
+      color: theme.palette.platinum,
+      ...theme.typography.headingL,
+    },
+    subtitle: {
+      color: theme.palette.silver,
+      ...theme.typography.body,
+    },
+    headerBlock: {
+      alignItems: 'center',
+      gap: theme.spacing.sm,
+    },
+    heroPanel: {
+      width: '100%',
+      borderColor: theme.palette.glow,
+      borderWidth: 1,
+    },
+    heroScoreRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: theme.spacing.sm,
+    },
+    heroBar: {
+      gap: theme.spacing.xs,
+    },
+    scoreValue: {
+      color: theme.palette.platinum,
+      fontSize: 32,
+      fontWeight: '800',
+    },
+    scoreLabel: {
+      color: theme.palette.silver,
+      ...theme.typography.caption,
+    },
+    components: {
+      gap: theme.spacing.sm,
+    },
+    componentRow: {
+      gap: 4,
+      marginBottom: theme.spacing.sm,
+    },
+    componentHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    componentLabel: {
+      color: theme.palette.platinum,
+      textTransform: 'capitalize',
+      ...theme.typography.caption,
+    },
+    componentValue: {
+      color: theme.palette.silver,
+      ...theme.typography.caption,
+    },
+    tagRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: theme.spacing.xs,
+      marginTop: theme.spacing.sm,
+    },
+    tag: {
+      backgroundColor: theme.palette.titanium,
+      paddingHorizontal: theme.spacing.sm,
+      paddingVertical: theme.spacing.xs,
+      borderRadius: theme.radii.pill,
+    },
+    tagText: {
+      color: theme.palette.pearl,
+      fontSize: 12,
+      fontWeight: '600',
+    },
+    sectionTitle: {
+      color: theme.palette.titanium,
+      ...theme.typography.subtitle,
+      marginBottom: theme.spacing.sm,
+    },
+    body: {
+      color: theme.palette.pearl,
+      ...theme.typography.body,
+    },
+    timingLabel: {
+      color: theme.palette.silver,
+      ...theme.typography.caption,
+      marginTop: theme.spacing.xs,
+    },
+    unlockText: {
+      marginTop: theme.spacing.xs,
+      color: theme.palette.glow,
+      ...theme.typography.caption,
+    },
+    expandSection: {
+      marginTop: theme.spacing.sm,
+    },
+    expandHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+    },
+    expandTitle: {
+      color: theme.palette.silver,
+      ...theme.typography.caption,
+    },
+    expandToggle: {
+      color: theme.palette.glow,
+      ...theme.typography.caption,
+    },
+    mentorText: {
+      color: theme.palette.platinum,
+      ...theme.typography.body,
+    },
+    empty: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: theme.spacing.lg,
+      gap: theme.spacing.md,
+      backgroundColor: theme.palette.midnight,
+    },
+    emptyTitle: {
+      color: theme.palette.platinum,
+      ...theme.typography.subtitle,
+    },
+    emptySubtitle: {
+      color: theme.palette.silver,
+      ...theme.typography.body,
+      textAlign: 'center',
+    },
   });

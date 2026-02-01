@@ -37,11 +37,7 @@ function CommentComposerComponent({
   const canSend = Boolean(value.trim()) && !disabled && !pending;
   return (
     <View style={styles.container}>
-      <UserAvatar
-        uri={avatarUrl ?? undefined}
-        label={avatarLabel || 'You'}
-        size={32}
-      />
+      <UserAvatar uri={avatarUrl ?? undefined} label={avatarLabel || 'You'} size={32} />
       <View style={styles.inputWrap}>
         <TextInput
           value={value}
@@ -73,40 +69,40 @@ export const CommentComposer = memo(CommentComposerComponent);
 
 const createStyles = (theme: Theme) =>
   StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    gap: 10,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(148,163,184,0.3)',
-    paddingTop: 10,
-    paddingBottom: 6,
-  },
-  inputWrap: {
-    flex: 1,
-  },
-  input: {
-    minHeight: 44,
-    maxHeight: 140,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(148,163,184,0.35)',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    color: theme.reels.textPrimary,
-    backgroundColor: 'rgba(15,23,42,0.65)',
-  },
-  sendButton: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 12,
-    backgroundColor: theme.feed.accentBlue,
-  },
-  sendButtonDisabled: {
-    opacity: 0.6,
-  },
-  sendLabel: {
-    color: '#0B1120',
-    fontWeight: '800',
-  },
+    container: {
+      flexDirection: 'row',
+      alignItems: 'flex-end',
+      gap: 10,
+      borderTopWidth: 1,
+      borderTopColor: 'rgba(148,163,184,0.3)',
+      paddingTop: 10,
+      paddingBottom: 6,
+    },
+    inputWrap: {
+      flex: 1,
+    },
+    input: {
+      minHeight: 44,
+      maxHeight: 140,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: 'rgba(148,163,184,0.35)',
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      color: theme.reels.textPrimary,
+      backgroundColor: 'rgba(15,23,42,0.65)',
+    },
+    sendButton: {
+      paddingHorizontal: 14,
+      paddingVertical: 8,
+      borderRadius: 12,
+      backgroundColor: theme.feed.accentBlue,
+    },
+    sendButtonDisabled: {
+      opacity: 0.6,
+    },
+    sendLabel: {
+      color: '#0B1120',
+      fontWeight: '800',
+    },
   });

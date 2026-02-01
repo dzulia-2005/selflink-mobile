@@ -234,96 +234,96 @@ export function SoulMatchMentorScreen() {
 
 const createStyles = (theme: Theme) =>
   StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: theme.palette.midnight,
-  },
-  content: {
-    padding: theme.spacing.lg,
-    gap: theme.spacing.lg,
-  },
-  headline: {
-    color: theme.palette.platinum,
-    ...theme.typography.headingL,
-  },
-  subtitle: {
-    color: theme.palette.silver,
-    ...theme.typography.body,
-  },
-  fieldLabel: {
-    color: theme.palette.platinum,
-    ...theme.typography.subtitle,
-    marginBottom: theme.spacing.sm,
-  },
-  input: {
-    minHeight: 100,
-    maxHeight: 200,
-    borderRadius: theme.radii.md,
-    backgroundColor: 'rgba(148, 163, 184, 0.12)',
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: theme.palette.titanium,
-    padding: theme.spacing.md,
-    color: theme.palette.platinum,
-    ...theme.typography.body,
-    marginBottom: theme.spacing.md,
-  },
-  submitButton: {
-    backgroundColor: theme.palette.glow,
-    paddingVertical: theme.spacing.md,
-    borderRadius: theme.radii.full,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  submitButtonDisabled: {
-    opacity: 0.6,
-  },
-  submitText: {
-    color: theme.palette.pearl,
-    fontWeight: '700',
-    fontSize: 16,
-  },
-  streamingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.sm,
-    marginTop: theme.spacing.sm,
-  },
-  scoreBlock: {
-    alignItems: 'flex-start',
-    gap: theme.spacing.xs,
-  },
-  scoreValue: {
-    color: theme.palette.platinum,
-    fontSize: 32,
-    fontWeight: '800',
-  },
-  scoreLabel: {
-    color: theme.palette.silver,
-    ...theme.typography.caption,
-  },
-  tagRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: theme.spacing.xs,
-    marginTop: theme.spacing.sm,
-  },
-  tag: {
-    backgroundColor: theme.palette.titanium,
-    paddingHorizontal: theme.spacing.sm,
-    paddingVertical: theme.spacing.xs,
-    borderRadius: theme.radii.pill,
-  },
-  tagText: {
-    color: theme.palette.pearl,
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  body: {
-    color: theme.palette.platinum,
-    ...theme.typography.body,
-  },
-  centered: {
-    alignItems: 'center',
-    gap: theme.spacing.sm,
-  },
+    container: {
+      flex: 1,
+      backgroundColor: theme.palette.midnight,
+    },
+    content: {
+      padding: theme.spacing.lg,
+      gap: theme.spacing.lg,
+    },
+    headline: {
+      color: theme.palette.platinum,
+      ...theme.typography.headingL,
+    },
+    subtitle: {
+      color: theme.palette.silver,
+      ...theme.typography.body,
+    },
+    fieldLabel: {
+      color: theme.palette.platinum,
+      ...theme.typography.subtitle,
+      marginBottom: theme.spacing.sm,
+    },
+    input: {
+      minHeight: 100,
+      maxHeight: 200,
+      borderRadius: theme.radii.md,
+      backgroundColor: 'rgba(148, 163, 184, 0.12)',
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.palette.titanium,
+      padding: theme.spacing.md,
+      color: theme.palette.platinum,
+      ...theme.typography.body,
+      marginBottom: theme.spacing.md,
+    },
+    submitButton: {
+      backgroundColor: theme.palette.glow,
+      paddingVertical: theme.spacing.md,
+      borderRadius: theme.radii.full,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    submitButtonDisabled: {
+      opacity: 0.6,
+    },
+    submitText: {
+      color: theme.palette.pearl,
+      fontWeight: '700',
+      fontSize: 16,
+    },
+    streamingRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.sm,
+      marginTop: theme.spacing.sm,
+    },
+    scoreBlock: {
+      alignItems: 'flex-start',
+      gap: theme.spacing.xs,
+    },
+    scoreValue: {
+      color: theme.palette.platinum,
+      fontSize: 32,
+      fontWeight: '800',
+    },
+    scoreLabel: {
+      color: theme.palette.silver,
+      ...theme.typography.caption,
+    },
+    tagRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: theme.spacing.xs,
+      marginTop: theme.spacing.sm,
+    },
+    tag: {
+      backgroundColor: theme.palette.titanium,
+      paddingHorizontal: theme.spacing.sm,
+      paddingVertical: theme.spacing.xs,
+      borderRadius: theme.radii.pill,
+    },
+    tagText: {
+      color: theme.palette.pearl,
+      fontSize: 12,
+      fontWeight: '600',
+    },
+    body: {
+      color: theme.palette.platinum,
+      ...theme.typography.body,
+    },
+    centered: {
+      alignItems: 'center',
+      gap: theme.spacing.sm,
+    },
   });

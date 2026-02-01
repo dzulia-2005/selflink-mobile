@@ -114,7 +114,6 @@ export function CoreIdentityCard({
   placements: { label: string; placement?: PlanetPosition }[];
   formatPlacement: (placement?: PlanetPosition) => string;
 }) {
-  const styles = useNatalStyles();
   return (
     <SectionPanel
       title="Core Identity"
@@ -133,7 +132,6 @@ export function CoreIdentityCard({
 }
 
 export function KeyAnglesCard({ houses, formatPlacement }: AnglesCardProps) {
-  const styles = useNatalStyles();
   const angleLabels: { key: string; label: string }[] = [
     { key: '1', label: 'Ascendant' },
     { key: '7', label: 'Descendant' },
@@ -164,7 +162,6 @@ export function PlanetsCard({
   getHouseLabel,
   retrogradeTag,
 }: PlanetsCardProps) {
-  const styles = useNatalStyles();
   return (
     <SectionPanel
       title="Planets"
@@ -189,7 +186,6 @@ export function PlanetsCard({
 }
 
 export function HousesCard({ houses, formatPlacement }: HousesCardProps) {
-  const styles = useNatalStyles();
   const sorted = Object.keys(houses).sort((a, b) => Number(a) - Number(b));
   return (
     <SectionPanel
@@ -297,7 +293,6 @@ export function SelectedPlanetCard({
   formatPlacement,
   retrogradeTag,
 }: SelectedPlanetProps) {
-  const styles = useNatalStyles();
   if (!planetKey || !placement) {
     return null;
   }
@@ -318,105 +313,105 @@ export function SelectedPlanetCard({
 
 const createStyles = (theme: Theme) =>
   StyleSheet.create({
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    gap: theme.spacing.sm,
-  },
-  sectionHeaderText: {
-    flex: 1,
-    gap: theme.spacing.xs,
-  },
-  sectionBody: {
-    marginTop: theme.spacing.sm,
-    gap: theme.spacing.xs,
-  },
-  sectionTitle: {
-    color: theme.palette.platinum,
-    ...theme.typography.headingM,
-  },
-  sectionDescription: {
-    color: theme.palette.silver,
-    ...theme.typography.caption,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: theme.spacing.xs,
-  },
-  rowLabelBlock: {
-    flexShrink: 1,
-    gap: 2,
-  },
-  rowLabel: {
-    color: theme.palette.platinum,
-    ...theme.typography.body,
-  },
-  rowDetail: {
-    color: theme.palette.silver,
-    ...theme.typography.caption,
-  },
-  rowValueBlock: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.xs,
-  },
-  rowValue: {
-    color: theme.palette.pearl,
-    ...theme.typography.body,
-  },
-  tag: {
-    paddingHorizontal: theme.spacing.sm,
-    paddingVertical: 2,
-    borderRadius: theme.radius.pill,
-    backgroundColor: theme.palette.titanium,
-    color: theme.palette.platinum,
-    ...theme.typography.caption,
-  },
-  muted: {
-    color: theme.palette.silver,
-    ...theme.typography.body,
-  },
-  aspectRow: {
-    paddingVertical: theme.spacing.xs,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: theme.palette.titanium,
-  },
-  elementRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.sm,
-    paddingVertical: theme.spacing.xs,
-  },
-  barTrack: {
-    flex: 1,
-    height: 8,
-    backgroundColor: theme.palette.titanium,
-    borderRadius: theme.radius.pill,
-    overflow: 'hidden',
-  },
-  barFill: {
-    height: '100%',
-    borderRadius: theme.radius.pill,
-  },
-  legendGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: theme.spacing.md,
-  },
-  legendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.xs,
-    minWidth: '40%',
-  },
-  legendDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-  },
+    sectionHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      gap: theme.spacing.sm,
+    },
+    sectionHeaderText: {
+      flex: 1,
+      gap: theme.spacing.xs,
+    },
+    sectionBody: {
+      marginTop: theme.spacing.sm,
+      gap: theme.spacing.xs,
+    },
+    sectionTitle: {
+      color: theme.palette.platinum,
+      ...theme.typography.headingM,
+    },
+    sectionDescription: {
+      color: theme.palette.silver,
+      ...theme.typography.caption,
+    },
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingVertical: theme.spacing.xs,
+    },
+    rowLabelBlock: {
+      flexShrink: 1,
+      gap: 2,
+    },
+    rowLabel: {
+      color: theme.palette.platinum,
+      ...theme.typography.body,
+    },
+    rowDetail: {
+      color: theme.palette.silver,
+      ...theme.typography.caption,
+    },
+    rowValueBlock: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.xs,
+    },
+    rowValue: {
+      color: theme.palette.pearl,
+      ...theme.typography.body,
+    },
+    tag: {
+      paddingHorizontal: theme.spacing.sm,
+      paddingVertical: 2,
+      borderRadius: theme.radius.pill,
+      backgroundColor: theme.palette.titanium,
+      color: theme.palette.platinum,
+      ...theme.typography.caption,
+    },
+    muted: {
+      color: theme.palette.silver,
+      ...theme.typography.body,
+    },
+    aspectRow: {
+      paddingVertical: theme.spacing.xs,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: theme.palette.titanium,
+    },
+    elementRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.sm,
+      paddingVertical: theme.spacing.xs,
+    },
+    barTrack: {
+      flex: 1,
+      height: 8,
+      backgroundColor: theme.palette.titanium,
+      borderRadius: theme.radius.pill,
+      overflow: 'hidden',
+    },
+    barFill: {
+      height: '100%',
+      borderRadius: theme.radius.pill,
+    },
+    legendGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: theme.spacing.md,
+    },
+    legendItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.xs,
+      minWidth: '40%',
+    },
+    legendDot: {
+      width: 12,
+      height: 12,
+      borderRadius: 6,
+    },
   });
 
 function useNatalStyles() {

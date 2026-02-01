@@ -50,25 +50,25 @@ export function CompatibilityBar({ value, label, size = 'md' }: Props) {
 
 const createStyles = (theme: Theme) =>
   StyleSheet.create({
-  wrapper: {
-    gap: theme.spacing.xs,
-    flex: 1,
-  },
-  label: {
-    color: theme.palette.platinum,
-    ...theme.typography.caption,
-  },
-  track: {
-    width: '100%',
-    backgroundColor: theme.palette.titanium,
-    borderRadius: theme.radius.pill,
-    overflow: 'hidden',
-  },
-  fillWrapper: {
-    height: '100%',
-  },
-  fill: {
-    height: '100%',
-    borderRadius: theme.radius.pill,
-  },
+    wrapper: {
+      gap: theme.spacing.xs,
+      flex: 1,
+    },
+    label: {
+      color: theme.palette.platinum,
+      ...theme.typography.caption,
+    },
+    track: {
+      width: '100%',
+      backgroundColor: theme.palette.titanium,
+      borderRadius: theme.radius.pill,
+      overflow: 'hidden',
+    },
+    fillWrapper: {
+      height: '100%',
+    },
+    fill: {
+      height: '100%',
+      borderRadius: theme.radius.pill,
+    },
   });

@@ -102,7 +102,7 @@ export function ProfileScreen() {
     return () => {
       isMounted = false;
     };
-  }, [currentUser?.id]);
+  }, [currentUser, currentUser?.id]);
 
   const handleCopyRecipientId = useCallback(async () => {
     if (!recipientId) {
@@ -201,11 +201,7 @@ export function ProfileScreen() {
                       selected && styles.appearanceLabelActive,
                     ]}
                   >
-                    {value === 'system'
-                      ? 'System'
-                      : value === 'light'
-                        ? 'Light'
-                        : 'Dark'}
+                    {value === 'system' ? 'System' : value === 'light' ? 'Light' : 'Dark'}
                   </Text>
                 </TouchableOpacity>
               );
@@ -214,7 +210,11 @@ export function ProfileScreen() {
           <Text style={styles.sectionTitle}>Personal map</Text>
           {hasCompletedPersonalMap && personalMap ? (
             <View style={styles.mapGrid}>
-              <InfoRow styles={styles} label="First name" value={personalMap.first_name} />
+              <InfoRow
+                styles={styles}
+                label="First name"
+                value={personalMap.first_name}
+              />
               <InfoRow styles={styles} label="Last name" value={personalMap.last_name} />
               <InfoRow
                 styles={styles}

@@ -268,6 +268,11 @@ jest.mock('expo-secure-store', () => ({
   deleteItemAsync: jest.fn(async () => undefined),
 }));
 
+jest.mock('expo-clipboard', () => ({
+  getStringAsync: jest.fn(async () => ''),
+  setStringAsync: jest.fn(async () => undefined),
+}));
+
 jest.mock('expo-haptics', () => ({
   ImpactFeedbackStyle: { Medium: 'Medium' },
   impactAsync: jest.fn(() => Promise.resolve()),
@@ -281,6 +286,20 @@ jest.mock('expo-linear-gradient', () => {
       const { children, ...rest } = props;
       return React.createElement(View, rest, children);
     },
+  };
+});
+
+jest.mock('@theme', () => {
+  const actual = jest.requireActual('@theme');
+  return {
+    ...actual,
+    ThemeProvider: ({ children }: { children: React.ReactNode }) => children,
+    useTheme: () => ({
+      theme: actual.themes.light,
+      mode: 'system',
+      resolved: 'light',
+      setMode: jest.fn(),
+    }),
   };
 });
 

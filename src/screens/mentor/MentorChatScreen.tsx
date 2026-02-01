@@ -26,8 +26,8 @@ import {
   type MentorHistoryMessage,
 } from '@services/api/mentorSessions';
 import { useAuthStore } from '@store/authStore';
-import { createChatTheme } from '@theme/chat';
 import { useTheme, type Theme } from '@theme';
+import { createChatTheme } from '@theme/chat';
 
 type ChatMessage = Omit<MentorHistoryMessage, 'id'> & { id: string };
 
@@ -397,7 +397,24 @@ export function MentorChatScreen() {
         </View>
       );
     },
-    [handleCopy, messages],
+    [
+      chatTheme.spacing.md,
+      chatTheme.spacing.xs,
+      handleCopy,
+      messages,
+      styles.bubble,
+      styles.mentorBubble,
+      styles.mentorShadow,
+      styles.messageRow,
+      styles.messageRowLeft,
+      styles.messageRowRight,
+      styles.sessionLabel,
+      styles.timestamp,
+      styles.timestampMentor,
+      styles.timestampUser,
+      styles.userBubble,
+      styles.userText,
+    ],
   );
 
   const footer = useMemo(() => {
@@ -436,6 +453,7 @@ export function MentorChatScreen() {
     );
   }, [
     awaitingReply,
+    chatTheme.bubble.mentor.text,
     handleLoadMore,
     handleResend,
     lastFailedMessage,
@@ -443,6 +461,22 @@ export function MentorChatScreen() {
     nextCursor,
     replyText,
     sendError,
+    styles.bubble,
+    styles.errorRow,
+    styles.errorText,
+    styles.footer,
+    styles.footerSpacer,
+    styles.loadMore,
+    styles.loadMoreText,
+    styles.mentorBubble,
+    styles.messageRow,
+    styles.messageRowLeft,
+    styles.resendButton,
+    styles.resendText,
+    styles.typingBubble,
+    styles.typingRow,
+    styles.typingText,
+    theme.palette.platinum,
   ]);
 
   return (
@@ -545,197 +579,197 @@ export function MentorChatScreen() {
 
 const createStyles = (theme: Theme, chatTheme: ReturnType<typeof createChatTheme>) =>
   StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: chatTheme.background,
-  },
-  gradient: {
-    flex: 1,
-  },
-  flex: {
-    flex: 1,
-  },
-  listContainer: {
-    flex: 1,
-  },
-  list: {
-    flex: 1,
-  },
-  loader: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  listContent: {
-    paddingHorizontal: theme.spacing.lg,
-    paddingBottom: 140,
-    paddingTop: theme.spacing.md - 4,
-  },
-  emptyContent: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: theme.spacing.lg,
-  },
-  messageRow: {
-    marginVertical: 0,
-  },
-  messageRowLeft: {
-    alignItems: 'flex-start',
-  },
-  messageRowRight: {
-    alignItems: 'flex-end',
-  },
-  bubble: {
-    maxWidth: chatTheme.bubble.maxWidth as `${number}%`,
-    paddingHorizontal: chatTheme.spacing.md,
-    paddingVertical: chatTheme.spacing.sm,
-    borderRadius: chatTheme.bubble.radius,
-    gap: 8,
-  },
-  userBubble: {
-    backgroundColor: chatTheme.bubble.user.background,
-    borderWidth: 1,
-    borderColor: chatTheme.bubble.user.border,
-    borderBottomRightRadius: chatTheme.bubble.radius / 2,
-    borderTopRightRadius: chatTheme.bubble.radius / 2,
-  },
-  mentorBubble: {
-    backgroundColor: chatTheme.bubble.mentor.background,
-    borderBottomLeftRadius: chatTheme.bubble.radius / 2,
-    borderTopLeftRadius: chatTheme.bubble.radius / 2,
-  },
-  mentorShadow: {
-    ...(chatTheme.bubble.mentor.shadow || {}),
-  },
-  userText: {
-    color: chatTheme.bubble.user.text,
-    ...chatTheme.typography.body,
-  },
-  mentorText: {
-    color: chatTheme.bubble.mentor.text,
-    ...chatTheme.typography.body,
-  },
-  timestamp: {
-    color: chatTheme.bubble.user.timestamp,
-    ...chatTheme.typography.timestamp,
-    marginTop: 4,
-    textAlign: 'right',
-  },
-  timestampUser: {
-    color: chatTheme.bubble.user.timestamp,
-  },
-  timestampMentor: {
-    color: chatTheme.bubble.mentor.timestamp,
-  },
-  sessionLabel: {
-    color: theme.palette.silver,
-    ...theme.typography.caption,
-    marginTop: theme.spacing.sm,
-    marginBottom: 2,
-  },
-  footer: {
-    paddingVertical: theme.spacing.sm,
-    gap: chatTheme.spacing.sm,
-  },
-  loadMore: {
-    alignSelf: 'center',
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
-    borderRadius: theme.radii.pill,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: theme.palette.steel,
-  },
-  loadMoreText: {
-    color: theme.palette.platinum,
-    ...theme.typography.caption,
-  },
-  footerSpacer: {
-    height: chatTheme.spacing.md,
-  },
-  typingRow: {
-    marginTop: chatTheme.spacing.sm,
-  },
-  typingBubble: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: chatTheme.spacing.sm,
-  },
-  typingText: {
-    color: chatTheme.bubble.mentor.text,
-    ...chatTheme.typography.body,
-  },
-  errorRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: chatTheme.spacing.sm,
-    paddingHorizontal: theme.spacing.lg,
-  },
-  errorText: {
-    color: theme.palette.ember,
-    ...theme.typography.caption,
-    flex: 1,
-  },
-  resendButton: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: theme.radii.pill,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: theme.palette.ember,
-  },
-  resendText: {
-    color: theme.palette.ember,
-    fontWeight: '700',
-    fontSize: 12,
-  },
-  emptyState: {
-    alignItems: 'center',
-    gap: theme.spacing.sm,
-  },
-  emptyTitle: {
-    color: theme.palette.platinum,
-    ...theme.typography.headingM,
-    textAlign: 'center',
-  },
-  emptySubtitle: {
-    color: theme.palette.silver,
-    ...theme.typography.body,
-    textAlign: 'center',
-  },
-  inputWrapper: {
-    paddingHorizontal: theme.spacing.lg,
-    paddingBottom: theme.spacing.md,
-  },
-  inputBar: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: chatTheme.input.border,
-    backgroundColor: chatTheme.input.background,
-    gap: theme.spacing.sm,
-    borderRadius: 18,
-    ...chatTheme.input.shadow,
-  },
-  input: {
-    flex: 1,
-    maxHeight: 160,
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
-    borderRadius: theme.radii.lg,
-    backgroundColor: chatTheme.input.background,
-    color: chatTheme.input.text,
-    ...chatTheme.typography.body,
-    textAlignVertical: 'top',
-  },
-  sendButton: {
-    padding: theme.spacing.sm,
-    borderRadius: theme.radii.full,
-    backgroundColor: theme.palette.glow,
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: 40,
-    height: 40,
-  },
-});
+    safeArea: {
+      flex: 1,
+      backgroundColor: chatTheme.background,
+    },
+    gradient: {
+      flex: 1,
+    },
+    flex: {
+      flex: 1,
+    },
+    listContainer: {
+      flex: 1,
+    },
+    list: {
+      flex: 1,
+    },
+    loader: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    listContent: {
+      paddingHorizontal: theme.spacing.lg,
+      paddingBottom: 140,
+      paddingTop: theme.spacing.md - 4,
+    },
+    emptyContent: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: theme.spacing.lg,
+    },
+    messageRow: {
+      marginVertical: 0,
+    },
+    messageRowLeft: {
+      alignItems: 'flex-start',
+    },
+    messageRowRight: {
+      alignItems: 'flex-end',
+    },
+    bubble: {
+      maxWidth: chatTheme.bubble.maxWidth as `${number}%`,
+      paddingHorizontal: chatTheme.spacing.md,
+      paddingVertical: chatTheme.spacing.sm,
+      borderRadius: chatTheme.bubble.radius,
+      gap: 8,
+    },
+    userBubble: {
+      backgroundColor: chatTheme.bubble.user.background,
+      borderWidth: 1,
+      borderColor: chatTheme.bubble.user.border,
+      borderBottomRightRadius: chatTheme.bubble.radius / 2,
+      borderTopRightRadius: chatTheme.bubble.radius / 2,
+    },
+    mentorBubble: {
+      backgroundColor: chatTheme.bubble.mentor.background,
+      borderBottomLeftRadius: chatTheme.bubble.radius / 2,
+      borderTopLeftRadius: chatTheme.bubble.radius / 2,
+    },
+    mentorShadow: {
+      ...(chatTheme.bubble.mentor.shadow || {}),
+    },
+    userText: {
+      color: chatTheme.bubble.user.text,
+      ...chatTheme.typography.body,
+    },
+    mentorText: {
+      color: chatTheme.bubble.mentor.text,
+      ...chatTheme.typography.body,
+    },
+    timestamp: {
+      color: chatTheme.bubble.user.timestamp,
+      ...chatTheme.typography.timestamp,
+      marginTop: 4,
+      textAlign: 'right',
+    },
+    timestampUser: {
+      color: chatTheme.bubble.user.timestamp,
+    },
+    timestampMentor: {
+      color: chatTheme.bubble.mentor.timestamp,
+    },
+    sessionLabel: {
+      color: theme.palette.silver,
+      ...theme.typography.caption,
+      marginTop: theme.spacing.sm,
+      marginBottom: 2,
+    },
+    footer: {
+      paddingVertical: theme.spacing.sm,
+      gap: chatTheme.spacing.sm,
+    },
+    loadMore: {
+      alignSelf: 'center',
+      paddingHorizontal: theme.spacing.md,
+      paddingVertical: theme.spacing.sm,
+      borderRadius: theme.radii.pill,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.palette.steel,
+    },
+    loadMoreText: {
+      color: theme.palette.platinum,
+      ...theme.typography.caption,
+    },
+    footerSpacer: {
+      height: chatTheme.spacing.md,
+    },
+    typingRow: {
+      marginTop: chatTheme.spacing.sm,
+    },
+    typingBubble: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: chatTheme.spacing.sm,
+    },
+    typingText: {
+      color: chatTheme.bubble.mentor.text,
+      ...chatTheme.typography.body,
+    },
+    errorRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: chatTheme.spacing.sm,
+      paddingHorizontal: theme.spacing.lg,
+    },
+    errorText: {
+      color: theme.palette.ember,
+      ...theme.typography.caption,
+      flex: 1,
+    },
+    resendButton: {
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+      borderRadius: theme.radii.pill,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.palette.ember,
+    },
+    resendText: {
+      color: theme.palette.ember,
+      fontWeight: '700',
+      fontSize: 12,
+    },
+    emptyState: {
+      alignItems: 'center',
+      gap: theme.spacing.sm,
+    },
+    emptyTitle: {
+      color: theme.palette.platinum,
+      ...theme.typography.headingM,
+      textAlign: 'center',
+    },
+    emptySubtitle: {
+      color: theme.palette.silver,
+      ...theme.typography.body,
+      textAlign: 'center',
+    },
+    inputWrapper: {
+      paddingHorizontal: theme.spacing.lg,
+      paddingBottom: theme.spacing.md,
+    },
+    inputBar: {
+      flexDirection: 'row',
+      alignItems: 'flex-end',
+      paddingHorizontal: theme.spacing.md,
+      paddingVertical: theme.spacing.sm,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: chatTheme.input.border,
+      backgroundColor: chatTheme.input.background,
+      gap: theme.spacing.sm,
+      borderRadius: 18,
+      ...chatTheme.input.shadow,
+    },
+    input: {
+      flex: 1,
+      maxHeight: 160,
+      paddingHorizontal: theme.spacing.md,
+      paddingVertical: theme.spacing.sm,
+      borderRadius: theme.radii.lg,
+      backgroundColor: chatTheme.input.background,
+      color: chatTheme.input.text,
+      ...chatTheme.typography.body,
+      textAlignVertical: 'top',
+    },
+    sendButton: {
+      padding: theme.spacing.sm,
+      borderRadius: theme.radii.full,
+      backgroundColor: theme.palette.glow,
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: 40,
+      height: 40,
+    },
+  });

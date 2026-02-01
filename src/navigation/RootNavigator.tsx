@@ -1,7 +1,7 @@
 import { NavigationContainer, DarkTheme, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { ActivityIndicator, StyleSheet, View, Text } from 'react-native';
 import { useMemo } from 'react';
+import { ActivityIndicator, StyleSheet, View, Text } from 'react-native';
 
 import { useAuthHydration } from '@hooks/useAuthHydration';
 import { useMessagingSync } from '@hooks/useMessagingSync';

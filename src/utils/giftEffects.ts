@@ -1,5 +1,5 @@
-import { normalizeAssetUrl } from '@utils/urls';
 import { env } from '@config/env';
+import { normalizeAssetUrl } from '@utils/urls';
 
 type RawEffectsConfig = {
   version?: number;
@@ -82,8 +82,7 @@ export const parseGiftEffects = (raw: unknown): ParsedGiftEffects => {
   }
   const record = raw as RawEffectsConfig;
   const persist = record.persist ?? {};
-  const mode =
-    persist.mode === 'window' ? 'window' : 'none';
+  const mode = persist.mode === 'window' ? 'window' : 'none';
   const windowSeconds = toNumber(persist.window_seconds);
   return {
     version: typeof record.version === 'number' ? record.version : 2,
@@ -185,7 +184,10 @@ export const resolveActiveCardEffects = ({
       if (scope && targetType && scope !== targetType) {
         return;
       }
-      if (!effectType || !['border_glow','highlight','badge','overlay'].includes(effectType)) {
+      if (
+        !effectType ||
+        !['border_glow', 'highlight', 'badge', 'overlay'].includes(effectType)
+      ) {
         if (env.giftEffectsDebug) {
           console.log('giftEffects: ignoring unsupported effect', { type: effectType });
         }
@@ -195,7 +197,10 @@ export const resolveActiveCardEffects = ({
         case 'border_glow':
           borderGlow.push({
             type: 'border_glow',
-            color: typeof (effect as any).color === 'string' ? (effect as any).color : undefined,
+            color:
+              typeof (effect as any).color === 'string'
+                ? (effect as any).color
+                : undefined,
             thickness:
               toNumber((effect as any).thickness) ||
               (toNumber((effect as any).intensity) > 0
@@ -210,8 +215,12 @@ export const resolveActiveCardEffects = ({
         case 'highlight':
           highlights.push({
             type: 'highlight',
-            color: typeof (effect as any).color === 'string' ? (effect as any).color : undefined,
-            tone: typeof (effect as any).tone === 'string' ? (effect as any).tone : undefined,
+            color:
+              typeof (effect as any).color === 'string'
+                ? (effect as any).color
+                : undefined,
+            tone:
+              typeof (effect as any).tone === 'string' ? (effect as any).tone : undefined,
             priority,
             createdAt,
             expiresAt,
@@ -219,14 +228,17 @@ export const resolveActiveCardEffects = ({
           break;
         case 'badge': {
           const fallbackText =
-            typeof (giftType as any).name === 'string' ? (giftType as any).name : undefined;
+            typeof (giftType as any).name === 'string'
+              ? (giftType as any).name
+              : undefined;
           badges.push({
             type: 'badge',
             text:
               (typeof (effect as any).text === 'string' && (effect as any).text) ||
               (typeof (effect as any).label === 'string' && (effect as any).label) ||
               fallbackText,
-            tone: typeof (effect as any).tone === 'string' ? (effect as any).tone : undefined,
+            tone:
+              typeof (effect as any).tone === 'string' ? (effect as any).tone : undefined,
             priority,
             createdAt,
             expiresAt,
@@ -241,7 +253,10 @@ export const resolveActiveCardEffects = ({
             zIndex: toNumber((effect as any).z_index) || undefined,
             clipToBounds: Boolean((effect as any).clip_to_bounds),
             scale: toNumber((effect as any).scale) || undefined,
-            loop: (effect as any).loop !== undefined ? Boolean((effect as any).loop) : undefined,
+            loop:
+              (effect as any).loop !== undefined
+                ? Boolean((effect as any).loop)
+                : undefined,
             fit:
               (effect as any).fit === 'contain' || (effect as any).fit === 'cover'
                 ? (effect as any).fit
@@ -332,7 +347,8 @@ export const resolveEffectsFromGiftEvent = ({
       case 'border_glow':
         borderGlow.push({
           type: 'border_glow',
-          color: typeof (effect as any).color === 'string' ? (effect as any).color : undefined,
+          color:
+            typeof (effect as any).color === 'string' ? (effect as any).color : undefined,
           thickness:
             toNumber((effect as any).thickness) ||
             (toNumber((effect as any).intensity) > 0
@@ -347,8 +363,10 @@ export const resolveEffectsFromGiftEvent = ({
       case 'highlight':
         highlights.push({
           type: 'highlight',
-          color: typeof (effect as any).color === 'string' ? (effect as any).color : undefined,
-          tone: typeof (effect as any).tone === 'string' ? (effect as any).tone : undefined,
+          color:
+            typeof (effect as any).color === 'string' ? (effect as any).color : undefined,
+          tone:
+            typeof (effect as any).tone === 'string' ? (effect as any).tone : undefined,
           priority,
           createdAt: createdMs,
           expiresAt: expiresAtMs ?? undefined,
@@ -363,7 +381,8 @@ export const resolveEffectsFromGiftEvent = ({
             (typeof (effect as any).text === 'string' && (effect as any).text) ||
             (typeof (effect as any).label === 'string' && (effect as any).label) ||
             fallbackText,
-          tone: typeof (effect as any).tone === 'string' ? (effect as any).tone : undefined,
+          tone:
+            typeof (effect as any).tone === 'string' ? (effect as any).tone : undefined,
           priority,
           createdAt: createdMs,
           expiresAt: expiresAtMs ?? undefined,
@@ -371,14 +390,17 @@ export const resolveEffectsFromGiftEvent = ({
         break;
       }
       case 'overlay': {
-          overlays.push({
-            type: 'overlay',
-            animationUrl: resolveRelativeUrl((effect as any).animation),
-            opacity: toNumber((effect as any).opacity) || undefined,
-            zIndex: toNumber((effect as any).z_index) || undefined,
-            clipToBounds: Boolean((effect as any).clip_to_bounds),
-            scale: toNumber((effect as any).scale) || undefined,
-            loop: (effect as any).loop !== undefined ? Boolean((effect as any).loop) : undefined,
+        overlays.push({
+          type: 'overlay',
+          animationUrl: resolveRelativeUrl((effect as any).animation),
+          opacity: toNumber((effect as any).opacity) || undefined,
+          zIndex: toNumber((effect as any).z_index) || undefined,
+          clipToBounds: Boolean((effect as any).clip_to_bounds),
+          scale: toNumber((effect as any).scale) || undefined,
+          loop:
+            (effect as any).loop !== undefined
+              ? Boolean((effect as any).loop)
+              : undefined,
           fit:
             (effect as any).fit === 'contain' || (effect as any).fit === 'cover'
               ? (effect as any).fit
@@ -411,18 +433,24 @@ export const filterActiveEffects = (
     return null;
   }
   const active = {
-    borderGlow: effects.borderGlow && isEffectActive(effects.borderGlow.expiresAt, now)
-      ? effects.borderGlow
-      : undefined,
-    highlight: effects.highlight && isEffectActive(effects.highlight.expiresAt, now)
-      ? effects.highlight
-      : undefined,
-    badge: effects.badge && isEffectActive(effects.badge.expiresAt, now)
-      ? effects.badge
-      : undefined,
-    overlay: effects.overlay && isEffectActive(effects.overlay.expiresAt, now)
-      ? effects.overlay
-      : undefined,
+    borderGlow:
+      effects.borderGlow && isEffectActive(effects.borderGlow.expiresAt, now)
+        ? effects.borderGlow
+        : undefined,
+    highlight:
+      effects.highlight && isEffectActive(effects.highlight.expiresAt, now)
+        ? effects.highlight
+        : undefined,
+    badge:
+      effects.badge && isEffectActive(effects.badge.expiresAt, now)
+        ? effects.badge
+        : undefined,
+    overlay:
+      effects.overlay && isEffectActive(effects.overlay.expiresAt, now)
+        ? effects.overlay
+        : undefined,
   };
-  return active.borderGlow || active.highlight || active.badge || active.overlay ? active : null;
+  return active.borderGlow || active.highlight || active.badge || active.overlay
+    ? active
+    : null;
 };

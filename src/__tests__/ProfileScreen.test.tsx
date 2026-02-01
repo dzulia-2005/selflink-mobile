@@ -33,8 +33,7 @@ jest.mock('@react-navigation/native', () => {
 });
 
 jest.mock('@store/authStore', () => ({
-  useAuthStore: (selector: (state: typeof mockState) => unknown) =>
-    selector(mockState),
+  useAuthStore: (selector: (state: typeof mockState) => unknown) => selector(mockState),
 }));
 
 describe('ProfileScreen', () => {

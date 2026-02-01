@@ -21,10 +21,7 @@ export type StripeLedgerEntry = Pick<
   | 'created_at'
 >;
 
-const getMetadataValue = (
-  metadata: Record<string, unknown> | undefined,
-  key: string,
-) => {
+const getMetadataValue = (metadata: Record<string, unknown> | undefined, key: string) => {
   if (!metadata) {
     return undefined;
   }
