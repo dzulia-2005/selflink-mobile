@@ -337,7 +337,7 @@ export function SoulMatchDetailsScreen({
         onSelectTier={(tier) => {
           setUpgradeVisible(false);
           setRequestedTier(tier);
-          navigation.navigate('Payments');
+          navigation.getParent()?.navigate('Payments' as never);
         }}
       />
     </ScrollView>
