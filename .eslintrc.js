@@ -3,6 +3,7 @@ module.exports = {
   extends: ['@react-native-community'],
   plugins: ['react', 'react-hooks', 'import'],
   rules: {
+    'prettier/prettier': 'off',
     'react/react-in-jsx-scope': 'off',
     'import/order': [
       'warn',

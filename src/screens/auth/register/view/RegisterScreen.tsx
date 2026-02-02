@@ -1,10 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { isAxiosError } from 'axios';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -14,58 +11,36 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-
-import type { AuthStackParamList } from '@navigation/types';
 import { useAuthStore } from '@store/authStore';
 import { useTheme, type Theme } from '@theme';
+import { Controller, useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Navigation, RegisterDefaultValuesType } from '../types/index.type';
+import { RegisterDefaultValues } from '../components/registerDefaultValues';
+import { RegisterSchema } from '../components/schema';
 
-type Navigation = NativeStackNavigationProp<AuthStackParamList, 'Register'>;
 
-export function RegisterScreen() {
+
+const RegisterScreen = () => {
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
   const navigation = useNavigation<Navigation>();
-  const [name, setName] = useState('');
-  const [handle, setHandle] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const register = useAuthStore((state) => state.register);
   const isAuthenticating = useAuthStore((state) => state.isAuthenticating);
-  const error = useAuthStore((state) => state.error);
-  const setError = useAuthStore((state) => state.setError);
 
-  const handleSubmit = useCallback(async () => {
-    if (!name || !email || !password || !handle) {
-      Alert.alert('Missing info', 'Please fill all required fields.');
-      return;
-    }
+  const {handleSubmit,control,formState:{errors}} = useForm({
+    defaultValues: RegisterDefaultValues,
+    resolver:zodResolver(RegisterSchema),
+  });
+
+  const handleSubmitClick = async(payload:RegisterDefaultValuesType) => {
     try {
-      await register({
-        email,
-        password,
-        name,
-        handle: handle || undefined,
-        username: handle || undefined,
-      });
-    } catch (err) {
-      if (__DEV__) {
-        if (isAxiosError(err)) {
-          console.debug('register failed: response', {
-            status: err.response?.status,
-            data: err.response?.data,
-          });
-          console.debug('register failed: request', {
-            baseURL: err.config?.baseURL,
-            url: err.config?.url,
-            data: err.config?.data,
-          });
-        } else {
-          console.debug('register failed: non-axios error', err);
-        }
-      }
-      console.warn('register failed', err);
+      await register(payload);
+    } catch (error) {
+      console.warn('register failed', error);
     }
-  }, [name, email, handle, password, register]);
+  };
+
 
   const handleNavigateLogin = useCallback(() => {
     navigation.goBack();
@@ -88,64 +63,75 @@ export function RegisterScreen() {
             <Text style={styles.subtitle}>
               Define your handle and sync your personal matrix.
             </Text>
-            <TextInput
-              placeholder="Full name"
-              placeholderTextColor={theme.text.muted}
-              style={styles.input}
-              value={name}
-              onChangeText={(text) => {
-                setName(text);
-                if (error) {
-                  setError(null);
-                }
-              }}
+            <Controller
+              name='name'
+              control={control}
+              render={({field:{onChange,value}})=>(
+                <TextInput
+                  placeholder="Full name"
+                  placeholderTextColor={theme.text.muted}
+                  style={styles.input}
+                  value={value}
+                  onChangeText={onChange}
+                />
+              )}
             />
-            <TextInput
-              placeholder="Handle"
-              placeholderTextColor={theme.text.muted}
-              autoCapitalize="none"
-              style={styles.input}
-              value={handle}
-              onChangeText={(text) => {
-                setHandle(text);
-                if (error) {
-                  setError(null);
-                }
-              }}
+            {errors.name ? <Text style={styles.errorText}>{errors.name.message}</Text> : null}
+
+            <Controller
+              name='handle'
+              control={control}
+              render={({field:{onChange,value}})=>(
+                <TextInput
+                  placeholder="Handle"
+                  placeholderTextColor={theme.text.muted}
+                  autoCapitalize="none"
+                  style={styles.input}
+                  value={value}
+                  onChangeText={onChange}
+              />
+              )}
             />
-            <TextInput
-              placeholder="Email"
-              placeholderTextColor={theme.text.muted}
-              autoCapitalize="none"
-              keyboardType="email-address"
-              style={styles.input}
-              value={email}
-              onChangeText={(text) => {
-                setEmail(text);
-                if (error) {
-                  setError(null);
-                }
-              }}
+            {errors.handle ? <Text style={styles.errorText}>{errors.handle.message}</Text> : null}
+
+
+            <Controller
+              name='email'
+              control={control}
+              render={({field:{onChange,value}})=>(
+                <TextInput
+                  placeholder="Email"
+                  placeholderTextColor={theme.text.muted}
+                  autoCapitalize="none"
+                  keyboardType="email-address"
+                  style={styles.input}
+                  value={value}
+                  onChangeText={onChange}
+                />
+              )}
             />
-            <TextInput
-              placeholder="Password"
-              placeholderTextColor={theme.text.muted}
-              secureTextEntry
-              style={styles.input}
-              value={password}
-              onChangeText={(text) => {
-                setPassword(text);
-                if (error) {
-                  setError(null);
-                }
-              }}
+            {errors.email ? <Text style={styles.errorText}>{errors.email.message}</Text> : null}
+
+            <Controller
+              name='password'
+              control={control}
+              render={({field:{onChange,value}})=>(
+                <TextInput
+                  placeholder="Password"
+                  placeholderTextColor={theme.text.muted}
+                  secureTextEntry
+                  style={styles.input}
+                  value={value}
+                  onChangeText={onChange}
+                />
+              )}
             />
-            {error ? <Text style={styles.errorText}>{error}</Text> : null}
+            {errors.password ? <Text style={styles.errorText}>{errors.password.message}</Text> : null}
             <TouchableOpacity
               style={styles.buttonWrapper}
-              onPress={handleSubmit}
               disabled={isAuthenticating}
               activeOpacity={0.9}
+              onPress={handleSubmit(handleSubmitClick)}
             >
               <LinearGradient
                 colors={theme.gradients.cta}
@@ -166,7 +152,9 @@ export function RegisterScreen() {
       </KeyboardAvoidingView>
     </LinearGradient>
   );
-}
+};
+
+export default RegisterScreen;
 
 const createStyles = (theme: Theme) =>
   StyleSheet.create({
