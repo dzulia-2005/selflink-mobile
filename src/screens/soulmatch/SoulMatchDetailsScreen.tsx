@@ -188,8 +188,14 @@ export function SoulMatchDetailsScreen({
     psychology: 0,
     lifestyle: 0,
   };
+  const componentEntries = Object.entries(components);
+  const topComponent = componentEntries.reduce(
+    (best, current) => (current[1] > best[1] ? current : best),
+    componentEntries[0],
+  );
   const badges = buildBadges(data, 4);
   const lensLabel = data.lens_label ?? data.lens;
+  const lensReason = data.lens_reason_short ?? data.explanation?.short;
   const tone = scoreTone(data.score);
   const lockedFull = isSectionLocked('full', userTier) && Boolean(data.explanation?.full);
   const lockedStrategy =
@@ -240,9 +246,48 @@ export function SoulMatchDetailsScreen({
             <BadgePill key={tag} label={tag} tone={tone} />
           ))}
         </View>
+        {lensReason ? <Text style={styles.body}>{lensReason}</Text> : null}
       </MetalPanel>
 
-      {(data.explanation?.short || showFull || showStrategy) && (
+      <MetalPanel>
+        <Text style={styles.sectionTitle}>Score Breakdown</Text>
+        {isSectionLocked('full', userTier) ? (
+          <>
+            <Text style={styles.body}>
+              See what drives this score across astro, matrix, psychology, and lifestyle.
+            </Text>
+            <TouchableOpacity
+              onPress={() => {
+                setRequestedTier('premium');
+                setUpgradeVisible(true);
+              }}
+            >
+              <Text style={styles.unlockText}>See what drives this score 🔒</Text>
+            </TouchableOpacity>
+          </>
+        ) : (
+          <>
+            <View style={styles.components}>
+              {componentEntries.map(([key, value]) => (
+                <View key={key} style={styles.componentRow}>
+                  <View style={styles.componentHeader}>
+                    <Text style={styles.componentLabel}>{key}</Text>
+                    <Text style={styles.componentValue}>{formatScore(value ?? 0)}</Text>
+                  </View>
+                  <CompatibilityBar value={value ?? 0} size="sm" />
+                </View>
+              ))}
+            </View>
+            {topComponent ? (
+              <Text style={styles.muted}>
+                Strongest signal: {topComponent[0]} ({formatScore(topComponent[1])})
+              </Text>
+            ) : null}
+          </>
+        )}
+      </MetalPanel>
+
+      {(data.explanation?.short || showFull) && (
         <MetalPanel>
           <Text style={styles.sectionTitle}>Why this match</Text>
           {data.explanation?.short ? (
@@ -261,27 +306,31 @@ export function SoulMatchDetailsScreen({
                 setUpgradeVisible(true);
               }}
             >
-              <Text style={styles.unlockText}>Unlock to see more</Text>
+              <Text style={styles.unlockText}>See why this score works 🔒</Text>
             </TouchableOpacity>
           ) : null}
+        </MetalPanel>
+      )}
+
+      {data.explanation?.strategy || lockedStrategy ? (
+        <MetalPanel>
+          <Text style={styles.sectionTitle}>How to approach</Text>
           {showStrategy ? (
-            <ExpandableSection
-              title="How to approach"
-              text={data.explanation?.strategy}
-              styles={styles}
-            />
-          ) : lockedStrategy ? (
+            <Text style={styles.body}>{data.explanation?.strategy}</Text>
+          ) : (
             <TouchableOpacity
               onPress={() => {
                 setRequestedTier('premium_plus');
                 setUpgradeVisible(true);
               }}
             >
-              <Text style={styles.unlockText}>Unlock premium strategy</Text>
+              <Text style={styles.unlockText}>
+                Get guidance on how to approach this connection 🔒
+              </Text>
             </TouchableOpacity>
-          ) : null}
+          )}
         </MetalPanel>
-      )}
+      ) : null}
 
       {timingSummary || timingWindow || trend ? (
         <MetalPanel>
@@ -294,33 +343,18 @@ export function SoulMatchDetailsScreen({
               ) : null}
               {trend ? <Text style={styles.timingLabel}>{trend}</Text> : null}
             </>
-          ) : timingWindow || trend ? (
+          ) : timingWindow || trend || timingSummary ? (
             <TouchableOpacity
               onPress={() => {
                 setRequestedTier('premium');
                 setUpgradeVisible(true);
               }}
             >
-              <Text style={styles.unlockText}>Unlock timing details</Text>
+              <Text style={styles.unlockText}>Unlock timing details 🔒</Text>
             </TouchableOpacity>
           ) : null}
         </MetalPanel>
       ) : null}
-
-      <MetalPanel>
-        <Text style={styles.sectionTitle}>Category Breakdown</Text>
-        <View style={styles.components}>
-          {Object.entries(components).map(([key, value]) => (
-            <View key={key} style={styles.componentRow}>
-              <View style={styles.componentHeader}>
-                <Text style={styles.componentLabel}>{key}</Text>
-                <Text style={styles.componentValue}>{formatScore(value ?? 0)}</Text>
-              </View>
-              <CompatibilityBar value={value ?? 0} size="sm" />
-            </View>
-          ))}
-        </View>
-      </MetalPanel>
 
       <MetalPanel>
         <Text style={styles.sectionTitle}>Mentor insight</Text>
@@ -474,6 +508,11 @@ const createStyles = (theme: Theme) =>
     body: {
       color: theme.palette.pearl,
       ...theme.typography.body,
+    },
+    muted: {
+      color: theme.palette.titanium,
+      ...theme.typography.caption,
+      marginTop: theme.spacing.xs,
     },
     timingLabel: {
       color: theme.palette.silver,

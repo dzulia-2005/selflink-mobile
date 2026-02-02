@@ -163,6 +163,16 @@ function RecommendationCard({
             </View>
           ) : null}
           {showShort ? <Text style={styles.explainShort}>{explanationShort}</Text> : null}
+          <View style={styles.premiumTeaseRow}>
+            <Text style={styles.premiumTeaseText}>
+              {isSectionLocked('full', userTier) ? 'Why this score 🔒' : 'Why this score'}
+            </Text>
+            <Text style={styles.premiumTeaseText}>
+              {isSectionLocked('strategy', userTier)
+                ? 'Approach strategy 🔒'
+                : 'Approach strategy'}
+            </Text>
+          </View>
           {timingSummary || timingWindowLabel ? (
             <View style={styles.timingRow}>
               <Text style={styles.timingLabel}>
@@ -613,6 +623,16 @@ const createStyles = (theme: Theme) =>
       marginTop: theme.spacing.sm,
       color: theme.palette.pearl,
       ...theme.typography.body,
+    },
+    premiumTeaseRow: {
+      marginTop: theme.spacing.sm,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      gap: theme.spacing.sm,
+    },
+    premiumTeaseText: {
+      color: theme.palette.titanium,
+      ...theme.typography.caption,
     },
     timingRow: {
       marginTop: theme.spacing.sm,
