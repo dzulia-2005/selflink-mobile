@@ -21,6 +21,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { GiftType } from '@api/gifts';
 import { likeComment, normalizeLikesApiError, unlikeComment } from '@api/likes';
+import { forceLogout } from '@auth/forceLogout';
 import { GiftBurstOverlay } from '@components/gifts/GiftBurstOverlay';
 import { GiftPickerSheet } from '@components/gifts/GiftPickerSheet';
 import { useToast } from '@context/ToastContext';
@@ -69,7 +70,6 @@ export function CommentsBottomSheet({
   const toast = useToast();
   const currentUser = useAuthStore((state) => state.currentUser);
   const token = useAuthStore((state) => state.accessToken);
-  const logout = useAuthStore((state) => state.logout);
   const translateY = useRef(new Animated.Value(SHEET_HEIGHT)).current;
   const closingRef = useRef(false);
   const [commentReactions, setCommentReactions] = useState<
@@ -170,6 +170,10 @@ export function CommentsBottomSheet({
         return;
       }
       const record = payload as Record<string, unknown>;
+      if (record.type === 'auth_error') {
+        forceLogout('expired').catch(() => undefined);
+        return;
+      }
       if (record.type !== 'gift.received') {
         return;
       }
@@ -333,10 +337,9 @@ export function CommentsBottomSheet({
 
   const handleAuthError = useCallback(
     (message: string) => {
-      toast.push({ tone: 'error', message });
-      logout();
+      forceLogout('expired', message).catch(() => undefined);
     },
-    [logout, toast],
+    [],
   );
 
   const handleToggleCommentLike = useCallback(

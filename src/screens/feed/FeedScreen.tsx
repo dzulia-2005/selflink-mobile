@@ -18,6 +18,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { GiftType } from '@api/gifts';
+import { forceLogout } from '@auth/forceLogout';
 import { CommentsBottomSheet } from '@components/comments/CommentsBottomSheet';
 import { FeedPostCard } from '@components/FeedPostCard';
 import { GiftBurstOverlay } from '@components/gifts/GiftBurstOverlay';
@@ -297,6 +298,10 @@ export function FeedScreen() {
         return;
       }
       const record = payload as Record<string, unknown>;
+      if (record.type === 'auth_error') {
+        forceLogout('expired').catch(() => undefined);
+        return;
+      }
       if (record.type !== 'gift.received') {
         return;
       }

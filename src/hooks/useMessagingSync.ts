@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef } from 'react';
 import { AppState, AppStateStatus } from 'react-native';
 
 import * as messagingApi from '@api/messaging';
+import { forceLogout } from '@auth/forceLogout';
 import { connectRealtime, RealtimePayload } from '@realtime/index';
 import type { Message, MessageStatus } from '@schemas/messaging';
 import { useAuthStore } from '@store/authStore';
@@ -425,6 +426,10 @@ export function useMessagingSync(enabled: boolean) {
     (payload: RealtimePayload) => {
       const type =
         typeof payload === 'object' ? (payload.type as string | undefined) : undefined;
+      if (type === 'auth_error') {
+        forceLogout('expired').catch(() => undefined);
+        return;
+      }
       if (type === 'status') {
         const status = (payload as any).status;
         if (status === 'open') {
