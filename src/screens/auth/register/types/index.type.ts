@@ -1,5 +1,6 @@
-import { AuthStackParamList } from "@navigation/types";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
+import { AuthStackParamList } from '@navigation/types';
 
 export type Navigation = NativeStackNavigationProp<AuthStackParamList, 'Register'>;
 

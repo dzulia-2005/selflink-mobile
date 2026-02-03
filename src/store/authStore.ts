@@ -13,8 +13,8 @@ import type { PersonalMapPayload } from '@api/users';
 import { LoginPayload, RegisterPayload } from '@schemas/auth';
 import { PersonalMapProfile, User } from '@schemas/user';
 import { apiClient as servicesApiClient } from '@services/api/client';
-import { useMessagingStore } from '@store/messagingStore';
 import { useEntitlementsStore } from '@store/entitlementsStore';
+import { useMessagingStore } from '@store/messagingStore';
 
 export type AuthStore = {
   accessToken: string | null;

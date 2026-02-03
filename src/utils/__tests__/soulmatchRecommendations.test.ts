@@ -1,8 +1,8 @@
+import { isSoulmatchAsyncResult, isSoulmatchWithSuccess } from '@services/api/soulmatch';
 import {
   normalizeSoulmatchRecommendations,
   normalizeSoulmatchRecsResponse,
 } from '@utils/soulmatchRecommendations';
-import { isSoulmatchAsyncResult, isSoulmatchWithSuccess } from '@services/api/soulmatch';
 
 describe('normalizeSoulmatchRecommendations', () => {
   it('filters entries without user or score', () => {

@@ -1,4 +1,4 @@
-import { initialFormStateTypes } from "../types/index.type";
+import { initialFormStateTypes } from '../types/index.type';
 
 export const initialFormState:initialFormStateTypes = {
     first_name: '',

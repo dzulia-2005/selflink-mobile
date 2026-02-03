@@ -1,4 +1,4 @@
-import { RegisterDefaultValuesType } from "../types/index.type";
+import { RegisterDefaultValuesType } from '../types/index.type';
 
 export const RegisterDefaultValues:RegisterDefaultValuesType = {
     email: '',

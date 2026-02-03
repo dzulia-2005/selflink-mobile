@@ -1,12 +1,8 @@
-import React, { useCallback, useMemo } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
+import React, { useCallback, useMemo } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { LoginDefaultValues } from '../components/loginDefaultValues';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { LoginSchema } from '../components/schema';
-import { useAuthStore } from '@store/authStore';
-import { useTheme, type Theme } from '@theme';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -16,6 +12,12 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+
+import { useAuthStore } from '@store/authStore';
+import { useTheme, type Theme } from '@theme';
+
+import { LoginDefaultValues } from '../components/loginDefaultValues';
+import { LoginSchema } from '../components/schema';
 import { LoginTypes, Navigation } from '../types/index.type';
 
 
@@ -57,7 +59,7 @@ export const LoginScreen = () => {
           <Text style={styles.subtitle}>Sign in to continue to SelfLink</Text>
 
           <Controller
-            name='email'
+            name="email"
             control={control}
             render={({field:{onChange,value}})=>(
               <TextInput
@@ -74,7 +76,7 @@ export const LoginScreen = () => {
           {errors.email ? <Text style={styles.errorText}>{errors.email.message}</Text> : null}
 
           <Controller
-            name='password'
+            name="password"
             control={control}
             render={({field:{onChange,value}})=>(
               <TextInput
