@@ -10,6 +10,7 @@ import {
 } from '@api/client';
 import * as usersApi from '@api/users';
 import type { PersonalMapPayload } from '@api/users';
+import { registerForceLogoutHandler } from '@auth/forceLogout';
 import { LoginPayload, RegisterPayload } from '@schemas/auth';
 import { PersonalMapProfile, User } from '@schemas/user';
 import { apiClient as servicesApiClient } from '@services/api/client';
@@ -248,5 +249,6 @@ setAuthTokenProvider(() => useAuthStore.getState().accessToken);
 setRefreshHandler(() => useAuthStore.getState().refreshSession());
 servicesApiClient.setRefreshHandler(() => useAuthStore.getState().refreshSession());
 servicesApiClient.setToken(useAuthStore.getState().accessToken);
+registerForceLogoutHandler(() => useAuthStore.getState().logout());
 
 export { useAuthStore };

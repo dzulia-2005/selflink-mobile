@@ -1,3 +1,4 @@
+import { isAuthExpiredError } from '@auth/isAuthError';
 import { env } from '@config/env';
 import { parseJsonPreservingLargeInts } from '@utils/json';
 
@@ -22,6 +23,7 @@ const MAX_BACKOFF_MS = 30_000;
 const BASE_BACKOFF_MS = 1_000;
 const PING_INTERVAL_MS = 25_000;
 const REALTIME_PATH = '/ws';
+const activeConnections = new Set<RealtimeConnection>();
 
 const toRealtimeProtocol = (protocol: string) => (protocol === 'https:' ? 'wss:' : 'ws:');
 
@@ -86,6 +88,18 @@ export function connectRealtime(
   let pingTimer: ReturnType<typeof setInterval> | null = null;
   let shouldReconnect = true;
   let attempt = 0;
+
+  const handleAuthFailure = (message?: string) => {
+    if (!shouldReconnect) {
+      return;
+    }
+    shouldReconnect = false;
+    if (reconnectTimer) {
+      clearTimeout(reconnectTimer);
+      reconnectTimer = null;
+    }
+    notify({ type: 'auth_error', message: message ?? 'Unauthorized' });
+  };
 
   const notify = (payload: RealtimePayload) => {
     handlers.forEach((handler) => {
@@ -177,6 +191,17 @@ export function connectRealtime(
     socket.onmessage = (event) => {
       try {
         const payload = parseJsonPreservingLargeInts<RealtimePayload>(event.data);
+        if (
+          payload &&
+          typeof payload === 'object' &&
+          (payload as Record<string, unknown>).type === 'error'
+        ) {
+          const errorPayload = payload as Record<string, unknown>;
+          if (isAuthExpiredError(errorPayload)) {
+            handleAuthFailure(String(errorPayload.message ?? errorPayload.detail ?? ''));
+            return;
+          }
+        }
         if (typeof __DEV__ !== 'undefined' && __DEV__) {
           const type =
             typeof payload === 'object'
@@ -232,6 +257,9 @@ export function connectRealtime(
         reason,
         raw: event,
       };
+      if (isAuthExpiredError(message ?? reason ?? '')) {
+        handleAuthFailure(message ?? reason ?? 'Unauthorized');
+      }
       if (typeof __DEV__ !== 'undefined' && __DEV__) {
         console.debug('realtime: error', logPayload);
       } else {
@@ -240,6 +268,9 @@ export function connectRealtime(
       handleDisconnect('error', { code, reason });
     };
     socket.onclose = (event) => {
+      if (isAuthExpiredError(event?.reason ?? '')) {
+        handleAuthFailure(event.reason);
+      }
       handleDisconnect('closed', {
         code: event?.code,
         reason: event?.reason,
@@ -250,7 +281,7 @@ export function connectRealtime(
 
   connect();
 
-  return {
+  const connection: RealtimeConnection = {
     subscribe(handler) {
       handlers.add(handler);
       return () => handlers.delete(handler);
@@ -278,4 +309,25 @@ export function connectRealtime(
       return socket?.readyState === WebSocket.OPEN;
     },
   };
+
+  activeConnections.add(connection);
+  const originalDisconnect = connection.disconnect.bind(connection);
+  connection.disconnect = () => {
+    activeConnections.delete(connection);
+    originalDisconnect();
+  };
+
+  return connection;
 }
+
+export const disconnectAllRealtime = () => {
+  const connections = Array.from(activeConnections);
+  connections.forEach((connection) => {
+    try {
+      connection.disconnect();
+    } catch (error) {
+      console.warn('realtime: failed to disconnect connection', error);
+    }
+  });
+  activeConnections.clear();
+};

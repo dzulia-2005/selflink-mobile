@@ -25,6 +25,7 @@ module.exports = {
     '^@store/(.*)$': '<rootDir>/src/store/$1',
     '^@schemas/(.*)$': '<rootDir>/src/types/$1',
     '^@context/(.*)$': '<rootDir>/src/context/$1',
+    '^@auth/(.*)$': '<rootDir>/src/auth/$1',
     '^@config/(.*)$': '<rootDir>/src/config/$1',
     '^@lib/(.*)$': '<rootDir>/src/lib/$1',
     '^@realtime/(.*)$': '<rootDir>/src/realtime/$1',

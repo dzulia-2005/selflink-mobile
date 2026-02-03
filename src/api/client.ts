@@ -1,5 +1,6 @@
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 
+import { forceLogout } from '@auth/forceLogout';
 import { API_HTTP_BASE_URL } from '@config/env';
 import { parseJsonPreservingLargeInts } from '@utils/json';
 
@@ -65,7 +66,19 @@ apiClient.interceptors.response.use(
       throw error;
     }
     const retryConfig = config as AxiosRequestConfig & { _retry?: boolean };
+    const isRefreshRequest =
+      typeof retryConfig.url === 'string' && retryConfig.url.includes('/auth/refresh/');
+    const hasToken = Boolean(getAccessToken());
+    if (isRefreshRequest) {
+      if (hasToken) {
+        await forceLogout('expired');
+      }
+      throw error;
+    }
     if (!refreshHandler || retryConfig._retry) {
+      if (hasToken) {
+        await forceLogout('expired');
+      }
       throw error;
     }
 
@@ -77,6 +90,9 @@ apiClient.interceptors.response.use(
 
     const newToken = await pendingRefresh;
     if (!newToken) {
+      if (hasToken) {
+        await forceLogout('expired');
+      }
       throw error;
     }
 

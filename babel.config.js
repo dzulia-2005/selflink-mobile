@@ -20,6 +20,7 @@ module.exports = function (api) {
           '@store': './src/store',
           '@schemas': './src/types',
           '@context': './src/context',
+          '@auth': './src/auth',
           'react-native-worklets/plugin': './src/utils/workletsPluginStub',
         },
       },

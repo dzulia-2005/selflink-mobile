@@ -18,7 +18,8 @@
       "@hooks/*": ["src/hooks/*"],
       "@config/*": ["src/config/*"],
       "@services/*": ["src/services/*"],
-      "@context/*": ["src/context/*"]
+      "@context/*": ["src/context/*"],
+      "@auth/*": ["src/auth/*"]
     }
   }
 }
