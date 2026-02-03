@@ -1,1 +1,1 @@
-export {default} from "./view/PersonalMapScreen";
+export {default} from './view/PersonalMapScreen';

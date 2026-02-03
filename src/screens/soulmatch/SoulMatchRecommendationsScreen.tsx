@@ -30,6 +30,7 @@ import {
   type SoulmatchRecommendationsMeta,
 } from '@services/api/soulmatch';
 import { useAuthStore } from '@store/authStore';
+import { selectTierFromEntitlements, useEntitlementsStore } from '@store/entitlementsStore';
 import { useTheme, type Theme } from '@theme';
 import { normalizeApiError } from '@utils/apiErrors';
 import { buildBadges, formatScore, scoreTone } from '@utils/soulmatch';
@@ -260,12 +261,13 @@ export function SoulMatchRecommendationsScreen({
   const navigation = useNavigation<Nav>();
   const toast = useToast();
   const logout = useAuthStore((state) => state.logout);
+  const entitlements = useEntitlementsStore((state) => state.entitlements);
   const [meta, setMeta] = useState<SoulmatchRecommendationsMeta | null>(null);
   const [explainLevel, setExplainLevel] = useState<SoulmatchExplainLevel>('free');
   const explainRef = useRef<SoulmatchExplainLevel>('free');
   const [mode, setMode] = useState<SoulmatchMode>('compat');
   const modeRef = useRef<SoulmatchMode>('compat');
-  const userTier: SoulmatchTier = 'free';
+  const userTier: SoulmatchTier = selectTierFromEntitlements(entitlements);
   const [upgradeVisible, setUpgradeVisible] = useState(false);
   const [requestedTier, setRequestedTier] =
     useState<Exclude<SoulmatchTier, 'free'>>('premium');

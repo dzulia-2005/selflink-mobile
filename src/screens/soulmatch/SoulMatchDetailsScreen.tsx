@@ -20,9 +20,15 @@ import { LoadingView } from '@components/StateViews';
 import { UserAvatar } from '@components/UserAvatar';
 import { useToast } from '@context/ToastContext';
 import { SoulMatchStackParamList } from '@navigation/types';
-import { SoulmatchResult } from '@schemas/soulmatch';
-import { fetchSoulmatchMentor, fetchSoulmatchWith } from '@services/api/soulmatch';
+import { SoulmatchAsyncResult, SoulmatchResult } from '@schemas/soulmatch';
+import {
+  fetchSoulmatchMentor,
+  fetchSoulmatchWith,
+  isSoulmatchAsyncResult,
+  isSoulmatchWithSuccess,
+} from '@services/api/soulmatch';
 import { useAuthStore } from '@store/authStore';
+import { selectTierFromEntitlements, useEntitlementsStore } from '@store/entitlementsStore';
 import { useTheme, type Theme } from '@theme';
 import { normalizeApiError } from '@utils/apiErrors';
 import { buildBadges, formatScore, scoreTone } from '@utils/soulmatch';
@@ -36,6 +42,8 @@ type Props = {
   skipAutoLoad?: boolean;
 };
 
+const PENDING_RETRY_DELAYS_MS = [1000, 2000, 4000];
+
 export function SoulMatchDetailsScreen({
   prefetchedData = null,
   skipAutoLoad = false,
@@ -47,32 +55,70 @@ export function SoulMatchDetailsScreen({
   const { userId, displayName, explainLevel = 'free', mode = 'compat' } = route.params;
   const toast = useToast();
   const logout = useAuthStore((state) => state.logout);
-  const userTier: SoulmatchTier = 'free';
+  const entitlements = useEntitlementsStore((state) => state.entitlements);
+  const userTier: SoulmatchTier = selectTierFromEntitlements(entitlements);
   const [upgradeVisible, setUpgradeVisible] = useState(false);
   const [requestedTier, setRequestedTier] = useState<'premium' | 'premium_plus'>(
     'premium',
   );
   const [data, setData] = useState<SoulmatchResult | null>(prefetchedData);
+  const [pendingTask, setPendingTask] = useState<SoulmatchAsyncResult | null>(null);
   const [loading, setLoading] = useState(!prefetchedData);
   const [mentorText, setMentorText] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const headerOpacity = useRef(new Animated.Value(0)).current;
   const headerTranslate = useRef(new Animated.Value(12)).current;
+  const pendingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const title = useMemo(() => displayName || 'SoulMatch', [displayName]);
 
-  const load = useCallback(async () => {
+  const clearPendingTimer = useCallback(() => {
+    if (pendingTimeoutRef.current) {
+      clearTimeout(pendingTimeoutRef.current);
+      pendingTimeoutRef.current = null;
+    }
+  }, []);
+
+  const load = useCallback(async (options?: { polling?: boolean; attempt?: number }) => {
     if (!userId) {
       setLoading(false);
       return;
     }
-    setLoading(true);
+    const attempt = options?.attempt ?? 0;
+    if (!options?.polling) {
+      setLoading(true);
+    }
+    clearPendingTimer();
     try {
       if (typeof __DEV__ !== 'undefined' && __DEV__) {
         console.debug('SoulMatch: detail fetch start', { userId });
       }
       const result = await fetchSoulmatchWith(userId, { explainLevel, mode });
-      setData(result);
+      if (isSoulmatchAsyncResult(result)) {
+        setPendingTask(result);
+        setData(null);
+        if (typeof __DEV__ !== 'undefined' && __DEV__) {
+          console.debug('SoulMatch: detail fetch pending', {
+            userId,
+            task_id: result.task_id,
+            pair_key: result.pair_key,
+            rules_version: result.rules_version,
+          });
+        }
+        if (attempt < PENDING_RETRY_DELAYS_MS.length) {
+          const delay = PENDING_RETRY_DELAYS_MS[attempt];
+          pendingTimeoutRef.current = setTimeout(() => {
+            load({ polling: true, attempt: attempt + 1 }).catch(() => undefined);
+          }, delay);
+        }
+        return;
+      }
+      setPendingTask(null);
+      if (isSoulmatchWithSuccess(result)) {
+        setData(result);
+      } else {
+        setData(result as SoulmatchResult);
+      }
       if (typeof __DEV__ !== 'undefined' && __DEV__) {
         console.debug('SoulMatch: detail fetch ok', {
           userId,
@@ -81,19 +127,23 @@ export function SoulMatchDetailsScreen({
       }
     } catch (error) {
       const normalized = normalizeApiError(error, 'Unable to load match details.');
-      if (normalized.status === 401 || normalized.status === 403) {
+      if (!options?.polling) {
+        if (normalized.status === 401 || normalized.status === 403) {
+          toast.push({ message: normalized.message, tone: 'error', duration: 4000 });
+          logout();
+          return;
+        }
         toast.push({ message: normalized.message, tone: 'error', duration: 4000 });
-        logout();
-        return;
       }
-      toast.push({ message: normalized.message, tone: 'error', duration: 4000 });
       if (typeof __DEV__ !== 'undefined' && __DEV__) {
         console.debug('SoulMatch: detail fetch error', normalized);
       }
     } finally {
-      setLoading(false);
+      if (!options?.polling) {
+        setLoading(false);
+      }
     }
-  }, [explainLevel, logout, mode, toast, userId]);
+  }, [clearPendingTimer, explainLevel, logout, mode, toast, userId]);
 
   useEffect(() => {
     navigation.setOptions?.({ title });
@@ -103,6 +153,12 @@ export function SoulMatchDetailsScreen({
       setLoading(false);
     }
   }, [load, navigation, skipAutoLoad, title]);
+
+  useEffect(() => {
+    return () => {
+      clearPendingTimer();
+    };
+  }, [clearPendingTimer]);
 
   useEffect(() => {
     Animated.parallel([
@@ -159,6 +215,24 @@ export function SoulMatchDetailsScreen({
     return <LoadingView message="Loading SoulMatch…" />;
   }
 
+  if (pendingTask) {
+    return (
+      <View style={styles.empty}>
+        <Text style={styles.emptyTitle}>SoulMatch is being calculated.</Text>
+        <Text style={styles.emptySubtitle}>
+          Pull to refresh in a moment to see your compatibility.
+        </Text>
+        {typeof __DEV__ !== 'undefined' && __DEV__ ? (
+          <Text style={styles.emptySubtitle}>
+            task: {pendingTask.task_id} · {pendingTask.pair_key}
+          </Text>
+        ) : null}
+        <MetalButton title="Refresh" onPress={() => load()} />
+        <MetalButton title="Back" onPress={() => navigation.goBack()} />
+      </View>
+    );
+  }
+
   if (!data) {
     return (
       <View style={styles.empty}>
@@ -176,7 +250,7 @@ export function SoulMatchDetailsScreen({
         <Text style={styles.emptySubtitle}>
           Pull to refresh in a moment to see your compatibility.
         </Text>
-        <MetalButton title="Refresh" onPress={load} />
+        <MetalButton title="Refresh" onPress={() => load()} />
         <MetalButton title="Back" onPress={() => navigation.goBack()} />
       </View>
     );

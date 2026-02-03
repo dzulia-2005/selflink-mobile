@@ -1,7 +1,9 @@
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useMemo, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import {
   Alert,
   ScrollView,
@@ -10,15 +12,14 @@ import {
   View,
 } from 'react-native';
 
+import { OnboardingStackParamList, RootStackParamList } from '@navigation/types';
 import { useAuthStore } from '@store/authStore';
 import { useTheme } from '@theme';
-import { createStyles } from '../styles/index.styles';
-import Input from '../components/input';
-import { Controller, useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { personalMapSchema } from '../components/schema';
+
 import { initialFormState } from '../components/initialFormState';
-import { OnboardingStackParamList, RootStackParamList } from '@navigation/types';
+import Input from '../components/input';
+import { personalMapSchema } from '../components/schema';
+import { createStyles } from '../styles/index.styles';
 import { initialFormStateTypes } from '../types/index.type';
 
 
@@ -73,7 +74,7 @@ const PersonalMapScreen = () => {
             Tell us more so we can align your astro-matrix intelligence.
           </Text>
           <Controller
-            name='first_name'
+            name="first_name"
             control={control}
             render={({field:{onChange,value}})=>(
               <Input
@@ -86,7 +87,7 @@ const PersonalMapScreen = () => {
             )}
           />
           <Controller
-            name='last_name'
+            name="last_name"
             control={control}
             render={({field:{onChange,value}})=>(
               <Input
@@ -99,7 +100,7 @@ const PersonalMapScreen = () => {
             )}
           />
           <Controller
-            name='birth_date'
+            name="birth_date"
             control={control}
             render={({field:{onChange,value}})=>(
               <Input
@@ -112,7 +113,7 @@ const PersonalMapScreen = () => {
             )}
           />
           <Controller
-            name='birth_time'
+            name="birth_time"
             control={control}
             render={({field:{onChange,value}})=>(
               <Input
@@ -125,7 +126,7 @@ const PersonalMapScreen = () => {
             )}
           />
           <Controller
-            name='birth_place_country'
+            name="birth_place_country"
             control={control}
             render={({field:{onChange,value}})=>(
               <Input
@@ -138,7 +139,7 @@ const PersonalMapScreen = () => {
             )}
           />
           <Controller
-            name='birth_place_city'
+            name="birth_place_city"
             control={control}
             render={({field:{onChange,value}})=>(
               <Input

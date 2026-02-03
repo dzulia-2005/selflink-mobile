@@ -70,6 +70,16 @@ export type RecipientIdResponse = {
   account_key: string;
 };
 
+export type EntitlementStatus = {
+  active: boolean;
+  active_until: string | null;
+};
+
+export type EntitlementsResponse = {
+  premium: EntitlementStatus;
+  premium_plus: EntitlementStatus;
+};
+
 export async function getRecipientId(): Promise<RecipientIdResponse> {
   const { data } = await apiClient.get<RecipientIdResponse>('/users/me/recipient-id/');
   return data;
@@ -82,6 +92,11 @@ export async function updateMyProfile(payload: Partial<User>): Promise<User> {
 
 export async function updateCurrentUser(payload: ProfileUpdateInput): Promise<User> {
   const { data } = await apiClient.patch<User>('/users/me/', payload);
+  return data;
+}
+
+export async function getEntitlements(): Promise<EntitlementsResponse> {
+  const { data } = await apiClient.get<EntitlementsResponse>('/me/entitlements/');
   return data;
 }
 

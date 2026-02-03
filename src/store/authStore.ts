@@ -13,6 +13,7 @@ import type { PersonalMapPayload } from '@api/users';
 import { LoginPayload, RegisterPayload } from '@schemas/auth';
 import { PersonalMapProfile, User } from '@schemas/user';
 import { apiClient as servicesApiClient } from '@services/api/client';
+import { useEntitlementsStore } from '@store/entitlementsStore';
 import { useMessagingStore } from '@store/messagingStore';
 
 export type AuthStore = {
@@ -39,6 +40,14 @@ const resetMessagingStore = () => {
     useMessagingStore.getState().reset();
   } catch (error) {
     console.warn('authStore: failed to reset messaging store', error);
+  }
+};
+
+const resetEntitlementsStore = () => {
+  try {
+    useEntitlementsStore.getState().reset();
+  } catch (error) {
+    console.warn('authStore: failed to reset entitlements store', error);
   }
 };
 
@@ -106,6 +115,7 @@ const useAuthStore = create<AuthStore>()(
           });
           delete restApiClient.defaults.headers.common.Authorization;
           resetMessagingStore();
+          resetEntitlementsStore();
           setMessagingSessionUser(null);
         },
         async refreshSession() {
@@ -143,6 +153,11 @@ const useAuthStore = create<AuthStore>()(
               personalMap,
               hasCompletedPersonalMap: Boolean(personalMap?.is_complete),
             });
+            try {
+              await useEntitlementsStore.getState().fetchEntitlements();
+            } catch (entitlementError) {
+              console.warn('authStore: entitlements fetch failed', entitlementError);
+            }
           } catch (error) {
             const message =
               error instanceof Error ? error.message : 'Unable to load profile';

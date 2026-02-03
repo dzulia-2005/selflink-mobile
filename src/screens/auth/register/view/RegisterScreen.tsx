@@ -1,6 +1,8 @@
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useCallback, useMemo } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -11,13 +13,13 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+
 import { useAuthStore } from '@store/authStore';
 import { useTheme, type Theme } from '@theme';
-import { Controller, useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Navigation, RegisterDefaultValuesType } from '../types/index.type';
+
 import { RegisterDefaultValues } from '../components/registerDefaultValues';
 import { RegisterSchema } from '../components/schema';
+import { Navigation, RegisterDefaultValuesType } from '../types/index.type';
 
 
 
@@ -64,7 +66,7 @@ const RegisterScreen = () => {
               Define your handle and sync your personal matrix.
             </Text>
             <Controller
-              name='name'
+              name="name"
               control={control}
               render={({field:{onChange,value}})=>(
                 <TextInput
@@ -79,7 +81,7 @@ const RegisterScreen = () => {
             {errors.name ? <Text style={styles.errorText}>{errors.name.message}</Text> : null}
 
             <Controller
-              name='handle'
+              name="handle"
               control={control}
               render={({field:{onChange,value}})=>(
                 <TextInput
@@ -96,7 +98,7 @@ const RegisterScreen = () => {
 
 
             <Controller
-              name='email'
+              name="email"
               control={control}
               render={({field:{onChange,value}})=>(
                 <TextInput
@@ -113,7 +115,7 @@ const RegisterScreen = () => {
             {errors.email ? <Text style={styles.errorText}>{errors.email.message}</Text> : null}
 
             <Controller
-              name='password'
+              name="password"
               control={control}
               render={({field:{onChange,value}})=>(
                 <TextInput

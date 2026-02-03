@@ -46,7 +46,7 @@ describe('SoulMatchDetailsScreen', () => {
 
     await waitFor(() => expect(getByText('SoulMatch compatibility')).toBeTruthy());
     expect(getByText('72%')).toBeTruthy();
-    expect(getByText('Category Breakdown')).toBeTruthy();
+    expect(getByText('Score Breakdown')).toBeTruthy();
     expect(getByText('Cosmic sync')).toBeTruthy();
   });
 });

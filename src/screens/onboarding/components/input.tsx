@@ -1,8 +1,10 @@
-import { TextInput, View , Text} from "react-native";
-import { InputProps } from "../types/index.type";
+import { useMemo } from 'react';
+import { TextInput, View , Text} from 'react-native';
+
 import { useTheme } from '@theme';
-import { useMemo } from "react";
-import { createStyles } from "../styles/index.styles";
+
+import { createStyles } from '../styles/index.styles';
+import { InputProps } from '../types/index.type';
 
 
 const Input = ({ label, value, onChangeText, required, error }: InputProps) => {

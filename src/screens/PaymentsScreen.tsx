@@ -1,10 +1,9 @@
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { useNavigation } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  Linking,
   ScrollView,
   StyleSheet,
   Text,
@@ -12,12 +11,19 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import {
+  CoinProduct,
+  getCoinProducts,
+  getSlcBalance,
+  normalizeCoinApiError,
+  purchaseWithSlc,
+} from '@api/coin';
 import { MetalButton } from '@components/MetalButton';
 import { MetalPanel } from '@components/MetalPanel';
 import { useToast } from '@context/ToastContext';
 import { usePaymentsCatalog } from '@hooks/usePaymentsCatalog';
 import type { MainTabsParamList } from '@navigation/types';
-import { createStripeCheckoutSession } from '@services/api/payments';
+import { useEntitlementsStore } from '@store/entitlementsStore';
 import { useTheme, type Theme } from '@theme';
 
 type PaymentsNavigation = BottomTabNavigationProp<MainTabsParamList, 'Payments'>;
@@ -26,62 +32,84 @@ export function PaymentsScreen() {
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
   const navigation = useNavigation<PaymentsNavigation>();
-  const { gifts, plans, activeSubscription, loading, refresh } = usePaymentsCatalog();
+  const { gifts, loading, refresh } = usePaymentsCatalog();
   const toast = useToast();
-  const [launchingCheckout, setLaunchingCheckout] = useState(false);
+  const entitlements = useEntitlementsStore((state) => state.entitlements);
+  const fetchEntitlements = useEntitlementsStore((state) => state.fetchEntitlements);
+  const setEntitlements = useEntitlementsStore((state) => state.setEntitlements);
+  const [products, setProducts] = useState<CoinProduct[]>([]);
+  const [productsLoading, setProductsLoading] = useState(false);
+  const [productsError, setProductsError] = useState<string | null>(null);
+  const [slcBalance, setSlcBalance] = useState<number | null>(null);
+  const [purchasingCode, setPurchasingCode] = useState<string | null>(null);
+  const [purchaseErrorCode, setPurchaseErrorCode] = useState<string | null>(null);
 
-  const handleOpenSubscription = useCallback(
-    async (planId?: number) => {
-      if (launchingCheckout) {
-        return;
-      }
-      try {
-        setLaunchingCheckout(true);
-        const { url } = await createStripeCheckoutSession(
-          planId ? { plan_id: planId } : {},
-        );
-        if (!url) {
-          throw new Error('Missing checkout session URL');
-        }
-        const canOpen = await Linking.canOpenURL(url);
-        if (!canOpen) {
-          throw new Error('Cannot open Stripe checkout URL');
-        }
-        await Linking.openURL(url);
-      } catch (error) {
-        console.error('PaymentsScreen: failed to open Stripe Checkout', error);
-        toast.push({
-          tone: 'error',
-          message: 'Unable to launch checkout. Please try again.',
-        });
-      } finally {
-        setLaunchingCheckout(false);
-      }
-    },
-    [launchingCheckout, toast],
-  );
+  const loadProducts = useCallback(async () => {
+    setProductsLoading(true);
+    setProductsError(null);
+    try {
+      const [fetchedProducts, balance] = await Promise.all([
+        getCoinProducts(),
+        getSlcBalance().catch(() => null),
+      ]);
+      setProducts(fetchedProducts);
+      setSlcBalance(balance?.balance_cents ?? null);
+    } catch (error) {
+      setProductsError('Unable to load SLC products.');
+    } finally {
+      setProductsLoading(false);
+    }
+  }, []);
 
   const handleOpenWallet = useCallback(() => {
     navigation.navigate('WalletLedger');
   }, [navigation]);
 
-  const planFeatureMap = useMemo(
-    () =>
-      new Map(
-        plans.map((plan) => [
-          plan.id,
-          Object.entries(plan.features ?? {}).map(
-            ([key, value]) => `${key}: ${String(value)}`,
-          ),
-        ]),
-      ),
-    [plans],
-  );
-
   const formatPrice = useCallback((cents: number, interval?: string) => {
     const dollars = (cents / 100).toFixed(2);
     return `$${dollars}${interval ? ` / ${interval}` : ''}`;
   }, []);
+
+  const formatSlc = useCallback((cents: number) => {
+    const dollars = (cents / 100).toFixed(2);
+    return `${dollars} SLC`;
+  }, []);
+
+  const handlePurchase = useCallback(
+    async (product: CoinProduct) => {
+      if (purchasingCode) {
+        return;
+      }
+      setPurchaseErrorCode(null);
+      setPurchasingCode(product.code);
+      try {
+        const idempotencyKey = `slc-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+        const result = await purchaseWithSlc({
+          product_code: product.code,
+          quantity: 1,
+          idempotency_key: idempotencyKey,
+        });
+        setEntitlements(result.entitlements);
+        await loadProducts();
+        toast.push({ tone: 'info', message: 'Purchase successful.' });
+      } catch (error) {
+        const normalized = normalizeCoinApiError(error, 'Unable to complete purchase.');
+        setPurchaseErrorCode(normalized.code ?? null);
+        toast.push({ tone: 'error', message: normalized.message, duration: 4000 });
+      } finally {
+        setPurchasingCode(null);
+      }
+    },
+    [loadProducts, purchasingCode, setEntitlements, toast],
+  );
+
+  const handleRefreshAll = useCallback(async () => {
+    await Promise.all([refresh(), loadProducts(), fetchEntitlements().catch(() => null)]);
+  }, [fetchEntitlements, loadProducts, refresh]);
+
+  useEffect(() => {
+    loadProducts().catch(() => undefined);
+  }, [loadProducts]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -95,69 +123,72 @@ export function PaymentsScreen() {
 
         <MetalPanel glow>
           <Text style={styles.panelTitle}>Membership Status</Text>
-          {activeSubscription ? (
-            <>
-              <Text style={styles.body}>
-                You&apos;re on{' '}
-                <Text style={styles.emphasis}>{activeSubscription.plan.name}</Text> (
-                {formatPrice(
-                  activeSubscription.plan.price_cents,
-                  activeSubscription.plan.interval,
-                )}
-                ).
-              </Text>
-              <Text style={styles.caption}>
-                Current period ends{' '}
-                {new Date(
-                  activeSubscription.current_period_end ?? activeSubscription.updated_at,
-                ).toLocaleDateString()}
-              </Text>
-            </>
+          {entitlements?.premium_plus?.active ? (
+            <Text style={styles.body}>Premium+ is active.</Text>
+          ) : entitlements?.premium?.active ? (
+            <Text style={styles.body}>Premium is active.</Text>
           ) : (
-            <Text style={styles.body}>
-              No active plan yet. As Steve would say: the experience begins the moment you
-              tap &quot;Subscribe&quot;.
-            </Text>
+            <Text style={styles.body}>No active membership yet.</Text>
           )}
+          {entitlements?.premium?.active_until ? (
+            <Text style={styles.caption}>
+              Premium expires{' '}
+              {new Date(entitlements.premium.active_until).toLocaleDateString()}
+            </Text>
+          ) : null}
+          {entitlements?.premium_plus?.active_until ? (
+            <Text style={styles.caption}>
+              Premium+ expires{' '}
+              {new Date(entitlements.premium_plus.active_until).toLocaleDateString()}
+            </Text>
+          ) : null}
           <View style={styles.buttonRow}>
-            <MetalButton title="Refresh Catalog" onPress={refresh} />
-            <MetalButton
-              title={launchingCheckout ? 'Opening…' : 'Manage Subscription'}
-              onPress={() => handleOpenSubscription()}
-              disabled={launchingCheckout}
-            />
+            <MetalButton title="Refresh Status" onPress={handleRefreshAll} />
+            <MetalButton title="Top up SLC" onPress={handleOpenWallet} />
           </View>
         </MetalPanel>
 
         <MetalPanel>
-          <Text style={styles.panelTitle}>Available Plans</Text>
-          {plans.length === 0 ? (
-            <Text style={styles.body}>
-              Plans will appear here once the backend seeds them.
-            </Text>
+          <Text style={styles.panelTitle}>Buy with SLC</Text>
+          {productsLoading ? (
+            <Text style={styles.body}>Loading SLC products…</Text>
+          ) : productsError ? (
+            <Text style={styles.body}>{productsError}</Text>
+          ) : products.length === 0 ? (
+            <Text style={styles.body}>No SLC products available yet.</Text>
           ) : (
-            plans.map((plan) => (
-              <View key={plan.id} style={styles.card}>
+            products.map((product) => (
+              <View key={product.code} style={styles.card}>
                 <View style={styles.cardHeader}>
-                  <Text style={styles.cardTitle}>{plan.name}</Text>
-                  <Text style={styles.cardPrice}>
-                    {formatPrice(plan.price_cents, plan.interval)}
-                  </Text>
+                  <Text style={styles.cardTitle}>{product.title}</Text>
+                  <Text style={styles.cardPrice}>{formatSlc(product.price_slc)}</Text>
                 </View>
-                {(planFeatureMap.get(plan.id) ?? []).map((feature) => (
-                  <Text key={feature} style={styles.feature}>
-                    • {feature}
-                  </Text>
-                ))}
+                {product.description ? (
+                  <Text style={styles.body}>{product.description}</Text>
+                ) : null}
                 <MetalButton
-                  title="Select Plan"
-                  onPress={() => handleOpenSubscription(plan.id)}
-                  disabled={launchingCheckout}
+                  title={
+                    purchasingCode === product.code ? 'Processing…' : 'Buy with SLC'
+                  }
+                  onPress={() => handlePurchase(product)}
+                  disabled={purchasingCode === product.code}
                 />
               </View>
             ))
           )}
+          {slcBalance !== null ? (
+            <Text style={styles.caption}>Your SLC balance: {formatSlc(slcBalance)}</Text>
+          ) : null}
         </MetalPanel>
+
+        {purchaseErrorCode === 'insufficient_funds' ? (
+          <MetalPanel>
+            <Text style={styles.body}>
+              Insufficient SLC balance. Top up to unlock Premium features.
+            </Text>
+            <MetalButton title="Top up SLC" onPress={handleOpenWallet} />
+          </MetalPanel>
+        ) : null}
 
         <MetalPanel>
           <Text style={styles.panelTitle}>Gift Catalog</Text>

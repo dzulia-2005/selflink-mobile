@@ -55,6 +55,9 @@ All endpoints are under `/api/v1/`.
 | `GET /api/v1/coin/ledger/?cursor&limit` | SLC ledger page | `selflink-backend/apps/coin/views.py` (`CoinLedgerView`) | `src/api/coin.ts` (`listSlcLedger`) + `src/screens/WalletLedgerScreen.tsx` |
 | `POST /api/v1/coin/transfer/` | Send SLC | `selflink-backend/apps/coin/views.py` (`CoinTransferView`) | `src/api/coin.ts` (`transferSlc`) |
 | `POST /api/v1/coin/spend/` | Spend SLC | `selflink-backend/apps/coin/views.py` (`CoinSpendView`) | `src/api/coin.ts` (`spendSlc`) |
+| `GET /api/v1/coin/products/` | SLC product catalog | `selflink-backend/apps/coin/views.py` (`CoinProductsView`) | `src/api/coin.ts` (`getCoinProducts`) |
+| `POST /api/v1/coin/purchase/` | Buy product with SLC | `selflink-backend/apps/coin/views.py` (`CoinPurchaseView`) | `src/api/coin.ts` (`purchaseWithSlc`) |
+| `GET /api/v1/me/entitlements/` | Entitlement status | `selflink-backend/apps/coin/views.py` (`MeEntitlementsView`) | `src/api/users.ts` (`getEntitlements`) |
 
 Expected shapes (mobile expects these keys):
 
@@ -79,6 +82,44 @@ Expected shapes (mobile expects these keys):
 // POST /coin/spend/
 { "event_id": 1, "amount_cents": 500, "reference": "product:test",
   "balance_cents": 700, "currency": "SLC" }
+```
+
+```json
+// GET /coin/products/
+[
+  {
+    "code": "premium_month",
+    "title": "Premium (Monthly)",
+    "description": "Unlock Premium features for 30 days.",
+    "price_slc": 1000,
+    "duration_days": 30,
+    "entitlement_key": "premium",
+    "is_active": true
+  }
+]
+```
+
+```json
+// POST /coin/purchase/
+{
+  "ok": true,
+  "product_code": "premium_month",
+  "charged_slc": 1000,
+  "balance_slc": 900,
+  "entitlements": {
+    "premium": { "active": true, "active_until": "2026-03-05T12:00:00Z" },
+    "premium_plus": { "active": false, "active_until": null }
+  },
+  "ledger_tx_id": "123"
+}
+```
+
+```json
+// GET /me/entitlements/
+{
+  "premium": { "active": true, "active_until": "2026-03-05T12:00:00Z" },
+  "premium_plus": { "active": false, "active_until": null }
+}
 ```
 
 ### Payments wallet (fiat)
