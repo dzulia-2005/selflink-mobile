@@ -64,6 +64,41 @@ export type SpendSlcResponse = {
   currency: string;
 };
 
+export type CoinProduct = {
+  code: string;
+  title: string;
+  description: string;
+  price_slc: number;
+  duration_days: number | null;
+  entitlement_key: 'premium' | 'premium_plus';
+  is_active: boolean;
+};
+
+export type CoinPurchasePayload = {
+  product_code: string;
+  quantity?: number;
+  idempotency_key: string;
+};
+
+export type EntitlementStatus = {
+  active: boolean;
+  active_until: string | null;
+};
+
+export type EntitlementsResponse = {
+  premium: EntitlementStatus;
+  premium_plus: EntitlementStatus;
+};
+
+export type CoinPurchaseResponse = {
+  ok: boolean;
+  product_code: string;
+  charged_slc: number;
+  balance_slc?: number;
+  entitlements: EntitlementsResponse;
+  ledger_tx_id?: string | null;
+};
+
 type CoinApiError = {
   status?: number;
   code?: string;
@@ -111,6 +146,18 @@ export async function transferSlc(
 
 export async function spendSlc(payload: SpendSlcPayload): Promise<SpendSlcResponse> {
   const { data } = await apiClient.post<SpendSlcResponse>('/coin/spend/', payload);
+  return data;
+}
+
+export async function getCoinProducts(): Promise<CoinProduct[]> {
+  const { data } = await apiClient.get<CoinProduct[]>('/coin/products/');
+  return data;
+}
+
+export async function purchaseWithSlc(
+  payload: CoinPurchasePayload,
+): Promise<CoinPurchaseResponse> {
+  const { data } = await apiClient.post<CoinPurchaseResponse>('/coin/purchase/', payload);
   return data;
 }
 

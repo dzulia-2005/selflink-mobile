@@ -39,3 +39,24 @@ export type SoulmatchResult = {
   explanation_level?: SoulmatchExplainLevel;
   explanation?: SoulmatchExplanation;
 };
+
+export type SoulmatchEligibilityMeta = {
+  missing_requirements?: string[];
+  reason?: string;
+  eligibility?: Record<string, unknown>;
+  [key: string]: unknown;
+};
+
+export type SoulmatchWithSuccess = SoulmatchResult & {
+  meta?: SoulmatchEligibilityMeta;
+};
+
+export type SoulmatchAsyncResult = {
+  task_id: string;
+  pair_key: string;
+  rules_version: string | number;
+  target_user_summary?: Record<string, unknown>;
+  [key: string]: unknown;
+};
+
+export type SoulmatchWithResponse = SoulmatchWithSuccess | SoulmatchAsyncResult;

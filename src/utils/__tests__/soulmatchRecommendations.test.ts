@@ -2,6 +2,7 @@ import {
   normalizeSoulmatchRecommendations,
   normalizeSoulmatchRecsResponse,
 } from '@utils/soulmatchRecommendations';
+import { isSoulmatchAsyncResult, isSoulmatchWithSuccess } from '@services/api/soulmatch';
 
 describe('normalizeSoulmatchRecommendations', () => {
   it('filters entries without user or score', () => {
@@ -80,5 +81,33 @@ describe('normalizeSoulmatchRecsResponse', () => {
     const normalized = normalizeSoulmatchRecsResponse(payload as any);
     expect(normalized.results).toHaveLength(1);
     expect(normalized.meta?.reason).toBe('no_candidates');
+  });
+});
+
+describe('soulmatch /with contract guards', () => {
+  it('accepts async payloads', () => {
+    expect(
+      isSoulmatchAsyncResult({
+        task_id: 'task_123',
+        pair_key: 'pair_456',
+        rules_version: 'v2',
+      }),
+    ).toBe(true);
+  });
+
+  it('accepts success payloads', () => {
+    expect(
+      isSoulmatchWithSuccess({
+        user: { id: 1, name: 'A', handle: 'a', photo: '' },
+        score: 82,
+        components: {},
+        tags: [],
+      }),
+    ).toBe(true);
+  });
+
+  it('rejects invalid payloads', () => {
+    expect(isSoulmatchAsyncResult({})).toBe(false);
+    expect(isSoulmatchWithSuccess({ score: 50 })).toBe(false);
   });
 });
