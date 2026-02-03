@@ -91,7 +91,7 @@ export function PaymentsScreen() {
         });
         setEntitlements(result.entitlements);
         await loadProducts();
-        toast.push({ tone: 'success', message: 'Purchase successful.' });
+        toast.push({ tone: 'info', message: 'Purchase successful.' });
       } catch (error) {
         const normalized = normalizeCoinApiError(error, 'Unable to complete purchase.');
         setPurchaseErrorCode(normalized.code ?? null);
