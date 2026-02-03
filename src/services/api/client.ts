@@ -1,3 +1,4 @@
+import { forceLogout } from '@auth/forceLogout';
 import { env } from '@config/env';
 import { parseJsonPreservingLargeInts } from '@utils/json';
 import { buildUrl } from '@utils/url';
@@ -14,6 +15,7 @@ type RequestOptions = {
 export class ApiClient {
   private token: string | null = null;
   private refreshHandler?: () => Promise<string | null>;
+  private pendingRefresh: Promise<string | null> | null = null;
 
   setToken(token: string | null) {
     this.token = token;
@@ -26,6 +28,7 @@ export class ApiClient {
   async request<T>(path: string, options: RequestOptions = {}): Promise<T> {
     const url = buildUrl(env.apiHttpBaseUrl, path);
     const { method = 'GET', body, headers = {}, auth = true } = options;
+    const isRefreshRequest = path.includes('/auth/refresh/');
 
     const finalHeaders: Record<string, string> = {
       Accept: 'application/json',
@@ -57,15 +60,41 @@ export class ApiClient {
     };
 
     let response = await send();
-    if (
-      response.status === 401 &&
-      auth &&
-      this.refreshHandler &&
-      !(body instanceof FormData)
-    ) {
-      const newToken = await this.refreshHandler();
-      if (newToken) {
+    let attemptedRefresh = false;
+    if (response.status === 401 && auth && !(body instanceof FormData)) {
+      if (isRefreshRequest) {
+        if (this.token) {
+          await forceLogout('expired');
+        }
+        throw new Error(`Request failed (401): ${response.statusText}`);
+      }
+      if (!this.refreshHandler) {
+        if (this.token) {
+          await forceLogout('expired');
+        }
+        throw new Error(`Request failed (401): ${response.statusText}`);
+      }
+      if (!attemptedRefresh) {
+        attemptedRefresh = true;
+        if (!this.pendingRefresh) {
+          this.pendingRefresh = this.refreshHandler().finally(() => {
+            this.pendingRefresh = null;
+          });
+        }
+        const newToken = await this.pendingRefresh;
+        if (!newToken) {
+          if (this.token) {
+            await forceLogout('expired');
+          }
+          throw new Error(`Request failed (401): ${response.statusText}`);
+        }
         response = await send();
+      }
+      if (response.status === 401) {
+        if (this.token) {
+          await forceLogout('expired');
+        }
+        throw new Error(`Request failed (401): ${response.statusText}`);
       }
     }
 

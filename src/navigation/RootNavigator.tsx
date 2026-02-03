@@ -11,6 +11,7 @@ import { useTheme } from '@theme';
 
 import { AuthNavigator } from './AuthNavigator';
 import { MainTabsNavigator } from './MainTabsNavigator';
+import { navigationRef } from './navigationRef';
 import type { OnboardingStackParamList, RootStackParamList } from './types';
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
@@ -71,7 +72,7 @@ export function RootNavigator() {
   }
 
   return (
-    <NavigationContainer theme={navigationTheme}>
+    <NavigationContainer ref={navigationRef as any} theme={navigationTheme}>
       <RootStack.Navigator screenOptions={{ headerShown: false }}>
         {!isAuthenticated && <RootStack.Screen name="Auth" component={AuthNavigator} />}
         {needsOnboarding && (
