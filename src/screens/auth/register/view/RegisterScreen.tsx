@@ -85,7 +85,7 @@ const RegisterScreen = () => {
               control={control}
               render={({field:{onChange,value}})=>(
                 <TextInput
-                  placeholder="Handle"
+                  placeholder="Handle (Username)"
                   placeholderTextColor={theme.text.muted}
                   autoCapitalize="none"
                   style={styles.input}
@@ -165,11 +165,13 @@ const createStyles = (theme: Theme) =>
     },
     container: {
       flex: 1,
+      justifyContent: 'center',
     },
     scrollContent: {
+      flexGrow: 1,
+      justifyContent: 'center',
       paddingHorizontal: theme.spacing.xl,
       paddingVertical: theme.spacing.xl,
-      paddingBottom: theme.spacing.xl * 2,
     },
     card: {
       backgroundColor: theme.colors.surface,
