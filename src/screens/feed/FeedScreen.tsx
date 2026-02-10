@@ -894,7 +894,6 @@ const createStyles = (theme: Theme) =>
    modeRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      borderBottomWidth: 1,
     },
 
     modeButton: {
