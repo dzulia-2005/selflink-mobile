@@ -26,6 +26,7 @@ import type { GiftPreview } from '@utils/gifts';
 
 import { UserAvatar } from './UserAvatar';
 import { useEntranceAnimation, usePressScaleAnimation } from '../styles/animations';
+import React from 'react';
 
 interface Props {
   post: Post;
@@ -452,15 +453,13 @@ const createStyles = (theme: Theme) =>
       elevation: 6,
     },
     cardGradient: {
-      padding: 1.5,
+      padding: 0,
       borderRadius: 24,
     },
     cardInner: {
       backgroundColor: theme.feed.cardBackground,
       borderRadius: 22,
       padding: 16,
-      borderWidth: 1,
-      borderColor: theme.feed.cardBorder,
       position: 'relative',
     },
     header: {

@@ -1,5 +1,5 @@
 import * as SecureStore from 'expo-secure-store';
-import {
+import React, {
   ReactNode,
   createContext,
   useCallback,
@@ -236,5 +236,9 @@ export function AuthProvider({ children }: Props) {
     ],
   );
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+      <AuthContext.Provider value={value}>
+        {children}
+      </AuthContext.Provider>
+  );
 }

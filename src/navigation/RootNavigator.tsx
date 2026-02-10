@@ -13,6 +13,7 @@ import { AuthNavigator } from './AuthNavigator';
 import { MainTabsNavigator } from './MainTabsNavigator';
 import { navigationRef } from './navigationRef';
 import type { OnboardingStackParamList, RootStackParamList } from './types';
+import React from 'react';
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 const OnboardingStack = createNativeStackNavigator<OnboardingStackParamList>();

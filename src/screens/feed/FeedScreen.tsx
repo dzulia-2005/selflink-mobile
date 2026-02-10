@@ -44,6 +44,9 @@ import {
 import { normalizeGiftRenderData, type GiftPreview } from '@utils/gifts';
 import { areStringArraysEqual, buildChannelList } from '@utils/realtimeChannels';
 import { createRealtimeDedupeStore } from '@utils/realtimeDedupe';
+import React from 'react';
+import { useAuth } from '@hooks/useAuth';
+import { UserAvatar } from '@components/UserAvatar';
 
 type FeedTab = FeedMode | 'reels';
 
@@ -94,9 +97,15 @@ export function FeedScreen() {
     itemVisiblePercentThreshold: 80,
   });
 
+
+    const currentUser = useAuthStore((state) => state.currentUser);
+  
+  const { user: authUser } = useAuth();
+
   useEffect(() => {
     loadFeed().catch(() => undefined);
   }, [loadFeed]);
+
 
   useFocusEffect(
     useCallback(() => {
@@ -615,16 +624,36 @@ export function FeedScreen() {
       />
       <View style={styles.content}>
         <View style={[styles.headerArea, { paddingTop: insets.top + 6 }]}>
+
           <View style={styles.headerRow}>
-            <Text style={styles.headerTitle}>Feed</Text>
-            <TouchableOpacity
-              style={styles.searchButton}
-              onPress={() => navigation.navigate('SearchProfiles')}
-              activeOpacity={0.9}
-            >
-              <Ionicons name="search" size={18} style={styles.searchIcon} />
-            </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => navigation.navigate('Profile')}
+              >
+                <UserAvatar
+                  uri={authUser?.avatarUrl}
+                  label={currentUser?.name || authUser?.name}
+                  size={32}
+                />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.searchContainer}
+                onPress={() => navigation.navigate('SearchProfiles')}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="search" size={16} color="#888" />
+                <Text style={styles.searchPlaceholder}>Search</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.messageButton}
+                onPress={() => navigation.navigate('Messages')}
+              >
+                <Ionicons name="chatbubble-outline" size={22} color="#555353" />
+              </TouchableOpacity>
+
           </View>
+
 
           <View style={styles.modeSwitch}>
             <View
@@ -664,11 +693,13 @@ export function FeedScreen() {
                     key={key}
                     style={styles.modeButton}
                     onPress={onPress}
-                    activeOpacity={0.9}
+                    activeOpacity={0.8}
                   >
                     <Text style={[styles.modeLabel, active && styles.modeLabelActive]}>
                       {label}
                     </Text>
+
+                    <View style={[styles.modeIndicator, active && styles.modeIndicatorActive]} />
                   </TouchableOpacity>
                 );
               })}
@@ -778,8 +809,42 @@ const createStyles = (theme: Theme) =>
     headerRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      justifyContent: 'space-between',
+      paddingHorizontal: 14,
+      paddingVertical: 10,
     },
+
+    avatar: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+    },
+
+    searchContainer: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      borderRadius: 12,
+      paddingHorizontal: 12,
+      height: 36,
+      gap: 6,
+      borderWidth:1,
+      borderColor: '#2A2A2A',
+      marginHorizontal: 10,
+    },
+
+    searchPlaceholder: {
+      color: '#888',
+      fontSize: 14,
+    },
+
+    messageButton: {
+      marginLeft: 12,
+      width: 36,
+      height: 36,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+
     headerTitle: {
       color: theme.feed.textPrimary,
       fontSize: 24,
@@ -822,38 +887,44 @@ const createStyles = (theme: Theme) =>
       borderRadius: 16,
       backgroundColor: 'rgba(255,255,255,0.02)',
     },
-    modeIndicator: {
-      position: 'absolute',
-      top: 0,
-      bottom: 0,
-      left: 0,
-      borderRadius: 16,
-      shadowColor: theme.feed.accentBlue,
-      shadowOpacity: 0.25,
-      shadowRadius: 16,
-      elevation: 6,
-    },
     modeIndicatorGradient: {
       ...StyleSheet.absoluteFillObject,
       borderRadius: 16,
     },
-    modeRow: {
+   modeRow: {
       flexDirection: 'row',
       alignItems: 'center',
     },
+
     modeButton: {
       flex: 1,
       paddingVertical: 10,
       alignItems: 'center',
     },
+
     modeLabel: {
       color: theme.feed.textMuted,
-      fontWeight: '700',
-      letterSpacing: 0.2,
+      fontWeight: '600',
+      letterSpacing: 0,
     },
+
     modeLabelActive: {
       color: theme.feed.textPrimary,
     },
+
+    modeIndicator: {
+      marginTop: 6,
+      height: 2,
+      width: 22,
+      borderRadius: 999,
+      opacity: 0,
+    },
+
+    modeIndicatorActive: {
+      opacity: 1,
+      backgroundColor: theme.feed.accentCyan,
+    },
+
     dividerGlow: {
       height: 1,
       marginTop: 14,
