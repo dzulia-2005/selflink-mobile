@@ -12,6 +12,7 @@ import { useAvatarPicker } from '@hooks/useAvatarPicker';
 import { ProfileStackParamList } from '@navigation/types';
 import { useAuthStore } from '@store/authStore';
 import { useTheme, type Theme, type ThemeMode } from '@theme';
+import React from 'react';
 
 const formatAccountKey = (value: string) => {
   if (value.length <= 14) {

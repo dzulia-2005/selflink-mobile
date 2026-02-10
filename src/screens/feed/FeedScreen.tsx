@@ -97,6 +97,9 @@ export function FeedScreen() {
     itemVisiblePercentThreshold: 80,
   });
 
+
+    const currentUser = useAuthStore((state) => state.currentUser);
+  
   const { user: authUser } = useAuth();
 
   useEffect(() => {
@@ -621,16 +624,18 @@ export function FeedScreen() {
       />
       <View style={styles.content}>
         <View style={[styles.headerArea, { paddingTop: insets.top + 6 }]}>
+
           <View style={styles.headerRow}>
-              <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
+              <TouchableOpacity
+                onPress={() => navigation.navigate('Profile')}
+              >
                 <UserAvatar
                   uri={authUser?.avatarUrl}
-                  label={authUser?.name || authUser?.name}
+                  label={currentUser?.name || authUser?.name}
                   size={32}
                 />
               </TouchableOpacity>
 
-              {/* Search */}
               <TouchableOpacity
                 style={styles.searchContainer}
                 onPress={() => navigation.navigate('SearchProfiles')}
@@ -640,15 +645,14 @@ export function FeedScreen() {
                 <Text style={styles.searchPlaceholder}>Search</Text>
               </TouchableOpacity>
 
-              {/* Messages */}
               <TouchableOpacity
                 style={styles.messageButton}
-                onPress={() => navigation.navigate('Chats')}
+                onPress={() => navigation.navigate('Messages')}
               >
                 <Ionicons name="chatbubble-outline" size={22} color="#555353" />
               </TouchableOpacity>
 
-            </View>
+          </View>
 
 
           <View style={styles.modeSwitch}>
@@ -811,7 +815,6 @@ const createStyles = (theme: Theme) =>
       width: 36,
       height: 36,
       borderRadius: 18,
-      marginRight: 10,
     },
 
     searchContainer: {
@@ -822,6 +825,9 @@ const createStyles = (theme: Theme) =>
       paddingHorizontal: 12,
       height: 36,
       gap: 6,
+      borderWidth:1,
+      borderColor: '#2A2A2A',
+      marginHorizontal: 10,
     },
 
     searchPlaceholder: {

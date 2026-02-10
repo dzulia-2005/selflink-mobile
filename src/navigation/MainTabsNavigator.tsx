@@ -41,6 +41,7 @@ import type {
   MentorStackParamList,
   SoulMatchStackParamList,
 } from './types';
+import React from 'react';
 
 const SELF_LINK_GREEN = '#16a34a';
 
