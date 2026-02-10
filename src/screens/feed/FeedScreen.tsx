@@ -693,11 +693,13 @@ export function FeedScreen() {
                     key={key}
                     style={styles.modeButton}
                     onPress={onPress}
-                    activeOpacity={0.9}
+                    activeOpacity={0.8}
                   >
                     <Text style={[styles.modeLabel, active && styles.modeLabelActive]}>
                       {label}
                     </Text>
+
+                    <View style={[styles.modeIndicator, active && styles.modeIndicatorActive]} />
                   </TouchableOpacity>
                 );
               })}
@@ -885,38 +887,45 @@ const createStyles = (theme: Theme) =>
       borderRadius: 16,
       backgroundColor: 'rgba(255,255,255,0.02)',
     },
-    modeIndicator: {
-      position: 'absolute',
-      top: 0,
-      bottom: 0,
-      left: 0,
-      borderRadius: 16,
-      shadowColor: theme.feed.accentBlue,
-      shadowOpacity: 0.25,
-      shadowRadius: 16,
-      elevation: 6,
-    },
     modeIndicatorGradient: {
       ...StyleSheet.absoluteFillObject,
       borderRadius: 16,
     },
-    modeRow: {
+   modeRow: {
       flexDirection: 'row',
       alignItems: 'center',
+      borderBottomWidth: 1,
     },
+
     modeButton: {
       flex: 1,
       paddingVertical: 10,
       alignItems: 'center',
     },
+
     modeLabel: {
       color: theme.feed.textMuted,
-      fontWeight: '700',
-      letterSpacing: 0.2,
+      fontWeight: '600',
+      letterSpacing: 0,
     },
+
     modeLabelActive: {
       color: theme.feed.textPrimary,
     },
+
+    modeIndicator: {
+      marginTop: 6,
+      height: 2,
+      width: 22,
+      borderRadius: 999,
+      opacity: 0,
+    },
+
+    modeIndicatorActive: {
+      opacity: 1,
+      backgroundColor: theme.feed.accentCyan,
+    },
+
     dividerGlow: {
       height: 1,
       marginTop: 14,
