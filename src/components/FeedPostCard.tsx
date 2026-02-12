@@ -26,7 +26,7 @@ import type { GiftPreview } from '@utils/gifts';
 
 import { UserAvatar } from './UserAvatar';
 import { useEntranceAnimation, usePressScaleAnimation } from '../styles/animations';
-import React from 'react';
+// import React from 'react';
 
 interface Props {
   post: Post;

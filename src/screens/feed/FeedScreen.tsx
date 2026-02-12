@@ -29,6 +29,8 @@ import { InsightSkeleton } from '@components/skeleton/InsightSkeleton';
 import { PostSkeleton } from '@components/skeleton/PostSkeleton';
 import { SoulMatchSkeleton } from '@components/skeleton/SoulMatchSkeleton';
 import { SoulMatchFeedCard } from '@components/SoulMatchFeedCard';
+import { UserAvatar } from '@components/UserAvatar';
+import { useAuth } from '@hooks/useAuth';
 import { useGiftBurst } from '@hooks/useGiftBurst';
 import { connectRealtime, type RealtimePayload } from '@realtime/index';
 import type { FeedItem, FeedMode } from '@schemas/feed';
@@ -44,9 +46,7 @@ import {
 import { normalizeGiftRenderData, type GiftPreview } from '@utils/gifts';
 import { areStringArraysEqual, buildChannelList } from '@utils/realtimeChannels';
 import { createRealtimeDedupeStore } from '@utils/realtimeDedupe';
-import React from 'react';
-import { useAuth } from '@hooks/useAuth';
-import { UserAvatar } from '@components/UserAvatar';
+// import React from 'react';
 
 type FeedTab = FeedMode | 'reels';
 
@@ -96,10 +96,7 @@ export function FeedScreen() {
   const viewabilityConfig = useRef({
     itemVisiblePercentThreshold: 80,
   });
-
-
-    const currentUser = useAuthStore((state) => state.currentUser);
-  
+  const currentUser = useAuthStore((state) => state.currentUser);
   const { user: authUser } = useAuth();
 
   useEffect(() => {

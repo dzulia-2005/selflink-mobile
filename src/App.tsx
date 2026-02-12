@@ -1,11 +1,11 @@
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { AuthProvider } from '@context/AuthContext';
 import { ToastProvider } from '@context/ToastContext';
 import { RootNavigator } from '@navigation/RootNavigator';
 import { ThemeProvider, useTheme } from '@theme';
-import React from 'react';
-import { AuthProvider } from '@context/AuthContext';
+// import React from 'react';
 
 function AppShell() {
   const { resolved, theme } = useTheme();
