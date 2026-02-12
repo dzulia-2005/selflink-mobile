@@ -2,7 +2,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Image, StyleSheet, Text } from 'react-native';
 
 import { normalizeAvatarUrl } from '@utils/avatar';
-import React from 'react';
+// import React from 'react';
 
 type Props = {
   uri?: string | null;

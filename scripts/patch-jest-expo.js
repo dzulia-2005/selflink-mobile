@@ -12,7 +12,7 @@ const target = path.join(
 );
 
 const markerRegex =
-  /const\s+mockNativeModules\s*=\s*require\(['"]react-native\/Libraries\/BatchedBridge\/NativeModules['"]\)(?:\.default)?\s*;/;
+  /const\s+mockNativeModules\s*=\s*require\(['"]react-native\/Libraries\/BatchedBridge\/NativeModules['"]\)(?:\.default)?(?:\s*\|\|\s*\{\s*\})?\s*;/;
 try {
   const source = fs.readFileSync(target, 'utf8');
   const markerMatch = source.match(markerRegex);
@@ -22,10 +22,14 @@ try {
   }
   const markerLine = markerMatch[0];
   const hasFallback = markerLine.includes('|| {}');
-  const needsUnimoduleGuard = !source.includes('mockNativeModules.NativeUnimoduleProxy');
-  const needsUiManagerGuard = !source.includes('mockNativeModules.UIManager');
+  const hasUnimoduleGuard =
+    source.includes('mockNativeModules.NativeUnimoduleProxy = {') ||
+    source.includes('NativeUnimoduleProxy = {');
+  const hasUiManagerGuard = source.includes('mockNativeModules.UIManager = {');
+  const needsUnimoduleGuard = !hasUnimoduleGuard;
+  const needsUiManagerGuard = !hasUiManagerGuard;
 
-  if (!hasFallback && !needsUnimoduleGuard && !needsUiManagerGuard) {
+  if (hasFallback && !needsUnimoduleGuard && !needsUiManagerGuard) {
     console.log('[patch-jest-expo] setup.js already compatible; no patch needed.');
     process.exit(0);
   }
