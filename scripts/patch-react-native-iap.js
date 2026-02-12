@@ -12,7 +12,8 @@ function writeFile(filePath, contents) {
 }
 
 function patchPromiseUtils() {
-  const filePath = path.join(
+  const possibleFiles = ['PromiseUtils.kt', 'PromiseUtlis.kt'];
+  const basePath = path.join(
     ROOT,
     'node_modules',
     'react-native-iap',
@@ -22,57 +23,70 @@ function patchPromiseUtils() {
     'java',
     'com',
     'dooboolab',
-    'rniap',
-    'PromiseUtlis.kt'
+    'rniap'
   );
 
-  if (!fs.existsSync(filePath)) {
-    console.warn('[patch-react-native-iap] PromiseUtlis.kt not found; skipping.');
-    return;
-  }
+  const existingFiles = possibleFiles
+    .map(fileName => path.join(basePath, fileName))
+    .filter(filePath => fs.existsSync(filePath));
 
-  const original = readFile(filePath);
-  if (original.includes('val safeCode = code ?: PromiseUtils.E_UNKNOWN')) {
-    return;
-  }
-
-  let updated = original;
-
-  updated = updated.replace(
-    'import com.facebook.react.bridge.ObjectAlreadyConsumedException\n',
-    ''
-  );
-
-  updated = updated.replace(
-    /catch \(oce: ObjectAlreadyConsumedException\)/g,
-    'catch (e: RuntimeException)'
-  );
-
-  updated = updated.replace(
-    /Already consumed \$\{oce\.message\}/g,
-    'Already consumed ${e.message}'
-  );
-
-  if (!updated.includes('val safeCode = code ?: PromiseUtils.E_UNKNOWN')) {
-    updated = updated.replace(
-      /fun Promise\.safeReject\(\s*code: String\?,\s*message: String\?,\s*throwable: Throwable\?,\s*\)\s*\{/m,
-      match => `${match}\n    val safeCode = code ?: PromiseUtils.E_UNKNOWN`
-    );
-    updated = updated.replace(
-      'this.reject(code, message, throwable)',
-      'this.reject(safeCode, message, throwable)'
-    );
-  }
-
-  if (updated === original) {
+  if (existingFiles.length === 0) {
     console.warn(
-      '[patch-react-native-iap] PromiseUtlis.kt did not match expected patterns; skipping.'
+      '[patch-react-native-iap] PromiseUtils.kt/PromiseUtlis.kt not found; skipping.'
     );
     return;
   }
 
-  writeFile(filePath, updated);
-  console.log('[patch-react-native-iap] Patched PromiseUtlis.kt');
+  existingFiles.forEach(filePath => {
+    const original = readFile(filePath);
+
+    const importPattern =
+      'import com.facebook.react.bridge.ObjectAlreadyConsumedException\n';
+    const catchPattern = /catch \(oce: ObjectAlreadyConsumedException\)/g;
+    const messagePattern = /Already consumed \$\{oce\.message\}/g;
+    const safeRejectPattern =
+      /fun Promise\.safeReject\(\s*code: String\?,\s*message: String\?,\s*throwable: Throwable\?,\s*\)\s*\{/m;
+    const rejectPattern = /this\.reject\(code, message, throwable\)/g;
+
+    let updated = original;
+
+    if (updated.includes(importPattern)) {
+      updated = updated.replace(importPattern, '');
+    }
+
+    if (catchPattern.test(updated)) {
+      updated = updated.replace(catchPattern, 'catch (e: RuntimeException)');
+    }
+
+    if (messagePattern.test(updated)) {
+      updated = updated.replace(messagePattern, 'Already consumed ${e.message}');
+    }
+
+    const hasSafeCode = updated.includes('val safeCode = code ?: PromiseUtils.E_UNKNOWN');
+    if (!hasSafeCode && safeRejectPattern.test(updated)) {
+      updated = updated.replace(
+        safeRejectPattern,
+        match => `${match}\n    val safeCode = code ?: PromiseUtils.E_UNKNOWN`
+      );
+    }
+
+    const safeCodePresent = updated.includes('val safeCode = code ?: PromiseUtils.E_UNKNOWN');
+    if (safeCodePresent && rejectPattern.test(updated)) {
+      updated = updated.replace(rejectPattern, 'this.reject(safeCode, message, throwable)');
+    }
+
+    if (updated === original) {
+      console.log(
+        `[patch-react-native-iap] ${path.basename(
+          filePath
+        )} already compatible; no patch needed.`
+      );
+      return;
+    }
+
+    writeFile(filePath, updated);
+    console.log(`[patch-react-native-iap] Patched ${path.basename(filePath)}`);
+  });
 }
 
 function patchRniapModule() {
@@ -97,6 +111,12 @@ function patchRniapModule() {
 
   const original = readFile(filePath);
   if (original.includes('val activity = reactApplicationContext.currentActivity')) {
+    console.log('[patch-react-native-iap] RNIapModule.kt already compatible; no patch needed.');
+    return;
+  }
+
+  if (!original.includes('val activity = currentActivity')) {
+    console.log('[patch-react-native-iap] RNIapModule.kt already compatible; no patch needed.');
     return;
   }
 
@@ -104,13 +124,6 @@ function patchRniapModule() {
     'val activity = currentActivity',
     'val activity = reactApplicationContext.currentActivity'
   );
-
-  if (updated === original) {
-    console.warn(
-      '[patch-react-native-iap] RNIapModule.kt did not match expected patterns; skipping.'
-    );
-    return;
-  }
 
   writeFile(filePath, updated);
   console.log('[patch-react-native-iap] Patched RNIapModule.kt');
