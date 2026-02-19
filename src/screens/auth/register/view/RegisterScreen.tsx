@@ -48,6 +48,10 @@ const RegisterScreen = () => {
     navigation.goBack();
   }, [navigation]);
 
+  const handleNavigateSocialLogin = useCallback(() => {
+    navigation.navigate('SocialLogin');
+  }, [navigation]);
+
   return (
     <LinearGradient colors={theme.gradients.appBackground} style={styles.gradient}>
       <KeyboardAvoidingView
@@ -148,6 +152,9 @@ const RegisterScreen = () => {
             </TouchableOpacity>
             <TouchableOpacity style={styles.footerLink} onPress={handleNavigateLogin}>
               <Text style={styles.footerText}>Already have an account? Sign in</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.footerLink} onPress={handleNavigateSocialLogin}>
+              <Text style={styles.footerText}>Continue with social login</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>

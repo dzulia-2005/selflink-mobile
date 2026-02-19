@@ -244,6 +244,43 @@ export function ProfileScreen() {
               insights.
             </Text>
           )}
+          <Text style={styles.sectionTitle}>Billing</Text>
+          <TouchableOpacity
+            style={styles.editButton}
+            onPress={() => navigation.navigate('Payments')}
+            activeOpacity={0.9}
+          >
+            <Text style={styles.actionLabel}>Payments</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.editButton}
+            onPress={() => navigation.navigate('WalletLedger')}
+            activeOpacity={0.9}
+          >
+            <Text style={styles.actionLabel}>Wallet</Text>
+          </TouchableOpacity>
+          <Text style={styles.sectionTitle}>More</Text>
+          <TouchableOpacity
+            style={styles.editButton}
+            onPress={() => navigation.navigate('Notifications')}
+            activeOpacity={0.9}
+          >
+            <Text style={styles.actionLabel}>Notifications</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.editButton}
+            onPress={() => navigation.navigate('Inbox')}
+            activeOpacity={0.9}
+          >
+            <Text style={styles.actionLabel}>Inbox</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.editButton}
+            onPress={() => navigation.navigate('Community')}
+            activeOpacity={0.9}
+          >
+            <Text style={styles.actionLabel}>Community</Text>
+          </TouchableOpacity>
           <TouchableOpacity
             style={styles.logoutButton}
             onPress={handleLogout}
@@ -432,6 +469,10 @@ const createStyles = (theme: Theme) =>
     },
     logoutLabel: {
       color: theme.colors.error,
+      ...theme.typography.button,
+    },
+    actionLabel: {
+      color: theme.text.primary,
       ...theme.typography.button,
     },
     editButton: {

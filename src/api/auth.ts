@@ -38,3 +38,35 @@ export async function refresh(refreshToken: string): Promise<RefreshResponse> {
   });
   return data;
 }
+
+export type SocialProvider = 'google' | 'facebook' | 'github';
+
+export type SocialLoginPayload = {
+  idToken?: string;
+  accessToken?: string;
+  code?: string;
+};
+
+export async function socialLogin(
+  provider: SocialProvider,
+  payload: SocialLoginPayload,
+): Promise<AuthResponse> {
+  const body: Record<string, string> = {};
+  if (payload.idToken) {
+    body.id_token = payload.idToken;
+  }
+  if (payload.accessToken) {
+    body.access_token = payload.accessToken;
+  }
+  if (payload.code) {
+    body.code = payload.code;
+  }
+  if (!body.id_token && !body.access_token && !body.code) {
+    throw new Error('Provide id token, access token, or OAuth code.');
+  }
+  const { data } = await apiClient.post<AuthResponse>(
+    `/auth/social/${provider}/callback/`,
+    body,
+  );
+  return data;
+}

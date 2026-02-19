@@ -47,6 +47,10 @@ export const LoginScreen = () => {
     navigation.navigate('Register');
   }, [navigation]);
 
+  const handleNavigateSocialLogin = useCallback(() => {
+    navigation.navigate('SocialLogin');
+  }, [navigation]);
+
   return (
     <LinearGradient colors={theme.gradients.appBackground} style={styles.gradient}>
       <KeyboardAvoidingView
@@ -110,6 +114,9 @@ export const LoginScreen = () => {
           </TouchableOpacity>
           <TouchableOpacity style={styles.footerLink} onPress={handleNavigateRegister}>
             <Text style={styles.footerText}>Need an account? Create one</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.footerLink} onPress={handleNavigateSocialLogin}>
+            <Text style={styles.footerText}>Continue with social login</Text>
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>

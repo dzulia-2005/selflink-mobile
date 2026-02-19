@@ -27,6 +27,10 @@ export type AuthStore = {
   error: string | null;
   login: (payload: LoginPayload) => Promise<void>;
   register: (payload: RegisterPayload) => Promise<void>;
+  socialLogin: (
+    provider: authApi.SocialProvider,
+    payload: authApi.SocialLoginPayload,
+  ) => Promise<void>;
   logout: () => Promise<void>;
   refreshSession: () => Promise<string | null>;
   fetchProfile: () => Promise<void>;
@@ -99,6 +103,24 @@ const useAuthStore = create<AuthStore>()(
             await get().fetchProfile();
           } catch (error) {
             const message = error instanceof Error ? error.message : 'Unable to register';
+            set({ error: message });
+            throw error;
+          } finally {
+            set({ isAuthenticating: false });
+          }
+        },
+        async socialLogin(provider, payload) {
+          set({ isAuthenticating: true, error: null });
+          try {
+            const authResponse = await authApi.socialLogin(provider, payload);
+            await get().applySession(
+              authResponse.token,
+              authResponse.refreshToken ?? null,
+            );
+            await get().fetchProfile();
+          } catch (error) {
+            const message =
+              error instanceof Error ? error.message : 'Unable to complete social login';
             set({ error: message });
             throw error;
           } finally {

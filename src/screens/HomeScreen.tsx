@@ -40,15 +40,15 @@ export function HomeScreen() {
   }, [navigation]);
 
   const handleMessagesPress = useCallback(() => {
-    navigation.navigate('Inbox');
+    navigation.navigate('Profile', { screen: 'Inbox' });
   }, [navigation]);
 
   const handleCommunityPress = useCallback(() => {
-    navigation.navigate('Community');
+    navigation.navigate('Profile', { screen: 'Community' });
   }, [navigation]);
 
   const handlePaymentsPress = useCallback(() => {
-    navigation.navigate('Payments');
+    navigation.navigate('Profile', { screen: 'Payments' });
   }, [navigation]);
 
   const handleSoulMatchPress = useCallback(() => {

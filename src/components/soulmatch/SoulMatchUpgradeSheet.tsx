@@ -205,7 +205,7 @@ export function SoulMatchUpgradeSheet({
           <Text style={styles.previewTitle}>Preview</Text>
           <Text style={styles.previewText} numberOfLines={5}>
             {previewText ||
-              'Timing looks strongest over the next 4–6 weeks. Your lens suggests a strong emotional alignment when communication stays clear. With Premium+, we’ll show how to approach this match.'}
+              'Timing looks strongest over the next 4-6 weeks. Your lens suggests a strong emotional alignment when communication stays clear. With Premium+, we\'ll show how to approach this match.'}
           </Text>
           <LinearGradient
             colors={['rgba(15,23,42,0)', 'rgba(15,23,42,0.9)']}

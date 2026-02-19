@@ -531,7 +531,7 @@ export function SoulMatchRecommendationsScreen({
         onSelectTier={(tier) => {
           setUpgradeVisible(false);
           setRequestedTier(tier);
-          navigation.getParent()?.navigate('Payments' as never);
+          (navigation.getParent() as any)?.navigate('Profile', { screen: 'Payments' });
         }}
       />
     </View>

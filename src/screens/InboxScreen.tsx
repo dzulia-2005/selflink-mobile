@@ -1,5 +1,5 @@
-import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { NavigatorScreenParams, useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useMemo, useState } from 'react';
 import {
@@ -21,11 +21,11 @@ import { useToast } from '@context/ToastContext';
 import { useAuth } from '@hooks/useAuth';
 import { useThreads } from '@hooks/useThreads';
 import { useUsersDirectory } from '@hooks/useUsersDirectory';
-import type { MainTabsParamList, MessagesStackParamList } from '@navigation/types';
+import type { MessagesStackParamList, ProfileStackParamList } from '@navigation/types';
 import type { UserProfile } from '@services/api/user';
 import { useTheme, type Theme } from '@theme';
 
-type InboxNavigation = BottomTabNavigationProp<MainTabsParamList, 'Inbox'>;
+type InboxNavigation = NativeStackNavigationProp<ProfileStackParamList, 'Inbox'>;
 
 export function InboxScreen() {
   const navigation = useNavigation<InboxNavigation>();
@@ -53,7 +53,7 @@ export function InboxScreen() {
         screen: 'Chat',
         params: { threadId: String(threadId) },
       };
-      navigation.navigate('Messages', params);
+      (navigation.getParent() as any)?.navigate('Messages', params);
     },
     [navigation],
   );
