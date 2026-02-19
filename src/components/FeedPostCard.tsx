@@ -324,7 +324,7 @@ function FeedPostCardComponent({
                         size={16}
                         color={
                           post.liked
-                            ? '#FCA5A5'
+                            ? '#5a3cd5'
                             : (theme.feed.textSecondary as unknown as string)
                         }
                         style={styles.actionIcon}
