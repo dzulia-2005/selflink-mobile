@@ -1,9 +1,9 @@
+import { RouteProp, useRoute } from '@react-navigation/native';
 import * as AuthSession from 'expo-auth-session';
 import Constants from 'expo-constants';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as WebBrowser from 'expo-web-browser';
-import { RouteProp, useRoute } from '@react-navigation/native';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import type { AuthStackParamList } from '@navigation/types';
@@ -176,7 +176,7 @@ export function SocialLoginScreen() {
     run().catch(() => undefined);
   }, [facebookResponse, socialLogin]);
 
-  const handleGoogleLogin = async () => {
+  const handleGoogleLogin = useCallback(async () => {
     setError(null);
     if (!proxyRedirectUri) {
       setError('Expo project owner/slug missing. Set expo.owner + expo.slug in app config.');
@@ -191,9 +191,14 @@ export function SocialLoginScreen() {
       return;
     }
     await googlePromptAsync();
-  };
+  }, [
+    googlePromptAsync,
+    googleRequest,
+    isGoogleConfigured,
+    proxyRedirectUri,
+  ]);
 
-  const handleGitHubLogin = async () => {
+  const handleGitHubLogin = useCallback(async () => {
     setError(null);
     if (!proxyRedirectUri) {
       setError('Expo project owner/slug missing. Set expo.owner + expo.slug in app config.');
@@ -208,9 +213,14 @@ export function SocialLoginScreen() {
       return;
     }
     await githubPromptAsync();
-  };
+  }, [
+    githubPromptAsync,
+    githubRequest,
+    isGitHubConfigured,
+    proxyRedirectUri,
+  ]);
 
-  const handleFacebookLogin = async () => {
+  const handleFacebookLogin = useCallback(async () => {
     setError(null);
     if (!proxyRedirectUri) {
       setError('Expo project owner/slug missing. Set expo.owner + expo.slug in app config.');
@@ -225,7 +235,12 @@ export function SocialLoginScreen() {
       return;
     }
     await facebookPromptAsync();
-  };
+  }, [
+    facebookPromptAsync,
+    facebookRequest,
+    isFacebookConfigured,
+    proxyRedirectUri,
+  ]);
 
   useEffect(() => {
     const provider = route.params?.provider;

@@ -1,5 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import {
+  createBottomTabNavigator,
+  type BottomTabBarButtonProps,
+} from '@react-navigation/bottom-tabs';
 import { useNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -8,9 +11,11 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { BirthDataScreen } from '@screens/astro/BirthDataScreen';
 import { NatalChartScreen } from '@screens/astro/NatalChartScreen';
+import { CommunityScreen } from '@screens/CommunityScreen';
 import { CreatePostScreen } from '@screens/feed/CreatePostScreen';
 import { FeedScreen } from '@screens/feed/FeedScreen';
 import { PostDetailsScreen } from '@screens/feed/PostDetailsScreen';
+import { InboxScreen } from '@screens/InboxScreen';
 import { DailyMentorEntryScreen } from '@screens/mentor/DailyMentorEntryScreen';
 import { DailyMentorScreen } from '@screens/mentor/DailyMentorScreen';
 import { MentorChatScreen } from '@screens/mentor/MentorChatScreen';
@@ -18,10 +23,8 @@ import { MentorHomeScreen } from '@screens/mentor/MentorHomeScreen';
 import { NatalMentorScreen } from '@screens/mentor/NatalMentorScreen';
 import { ChatScreen } from '@screens/messaging/ChatScreen';
 import { ThreadsScreen } from '@screens/messaging/ThreadsScreen';
-import { PaymentsScreen } from '@screens/PaymentsScreen';
-import { CommunityScreen } from '@screens/CommunityScreen';
-import { InboxScreen } from '@screens/InboxScreen';
 import { NotificationsScreen } from '@screens/notifications/NotificationsScreen';
+import { PaymentsScreen } from '@screens/PaymentsScreen';
 import { ProfileEditScreen } from '@screens/profile/ProfileEditScreen';
 import { ProfileScreen } from '@screens/profile/ProfileScreen';
 import { SearchProfilesScreen } from '@screens/profile/SearchProfilesScreen';
@@ -98,6 +101,49 @@ const createTabBarIcon =
 
 const MessagesHeader = () => <TopBar title="Messages" />;
 
+function MessagesChatHeaderLeft() {
+  const navigation = useNavigation<any>();
+  const { theme } = useTheme();
+
+  return (
+    <TouchableOpacity
+      onPress={() => navigation.navigate('Threads')}
+      style={messageHeaderStyles.backButton}
+    >
+      <Ionicons name="chevron-back" size={20} color={theme.text.primary} />
+      <Text style={[messageHeaderStyles.backText, { color: theme.text.primary }]}>
+        Threads
+      </Text>
+    </TouchableOpacity>
+  );
+}
+
+function CreatePostTabBarButton(props: BottomTabBarButtonProps) {
+  const { theme } = useTheme();
+
+  return (
+    <TouchableOpacity
+      activeOpacity={0.9}
+      onPress={props.onPress ?? undefined}
+      onLongPress={props.onLongPress ?? undefined}
+      accessibilityRole={props.accessibilityRole}
+      accessibilityState={props.accessibilityState}
+      accessibilityLabel={props.accessibilityLabel}
+      testID={props.testID}
+      style={[props.style, mainTabStyles.centerTabButtonShell]}
+    >
+      <View
+        style={[
+          mainTabStyles.centerTabButton,
+          { borderColor: theme.colors.background },
+        ]}
+      >
+        <Ionicons name="add" size={34} color={theme.text.inverted} />
+      </View>
+    </TouchableOpacity>
+  );
+}
+
 function FeedStackNavigator() {
   const { theme } = useTheme();
   return (
@@ -160,21 +206,11 @@ function MessagesStackNavigator() {
       <MessagesStack.Screen
         name="Chat"
         component={ChatScreen}
-        options={({ navigation }) => ({
+        options={{
           title: 'Messages',
           headerBackVisible: false,
-          headerLeft: () => (
-            <TouchableOpacity
-              onPress={() => navigation.navigate('Threads')}
-              style={messageHeaderStyles.backButton}
-            >
-              <Ionicons name="chevron-back" size={20} color={theme.text.primary} />
-              <Text style={[messageHeaderStyles.backText, { color: theme.text.primary }]}>
-                Threads
-              </Text>
-            </TouchableOpacity>
-          ),
-        })}
+          headerLeft: MessagesChatHeaderLeft,
+        }}
       />
     </MessagesStack.Navigator>
   );
@@ -439,48 +475,7 @@ export function MainTabsNavigator() {
         options={{
           tabBarLabel: '',
           tabBarIcon: () => null,
-          tabBarButton: (props) => {
-            return (
-              <TouchableOpacity
-                activeOpacity={0.9}
-                onPress={props.onPress ?? undefined}
-                onLongPress={props.onLongPress ?? undefined}
-                accessibilityRole={props.accessibilityRole}
-                accessibilityState={props.accessibilityState}
-                accessibilityLabel={props.accessibilityLabel}
-                testID={props.testID}
-                style={[
-                  props.style,
-                  {
-                    flex: 1,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  },
-                ]}
-              >
-                <View
-                  style={{
-                    marginTop: -24,
-                    width: CENTER_POST_BUTTON_SIZE,
-                    height: CENTER_POST_BUTTON_SIZE,
-                    borderRadius: CENTER_POST_BUTTON_SIZE / 2,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: SELF_LINK_GREEN,
-                    borderWidth: 3,
-                    borderColor: theme.colors.background,
-                    shadowColor: '#000',
-                    shadowOpacity: 0.28,
-                    shadowRadius: 10,
-                    shadowOffset: { width: 0, height: 6 },
-                    elevation: 10,
-                  }}
-                >
-                  <Ionicons name="add" size={34} color={theme.text.inverted} />
-                </View>
-              </TouchableOpacity>
-            );
-          },
+          tabBarButton: CreatePostTabBarButton,
         }}
       />
       <Tab.Screen name="SoulMatch" component={SoulMatchStackNavigator} />
@@ -522,6 +517,29 @@ const topBarStyles = StyleSheet.create({
   },
   placeholder: {
     width: 40,
+  },
+});
+
+const mainTabStyles = StyleSheet.create({
+  centerTabButtonShell: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  centerTabButton: {
+    marginTop: -24,
+    width: CENTER_POST_BUTTON_SIZE,
+    height: CENTER_POST_BUTTON_SIZE,
+    borderRadius: CENTER_POST_BUTTON_SIZE / 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: SELF_LINK_GREEN,
+    borderWidth: 3,
+    shadowColor: '#000',
+    shadowOpacity: 0.28,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 10,
   },
 });
 

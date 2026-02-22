@@ -1,5 +1,5 @@
-import { zodResolver } from '@hookform/resolvers/zod';
 import { Ionicons } from '@expo/vector-icons';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useCallback, useMemo } from 'react';
@@ -46,10 +46,6 @@ export const LoginScreen = () => {
 
   const handleNavigateRegister = useCallback(() => {
     navigation.navigate('Register');
-  }, [navigation]);
-
-  const handleNavigateSocialLogin = useCallback(() => {
-    navigation.navigate('SocialLogin');
   }, [navigation]);
 
   const handleNavigateSocialProvider = useCallback(
