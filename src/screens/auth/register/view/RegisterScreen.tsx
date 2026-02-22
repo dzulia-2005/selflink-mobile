@@ -36,7 +36,10 @@ const RegisterScreen = () => {
   });
 
   const handleSubmitClick = async(payload:RegisterDefaultValuesType) => {
-    const { confirmPassword: _confirmPassword, ...registerPayload } = payload;
+    const registerPayload = {
+      ...payload,
+    };
+    delete (registerPayload as Partial<RegisterDefaultValuesType>).confirmPassword;
     try {
       await register(registerPayload);
     } catch (error) {

@@ -2,8 +2,8 @@ import { useCallback, useMemo } from 'react';
 import { Linking, StyleSheet } from 'react-native';
 import Markdown from 'react-native-markdown-display';
 
-import { palette } from '../../theme/colors';
 import { useTheme } from '../../theme';
+import { palette } from '../../theme/colors';
 
 type Props = {
   children: string;
