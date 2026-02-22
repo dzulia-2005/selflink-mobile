@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useCallback, useMemo } from 'react';
@@ -51,6 +52,13 @@ export const LoginScreen = () => {
     navigation.navigate('SocialLogin');
   }, [navigation]);
 
+  const handleNavigateSocialProvider = useCallback(
+    (provider: 'google' | 'facebook' | 'github') => {
+      navigation.navigate('SocialLogin', { provider });
+    },
+    [navigation],
+  );
+
   return (
     <LinearGradient colors={theme.gradients.appBackground} style={styles.gradient}>
       <KeyboardAvoidingView
@@ -59,8 +67,8 @@ export const LoginScreen = () => {
       >
         <View style={styles.card}>
           <LinearGradient colors={theme.gradients.accent} style={styles.cardAccent} />
-          <Text style={styles.title}>Welcome back</Text>
-          <Text style={styles.subtitle}>Sign in to continue to SelfLink</Text>
+          {/* <Text style={styles.title}>Welcome back</Text> */}
+          {/* <Text style={styles.subtitle}>Sign in to continue to SelfLink</Text> */}
 
           <Controller
             name="email"
@@ -108,15 +116,38 @@ export const LoginScreen = () => {
               style={[styles.button, isAuthenticating && styles.buttonDisabled]}
             >
               <Text style={styles.buttonLabel}>
-                {isAuthenticating ? 'Signing in…' : 'Sign in'}
+                {isAuthenticating ? 'Signing in…' : 'Log in'}
               </Text>
             </LinearGradient>
           </TouchableOpacity>
+          <View style={styles.socialSection}>
+            <Text style={styles.socialLabel}>Or continue with</Text>
+            <View style={styles.socialRow}>
+              <TouchableOpacity
+                style={styles.socialButton}
+                onPress={() => handleNavigateSocialProvider('google')}
+                activeOpacity={0.85}
+              >
+                <Ionicons name="logo-google" size={20} color={theme.text.primary} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.socialButton}
+                onPress={() => handleNavigateSocialProvider('facebook')}
+                activeOpacity={0.85}
+              >
+                <Ionicons name="logo-facebook" size={20} color={theme.text.primary} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.socialButton}
+                onPress={() => handleNavigateSocialProvider('github')}
+                activeOpacity={0.85}
+              >
+                <Ionicons name="logo-github" size={20} color={theme.text.primary} />
+              </TouchableOpacity>
+            </View>
+          </View>
           <TouchableOpacity style={styles.footerLink} onPress={handleNavigateRegister}>
-            <Text style={styles.footerText}>Need an account? Create one</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.footerLink} onPress={handleNavigateSocialLogin}>
-            <Text style={styles.footerText}>Continue with social login</Text>
+            <Text style={styles.footerText}>Registration</Text>
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
@@ -188,6 +219,29 @@ const createStyles = (theme: Theme) =>
     errorText: {
       color: theme.colors.error,
       textAlign: 'center',
+    },
+    socialSection: {
+      alignItems: 'center',
+      gap: theme.spacing.sm,
+    },
+    socialLabel: {
+      color: theme.text.secondary,
+      ...theme.typography.body,
+    },
+    socialRow: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      gap: theme.spacing.md,
+    },
+    socialButton: {
+      width: 46,
+      height: 46,
+      borderRadius: 23,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.surfaceAlt,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
     },
     footerLink: {
       alignItems: 'center',

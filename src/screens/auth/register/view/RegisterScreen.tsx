@@ -36,8 +36,9 @@ const RegisterScreen = () => {
   });
 
   const handleSubmitClick = async(payload:RegisterDefaultValuesType) => {
+    const { confirmPassword: _confirmPassword, ...registerPayload } = payload;
     try {
-      await register(payload);
+      await register(registerPayload);
     } catch (error) {
       console.warn('register failed', error);
     }
@@ -89,7 +90,7 @@ const RegisterScreen = () => {
               control={control}
               render={({field:{onChange,value}})=>(
                 <TextInput
-                  placeholder="Handle (Username)"
+                  placeholder="Username"
                   placeholderTextColor={theme.text.muted}
                   autoCapitalize="none"
                   style={styles.input}
@@ -133,6 +134,24 @@ const RegisterScreen = () => {
               )}
             />
             {errors.password ? <Text style={styles.errorText}>{errors.password.message}</Text> : null}
+
+            <Controller
+              name="confirmPassword"
+              control={control}
+              render={({field:{onChange,value}})=>(
+                <TextInput
+                  placeholder="Confirm password"
+                  placeholderTextColor={theme.text.muted}
+                  secureTextEntry
+                  style={styles.input}
+                  value={value}
+                  onChangeText={onChange}
+                />
+              )}
+            />
+            {errors.confirmPassword ? (
+              <Text style={styles.errorText}>{errors.confirmPassword.message}</Text>
+            ) : null}
             <TouchableOpacity
               style={styles.buttonWrapper}
               disabled={isAuthenticating}

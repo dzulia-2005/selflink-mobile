@@ -2,9 +2,11 @@ import * as AuthSession from 'expo-auth-session';
 import Constants from 'expo-constants';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as WebBrowser from 'expo-web-browser';
-import { useEffect, useMemo, useState } from 'react';
+import { RouteProp, useRoute } from '@react-navigation/native';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
+import type { AuthStackParamList } from '@navigation/types';
 import { useAuthStore } from '@store/authStore';
 import { useTheme, type Theme } from '@theme';
 
@@ -26,12 +28,16 @@ const FACEBOOK_DISCOVERY = {
   tokenEndpoint: 'https://graph.facebook.com/oauth/access_token',
 };
 
+type SocialLoginRoute = RouteProp<AuthStackParamList, 'SocialLogin'>;
+
 export function SocialLoginScreen() {
+  const route = useRoute<SocialLoginRoute>();
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
   const socialLogin = useAuthStore((state) => state.socialLogin);
   const isAuthenticating = useAuthStore((state) => state.isAuthenticating);
   const [error, setError] = useState<string | null>(null);
+  const autoStartedProviderRef = useRef<'google' | 'facebook' | 'github' | null>(null);
   const googleClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID?.trim() ?? '';
   const githubClientId = process.env.EXPO_PUBLIC_GITHUB_CLIENT_ID?.trim() ?? '';
   const facebookAppId = process.env.EXPO_PUBLIC_FACEBOOK_APP_ID?.trim() ?? '';
@@ -220,6 +226,48 @@ export function SocialLoginScreen() {
     }
     await facebookPromptAsync();
   };
+
+  useEffect(() => {
+    const provider = route.params?.provider;
+    if (!provider) {
+      return;
+    }
+    if (autoStartedProviderRef.current === provider) {
+      return;
+    }
+    if (isAuthenticating) {
+      return;
+    }
+
+    const canStart =
+      provider === 'google'
+        ? Boolean(googleRequest)
+        : provider === 'facebook'
+          ? Boolean(facebookRequest)
+          : Boolean(githubRequest);
+
+    if (!canStart) {
+      return;
+    }
+
+    autoStartedProviderRef.current = provider;
+    const run =
+      provider === 'google'
+        ? handleGoogleLogin
+        : provider === 'facebook'
+          ? handleFacebookLogin
+          : handleGitHubLogin;
+    run().catch(() => undefined);
+  }, [
+    route.params?.provider,
+    isAuthenticating,
+    googleRequest,
+    facebookRequest,
+    githubRequest,
+    handleGoogleLogin,
+    handleFacebookLogin,
+    handleGitHubLogin,
+  ]);
 
   return (
     <LinearGradient colors={theme.gradients.appBackground} style={styles.gradient}>

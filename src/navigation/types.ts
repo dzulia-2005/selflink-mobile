@@ -3,7 +3,11 @@ import type { NavigatorScreenParams } from '@react-navigation/native';
 export type AuthStackParamList = {
   Login: undefined;
   Register: undefined;
-  SocialLogin: undefined;
+  SocialLogin:
+    | {
+        provider?: 'google' | 'facebook' | 'github';
+      }
+    | undefined;
 };
 
 export type OnboardingStackParamList = {
