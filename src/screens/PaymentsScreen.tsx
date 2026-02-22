@@ -1,5 +1,5 @@
-import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
@@ -22,11 +22,11 @@ import { MetalButton } from '@components/MetalButton';
 import { MetalPanel } from '@components/MetalPanel';
 import { useToast } from '@context/ToastContext';
 import { usePaymentsCatalog } from '@hooks/usePaymentsCatalog';
-import type { MainTabsParamList } from '@navigation/types';
+import type { ProfileStackParamList } from '@navigation/types';
 import { useEntitlementsStore } from '@store/entitlementsStore';
 import { useTheme, type Theme } from '@theme';
 
-type PaymentsNavigation = BottomTabNavigationProp<MainTabsParamList, 'Payments'>;
+type PaymentsNavigation = NativeStackNavigationProp<ProfileStackParamList, 'Payments'>;
 
 export function PaymentsScreen() {
   const { theme } = useTheme();

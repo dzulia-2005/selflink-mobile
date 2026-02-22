@@ -13,7 +13,11 @@ module.exports = ({ config }) => {
   return {
     ...config,
 
-    plugins: ["./plugins/withIapStoreFlavor", "./plugins/withKotlinVersion"],
+    plugins: [
+      "./plugins/withIapStoreFlavor",
+      "./plugins/withKotlinVersion",
+      "expo-web-browser",
+    ],
 
     name: "selflink-mobile",
     slug: "selflink",

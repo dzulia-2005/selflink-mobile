@@ -2,9 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import type { ColorValue, StyleProp, TextStyle } from 'react-native';
+import type { ColorValue } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BirthDataScreen } from '@screens/astro/BirthDataScreen';
@@ -20,6 +19,9 @@ import { NatalMentorScreen } from '@screens/mentor/NatalMentorScreen';
 import { ChatScreen } from '@screens/messaging/ChatScreen';
 import { ThreadsScreen } from '@screens/messaging/ThreadsScreen';
 import { PaymentsScreen } from '@screens/PaymentsScreen';
+import { CommunityScreen } from '@screens/CommunityScreen';
+import { InboxScreen } from '@screens/InboxScreen';
+import { NotificationsScreen } from '@screens/notifications/NotificationsScreen';
 import { ProfileEditScreen } from '@screens/profile/ProfileEditScreen';
 import { ProfileScreen } from '@screens/profile/ProfileScreen';
 import { SearchProfilesScreen } from '@screens/profile/SearchProfilesScreen';
@@ -30,7 +32,6 @@ import { SoulMatchRecommendationsScreen } from '@screens/soulmatch/SoulMatchReco
 import { SoulMatchScreen } from '@screens/SoulMatchScreen';
 import { SoulReelsScreen } from '@screens/video/SoulReelsScreen';
 import { WalletLedgerScreen } from '@screens/WalletLedgerScreen';
-import { useMessagingStore } from '@store/messagingStore';
 import { useTheme } from '@theme';
 
 import type {
@@ -44,21 +45,8 @@ import type {
 // import React from 'react';
 
 const SELF_LINK_GREEN = '#16a34a';
-
-// const HIDDEN_TAB_OPTIONS = { tabBarButton: () => null };
-
-const createBadgeStyle = (textColor: string, backgroundColor: string) => ({
-  minWidth: 20,
-  height: 20,
-  borderRadius: 10,
-  paddingHorizontal: 4,
-  lineHeight: 20,
-  textAlign: 'center',
-  fontSize: 12,
-  fontWeight: '700',
-  color: textColor,
-  backgroundColor,
-});
+const HIDDEN_TAB_OPTIONS = { tabBarButton: () => null };
+const CENTER_POST_BUTTON_SIZE = 66;
 
 const Tab = createBottomTabNavigator<MainTabsParamList>();
 const FeedStack = createNativeStackNavigator<FeedStackParamList>();
@@ -78,12 +66,10 @@ function getTabIconName(
       return focused ? 'chatbubble-ellipses' : 'chatbubble-ellipses-outline';
     case 'Mentor':
       return focused ? 'sparkles' : 'sparkles-outline';
+    case 'CreatePostTab':
+      return focused ? 'add-circle' : 'add-circle-outline';
     case 'SoulMatch':
       return focused ? 'heart' : 'heart-outline';
-    case 'Payments':
-      return focused ? 'card' : 'card-outline';
-    case 'WalletLedger':
-      return focused ? 'wallet' : 'wallet-outline';
     case 'Community':
       return focused ? 'people' : 'people-outline';
     case 'Inbox':
@@ -174,7 +160,21 @@ function MessagesStackNavigator() {
       <MessagesStack.Screen
         name="Chat"
         component={ChatScreen}
-        options={{ title: 'Messages' }}
+        options={({ navigation }) => ({
+          title: 'Messages',
+          headerBackVisible: false,
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => navigation.navigate('Threads')}
+              style={messageHeaderStyles.backButton}
+            >
+              <Ionicons name="chevron-back" size={20} color={theme.text.primary} />
+              <Text style={[messageHeaderStyles.backText, { color: theme.text.primary }]}>
+                Threads
+              </Text>
+            </TouchableOpacity>
+          ),
+        })}
       />
     </MessagesStack.Navigator>
   );
@@ -209,6 +209,31 @@ function ProfileStackNavigator() {
         name="ProfileEdit"
         component={ProfileEditScreen}
         options={{ title: 'Edit Profile' }}
+      />
+      <ProfileStack.Screen
+        name="Payments"
+        component={PaymentsScreen}
+        options={{ title: 'Payments' }}
+      />
+      <ProfileStack.Screen
+        name="WalletLedger"
+        component={WalletLedgerScreen}
+        options={{ title: 'Wallet' }}
+      />
+      <ProfileStack.Screen
+        name="Notifications"
+        component={NotificationsScreen}
+        options={{ title: 'Notifications' }}
+      />
+      <ProfileStack.Screen
+        name="Community"
+        component={CommunityScreen}
+        options={{ title: 'Community' }}
+      />
+      <ProfileStack.Screen
+        name="Inbox"
+        component={InboxScreen}
+        options={{ title: 'Inbox' }}
       />
     </ProfileStack.Navigator>
   );
@@ -367,20 +392,8 @@ function TabBarTop({
 export function MainTabsNavigator() {
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
-  const safeBottom = Math.max(insets.bottom, 12);
-  const tabHeight = 56 + safeBottom;
-  const totalUnread = useMessagingStore((state) => state.totalUnread);
-  const messagesOptions = useMemo(() => {
-    const badge =
-      totalUnread > 0 ? (totalUnread > 99 ? '99+' : String(totalUnread)) : undefined;
-    return {
-      tabBarBadge: badge,
-      tabBarBadgeStyle: badge
-        ? (createBadgeStyle(theme.text.inverted, SELF_LINK_GREEN) as StyleProp<TextStyle>)
-        : undefined,
-      headerShown: false,
-    };
-  }, [totalUnread, theme]);
+  const safeBottom = Math.max(insets.bottom, 10);
+  const tabHeight = 62 + safeBottom;
 
   return (
     <Tab.Navigator
@@ -394,36 +407,93 @@ export function MainTabsNavigator() {
           borderTopWidth: StyleSheet.hairlineWidth,
           height: tabHeight,
           paddingBottom: safeBottom,
-          paddingTop: 8,
+          paddingTop: 6,
+          paddingHorizontal: 8,
+        },
+        tabBarItemStyle: {
+          flex: 1,
+          paddingVertical: 2,
         },
         tabBarLabelStyle: {
           fontSize: 11,
+          fontWeight: '600',
+          marginBottom: 2,
+        },
+        tabBarIconStyle: {
+          marginTop: 2,
         },
         tabBarIcon: createTabBarIcon(route.name),
       })}
     >
       <Tab.Screen name="Feed" component={FeedStackNavigator} />
+      <Tab.Screen name="Mentor" component={MentorStackNavigator} />
+      <Tab.Screen
+        name="CreatePostTab"
+        component={FeedStackNavigator}
+        listeners={({ navigation }) => ({
+          tabPress: (event) => {
+            event.preventDefault();
+            navigation.navigate('Feed', { screen: 'CreatePost' });
+          },
+        })}
+        options={{
+          tabBarLabel: '',
+          tabBarIcon: () => null,
+          tabBarButton: (props) => {
+            return (
+              <TouchableOpacity
+                activeOpacity={0.9}
+                onPress={props.onPress ?? undefined}
+                onLongPress={props.onLongPress ?? undefined}
+                accessibilityRole={props.accessibilityRole}
+                accessibilityState={props.accessibilityState}
+                accessibilityLabel={props.accessibilityLabel}
+                testID={props.testID}
+                style={[
+                  props.style,
+                  {
+                    flex: 1,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  },
+                ]}
+              >
+                <View
+                  style={{
+                    marginTop: -24,
+                    width: CENTER_POST_BUTTON_SIZE,
+                    height: CENTER_POST_BUTTON_SIZE,
+                    borderRadius: CENTER_POST_BUTTON_SIZE / 2,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: SELF_LINK_GREEN,
+                    borderWidth: 3,
+                    borderColor: theme.colors.background,
+                    shadowColor: '#000',
+                    shadowOpacity: 0.28,
+                    shadowRadius: 10,
+                    shadowOffset: { width: 0, height: 6 },
+                    elevation: 10,
+                  }}
+                >
+                  <Ionicons name="add" size={34} color={theme.text.inverted} />
+                </View>
+              </TouchableOpacity>
+            );
+          },
+        }}
+      />
+      <Tab.Screen name="SoulMatch" component={SoulMatchStackNavigator} />
+      <Tab.Screen name="Profile" component={ProfileStackNavigator} />
       <Tab.Screen
         name="Messages"
         component={MessagesStackNavigator}
-        options={messagesOptions}
+        options={{
+          ...HIDDEN_TAB_OPTIONS,
+          headerShown: false,
+          tabBarItemStyle: { display: 'none' as const },
+        }}
       />
-      <Tab.Screen name="Mentor" component={MentorStackNavigator} />
-      <Tab.Screen name="SoulMatch" component={SoulMatchStackNavigator} />
-      <Tab.Screen name="Payments" component={PaymentsScreen} />
-      <Tab.Screen name="WalletLedger" component={WalletLedgerScreen} />
-      <Tab.Screen name="Profile" component={ProfileStackNavigator} />
-      {/* <Tab.Screen
-        name="Community"
-        component={CommunityScreen}
-        options={HIDDEN_TAB_OPTIONS}
-      />
-      <Tab.Screen name="Inbox" component={InboxScreen} options={HIDDEN_TAB_OPTIONS} />
-      <Tab.Screen
-        name="Notifications"
-        component={NotificationsScreen}
-        options={HIDDEN_TAB_OPTIONS}
-      /> */}
     </Tab.Navigator>
   );
 }
@@ -452,5 +522,19 @@ const topBarStyles = StyleSheet.create({
   },
   placeholder: {
     width: 40,
+  },
+});
+
+const messageHeaderStyles = StyleSheet.create({
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 4,
+    paddingRight: 8,
+  },
+  backText: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 2,
   },
 });

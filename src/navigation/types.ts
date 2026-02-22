@@ -3,7 +3,11 @@ import type { NavigatorScreenParams } from '@react-navigation/native';
 export type AuthStackParamList = {
   Login: undefined;
   Register: undefined;
-  SocialLogin: undefined;
+  SocialLogin:
+    | {
+        provider?: 'google' | 'facebook' | 'github';
+      }
+    | undefined;
 };
 
 export type OnboardingStackParamList = {
@@ -35,6 +39,11 @@ export type ProfileStackParamList = {
   SearchProfiles: undefined;
   UserProfile: { userId: number };
   ProfileEdit: undefined;
+  Payments: undefined;
+  WalletLedger: undefined;
+  Notifications: undefined;
+  Community: undefined;
+  Inbox: undefined;
 };
 
 export type MentorStackParamList = {
@@ -63,11 +72,7 @@ export type MainTabsParamList = {
   Feed: NavigatorScreenParams<FeedStackParamList> | undefined;
   Messages: NavigatorScreenParams<MessagesStackParamList> | undefined;
   Mentor: NavigatorScreenParams<MentorStackParamList> | undefined;
+  CreatePostTab: undefined;
   SoulMatch: NavigatorScreenParams<SoulMatchStackParamList> | undefined;
-  Payments: undefined;
-  WalletLedger: undefined;
-  Notifications: undefined;
   Profile: NavigatorScreenParams<ProfileStackParamList> | undefined;
-  Community: undefined;
-  Inbox: undefined;
 };

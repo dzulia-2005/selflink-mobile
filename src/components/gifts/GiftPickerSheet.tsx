@@ -247,7 +247,7 @@ export function GiftPickerSheet({ visible, target, onClose, onGiftSent }: Props)
 
   const handleBuySlc = useCallback(() => {
     closeSheet();
-    navigation.navigate('WalletLedger');
+    navigation.navigate('Profile', { screen: 'WalletLedger' });
   }, [closeSheet, navigation]);
 
   const renderGift = useCallback(

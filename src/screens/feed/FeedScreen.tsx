@@ -37,6 +37,7 @@ import type { FeedItem, FeedMode } from '@schemas/feed';
 import type { Post } from '@schemas/social';
 import { useAuthStore } from '@store/authStore';
 import { useFeedStore } from '@store/feedStore';
+import { useMessagingStore } from '@store/messagingStore';
 import { useTheme, type Theme } from '@theme';
 import {
   filterActiveEffects,
@@ -63,6 +64,7 @@ export function FeedScreen() {
   const isLoading = useFeedStore((state) => state.isLoadingByMode[state.currentMode]);
   const isPaging = useFeedStore((state) => state.isPagingByMode[state.currentMode]);
   const error = useFeedStore((state) => state.errorByMode[state.currentMode]);
+  const totalUnread = useMessagingStore((state) => state.totalUnread);
   const loadFeed = useFeedStore((state) => state.loadFeed);
   const dirtyByMode = useFeedStore((state) => state.dirtyByMode);
   const clearDirty = useFeedStore((state) => state.clearDirty);
@@ -75,7 +77,6 @@ export function FeedScreen() {
   const tabIndex = useMemo(() => ({ for_you: 0, following: 1, reels: 2 }), []);
   const indicator = useRef(new Animated.Value(tabIndex[currentMode])).current;
   const [segmentWidth, setSegmentWidth] = useState(0);
-  const showFab = useMemo(() => items.some((item) => item.type === 'post'), [items]);
   const [activeVideoPostId, setActiveVideoPostId] = useState<string | null>(null);
   const [commentPost, setCommentPost] = useState<Post | null>(null);
   const [giftPost, setGiftPost] = useState<Post | null>(null);
@@ -647,6 +648,13 @@ export function FeedScreen() {
                 onPress={() => navigation.navigate('Messages')}
               >
                 <Ionicons name="chatbubble-outline" size={22} color="#555353" />
+                {totalUnread > 0 ? (
+                  <View style={styles.messageBadge}>
+                    <Text style={styles.messageBadgeText}>
+                      {totalUnread > 99 ? '99+' : String(totalUnread)}
+                    </Text>
+                  </View>
+                ) : null}
               </TouchableOpacity>
 
           </View>
@@ -720,10 +728,7 @@ export function FeedScreen() {
             data={items}
             keyExtractor={(item) => `${item.type}-${item.id}`}
             renderItem={renderItem}
-            contentContainerStyle={[
-              styles.listContent,
-              showFab && styles.listContentWithFab,
-            ]}
+            contentContainerStyle={styles.listContent}
             ItemSeparatorComponent={renderSeparator}
             refreshControl={
               <RefreshControl
@@ -749,15 +754,6 @@ export function FeedScreen() {
           />
         )}
       </View>
-      {showFab ? (
-        <TouchableOpacity
-          style={styles.fab}
-          activeOpacity={0.8}
-          onPress={() => navigation.navigate('CreatePost')}
-        >
-          <Text style={styles.fabText}>+</Text>
-        </TouchableOpacity>
-      ) : null}
       {commentPost ? (
         <CommentsBottomSheet
           targetType="post"
@@ -835,11 +831,30 @@ const createStyles = (theme: Theme) =>
     },
 
     messageButton: {
-      marginLeft: 12,
+      position: 'relative',
+      marginLeft: 8,
       width: 36,
       height: 36,
       justifyContent: 'center',
       alignItems: 'center',
+    },
+    messageBadge: {
+      position: 'absolute',
+      top: -5,
+      right: -7,
+      minWidth: 16,
+      height: 16,
+      borderRadius: 8,
+      backgroundColor: '#ef4444',
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: 3,
+    },
+    messageBadgeText: {
+      color: '#fff',
+      fontSize: 10,
+      fontWeight: '700',
+      lineHeight: 12,
     },
 
     headerTitle: {
@@ -932,9 +947,6 @@ const createStyles = (theme: Theme) =>
       paddingTop: 12,
       paddingBottom: 80,
     },
-    listContentWithFab: {
-      paddingBottom: 140,
-    },
     separator: {
       height: 14,
     },
@@ -965,27 +977,6 @@ const createStyles = (theme: Theme) =>
     primaryButtonLabel: {
       color: '#fff',
       fontWeight: '700',
-    },
-    fab: {
-      position: 'absolute',
-      right: 16,
-      bottom: 18,
-      width: 58,
-      height: 58,
-      borderRadius: 29,
-      backgroundColor: theme.feed.accentBlue,
-      alignItems: 'center',
-      justifyContent: 'center',
-      shadowColor: theme.feed.accentBlue,
-      shadowOpacity: 0.4,
-      shadowRadius: 14,
-      shadowOffset: { width: 0, height: 10 },
-      elevation: 10,
-    },
-    fabText: {
-      color: '#fff',
-      fontSize: 30,
-      marginTop: -2,
     },
     skeletonList: {
       paddingHorizontal: 16,

@@ -235,9 +235,9 @@ const darkTheme: Theme = {
     inverted: darkPalette.midnight,
   },
   gradients: {
-    appBackground: ['#050818', '#020617'] as const,
+    appBackground: ['#15124c', '#0e4111'] as const,
     card: ['#0E1528', '#121B33'] as const,
-    cta: ['#7C3AED', '#06B6D4'] as const,
+    cta: ['#09ba06', '#1406d4'] as const,
     accent: ['#0EA5E9', '#7C3AED'] as const,
     matrix: ['#14B8A6', '#6366F1'] as const,
     nebulaPurple: ['#5A2E98', '#9B4EFF'] as const,
@@ -424,7 +424,7 @@ const lightTheme: Theme = {
       elevation: 8,
     },
     button: {
-      shadowColor: '#0EA5E9',
+      shadowColor: '#1d0ee9',
       shadowOffset: { width: 0, height: 6 },
       shadowOpacity: 0.2,
       shadowRadius: 12,
