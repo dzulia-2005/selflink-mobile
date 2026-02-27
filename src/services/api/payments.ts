@@ -1,4 +1,4 @@
-import { apiClient } from '@services/api/client';
+import { serviceApiClient as apiClient } from '@api/client';
 
 // Gift Types
 export type GiftType = {

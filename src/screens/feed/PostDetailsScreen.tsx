@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   FlatList,
@@ -48,6 +49,7 @@ const collectCommentImageSources = (comment: Comment): string[] => {
 };
 
 export function PostDetailsScreen() {
+  const { t } = useTranslation();
   const route = useRoute<DetailsRoute>();
   const [post, setPost] = useState<Post | undefined>(route.params?.post);
   const [comments, setComments] = useState<Comment[]>([]);
@@ -133,7 +135,7 @@ export function PostDetailsScreen() {
             ? error.message
             : undefined;
       toast.push({
-        message: message || 'Unable to add comment. Please try again.',
+        message: message || t('post.comments.alerts.sendFailed.body'),
         tone: 'error',
         duration: 4000,
       });
@@ -148,12 +150,13 @@ export function PostDetailsScreen() {
     selectedImages,
     toast,
     clearImages,
+    t,
   ]);
 
   if (!postId) {
     return (
       <View style={styles.centered}>
-        <Text>Post not found.</Text>
+        <Text>{t('post.title.notFound')}</Text>
       </View>
     );
   }
@@ -161,7 +164,10 @@ export function PostDetailsScreen() {
   return (
     <View style={styles.container}>
       {loadingPost ? (
-        <ActivityIndicator />
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator accessibilityLabel={t('post.comments.loading')} />
+          <Text style={styles.loadingText}>{t('post.comments.loading')}</Text>
+        </View>
       ) : (
         <View style={styles.postBlock}>
           <View style={styles.postHeader}>
@@ -197,7 +203,10 @@ export function PostDetailsScreen() {
       )}
 
       {loadingComments ? (
-        <ActivityIndicator />
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator accessibilityLabel={t('post.comments.loading')} />
+          <Text style={styles.loadingText}>{t('post.comments.loading')}</Text>
+        </View>
       ) : (
         <FlatList
           data={comments}
@@ -220,7 +229,11 @@ export function PostDetailsScreen() {
               </View>
             </View>
           )}
-          ListEmptyComponent={<Text style={styles.emptyComments}>No comments yet.</Text>}
+          ListEmptyComponent={
+            <Text style={styles.emptyComments}>
+              {t('post.comments.empty.title')}
+            </Text>
+          }
         />
       )}
 
@@ -238,7 +251,7 @@ export function PostDetailsScreen() {
                   style={styles.previewRemoveButton}
                   onPress={() => removeImage(image.uri)}
                   accessibilityRole="button"
-                  accessibilityLabel="Remove selected image"
+                  accessibilityLabel={t('post.accessibility.removeSelectedImage')}
                 >
                   <Ionicons name="close" size={14} color="#FFFFFF" />
                 </TouchableOpacity>
@@ -255,13 +268,13 @@ export function PostDetailsScreen() {
             onPress={pickImages}
             disabled={isPicking || submitting || !canAddMore}
             accessibilityRole="button"
-            accessibilityLabel="Attach images"
+            accessibilityLabel={t('post.accessibility.attachImages')}
           >
             <Ionicons name="image-outline" size={20} color="#CBD5F5" />
           </TouchableOpacity>
           <TextInput
             style={styles.input}
-            placeholder="Write a comment (Markdown supported)"
+            placeholder={t('post.comments.composer.placeholder')}
             placeholderTextColor="#94A3B8"
             value={commentText}
             onChangeText={setCommentText}
@@ -277,13 +290,13 @@ export function PostDetailsScreen() {
             onPress={handleSubmit}
             disabled={!canSubmit || submitting}
             accessibilityRole="button"
-            accessibilityLabel="Send comment"
+            accessibilityLabel={t('post.accessibility.sendComment')}
             activeOpacity={0.85}
           >
             {submitting ? (
               <ActivityIndicator color="#0B1120" size="small" />
             ) : (
-              <Text style={styles.sendLabel}>Send</Text>
+              <Text style={styles.sendLabel}>{t('post.comments.composer.send')}</Text>
             )}
           </TouchableOpacity>
         </View>
@@ -372,6 +385,16 @@ const styles = StyleSheet.create({
     color: '#94A3B8',
     textAlign: 'center',
     paddingVertical: 16,
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 12,
+  },
+  loadingText: {
+    color: '#94A3B8',
+    fontSize: 12,
   },
   composerBar: {
     marginTop: 12,

@@ -5,6 +5,7 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 import * as authApi from '@api/auth';
 import {
   apiClient as restApiClient,
+  serviceApiClient as servicesApiClient,
   setAuthTokenProvider,
   setRefreshHandler,
 } from '@api/client';
@@ -13,7 +14,6 @@ import type { PersonalMapPayload } from '@api/users';
 import { registerForceLogoutHandler } from '@auth/forceLogout';
 import { LoginPayload, RegisterPayload } from '@schemas/auth';
 import { PersonalMapProfile, User } from '@schemas/user';
-import { apiClient as servicesApiClient } from '@services/api/client';
 import { useEntitlementsStore } from '@store/entitlementsStore';
 import { useMessagingStore } from '@store/messagingStore';
 

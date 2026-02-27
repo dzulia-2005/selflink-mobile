@@ -1,9 +1,31 @@
 import '@testing-library/jest-native/extend-expect';
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
+
+import en from './src/i18n/locales/en.json';
+import ka from './src/i18n/locales/ka.json';
+import ru from './src/i18n/locales/ru.json';
 
 // React 19 requires explicitly opting into act() support for custom environments.
 (
   globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT?: boolean }
 ).IS_REACT_ACT_ENVIRONMENT = true;
+
+if (!i18n.isInitialized) {
+  i18n.use(initReactI18next).init({
+    compatibilityJSON: 'v4',
+    lng: 'en',
+    fallbackLng: 'en',
+    resources: {
+      en: { translation: en },
+      ru: { translation: ru },
+      ka: { translation: ka },
+    },
+    interpolation: { escapeValue: false },
+    returnNull: false,
+    react: { useSuspense: false },
+  });
+}
 
 // Provide minimal bridge config so NativeModules invariant passes in tests.
 (globalThis as any).__fbBatchedBridgeConfig = {
@@ -276,6 +298,33 @@ jest.mock('expo-clipboard', () => ({
 jest.mock('expo-haptics', () => ({
   ImpactFeedbackStyle: { Medium: 'Medium' },
   impactAsync: jest.fn(() => Promise.resolve()),
+}));
+
+jest.mock('expo-localization', () => ({
+  getLocales: jest.fn(() => [
+    {
+      languageTag: 'en-US',
+      languageCode: 'en',
+      regionCode: 'US',
+      textDirection: 'ltr',
+      currencyCode: 'USD',
+      measurementSystem: 'metric',
+      decimalSeparator: '.',
+      digitGroupingSeparator: ',',
+      temperatureUnit: 'celsius',
+    },
+  ]),
+  getCalendars: jest.fn(() => [
+    {
+      calendar: 'gregory',
+      timeZone: 'UTC',
+      uses24hourClock: false,
+      firstWeekday: 1,
+    },
+  ]),
+  locale: 'en-US',
+  locales: ['en-US'],
+  timezone: 'UTC',
 }));
 
 jest.mock('expo-linear-gradient', () => {

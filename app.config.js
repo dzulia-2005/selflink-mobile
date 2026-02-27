@@ -17,6 +17,7 @@ module.exports = ({ config }) => {
       "./plugins/withIapStoreFlavor",
       "./plugins/withKotlinVersion",
       "expo-web-browser",
+      "expo-video",
     ],
 
     name: "selflink-mobile",

@@ -1,6 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ScrollView, StyleSheet, Text } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -10,6 +11,7 @@ import { MentorStackParamList } from '@navigation/types';
 import { useTheme, type Theme } from '@theme';
 
 export function MentorHomeScreen() {
+  const { t } = useTranslation();
   const navigation =
     useNavigation<NativeStackNavigationProp<MentorStackParamList, 'MentorHome'>>();
   const insets = useSafeAreaInsets();
@@ -25,47 +27,39 @@ export function MentorHomeScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.title}>Mentor</Text>
-        <Text style={styles.subtitle}>
-          Access your astro mentor, daily guidance, and SoulMatch insights.
-        </Text>
+        <Text style={styles.title}>{t('mentor.home.title')}</Text>
+        <Text style={styles.subtitle}>{t('mentor.home.subtitle')}</Text>
 
         <MetalPanel glow>
-          <Text style={styles.cardTitle}>Build your natal chart</Text>
-          <Text style={styles.cardText}>
-            Use your saved registration birth details or edit them before generating your
-            chart.
-          </Text>
+          <Text style={styles.cardTitle}>{t('mentor.home.natalCard.title')}</Text>
+          <Text style={styles.cardText}>{t('mentor.home.natalCard.body')}</Text>
           <MetalButton
-            title="Birth Data Options"
+            title={t('mentor.home.natalCard.birthDataOptions')}
             onPress={() => navigation.navigate('BirthData')}
           />
           <MetalButton
-            title="View Natal Chart"
+            title={t('mentor.home.natalCard.viewNatalChart')}
             onPress={() => navigation.navigate('NatalChart')}
           />
         </MetalPanel>
 
         <MetalPanel>
-          <Text style={styles.cardTitle}>AI Mentor Chat</Text>
-          <Text style={styles.cardText}>
-            Talk to your mentor with session-aware chat and keep your history in one
-            place.
-          </Text>
+          <Text style={styles.cardTitle}>{t('mentor.home.chatCard.title')}</Text>
+          <Text style={styles.cardText}>{t('mentor.home.chatCard.body')}</Text>
           <MetalButton
-            title="Open Mentor Chat"
+            title={t('mentor.home.chatCard.openChat')}
             onPress={() => navigation.navigate('MentorChat')}
           />
         </MetalPanel>
 
         <MetalPanel>
-          <Text style={styles.cardTitle}>AI Mentor Readings</Text>
+          <Text style={styles.cardTitle}>{t('mentor.home.readingsCard.title')}</Text>
           <MetalButton
-            title="Natal Mentor"
+            title={t('mentor.home.readingsCard.natalMentor')}
             onPress={() => navigation.navigate('NatalMentor')}
           />
           <MetalButton
-            title="Daily Mentor"
+            title={t('mentor.home.readingsCard.dailyMentor')}
             onPress={() => navigation.navigate('DailyMentor')}
           />
         </MetalPanel>

@@ -1,36 +1,42 @@
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
 import { useTheme, type Theme } from '@theme';
 
 export function LoadingView({ message }: { message?: string }) {
+  const { t } = useTranslation();
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
+  const resolvedMessage = message ?? t('common.loading');
   return (
     <View style={styles.centered}>
       <ActivityIndicator size="large" color={theme.colors.primary} />
-      {message ? <Text style={styles.text}>{message}</Text> : null}
+      <Text style={styles.text}>{resolvedMessage}</Text>
     </View>
   );
 }
 
 export function ErrorView({
-  message = 'Something went wrong.',
-  actionLabel = 'Retry',
+  message,
+  actionLabel,
   onRetry,
 }: {
   message?: string;
   actionLabel?: string;
   onRetry?: () => void;
 }) {
+  const { t } = useTranslation();
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
+  const resolvedMessage = message ?? t('common.error.defaultMessage');
+  const resolvedActionLabel = actionLabel ?? t('common.retry');
   return (
     <View style={styles.centered}>
-      <Text style={[styles.text, styles.errorText]}>{message}</Text>
+      <Text style={[styles.text, styles.errorText]}>{resolvedMessage}</Text>
       {onRetry ? (
         <Text style={styles.link} onPress={onRetry}>
-          {actionLabel}
+          {resolvedActionLabel}
         </Text>
       ) : null}
     </View>

@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   ScrollView,
@@ -19,13 +20,14 @@ import { useAuthStore } from '@store/authStore';
 import { useTheme, type Theme } from '@theme';
 
 export function NatalMentorScreen() {
+  const { t } = useTranslation();
   const toast = useToast();
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
   const currentUser = useAuthStore((state) => state.currentUser);
   const [mentorText, setMentorText] = useState<string | null>(null);
   const [prompt, setPrompt] = useState(
-    'Give me a short natal mentor reading based on my chart.',
+    t('mentor.natal.defaultPrompt'),
   );
   const [loading, setLoading] = useState(true);
   const pendingPromptRef = useRef<string | null>(null);
@@ -80,7 +82,7 @@ export function NatalMentorScreen() {
       setLoading(false);
     };
     bootstrap().catch(() => undefined);
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     if (replyText) {
@@ -120,42 +122,41 @@ export function NatalMentorScreen() {
   }, [prompt, startNatalStream]);
 
   if (loading && !mentorText) {
-    return <LoadingView message="Calling your natal mentor…" />;
+    return <LoadingView message={t('mentor.natal.loading')} />;
   }
 
   return (
     <ScrollView contentContainerStyle={styles.content} style={styles.container}>
-      <Text style={styles.headline}>Natal Mentor</Text>
-      <Text style={styles.subtitle}>
-        Deep explanation of your personality, emotions, and life themes.
-      </Text>
+      <Text style={styles.headline}>{t('mentor.natal.title')}</Text>
+      <Text style={styles.subtitle}>{t('mentor.natal.subtitle')}</Text>
 
       <MetalPanel>
         {mentorText ? (
           <Text style={styles.body}>{mentorText}</Text>
         ) : (
           <View style={styles.centered}>
-            <Text style={styles.subtitle}>No reading yet. Try again.</Text>
-            <MetalButton title="Retry" onPress={handleSend} />
+            <Text style={styles.subtitle}>{t('mentor.natal.noReading')}</Text>
+            <MetalButton title={t('common.retry')} onPress={handleSend} />
           </View>
         )}
         {isStreaming ? (
           <View style={styles.streamingRow}>
             <ActivityIndicator size="small" color={theme.palette.platinum} />
-            <Text style={styles.subtitle}>Natal Mentor is typing…</Text>
+            <Text style={styles.subtitle}>{t('mentor.natal.typing')}</Text>
           </View>
         ) : null}
       </MetalPanel>
 
       <MetalPanel>
-        <Text style={styles.fieldLabel}>Ask about your natal chart</Text>
+        <Text style={styles.fieldLabel}>{t('mentor.natal.askLabel')}</Text>
         <TextInput
           style={styles.input}
-          placeholder="Ask about strengths, challenges, or themes in your chart"
+          placeholder={t('mentor.natal.askPlaceholder')}
           placeholderTextColor={theme.palette.silver}
           multiline
           value={prompt}
           onChangeText={setPrompt}
+          accessibilityLabel={t('mentor.natal.accessibility.promptInput')}
         />
         <TouchableOpacity
           style={[
@@ -168,7 +169,7 @@ export function NatalMentorScreen() {
           {isStreaming ? (
             <ActivityIndicator color={theme.palette.pearl} />
           ) : (
-            <Text style={styles.submitText}>Ask Natal Mentor</Text>
+            <Text style={styles.submitText}>{t('mentor.natal.askButton')}</Text>
           )}
         </TouchableOpacity>
       </MetalPanel>

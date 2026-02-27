@@ -1,4 +1,5 @@
 import { memo, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   StyleSheet,
@@ -30,19 +31,25 @@ function CommentComposerComponent({
   pending,
   avatarUrl,
   avatarLabel,
-  placeholder = 'Add a comment…',
+  placeholder,
 }: Props) {
+  const { t } = useTranslation();
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
   const canSend = Boolean(value.trim()) && !disabled && !pending;
+  const resolvedPlaceholder = placeholder ?? t('post.comments.composer.placeholder');
   return (
     <View style={styles.container}>
-      <UserAvatar uri={avatarUrl ?? undefined} label={avatarLabel || 'You'} size={32} />
+      <UserAvatar
+        uri={avatarUrl ?? undefined}
+        label={avatarLabel || t('post.comments.composer.you')}
+        size={32}
+      />
       <View style={styles.inputWrap}>
         <TextInput
           value={value}
           onChangeText={onChangeText}
-          placeholder={placeholder}
+          placeholder={resolvedPlaceholder}
           placeholderTextColor={theme.reels.textSecondary}
           style={styles.input}
           editable={!pending}
@@ -54,11 +61,12 @@ function CommentComposerComponent({
         style={[styles.sendButton, !canSend && styles.sendButtonDisabled]}
         disabled={!canSend}
         accessibilityRole="button"
+        accessibilityLabel={t('post.accessibility.sendComment')}
       >
         {pending ? (
           <ActivityIndicator color={theme.reels.textPrimary} />
         ) : (
-          <Text style={styles.sendLabel}>Send</Text>
+          <Text style={styles.sendLabel}>{t('post.comments.composer.send')}</Text>
         )}
       </TouchableOpacity>
     </View>

@@ -1,6 +1,7 @@
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Animated,
   FlatList,
@@ -53,16 +54,8 @@ type Props = {
   skipAutoLoad?: boolean;
 };
 
-const EXPLAIN_LEVELS: Array<{ label: string; value: SoulmatchExplainLevel }> = [
-  { label: 'Free', value: 'free' },
-  { label: 'Premium', value: 'premium' },
-  { label: 'Premium+', value: 'premium_plus' },
-];
-
-const MODE_LEVELS: Array<{ label: string; value: SoulmatchMode }> = [
-  { label: 'Compat', value: 'compat' },
-  { label: 'Dating', value: 'dating' },
-];
+const EXPLAIN_LEVELS: SoulmatchExplainLevel[] = ['free', 'premium', 'premium_plus'];
+const MODE_LEVELS: SoulmatchMode[] = ['compat', 'dating'];
 
 function AnimatedCard({ children, delay }: { children: React.ReactNode; delay: number }) {
   const opacity = useRef(new Animated.Value(0)).current;
@@ -108,6 +101,7 @@ function RecommendationCard({
   onRequestUpgrade: (tier: Exclude<SoulmatchTier, 'free'>) => void;
   styles: ReturnType<typeof createStyles>;
 }) {
+  const { t } = useTranslation();
   const target = item.user;
   const badges = useMemo(() => buildBadges(item, 3), [item]);
   const tone = scoreTone(item.score);
@@ -123,6 +117,7 @@ function RecommendationCard({
   const timingWindowLabel = item.timing_window?.label;
   const timingSummary = item.timing_summary;
   const trend = item.compatibility_trend;
+  const handleLabel = `@${target.handle}`;
 
   return (
     <TouchableOpacity onPress={onPress}>
@@ -137,7 +132,7 @@ function RecommendationCard({
             <UserAvatar size={52} uri={target.photo ?? undefined} label={target.name} />
             <View style={styles.cardTitleBlock}>
               <Text style={styles.cardName}>{target.name || target.handle}</Text>
-              <Text style={styles.cardHandle}>@{target.handle}</Text>
+              <Text style={styles.cardHandle}>{handleLabel}</Text>
               {lensReason ? (
                 <Text style={styles.lensReasonInline} numberOfLines={1}>
                   {lensReason}
@@ -166,18 +161,22 @@ function RecommendationCard({
           {showShort ? <Text style={styles.explainShort}>{explanationShort}</Text> : null}
           <View style={styles.premiumTeaseRow}>
             <Text style={styles.premiumTeaseText}>
-              {isSectionLocked('full', userTier) ? 'Why this score 🔒' : 'Why this score'}
+              {isSectionLocked('full', userTier)
+                ? t('soulmatch.recommendations.card.whyScoreLocked')
+                : t('soulmatch.recommendations.card.whyScore')}
             </Text>
             <Text style={styles.premiumTeaseText}>
               {isSectionLocked('strategy', userTier)
-                ? 'Approach strategy 🔒'
-                : 'Approach strategy'}
+                ? t('soulmatch.recommendations.card.approachLocked')
+                : t('soulmatch.recommendations.card.approach')}
             </Text>
           </View>
           {timingSummary || timingWindowLabel ? (
             <View style={styles.timingRow}>
               <Text style={styles.timingLabel}>
-                Timing: {timingSummary || timingWindowLabel}
+                {t('soulmatch.recommendations.card.timing', {
+                  value: timingSummary || timingWindowLabel,
+                })}
               </Text>
               {timingWindowLabel &&
               timingSummary &&
@@ -192,31 +191,37 @@ function RecommendationCard({
                   onPress={() => onRequestUpgrade('premium')}
                   style={styles.unlockLink}
                 >
-                  <Text style={styles.unlockText}>Unlock timing details</Text>
+                  <Text style={styles.unlockText}>
+                    {t('soulmatch.recommendations.card.unlockTiming')}
+                  </Text>
                 </TouchableOpacity>
               ) : null}
             </View>
           ) : null}
           {showFull ? (
             <ExpandableSection
-              title="More"
+              title={t('soulmatch.recommendations.card.more')}
               text={item.explanation?.full}
               styles={styles}
             />
           ) : lockedFull ? (
             <TouchableOpacity onPress={() => onRequestUpgrade('premium')}>
-              <Text style={styles.unlockText}>Unlock to see more</Text>
+              <Text style={styles.unlockText}>
+                {t('soulmatch.recommendations.card.unlockMore')}
+              </Text>
             </TouchableOpacity>
           ) : null}
           {showStrategy ? (
             <ExpandableSection
-              title="How to approach"
+              title={t('soulmatch.recommendations.card.howToApproach')}
               text={item.explanation?.strategy}
               styles={styles}
             />
           ) : lockedStrategy ? (
             <TouchableOpacity onPress={() => onRequestUpgrade('premium_plus')}>
-              <Text style={styles.unlockText}>Unlock premium strategy</Text>
+              <Text style={styles.unlockText}>
+                {t('soulmatch.recommendations.card.unlockPremiumStrategy')}
+              </Text>
             </TouchableOpacity>
           ) : null}
         </MetalPanel>
@@ -234,6 +239,7 @@ function ExpandableSection({
   text?: string | null;
   styles: ReturnType<typeof createStyles>;
 }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   if (!text) {
     return null;
@@ -245,7 +251,7 @@ function ExpandableSection({
         onPress={() => setOpen((prev) => !prev)}
       >
         <Text style={styles.expandTitle}>{title}</Text>
-        <Text style={styles.expandToggle}>{open ? 'Hide' : 'Show'}</Text>
+        <Text style={styles.expandToggle}>{open ? t('common.hide') : t('common.show')}</Text>
       </TouchableOpacity>
       {open ? <Text style={styles.expandBody}>{text}</Text> : null}
     </View>
@@ -256,6 +262,7 @@ export function SoulMatchRecommendationsScreen({
   initialItems = [],
   skipAutoLoad = false,
 }: Props) {
+  const { t } = useTranslation();
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
   const navigation = useNavigation<Nav>();
@@ -303,7 +310,10 @@ export function SoulMatchRecommendationsScreen({
           });
         }
       } catch (error) {
-        const normalized = normalizeApiError(error, 'Unable to load recommendations.');
+        const normalized = normalizeApiError(
+          error,
+          t('soulmatch.recommendations.alerts.loadFailed'),
+        );
         if (normalized.status === 401 || normalized.status === 403) {
           toast.push({ message: normalized.message, tone: 'error', duration: 4000 });
           logout();
@@ -318,7 +328,7 @@ export function SoulMatchRecommendationsScreen({
         setLoading(false);
       }
     },
-    [explainLevel, initialItems.length, logout, mode, skipAutoLoad, toast],
+    [explainLevel, initialItems.length, logout, mode, skipAutoLoad, t, toast],
   );
 
   useFocusEffect(
@@ -376,7 +386,7 @@ export function SoulMatchRecommendationsScreen({
   };
 
   if (loading) {
-    return <LoadingOverlay label="Finding your SoulMatches…" />;
+    return <LoadingOverlay label={t('soulmatch.recommendations.loading')} />;
   }
 
   const missing = meta?.missing_requirements ?? [];
@@ -389,12 +399,12 @@ export function SoulMatchRecommendationsScreen({
     missingBirth ||
     emptyReason === 'missing_birth_data' ||
     emptyReason === 'chart_incomplete'
-      ? 'Complete your birth data to get matches.'
+      ? t('soulmatch.recommendations.empty.completeBirthData')
       : emptyReason === 'missing_profile_fields'
-        ? 'Complete your profile (gender and orientation) to get matches.'
+        ? t('soulmatch.recommendations.empty.completeProfile')
         : emptyReason === 'no_candidates'
-          ? 'No candidates yet — invite friends or try later.'
-          : 'Once your chart and profile are complete, recommendations will appear here.';
+          ? t('soulmatch.recommendations.empty.noCandidates')
+          : t('soulmatch.recommendations.empty.default');
 
   const displayItems =
     userTier === 'free' ? items.slice(0, FREE_RECOMMENDATION_LIMIT) : items;
@@ -407,21 +417,37 @@ export function SoulMatchRecommendationsScreen({
       {typeof __DEV__ !== 'undefined' && __DEV__ ? (
         <View style={styles.debugPanel}>
           <View style={styles.debugHeader}>
-            <Text style={styles.debugTitle}>SoulMatch Debug</Text>
+            <Text style={styles.debugTitle}>{t('soulmatch.recommendations.debug.title')}</Text>
             <TouchableOpacity onPress={() => setShowDebug((prev) => !prev)}>
-              <Text style={styles.debugToggle}>{showDebug ? 'Hide' : 'Show'}</Text>
+              <Text style={styles.debugToggle}>
+                {showDebug
+                  ? t('soulmatch.recommendations.debug.hide')
+                  : t('soulmatch.recommendations.debug.show')}
+              </Text>
             </TouchableOpacity>
           </View>
           {showDebug ? (
             <View>
-              <Text style={styles.debugLine}>mode: {meta?.mode ?? '?'}</Text>
-              <Text style={styles.debugLine}>reason: {meta?.reason ?? '?'}</Text>
+              <Text style={styles.debugLine}>
+                {t('soulmatch.recommendations.debug.mode', {
+                  value: meta?.mode ?? '?',
+                })}
+              </Text>
+              <Text style={styles.debugLine}>
+                {t('soulmatch.recommendations.debug.reason', {
+                  value: meta?.reason ?? '?',
+                })}
+              </Text>
               {meta?.missing_requirements?.length ? (
                 <Text style={styles.debugLine}>
-                  missing: {meta.missing_requirements.join(', ')}
+                  {t('soulmatch.recommendations.debug.missing', {
+                    value: meta.missing_requirements.join(', '),
+                  })}
                 </Text>
               ) : null}
-              <Text style={styles.debugLine}>results: {items.length}</Text>
+              <Text style={styles.debugLine}>
+                {t('soulmatch.recommendations.debug.results', { count: items.length })}
+              </Text>
             </View>
           ) : null}
         </View>
@@ -432,15 +458,15 @@ export function SoulMatchRecommendationsScreen({
         ListHeaderComponent={
           <View style={styles.explainRow}>
             <View style={styles.modeRow}>
-              <Text style={styles.explainLabel}>Mode</Text>
+              <Text style={styles.explainLabel}>{t('soulmatch.recommendations.mode')}</Text>
               <View style={styles.explainPills}>
-                {MODE_LEVELS.map((option) => {
-                  const active = option.value === mode;
+                {MODE_LEVELS.map((value) => {
+                  const active = value === mode;
                   return (
                     <TouchableOpacity
-                      key={option.value}
+                      key={value}
                       style={[styles.explainPill, active && styles.explainPillActive]}
-                      onPress={() => setMode(option.value)}
+                      onPress={() => setMode(value)}
                     >
                       <Text
                         style={[
@@ -448,31 +474,31 @@ export function SoulMatchRecommendationsScreen({
                           active && styles.explainPillTextActive,
                         ]}
                       >
-                        {option.label}
+                        {t(`soulmatch.recommendations.modeOptions.${value}`)}
                       </Text>
                     </TouchableOpacity>
                   );
                 })}
               </View>
             </View>
-            <Text style={styles.explainLabel}>Explain</Text>
+            <Text style={styles.explainLabel}>{t('soulmatch.recommendations.explain')}</Text>
             <View style={styles.explainPills}>
-              {EXPLAIN_LEVELS.map((option) => {
-                const active = option.value === explainLevel;
+              {EXPLAIN_LEVELS.map((value) => {
+                const active = value === explainLevel;
                 return (
                   <TouchableOpacity
-                    key={option.value}
+                    key={value}
                     style={[styles.explainPill, active && styles.explainPillActive]}
                     onPress={() => {
-                      if (isExplainLevelLocked(option.value, userTier)) {
-                        const required = requiredTierForExplain(option.value);
+                      if (isExplainLevelLocked(value, userTier)) {
+                        const required = requiredTierForExplain(value);
                         if (required !== 'free') {
                           setRequestedTier(required);
                           setUpgradeVisible(true);
                         }
                         return;
                       }
-                      setExplainLevel(option.value);
+                      setExplainLevel(value);
                     }}
                   >
                     <Text
@@ -481,7 +507,7 @@ export function SoulMatchRecommendationsScreen({
                         active && styles.explainPillTextActive,
                       ]}
                     >
-                      {option.label}
+                      {t(`soulmatch.recommendations.explainOptions.${value}`)}
                     </Text>
                   </TouchableOpacity>
                 );
@@ -500,9 +526,11 @@ export function SoulMatchRecommendationsScreen({
                 setUpgradeVisible(true);
               }}
             >
-              <Text style={styles.upgradeFooterTitle}>See more matches</Text>
+              <Text style={styles.upgradeFooterTitle}>
+                {t('soulmatch.recommendations.upgradeFooter.title')}
+              </Text>
               <Text style={styles.upgradeFooterSubtitle}>
-                Unlock Premium to view the full list.
+                {t('soulmatch.recommendations.upgradeFooter.subtitle')}
               </Text>
             </TouchableOpacity>
           ) : null
@@ -516,9 +544,9 @@ export function SoulMatchRecommendationsScreen({
         }
         ListEmptyComponent={
           <EmptyState
-            title="No matches yet"
+            title={t('soulmatch.recommendations.empty.title')}
             description={emptyDescription}
-            actionLabel="Refresh"
+            actionLabel={t('common.retry')}
             onAction={load}
           />
         }

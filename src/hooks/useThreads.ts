@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { useToast } from '@context/ToastContext';
 import { createThread, listThreads, Thread } from '@services/api/threads';
@@ -8,6 +9,7 @@ type Options = {
 };
 
 export function useThreads(options: Options = {}) {
+  const { t } = useTranslation();
   const toast = useToast();
   const [threads, setThreads] = useState<Thread[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
@@ -38,14 +40,14 @@ export function useThreads(options: Options = {}) {
         setHasMore(Boolean(response.next));
       } catch (error) {
         console.warn('useThreads: failed to load', error);
-        toast.push({ tone: 'error', message: 'Unable to load inbox. Please try again.' });
+        toast.push({ tone: 'error', message: t('inbox.alerts.loadFailed') });
       } finally {
         setLoading(false);
         setRefreshing(false);
         setLoadingMore(false);
       }
     },
-    [pageSize, toast],
+    [pageSize, t, toast],
   );
 
   useEffect(() => {
@@ -57,15 +59,15 @@ export function useThreads(options: Options = {}) {
       try {
         const thread = await createThread(payload);
         setThreads((prev) => [thread, ...prev]);
-        toast.push({ tone: 'info', message: 'Thread created.' });
+        toast.push({ tone: 'info', message: t('inbox.alerts.threadCreated') });
         return thread;
       } catch (error) {
         console.warn('useThreads: failed to create thread', error);
-        toast.push({ tone: 'error', message: 'Unable to create thread.' });
+        toast.push({ tone: 'error', message: t('inbox.alerts.createFailed') });
         throw error;
       }
     },
-    [toast],
+    [t, toast],
   );
 
   const refresh = useCallback(() => loadPage(true, null), [loadPage]);

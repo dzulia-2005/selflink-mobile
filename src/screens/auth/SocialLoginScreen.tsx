@@ -4,8 +4,11 @@ import Constants from 'expo-constants';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as WebBrowser from 'expo-web-browser';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
+import { type AppLanguage } from '@i18n/language';
+import { useAppLanguage } from '@i18n/useAppLanguage';
 import type { AuthStackParamList } from '@navigation/types';
 import { useAuthStore } from '@store/authStore';
 import { useTheme, type Theme } from '@theme';
@@ -29,11 +32,14 @@ const FACEBOOK_DISCOVERY = {
 };
 
 type SocialLoginRoute = RouteProp<AuthStackParamList, 'SocialLogin'>;
+const APP_LANGUAGES: AppLanguage[] = ['en', 'ru', 'ka'];
 
 export function SocialLoginScreen() {
+  const { t } = useTranslation();
   const route = useRoute<SocialLoginRoute>();
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
+  const { language, setLanguage } = useAppLanguage();
   const socialLogin = useAuthStore((state) => state.socialLogin);
   const isAuthenticating = useAuthStore((state) => state.isAuthenticating);
   const [error, setError] = useState<string | null>(null);
@@ -95,7 +101,7 @@ export function SocialLoginScreen() {
       return;
     }
     if (googleResponse.type === 'error') {
-      setError(googleResponse.error?.message ?? 'Google sign-in failed. Please try again.');
+      setError(googleResponse.error?.message ?? t('auth.social.googleFail'));
       return;
     }
     if (googleResponse.type !== 'success') {
@@ -114,20 +120,20 @@ export function SocialLoginScreen() {
           await socialLogin('google', { code });
           return;
         }
-        setError('Google login returned no credential.');
+        setError(t('auth.social.googleNoCredential'));
       } catch (e) {
-        setError(e instanceof Error ? e.message : 'Unable to complete Google login.');
+        setError(e instanceof Error ? e.message : t('auth.social.googleUnable'));
       }
     };
     run().catch(() => undefined);
-  }, [googleResponse, socialLogin]);
+  }, [googleResponse, socialLogin, t]);
 
   useEffect(() => {
     if (!githubResponse) {
       return;
     }
     if (githubResponse.type === 'error') {
-      setError(githubResponse.error?.message ?? 'GitHub sign-in failed. Please try again.');
+      setError(githubResponse.error?.message ?? t('auth.social.githubFail'));
       return;
     }
     if (githubResponse.type !== 'success') {
@@ -138,23 +144,23 @@ export function SocialLoginScreen() {
       try {
         const code = githubResponse.params?.code;
         if (!code) {
-          setError('GitHub login returned no code.');
+          setError(t('auth.social.githubNoCode'));
           return;
         }
         await socialLogin('github', { code });
       } catch (e) {
-        setError(e instanceof Error ? e.message : 'Unable to complete GitHub login.');
+        setError(e instanceof Error ? e.message : t('auth.social.githubUnable'));
       }
     };
     run().catch(() => undefined);
-  }, [githubResponse, socialLogin]);
+  }, [githubResponse, socialLogin, t]);
 
   useEffect(() => {
     if (!facebookResponse) {
       return;
     }
     if (facebookResponse.type === 'error') {
-      setError(facebookResponse.error?.message ?? 'Facebook sign-in failed. Please try again.');
+      setError(facebookResponse.error?.message ?? t('auth.social.facebookFail'));
       return;
     }
     if (facebookResponse.type !== 'success') {
@@ -165,29 +171,29 @@ export function SocialLoginScreen() {
       try {
         const code = facebookResponse.params?.code;
         if (!code) {
-          setError('Facebook login returned no code.');
+          setError(t('auth.social.facebookNoCode'));
           return;
         }
         await socialLogin('facebook', { code });
       } catch (e) {
-        setError(e instanceof Error ? e.message : 'Unable to complete Facebook login.');
+        setError(e instanceof Error ? e.message : t('auth.social.facebookUnable'));
       }
     };
     run().catch(() => undefined);
-  }, [facebookResponse, socialLogin]);
+  }, [facebookResponse, socialLogin, t]);
 
   const handleGoogleLogin = useCallback(async () => {
     setError(null);
     if (!proxyRedirectUri) {
-      setError('Expo project owner/slug missing. Set expo.owner + expo.slug in app config.');
+      setError(t('auth.social.missingProjectConfig'));
       return;
     }
     if (!isGoogleConfigured) {
-      setError('Set EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID in .env and restart Expo with `npx expo start -c`.');
+      setError(t('auth.social.googleClientMissing'));
       return;
     }
     if (!googleRequest) {
-      setError('Google login is not ready yet.');
+      setError(t('auth.social.googleNotReady'));
       return;
     }
     await googlePromptAsync();
@@ -196,20 +202,21 @@ export function SocialLoginScreen() {
     googleRequest,
     isGoogleConfigured,
     proxyRedirectUri,
+    t,
   ]);
 
   const handleGitHubLogin = useCallback(async () => {
     setError(null);
     if (!proxyRedirectUri) {
-      setError('Expo project owner/slug missing. Set expo.owner + expo.slug in app config.');
+      setError(t('auth.social.missingProjectConfig'));
       return;
     }
     if (!isGitHubConfigured) {
-      setError('Set EXPO_PUBLIC_GITHUB_CLIENT_ID in .env and restart Expo with `npx expo start -c`.');
+      setError(t('auth.social.githubClientMissing'));
       return;
     }
     if (!githubRequest) {
-      setError('GitHub login is not ready yet.');
+      setError(t('auth.social.githubNotReady'));
       return;
     }
     await githubPromptAsync();
@@ -218,20 +225,21 @@ export function SocialLoginScreen() {
     githubRequest,
     isGitHubConfigured,
     proxyRedirectUri,
+    t,
   ]);
 
   const handleFacebookLogin = useCallback(async () => {
     setError(null);
     if (!proxyRedirectUri) {
-      setError('Expo project owner/slug missing. Set expo.owner + expo.slug in app config.');
+      setError(t('auth.social.missingProjectConfig'));
       return;
     }
     if (!isFacebookConfigured) {
-      setError('Set EXPO_PUBLIC_FACEBOOK_APP_ID in .env and restart Expo with `npx expo start -c`.');
+      setError(t('auth.social.facebookAppMissing'));
       return;
     }
     if (!facebookRequest) {
-      setError('Facebook login is not ready yet.');
+      setError(t('auth.social.facebookNotReady'));
       return;
     }
     await facebookPromptAsync();
@@ -240,6 +248,7 @@ export function SocialLoginScreen() {
     facebookRequest,
     isFacebookConfigured,
     proxyRedirectUri,
+    t,
   ]);
 
   useEffect(() => {
@@ -288,12 +297,31 @@ export function SocialLoginScreen() {
     <LinearGradient colors={theme.gradients.appBackground} style={styles.gradient}>
       <View style={styles.container}>
         <View style={styles.card}>
-          <Text style={styles.title}>Social login</Text>
-          <Text style={styles.subtitle}>Continue with Google, Facebook, or GitHub.</Text>
+          <Text style={styles.languageLabel}>{t('profile.language')}</Text>
+          <View style={styles.languageRow}>
+            {APP_LANGUAGES.map((opt) => {
+              const active = language === opt;
+              return (
+                <Pressable
+                  key={opt}
+                  style={[styles.languageChip, active && styles.languageChipSelected]}
+                  onPress={() => {
+                    setLanguage(opt).catch(() => undefined);
+                  }}
+                >
+                  <Text
+                    style={[styles.languageChipLabel, active && styles.languageChipLabelSelected]}
+                  >
+                    {t(`profile.languageOptions.${opt}`)}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+          <Text style={styles.title}>{t('auth.social.title')}</Text>
+          <Text style={styles.subtitle}>{t('auth.social.subtitle')}</Text>
           {!proxyRedirectUri ? (
-            <Text style={styles.errorText}>
-              Expo project owner/slug missing. Set expo.owner + expo.slug in app config.
-            </Text>
+            <Text style={styles.errorText}>{t('auth.social.missingProjectConfig')}</Text>
           ) : null}
 
           <TouchableOpacity
@@ -304,15 +332,15 @@ export function SocialLoginScreen() {
           >
             <Text style={styles.buttonLabel}>
               {isAuthenticating
-                ? 'Signing in…'
+                ? t('auth.login.submitting')
                 : !googleRequest
-                  ? 'Preparing Google login…'
-                  : 'Continue with Google'}
+                  ? t('auth.social.preparingGoogle')
+                  : t('auth.social.continueGoogle')}
             </Text>
           </TouchableOpacity>
           {!isGoogleConfigured ? (
             <Text style={styles.infoText}>
-              Google login is not configured yet. Add `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` to your `.env`.
+              {t('auth.social.providerNotConfiguredGoogle')}
             </Text>
           ) : null}
 
@@ -324,15 +352,15 @@ export function SocialLoginScreen() {
           >
             <Text style={styles.buttonAltLabel}>
               {isAuthenticating
-                ? 'Signing in…'
+                ? t('auth.login.submitting')
                 : !facebookRequest
-                  ? 'Preparing Facebook login…'
-                  : 'Continue with Facebook'}
+                  ? t('auth.social.preparingFacebook')
+                  : t('auth.social.continueFacebook')}
             </Text>
           </TouchableOpacity>
           {!isFacebookConfigured ? (
             <Text style={styles.infoText}>
-              Facebook login is not configured yet. Add `EXPO_PUBLIC_FACEBOOK_APP_ID` to your `.env`.
+              {t('auth.social.providerNotConfiguredFacebook')}
             </Text>
           ) : null}
 
@@ -344,21 +372,23 @@ export function SocialLoginScreen() {
           >
             <Text style={styles.buttonAltLabel}>
               {isAuthenticating
-                ? 'Signing in…'
+                ? t('auth.login.submitting')
                 : !githubRequest
-                  ? 'Preparing GitHub login…'
-                  : 'Continue with GitHub'}
+                  ? t('auth.social.preparingGithub')
+                  : t('auth.social.continueGithub')}
             </Text>
           </TouchableOpacity>
           {!isGitHubConfigured ? (
             <Text style={styles.infoText}>
-              GitHub login is not configured yet. Add `EXPO_PUBLIC_GITHUB_CLIENT_ID` to your `.env`.
+              {t('auth.social.providerNotConfiguredGithub')}
             </Text>
           ) : null}
 
           {error ? <Text style={styles.errorText}>{error}</Text> : null}
           <Text style={styles.infoText}>
-            Add `https://auth.expo.io/{projectFullName ?? '@owner/slug'}` to GitHub and Facebook OAuth redirect URIs.
+            {t('auth.social.redirectHint', {
+              project: projectFullName ?? '@owner/slug',
+            })}
           </Text>
         </View>
       </View>
@@ -392,6 +422,35 @@ const createStyles = (theme: Theme) =>
     subtitle: {
       color: theme.text.muted,
       ...theme.typography.body,
+    },
+    languageLabel: {
+      color: theme.text.secondary,
+      ...theme.typography.caption,
+    },
+    languageRow: {
+      flexDirection: 'row',
+      gap: theme.spacing.xs,
+      flexWrap: 'wrap',
+    },
+    languageChip: {
+      borderRadius: theme.radii.pill,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      paddingHorizontal: theme.spacing.sm,
+      paddingVertical: theme.spacing.xs,
+      backgroundColor: theme.colors.surfaceAlt,
+    },
+    languageChipSelected: {
+      borderColor: theme.colors.primary,
+      backgroundColor: 'rgba(124, 58, 237, 0.15)',
+    },
+    languageChipLabel: {
+      color: theme.text.secondary,
+      ...theme.typography.caption,
+    },
+    languageChipLabelSelected: {
+      color: theme.text.primary,
+      fontWeight: '700',
     },
     button: {
       borderRadius: theme.radii.md,

@@ -1,5 +1,5 @@
+import { serviceApiClient as apiClient } from '@api/client';
 import { BirthDataPayload, NatalChart } from '@schemas/astro';
-import { apiClient } from '@services/api/client';
 
 export async function createOrUpdateNatalChart(
   payload: BirthDataPayload,

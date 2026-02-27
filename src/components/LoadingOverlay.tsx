@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
 type Props = {
@@ -5,10 +6,12 @@ type Props = {
 };
 
 export function LoadingOverlay({ label }: Props) {
+  const { t } = useTranslation();
+  const resolvedLabel = label ?? t('common.loading');
   return (
     <View style={styles.container}>
       <ActivityIndicator size="large" />
-      {label ? <Text style={styles.label}>{label}</Text> : null}
+      <Text style={styles.label}>{resolvedLabel}</Text>
     </View>
   );
 }

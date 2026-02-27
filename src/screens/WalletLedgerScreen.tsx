@@ -2,6 +2,7 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import * as Clipboard from 'expo-clipboard';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   AppState,
@@ -98,6 +99,7 @@ type ParsedApiError = {
   status?: number;
   code?: string;
 };
+const UNKNOWN_ERROR_MESSAGE = 'Unexpected error';
 
 const formatDollars = (cents: number) => `$${(cents / 100).toFixed(2)}`;
 
@@ -167,18 +169,25 @@ const parseApiError = (error: unknown): ParsedApiError => {
     }
     return { message: error.message };
   }
-  return { message: 'Unexpected error' };
+  return { message: UNKNOWN_ERROR_MESSAGE };
 };
 
 const isAuthStatus = (status?: number) => status === 401 || status === 403;
 
-const normalizeWalletError = (error: unknown, fallback: string): ParsedApiError => {
+const normalizeWalletError = (
+  error: unknown,
+  fallback: string,
+  options?: { authMessage?: string; networkMessage?: string },
+): ParsedApiError => {
   const parsed = parseApiError(error);
-  let message = parsed.message || fallback;
+  let message =
+    !parsed.message || parsed.message === UNKNOWN_ERROR_MESSAGE
+      ? fallback
+      : parsed.message;
   if (isAuthStatus(parsed.status)) {
-    message = 'Please sign in to continue.';
+    message = options?.authMessage ?? message;
   } else if (!parsed.status && /network|failed to fetch/i.test(message)) {
-    message = 'Unable to reach the server. Please try again.';
+    message = options?.networkMessage ?? message;
   }
   return { ...parsed, message };
 };
@@ -190,60 +199,6 @@ const formatLedgerAmount = (entry: SlcLedgerEntry) => {
   return `${prefix}${formatDollars(Math.abs(signed))}`;
 };
 
-const formatLedgerTitle = (entry: SlcLedgerEntry) => {
-  const eventType = entry.event_type?.toLowerCase();
-  if (eventType === 'transfer') {
-    return entry.direction === 'DEBIT' ? 'Sent SLC' : 'Received SLC';
-  }
-  if (eventType === 'spend') {
-    return 'Spent SLC';
-  }
-  if (eventType === 'mint') {
-    return 'Minted SLC';
-  }
-  if (eventType === 'refund') {
-    return 'Refunded SLC';
-  }
-  return 'SLC Activity';
-};
-
-const formatCounterparty = (entry: SlcLedgerEntry) => {
-  const eventType = entry.event_type?.toLowerCase();
-  const metadata = entry.event_metadata ?? {};
-  const toUserId =
-    typeof metadata.to_user_id === 'number' ? metadata.to_user_id : undefined;
-  const senderUserId =
-    typeof metadata.sender_user_id === 'number' ? metadata.sender_user_id : undefined;
-  const reference =
-    typeof metadata.reference === 'string' ? metadata.reference : undefined;
-  const provider = typeof metadata.provider === 'string' ? metadata.provider : undefined;
-
-  if (eventType === 'transfer') {
-    if (entry.direction === 'DEBIT' && toUserId) {
-      return `To user #${toUserId}`;
-    }
-    if (entry.direction === 'CREDIT' && senderUserId) {
-      return `From user #${senderUserId}`;
-    }
-    if (toUserId) {
-      return `To user #${toUserId}`;
-    }
-    if (senderUserId) {
-      return `From user #${senderUserId}`;
-    }
-  }
-
-  if (eventType === 'spend' && reference) {
-    return `Reference: ${reference}`;
-  }
-
-  if (eventType === 'mint' && provider) {
-    return `Minted via ${provider}`;
-  }
-
-  return 'Account activity';
-};
-
 const formatTimestamp = (raw: string) => {
   const date = new Date(raw);
   if (Number.isNaN(date.getTime())) {
@@ -253,6 +208,7 @@ const formatTimestamp = (raw: string) => {
 };
 
 export function WalletLedgerScreen() {
+  const { t } = useTranslation();
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
   const toast = useToast();
@@ -416,11 +372,11 @@ export function WalletLedgerScreen() {
       authHandledRef.current = true;
       toast.push({
         tone: 'error',
-        message: message ?? 'Session expired. Please sign in again.',
+        message: message ?? t('wallet.errors.sessionExpired'),
       });
       logout().catch(() => undefined);
     },
-    [logout, toast],
+    [logout, t, toast],
   );
 
   const fetchWallet = useCallback(async () => {
@@ -430,7 +386,10 @@ export function WalletLedgerScreen() {
       const data = await getWallet();
       setWallet(data);
     } catch (error) {
-      const normalized = normalizeWalletError(error, 'Unable to load wallet balance.');
+      const normalized = normalizeWalletError(error, t('wallet.errors.loadWallet'), {
+        authMessage: t('wallet.errors.signInToContinue'),
+        networkMessage: t('wallet.errors.networkUnavailable'),
+      });
       if (isAuthStatus(normalized.status)) {
         handleAuthError(normalized.message);
       }
@@ -438,7 +397,7 @@ export function WalletLedgerScreen() {
     } finally {
       setWalletLoading(false);
     }
-  }, [handleAuthError]);
+  }, [handleAuthError, t]);
 
   const fetchCoinBalance = useCallback(async () => {
     setCoinLoading(true);
@@ -447,7 +406,7 @@ export function WalletLedgerScreen() {
       const data = await getSlcBalance();
       setCoinBalance(data);
     } catch (error) {
-      const normalized = normalizeCoinApiError(error, 'Unable to load SLC balance.');
+      const normalized = normalizeCoinApiError(error, t('wallet.errors.loadSlcBalance'));
       if (isAuthStatus(normalized.status)) {
         handleAuthError(normalized.message);
       }
@@ -455,7 +414,7 @@ export function WalletLedgerScreen() {
     } finally {
       setCoinLoading(false);
     }
-  }, [handleAuthError]);
+  }, [handleAuthError, t]);
 
   const fetchLedger = useCallback(async () => {
     const requestId = ledgerRequestId.current + 1;
@@ -473,7 +432,7 @@ export function WalletLedgerScreen() {
       if (ledgerRequestId.current !== requestId) {
         return;
       }
-      const normalized = normalizeCoinApiError(error, 'Unable to load SLC activity.');
+      const normalized = normalizeCoinApiError(error, t('wallet.errors.loadSlcActivity'));
       if (isAuthStatus(normalized.status)) {
         handleAuthError(normalized.message);
       }
@@ -483,7 +442,7 @@ export function WalletLedgerScreen() {
         setLedgerLoading(false);
       }
     }
-  }, [handleAuthError]);
+  }, [handleAuthError, t]);
 
   const loadMore = useCallback(async () => {
     if (!nextCursor || loadingMore || ledgerLoading || refreshing) {
@@ -505,12 +464,12 @@ export function WalletLedgerScreen() {
       if (ledgerRequestId.current !== requestId) {
         return;
       }
-      const normalized = normalizeCoinApiError(error, 'Unable to load more activity.');
+      const normalized = normalizeCoinApiError(error, t('wallet.errors.loadMoreActivity'));
       if (normalized.status === 400 && /invalid cursor/i.test(normalized.message)) {
         setNextCursor(null);
         toast.push({
           tone: 'error',
-          message: 'Activity refreshed due to an invalid cursor.',
+          message: t('wallet.toasts.invalidCursorRefreshed'),
         });
         fetchLedger();
         return;
@@ -533,6 +492,7 @@ export function WalletLedgerScreen() {
     loadingMore,
     nextCursor,
     refreshing,
+    t,
     toast,
   ]);
 
@@ -599,11 +559,11 @@ export function WalletLedgerScreen() {
           await refreshCoinData();
           toast.push({
             tone: 'info',
-            message: 'SLC credited.',
+            message: t('wallet.toasts.slcCredited'),
           });
         }
       } catch (error) {
-        const normalized = normalizeCoinApiError(error, 'Unable to refresh SLC balance.');
+        const normalized = normalizeCoinApiError(error, t('wallet.errors.refreshSlcBalance'));
         if (normalized.status === 429) {
           stopIapPolling();
           toast.push({ tone: 'error', message: normalized.message });
@@ -615,7 +575,7 @@ export function WalletLedgerScreen() {
         }
       }
     },
-    [clearIapPending, handleAuthError, refreshCoinData, stopIapPolling, toast],
+    [clearIapPending, handleAuthError, refreshCoinData, stopIapPolling, t, toast],
   );
 
   const scheduleIapPolling = useCallback(() => {
@@ -634,11 +594,11 @@ export function WalletLedgerScreen() {
         toast.push({
           tone: 'info',
           message:
-            'Purchase pending. If you were charged, balance will update shortly. Pull to refresh.',
+            t('wallet.toasts.purchasePending'),
         });
       }
     });
-  }, [clearIapPending, runIapPollAttempt, stopIapPolling, toast]);
+  }, [clearIapPending, runIapPollAttempt, stopIapPolling, t, toast]);
 
   const stopIpayPolling = useCallback(() => {
     ipayPollSessionRef.current.stop();
@@ -669,11 +629,11 @@ export function WalletLedgerScreen() {
           await refreshCoinData();
           toast.push({
             tone: 'info',
-            message: 'SLC balance updated.',
+            message: t('wallet.toasts.balanceUpdated'),
           });
         }
       } catch (error) {
-        const normalized = normalizeCoinApiError(error, 'Unable to refresh SLC balance.');
+        const normalized = normalizeCoinApiError(error, t('wallet.errors.refreshSlcBalance'));
         if (normalized.status === 429) {
           stopIpayPolling();
           toast.push({ tone: 'error', message: normalized.message });
@@ -692,6 +652,7 @@ export function WalletLedgerScreen() {
       pendingIpayReference,
       refreshCoinData,
       stopIpayPolling,
+      t,
       toast,
     ],
   );
@@ -760,11 +721,11 @@ export function WalletLedgerScreen() {
           await refreshCoinData();
           toast.push({
             tone: 'info',
-            message: 'SLC credited.',
+            message: t('wallet.toasts.slcCredited'),
           });
         }
       } catch (error) {
-        const normalized = normalizeCoinApiError(error, 'Unable to refresh SLC balance.');
+        const normalized = normalizeCoinApiError(error, t('wallet.errors.refreshSlcBalance'));
         if (normalized.status === 429) {
           stopBtcpayPolling();
           toast.push({ tone: 'error', message: normalized.message });
@@ -784,6 +745,7 @@ export function WalletLedgerScreen() {
       pendingBtcpayStartedAt,
       refreshCoinData,
       stopBtcpayPolling,
+      t,
       toast,
     ],
   );
@@ -923,8 +885,8 @@ export function WalletLedgerScreen() {
           tone: 'info',
           message:
             startedAt !== null
-              ? 'Payment pending. If you were charged, balance will update shortly. Pull to refresh.'
-              : 'Payment pending. If you were charged, balance will update shortly. Pull to refresh.',
+              ? t('wallet.toasts.paymentPending')
+              : t('wallet.toasts.paymentPending'),
         });
       }
     });
@@ -934,6 +896,7 @@ export function WalletLedgerScreen() {
     pendingStripeStartedAt,
     runStripePollAttempt,
     stopStripePolling,
+    t,
     toast,
   ]);
 
@@ -1023,18 +986,18 @@ export function WalletLedgerScreen() {
             toast.push({
               tone: 'error',
               message:
-                'Purchase verified, but finalization failed. Reopen the app or tap Restore Purchases.',
+                t('wallet.toasts.finalizeFailed'),
             });
           }
         }
         pendingIapPayloadRef.current = null;
         await refreshCoinData();
         if (!options?.silent) {
-          toast.push({ tone: 'info', message: 'SLC purchase confirmed.' });
+          toast.push({ tone: 'info', message: t('wallet.toasts.purchaseConfirmed') });
         }
         return { status: 'success' };
       } catch (error) {
-        const normalized = normalizeIapApiError(error, 'Unable to verify purchase.');
+        const normalized = normalizeIapApiError(error, t('wallet.errors.verifyPurchase'));
         if (isAuthStatus(normalized.status)) {
           handleAuthError(normalized.message);
           return { status: 'failed', error: normalized };
@@ -1067,6 +1030,7 @@ export function WalletLedgerScreen() {
       scheduleIapPolling,
       setPendingIapContext,
       stopIapPolling,
+      t,
       toast,
     ],
   );
@@ -1084,8 +1048,8 @@ export function WalletLedgerScreen() {
       if (!payload) {
         iapPurchaseInFlightRef.current = false;
         setIapLoading(false);
-        setIapError('Unable to read purchase details.');
-        toast.push({ tone: 'error', message: 'Unable to read purchase details.' });
+        setIapError(t('wallet.errors.readPurchaseDetails'));
+        toast.push({ tone: 'error', message: t('wallet.errors.readPurchaseDetails') });
         return;
       }
       try {
@@ -1095,7 +1059,7 @@ export function WalletLedgerScreen() {
         setIapLoading(false);
       }
     },
-    [toast, verifyIapPayload],
+    [t, toast, verifyIapPayload],
   );
 
   const handleRestoreIapPurchases = useCallback(async () => {
@@ -1103,7 +1067,7 @@ export function WalletLedgerScreen() {
       return;
     }
     if (!iapReady) {
-      setIapError('In-app purchases are unavailable on this device.');
+      setIapError(t('wallet.errors.iapUnavailable'));
       return;
     }
     setIapRestoring(true);
@@ -1115,7 +1079,7 @@ export function WalletLedgerScreen() {
         purchase.productId ? iapSkus.includes(purchase.productId) : false,
       );
       if (eligible.length === 0) {
-        setIapError('No purchases available to restore.');
+        setIapError(t('wallet.errors.noPurchasesToRestore'));
         return;
       }
       for (const purchase of eligible) {
@@ -1125,7 +1089,7 @@ export function WalletLedgerScreen() {
         }
         await verifyIapPayload(payload, purchase, { silent: true });
       }
-      toast.push({ tone: 'info', message: 'Restore check completed.' });
+      toast.push({ tone: 'info', message: t('wallet.toasts.restoreCompleted') });
     } catch (error) {
       const normalized = normalizeIapPurchaseError(error);
       setIapError(normalized.message);
@@ -1133,7 +1097,7 @@ export function WalletLedgerScreen() {
     } finally {
       setIapRestoring(false);
     }
-  }, [iapReady, iapRestoring, iapSkus, toast, verifyIapPayload]);
+  }, [iapReady, iapRestoring, iapSkus, t, toast, verifyIapPayload]);
 
   const handleIapPurchaseError = useCallback(
     (error: IapPurchaseError) => {
@@ -1141,7 +1105,7 @@ export function WalletLedgerScreen() {
       if (normalized.code && IAP_ERROR_CODES.cancelled.has(normalized.code)) {
         iapPurchaseInFlightRef.current = false;
         setIapLoading(false);
-        toast.push({ tone: 'info', message: 'Purchase cancelled.' });
+        toast.push({ tone: 'info', message: t('wallet.toasts.purchaseCancelled') });
         return;
       }
       if (normalized.code && IAP_ERROR_CODES.alreadyOwned.has(normalized.code)) {
@@ -1149,7 +1113,7 @@ export function WalletLedgerScreen() {
         setIapLoading(false);
         toast.push({
           tone: 'info',
-          message: 'Purchase already owned. Checking restores…',
+          message: t('wallet.toasts.purchaseOwnedCheckingRestore'),
         });
         handleRestoreIapPurchases().catch(() => undefined);
         return;
@@ -1159,16 +1123,16 @@ export function WalletLedgerScreen() {
       setIapError(normalized.message);
       toast.push({ tone: 'error', message: normalized.message });
     },
-    [handleRestoreIapPurchases, toast],
+    [handleRestoreIapPurchases, t, toast],
   );
 
   const handleOpenIap = useCallback(() => {
     setIapError(null);
     if (!iapReady) {
-      setIapError('In-app purchases are unavailable on this device.');
+      setIapError(t('wallet.errors.iapUnavailable'));
     }
     setIapVisible(true);
-  }, [iapReady]);
+  }, [iapReady, t]);
 
   const handleCloseIap = useCallback(() => {
     if (iapLoading || iapRestoring) {
@@ -1182,11 +1146,11 @@ export function WalletLedgerScreen() {
       return;
     }
     if (!iapReady) {
-      setIapError('In-app purchases are unavailable on this device.');
+      setIapError(t('wallet.errors.iapUnavailable'));
       return;
     }
     if (!iapSelectedSku) {
-      setIapError('Select a product to continue.');
+      setIapError(t('wallet.errors.selectProduct'));
       return;
     }
     setIapError(null);
@@ -1209,6 +1173,7 @@ export function WalletLedgerScreen() {
     iapRestoring,
     iapSelectedSku,
     stopIapPolling,
+    t,
     toast,
   ]);
 
@@ -1217,12 +1182,12 @@ export function WalletLedgerScreen() {
       return;
     }
     if (!iapReady) {
-      setIapError('In-app purchases are unavailable on this device.');
+      setIapError(t('wallet.errors.iapUnavailable'));
       return;
     }
     const payload = pendingIapPayloadRef.current;
     if (!payload) {
-      toast.push({ tone: 'error', message: 'No pending purchase to verify.' });
+      toast.push({ tone: 'error', message: t('wallet.errors.noPendingPurchase') });
       return;
     }
     setIapLoading(true);
@@ -1231,7 +1196,7 @@ export function WalletLedgerScreen() {
     } finally {
       setIapLoading(false);
     }
-  }, [iapLoading, iapReady, iapRestoring, toast, verifyIapPayload]);
+  }, [iapLoading, iapReady, iapRestoring, t, toast, verifyIapPayload]);
 
   useEffect(() => {
     let removeListeners: (() => void) | null = null;
@@ -1261,12 +1226,12 @@ export function WalletLedgerScreen() {
       return;
     }
     if (!iapReady) {
-      setIapError('In-app purchases are unavailable on this device.');
+      setIapError(t('wallet.errors.iapUnavailable'));
       setIapProductsLoading(false);
       return;
     }
     if (iapSkus.length === 0) {
-      setIapError('No products configured for this build.');
+      setIapError(t('wallet.errors.noProductsConfigured'));
       setIapProductsLoading(false);
       return;
     }
@@ -1280,10 +1245,10 @@ export function WalletLedgerScreen() {
         }
       })
       .catch(() => {
-        setIapError('Unable to load in-app products.');
+        setIapError(t('wallet.errors.loadIapProducts'));
       })
       .finally(() => setIapProductsLoading(false));
-  }, [iapReady, iapSelectedSku, iapSkus, iapVisible]);
+  }, [iapReady, iapSelectedSku, iapSkus, iapVisible, t]);
 
   const handleOpenSend = useCallback(() => {
     setFormError(null);
@@ -1350,13 +1315,13 @@ export function WalletLedgerScreen() {
     }
     const amountCents = parseDollarsToCents(btcpayAmountInput);
     if (amountCents <= 0) {
-      setBtcpayFieldErrors({ amount_cents: ['Enter an amount greater than 0.'] });
-      setBtcpayError('Enter an amount greater than 0.');
+      setBtcpayFieldErrors({ amount_cents: [t('wallet.errors.amountGreaterThanZero')] });
+      setBtcpayError(t('wallet.errors.amountGreaterThanZero'));
       return;
     }
     if (!BTCPAY_CURRENCIES.includes(btcpayCurrency)) {
-      setBtcpayFieldErrors({ currency: ['Select a valid currency.'] });
-      setBtcpayError('Select a valid currency.');
+      setBtcpayFieldErrors({ currency: [t('wallet.errors.selectValidCurrency')] });
+      setBtcpayError(t('wallet.errors.selectValidCurrency'));
       return;
     }
 
@@ -1369,11 +1334,11 @@ export function WalletLedgerScreen() {
         currency: btcpayCurrency,
       });
       if (!response.payment_url) {
-        throw new Error('Missing BTCPay checkout URL');
+        throw new Error(t('wallet.errors.missingBtcpayUrl'));
       }
       const canOpen = await Linking.canOpenURL(response.payment_url);
       if (!canOpen) {
-        throw new Error('Cannot open BTCPay checkout URL');
+        throw new Error(t('wallet.errors.cannotOpenBtcpayUrl'));
       }
       stopBtcpayPolling();
       btcpayLedgerCursorRef.current = null;
@@ -1385,12 +1350,12 @@ export function WalletLedgerScreen() {
       await Linking.openURL(response.payment_url);
       toast.push({
         tone: 'info',
-        message: 'Complete BTCPay checkout to receive SLC.',
+        message: t('wallet.toasts.completeBtcpayCheckout'),
       });
     } catch (error) {
       const normalized = normalizeBtcpayApiError(
         error,
-        'Unable to start BTCPay checkout.',
+        t('wallet.errors.startBtcpayCheckout'),
       );
       if (isAuthStatus(normalized.status)) {
         handleAuthError(normalized.message);
@@ -1408,6 +1373,7 @@ export function WalletLedgerScreen() {
     btcpayLoading,
     handleAuthError,
     stopBtcpayPolling,
+    t,
     toast,
   ]);
 
@@ -1416,18 +1382,18 @@ export function WalletLedgerScreen() {
       return;
     }
     if (!env.ipayBaseUrl) {
-      setIpayError('iPay is not configured for this build.');
+      setIpayError(t('wallet.errors.ipayNotConfigured'));
       return;
     }
     const amountCents = parseDollarsToCents(ipayAmountInput);
     if (amountCents <= 0) {
-      setIpayFieldErrors({ amount_cents: ['Enter an amount greater than 0.'] });
-      setIpayError('Enter an amount greater than 0.');
+      setIpayFieldErrors({ amount_cents: [t('wallet.errors.amountGreaterThanZero')] });
+      setIpayError(t('wallet.errors.amountGreaterThanZero'));
       return;
     }
     if (!IPAY_CURRENCIES.includes(ipayCurrency)) {
-      setIpayFieldErrors({ currency: ['Select a valid currency.'] });
-      setIpayError('Select a valid currency.');
+      setIpayFieldErrors({ currency: [t('wallet.errors.selectValidCurrency')] });
+      setIpayError(t('wallet.errors.selectValidCurrency'));
       return;
     }
 
@@ -1448,7 +1414,7 @@ export function WalletLedgerScreen() {
         } catch (error) {
           const normalized = normalizeCoinApiError(
             error,
-            'Unable to refresh SLC balance.',
+            t('wallet.errors.refreshSlcBalance'),
           );
           if (isAuthStatus(normalized.status)) {
             handleAuthError(normalized.message);
@@ -1460,17 +1426,17 @@ export function WalletLedgerScreen() {
         }
       }
       if (baselineBalance === null || baselineBalance === undefined) {
-        setIpayError('Unable to refresh SLC balance.');
-        toast.push({ tone: 'error', message: 'Unable to refresh SLC balance.' });
+        setIpayError(t('wallet.errors.refreshSlcBalance'));
+        toast.push({ tone: 'error', message: t('wallet.errors.refreshSlcBalance') });
         return;
       }
       const checkoutUrl = buildIpayCheckoutUrl(env.ipayBaseUrl, response.reference);
       if (!checkoutUrl) {
-        throw new Error('Missing iPay checkout URL');
+        throw new Error(t('wallet.errors.missingIpayUrl'));
       }
       const canOpen = await Linking.canOpenURL(checkoutUrl);
       if (!canOpen) {
-        throw new Error('Cannot open iPay checkout URL');
+        throw new Error(t('wallet.errors.cannotOpenIpayUrl'));
       }
       stopIpayPolling();
       setPendingIpayReference(response.reference);
@@ -1480,12 +1446,12 @@ export function WalletLedgerScreen() {
       await Linking.openURL(checkoutUrl);
       toast.push({
         tone: 'info',
-        message: 'Complete payment in iPay to receive SLC.',
+        message: t('wallet.toasts.completeIpayCheckout'),
       });
     } catch (error) {
       setPendingIpayReference(null);
       setPendingIpayBalance(null);
-      const normalized = normalizeCoinApiError(error, 'Unable to start iPay checkout.');
+      const normalized = normalizeCoinApiError(error, t('wallet.errors.startIpayCheckout'));
       if (isAuthStatus(normalized.status)) {
         handleAuthError(normalized.message);
       } else {
@@ -1503,6 +1469,7 @@ export function WalletLedgerScreen() {
     ipayCurrency,
     ipayLoading,
     stopIpayPolling,
+    t,
     toast,
   ]);
 
@@ -1525,13 +1492,13 @@ export function WalletLedgerScreen() {
     }
     const amountCents = parseDollarsToCents(stripeAmountInput);
     if (amountCents <= 0) {
-      setStripeFieldErrors({ amount_cents: ['Enter an amount greater than 0.'] });
-      setStripeError('Enter an amount greater than 0.');
+      setStripeFieldErrors({ amount_cents: [t('wallet.errors.amountGreaterThanZero')] });
+      setStripeError(t('wallet.errors.amountGreaterThanZero'));
       return;
     }
     if (!STRIPE_CURRENCIES.includes(stripeCurrency)) {
-      setStripeFieldErrors({ currency: ['Select a valid currency.'] });
-      setStripeError('Select a valid currency.');
+      setStripeFieldErrors({ currency: [t('wallet.errors.selectValidCurrency')] });
+      setStripeError(t('wallet.errors.selectValidCurrency'));
       return;
     }
 
@@ -1552,7 +1519,7 @@ export function WalletLedgerScreen() {
         } catch (error) {
           const normalized = normalizeCoinApiError(
             error,
-            'Unable to refresh SLC balance.',
+            t('wallet.errors.refreshSlcBalance'),
           );
           if (isAuthStatus(normalized.status)) {
             handleAuthError(normalized.message);
@@ -1564,16 +1531,16 @@ export function WalletLedgerScreen() {
         }
       }
       if (baselineBalance === null || baselineBalance === undefined) {
-        setStripeError('Unable to refresh SLC balance.');
-        toast.push({ tone: 'error', message: 'Unable to refresh SLC balance.' });
+        setStripeError(t('wallet.errors.refreshSlcBalance'));
+        toast.push({ tone: 'error', message: t('wallet.errors.refreshSlcBalance') });
         return;
       }
       if (!response.payment_url) {
-        throw new Error('Missing Stripe checkout URL');
+        throw new Error(t('wallet.errors.missingStripeUrl'));
       }
       const canOpen = await Linking.canOpenURL(response.payment_url);
       if (!canOpen) {
-        throw new Error('Cannot open Stripe checkout URL');
+        throw new Error(t('wallet.errors.cannotOpenStripeUrl'));
       }
       stopStripePolling();
       stripeLedgerCursorRef.current = null;
@@ -1586,12 +1553,12 @@ export function WalletLedgerScreen() {
       await Linking.openURL(response.payment_url);
       toast.push({
         tone: 'info',
-        message: 'Complete payment in Stripe to receive SLC.',
+        message: t('wallet.toasts.completeStripeCheckout'),
       });
     } catch (error) {
       const normalized = normalizeStripeApiError(
         error,
-        'Unable to start Stripe checkout.',
+        t('wallet.errors.startStripeCheckout'),
       );
       if (isAuthStatus(normalized.status)) {
         handleAuthError(normalized.message);
@@ -1610,6 +1577,7 @@ export function WalletLedgerScreen() {
     stripeCurrency,
     stripeLoading,
     stopStripePolling,
+    t,
     toast,
   ]);
 
@@ -1619,27 +1587,27 @@ export function WalletLedgerScreen() {
     }
     const referenceValue = spendReference.trim();
     if (!referenceValue) {
-      setSpendFieldErrors({ reference: ['Select a spend reference.'] });
-      setSpendError('Select a spend reference.');
+      setSpendFieldErrors({ reference: [t('wallet.errors.selectSpendReference')] });
+      setSpendError(t('wallet.errors.selectSpendReference'));
       return;
     }
     const isAllowedReference = COIN_SPEND_REFERENCES.some(
       (reference) => reference.value === referenceValue,
     );
     if (!isAllowedReference) {
-      setSpendFieldErrors({ reference: ['Select a valid spend reference.'] });
-      setSpendError('Select a valid spend reference.');
+      setSpendFieldErrors({ reference: [t('wallet.errors.selectValidSpendReference')] });
+      setSpendError(t('wallet.errors.selectValidSpendReference'));
       return;
     }
     const amountCents = parseDollarsToCents(spendAmountInput);
     if (amountCents <= 0) {
-      setSpendFieldErrors({ amount_cents: ['Enter an amount greater than 0.'] });
-      setSpendError('Enter an amount greater than 0.');
+      setSpendFieldErrors({ amount_cents: [t('wallet.errors.amountGreaterThanZero')] });
+      setSpendError(t('wallet.errors.amountGreaterThanZero'));
       return;
     }
     if (coinBalance && amountCents > coinBalance.balance_cents) {
-      setSpendFieldErrors({ amount_cents: ['Amount exceeds available SLC balance.'] });
-      setSpendError('Amount exceeds available SLC balance.');
+      setSpendFieldErrors({ amount_cents: [t('wallet.errors.amountExceedsBalance')] });
+      setSpendError(t('wallet.errors.amountExceedsBalance'));
       return;
     }
 
@@ -1654,14 +1622,14 @@ export function WalletLedgerScreen() {
       });
       toast.push({
         tone: 'info',
-        message: 'SLC spent. Balance and activity updated.',
+        message: t('wallet.toasts.slcSpent'),
       });
       setSpendVisible(false);
       setSpendAmountInput('');
       setSpendNoteInput('');
       await refreshCoinData();
     } catch (error) {
-      const normalized = normalizeCoinApiError(error, 'Unable to spend SLC.');
+      const normalized = normalizeCoinApiError(error, t('wallet.errors.spendSlc'));
       if (normalized.status === 429) {
         setSpendThrottleUntil(Date.now() + 3000);
       }
@@ -1684,6 +1652,7 @@ export function WalletLedgerScreen() {
     spendNoteInput,
     spendReference,
     spending,
+    t,
     toast,
   ]);
 
@@ -1691,16 +1660,16 @@ export function WalletLedgerScreen() {
     try {
       const pasted = await Clipboard.getStringAsync();
       if (!pasted.trim()) {
-        toast.push({ tone: 'info', message: 'Clipboard is empty.' });
+        toast.push({ tone: 'info', message: t('wallet.toasts.clipboardEmpty') });
         return;
       }
       setRecipientInput(pasted.trim());
       setFormError(null);
     } catch (error) {
       console.warn('Wallet: paste recipient failed', error);
-      toast.push({ tone: 'error', message: 'Unable to paste right now.' });
+      toast.push({ tone: 'error', message: t('wallet.errors.pasteFailed') });
     }
-  }, [toast]);
+  }, [t, toast]);
 
   const handleSubmitTransfer = useCallback(async () => {
     if (sending || isThrottled) {
@@ -1708,16 +1677,16 @@ export function WalletLedgerScreen() {
     }
     const receiverAccountKey = recipientInput.trim();
     if (!receiverAccountKey) {
-      setFormError('Enter a recipient ID.');
+      setFormError(t('wallet.errors.enterRecipientId'));
       return;
     }
     const amountCents = parseDollarsToCents(amountInput);
     if (amountCents <= 0) {
-      setFormError('Enter an amount greater than 0.');
+      setFormError(t('wallet.errors.amountGreaterThanZero'));
       return;
     }
     if (coinBalance && amountCents >= coinBalance.balance_cents) {
-      setFormError('Insufficient balance.');
+      setFormError(t('wallet.errors.insufficientBalance'));
       return;
     }
 
@@ -1731,7 +1700,7 @@ export function WalletLedgerScreen() {
       });
       toast.push({
         tone: 'info',
-        message: 'SLC sent. Balance and activity updated.',
+        message: t('wallet.toasts.slcSent'),
       });
       setSendVisible(false);
       setRecipientInput('');
@@ -1739,7 +1708,7 @@ export function WalletLedgerScreen() {
       setNoteInput('');
       await refreshCoinData();
     } catch (error) {
-      const normalized = normalizeCoinApiError(error, 'Unable to send SLC.');
+      const normalized = normalizeCoinApiError(error, t('wallet.errors.sendSlc'));
       if (normalized.status === 429) {
         setThrottleUntil(Date.now() + 3000);
       }
@@ -1762,6 +1731,7 @@ export function WalletLedgerScreen() {
     recipientInput,
     refreshCoinData,
     sending,
+    t,
     toast,
   ]);
 
@@ -1797,6 +1767,63 @@ export function WalletLedgerScreen() {
   const stripeCurrencyError = stripeFieldErrors?.currency?.[0];
   const stripeAmountCents = parseDollarsToCents(stripeAmountInput);
   const hasPendingStripe = Boolean(pendingStripeReference);
+  const formatLedgerTitleText = useCallback(
+    (entry: SlcLedgerEntry) => {
+      const eventType = entry.event_type?.toLowerCase();
+      if (eventType === 'transfer') {
+        return entry.direction === 'DEBIT'
+          ? t('wallet.ledger.title.sent')
+          : t('wallet.ledger.title.received');
+      }
+      if (eventType === 'spend') {
+        return t('wallet.ledger.title.spent');
+      }
+      if (eventType === 'mint') {
+        return t('wallet.ledger.title.minted');
+      }
+      if (eventType === 'refund') {
+        return t('wallet.ledger.title.refunded');
+      }
+      return t('wallet.ledger.title.default');
+    },
+    [t],
+  );
+  const formatCounterpartyText = useCallback(
+    (entry: SlcLedgerEntry) => {
+      const eventType = entry.event_type?.toLowerCase();
+      const metadata = entry.event_metadata ?? {};
+      const toUserId =
+        typeof metadata.to_user_id === 'number' ? metadata.to_user_id : undefined;
+      const senderUserId =
+        typeof metadata.sender_user_id === 'number' ? metadata.sender_user_id : undefined;
+      const reference =
+        typeof metadata.reference === 'string' ? metadata.reference : undefined;
+      const provider = typeof metadata.provider === 'string' ? metadata.provider : undefined;
+
+      if (eventType === 'transfer') {
+        if (entry.direction === 'DEBIT' && toUserId) {
+          return t('wallet.ledger.counterparty.toUser', { id: toUserId });
+        }
+        if (entry.direction === 'CREDIT' && senderUserId) {
+          return t('wallet.ledger.counterparty.fromUser', { id: senderUserId });
+        }
+        if (toUserId) {
+          return t('wallet.ledger.counterparty.toUser', { id: toUserId });
+        }
+        if (senderUserId) {
+          return t('wallet.ledger.counterparty.fromUser', { id: senderUserId });
+        }
+      }
+      if (eventType === 'spend' && reference) {
+        return t('wallet.ledger.counterparty.reference', { reference });
+      }
+      if (eventType === 'mint' && provider) {
+        return t('wallet.ledger.counterparty.mintedVia', { provider });
+      }
+      return t('wallet.ledger.counterparty.default');
+    },
+    [t],
+  );
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -1812,19 +1839,19 @@ export function WalletLedgerScreen() {
           />
         }
       >
-        <Text style={styles.headline}>Wallet</Text>
-        <Text style={styles.subtitle}>Track payments and SLC credits in one place.</Text>
+        <Text style={styles.headline}>{t('wallet.title')}</Text>
+        <Text style={styles.subtitle}>{t('wallet.subtitle')}</Text>
 
         <MetalPanel glow>
           <View style={styles.panelHeader}>
-            <Text style={styles.panelTitle}>Wallet (Payments)</Text>
+            <Text style={styles.panelTitle}>{t('wallet.balance.title')}</Text>
             <TouchableOpacity
               onPress={fetchWallet}
               disabled={walletLoading}
               style={styles.panelAction}
             >
               <Text style={styles.panelActionText}>
-                {walletLoading ? 'Loading' : 'Refresh'}
+                {walletLoading ? t('common.loading') : t('common.retry')}
               </Text>
             </TouchableOpacity>
           </View>
@@ -1837,23 +1864,23 @@ export function WalletLedgerScreen() {
           ) : walletBalance ? (
             <View>
               <Text style={styles.balanceValue}>{walletBalance}</Text>
-              <Text style={styles.balanceCaption}>Available balance</Text>
+              <Text style={styles.balanceCaption}>{t('wallet.balance.available')}</Text>
             </View>
           ) : (
-            <EmptyState title="Wallet not available yet." />
+            <EmptyState title={t('wallet.balance.empty')} />
           )}
         </MetalPanel>
 
         <MetalPanel>
           <View style={styles.panelHeader}>
-            <Text style={styles.panelTitle}>SLC Balance (Credits)</Text>
+            <Text style={styles.panelTitle}>{t('wallet.slc.title')}</Text>
             <TouchableOpacity
               onPress={fetchCoinBalance}
               disabled={coinLoading}
               style={styles.panelAction}
             >
               <Text style={styles.panelActionText}>
-                {coinLoading ? 'Loading' : 'Refresh'}
+                {coinLoading ? t('common.loading') : t('common.retry')}
               </Text>
             </TouchableOpacity>
           </View>
@@ -1866,39 +1893,37 @@ export function WalletLedgerScreen() {
           ) : slcBalance ? (
             <View>
               <Text style={styles.balanceValue}>
-                {slcBalance} <Text style={styles.balanceUnit}>SLC</Text>
+                {slcBalance} <Text style={styles.balanceUnit}>{t('wallet.slc.unit')}</Text>
               </Text>
-              <Text style={styles.balanceCaption}>1.00 SLC = $1.00</Text>
+              <Text style={styles.balanceCaption}>{t('wallet.slc.rate')}</Text>
             </View>
           ) : (
-            <EmptyState title="SLC balance not available." />
+            <EmptyState title={t('wallet.slc.empty')} />
           )}
           <View style={styles.buttonRow}>
             <MetalButton
-              title="Send SLC"
+              title={t('wallet.actions.sendSlc')}
               onPress={handleOpenSend}
               disabled={coinLoading || !coinBalance}
             />
             <MetalButton
-              title="Spend SLC"
+              title={t('wallet.actions.spendSlc')}
               onPress={handleOpenSpend}
               disabled={coinLoading || !coinBalance || !hasSpendReferences}
             />
-            <MetalButton title="Buy SLC (IAP)" onPress={handleOpenIap} />
-            <MetalButton title="Buy SLC" onPress={handleOpenStripe} />
-            <MetalButton title="Buy SLC (iPay)" onPress={handleOpenIpay} />
-            <MetalButton title="Buy SLC (BTCPay)" onPress={handleOpenBtcpay} />
+            <MetalButton title={t('wallet.actions.buySlcIap')} onPress={handleOpenIap} />
+            <MetalButton title={t('wallet.actions.buySlcStripe')} onPress={handleOpenStripe} />
+            <MetalButton title={t('wallet.actions.buySlcIpay')} onPress={handleOpenIpay} />
+            <MetalButton title={t('wallet.actions.buySlcBtcpay')} onPress={handleOpenBtcpay} />
           </View>
           <TouchableOpacity style={styles.inlineLink} onPress={handleFindUser}>
-            <Text style={styles.inlineLinkText}>Find a user to send SLC</Text>
+            <Text style={styles.inlineLinkText}>{t('wallet.actions.findUser')}</Text>
           </TouchableOpacity>
           {hasPendingIap ? (
             <View style={styles.pendingNotice}>
-              <Text style={styles.pendingText}>
-                Awaiting in-app purchase confirmation. It may take a moment.
-              </Text>
+              <Text style={styles.pendingText}>{t('wallet.pending.iap')}</Text>
               <MetalButton
-                title="Retry verification"
+                title={t('wallet.actions.retryVerification')}
                 onPress={handleRetryIapVerification}
                 disabled={iapLoading || iapRestoring || !iapReady}
               />
@@ -1906,11 +1931,11 @@ export function WalletLedgerScreen() {
           ) : null}
           {!hasPendingIap && iapFinalizeFailed ? (
             <View style={styles.pendingNotice}>
-              <Text style={styles.pendingText}>
-                Purchase verified, but finalization failed. Tap Restore purchases.
-              </Text>
+              <Text style={styles.pendingText}>{t('wallet.pending.finalizeFailed')}</Text>
               <MetalButton
-                title={iapRestoring ? 'Restoring...' : 'Restore purchases'}
+                title={
+                  iapRestoring ? t('wallet.actions.restoring') : t('wallet.actions.restore')
+                }
                 onPress={handleRestoreIapPurchases}
                 disabled={iapRestoring || !iapReady}
               />
@@ -1918,40 +1943,34 @@ export function WalletLedgerScreen() {
           ) : null}
           {hasPendingStripe ? (
             <View style={styles.pendingNotice}>
-              <Text style={styles.pendingText}>
-                Awaiting Stripe payment confirmation. It may take a moment.
-              </Text>
-              <MetalButton title="I've paid" onPress={refreshCoinData} />
+              <Text style={styles.pendingText}>{t('wallet.pending.stripe')}</Text>
+              <MetalButton title={t('wallet.actions.ivePaid')} onPress={refreshCoinData} />
             </View>
           ) : null}
           {hasPendingBtcpay ? (
             <View style={styles.pendingNotice}>
-              <Text style={styles.pendingText}>
-                Awaiting BTCPay confirmation. It may take a moment.
-              </Text>
-              <MetalButton title="I've paid" onPress={refreshCoinData} />
+              <Text style={styles.pendingText}>{t('wallet.pending.btcpay')}</Text>
+              <MetalButton title={t('wallet.actions.ivePaid')} onPress={refreshCoinData} />
             </View>
           ) : null}
           {hasPendingIpay ? (
             <View style={styles.pendingNotice}>
-              <Text style={styles.pendingText}>
-                Awaiting iPay confirmation. It may take a moment.
-              </Text>
-              <MetalButton title="I've paid" onPress={refreshCoinData} />
+              <Text style={styles.pendingText}>{t('wallet.pending.ipay')}</Text>
+              <MetalButton title={t('wallet.actions.ivePaid')} onPress={refreshCoinData} />
             </View>
           ) : null}
         </MetalPanel>
 
         <MetalPanel>
           <View style={styles.panelHeader}>
-            <Text style={styles.panelTitle}>SLC Activity</Text>
+            <Text style={styles.panelTitle}>{t('transactions.title')}</Text>
             <TouchableOpacity
               onPress={fetchLedger}
               disabled={ledgerLoading}
               style={styles.panelAction}
             >
               <Text style={styles.panelActionText}>
-                {ledgerLoading ? 'Loading' : 'Refresh'}
+                {ledgerLoading ? t('common.loading') : t('common.retry')}
               </Text>
             </TouchableOpacity>
           </View>
@@ -1962,12 +1981,12 @@ export function WalletLedgerScreen() {
           ) : ledgerError ? (
             <ErrorState message={ledgerError} onRetry={fetchLedger} />
           ) : ledgerEntries.length === 0 ? (
-            <EmptyState title="No activity yet." />
+            <EmptyState title={t('transactions.empty')} />
           ) : (
             <>
               {ledgerEntries.map((entry, index) => {
-                const title = formatLedgerTitle(entry);
-                const counterparty = formatCounterparty(entry);
+                const title = formatLedgerTitleText(entry);
+                const counterparty = formatCounterpartyText(entry);
                 const note = entry.note?.trim();
                 const timestamp = formatTimestamp(entry.occurred_at || entry.created_at);
                 const amountLabel = formatLedgerAmount(entry);
@@ -2002,7 +2021,7 @@ export function WalletLedgerScreen() {
               {nextCursor ? (
                 <View style={styles.loadMoreRow}>
                   <MetalButton
-                    title={loadingMore ? 'Loading more...' : 'Load more'}
+                    title={loadingMore ? t('transactions.loadingMore') : t('transactions.loadMore')}
                     onPress={loadMore}
                     disabled={loadingMore}
                   />
@@ -2023,15 +2042,13 @@ export function WalletLedgerScreen() {
           <Pressable style={StyleSheet.absoluteFill} onPress={handleCloseSend} />
           <View style={styles.modalContent}>
             <MetalPanel glow style={styles.modalPanel}>
-              <Text style={styles.modalTitle}>Send SLC</Text>
-              <Text style={styles.modalSubtitle}>
-                Enter a recipient ID (account key) and amount.
-              </Text>
-              <Text style={styles.fieldLabel}>Recipient ID (account key)</Text>
+              <Text style={styles.modalTitle}>{t('wallet.send.title')}</Text>
+              <Text style={styles.modalSubtitle}>{t('wallet.send.subtitle')}</Text>
+              <Text style={styles.fieldLabel}>{t('wallet.send.recipientLabel')}</Text>
               <View style={styles.inputRow}>
                 <TextInput
                   style={[styles.input, styles.inputGrow]}
-                  placeholder="user:123"
+                  placeholder={t('wallet.send.recipientPlaceholder')}
                   placeholderTextColor={theme.palette.graphite}
                   value={recipientInput}
                   onChangeText={(text) => {
@@ -2046,12 +2063,12 @@ export function WalletLedgerScreen() {
                   onPress={handlePasteRecipient}
                   activeOpacity={0.85}
                 >
-                  <Text style={styles.pasteLabel}>Paste</Text>
+                  <Text style={styles.pasteLabel}>{t('wallet.actions.paste')}</Text>
                 </TouchableOpacity>
               </View>
               <TextInput
                 style={styles.input}
-                placeholder="Amount (USD)"
+                placeholder={t('wallet.send.amountPlaceholder')}
                 placeholderTextColor={theme.palette.graphite}
                 value={amountInput}
                 onChangeText={(text) => {
@@ -2062,7 +2079,7 @@ export function WalletLedgerScreen() {
               />
               <TextInput
                 style={styles.input}
-                placeholder="Memo (optional)"
+                placeholder={t('wallet.send.memoPlaceholder')}
                 placeholderTextColor={theme.palette.graphite}
                 value={noteInput}
                 onChangeText={setNoteInput}
@@ -2070,12 +2087,18 @@ export function WalletLedgerScreen() {
               {formError ? <Text style={styles.formError}>{formError}</Text> : null}
               <View style={styles.buttonRow}>
                 <MetalButton
-                  title={sending ? 'Sending...' : isThrottled ? 'Please wait...' : 'Send'}
+                  title={
+                    sending
+                      ? t('wallet.actions.sending')
+                      : isThrottled
+                        ? t('wallet.actions.pleaseWait')
+                        : t('wallet.actions.send')
+                  }
                   onPress={handleSubmitTransfer}
                   disabled={sending || isThrottled}
                 />
                 <TouchableOpacity onPress={handleCloseSend} style={styles.cancelButton}>
-                  <Text style={styles.cancelText}>Cancel</Text>
+                  <Text style={styles.cancelText}>{t('common.cancel')}</Text>
                 </TouchableOpacity>
               </View>
             </MetalPanel>
@@ -2093,12 +2116,10 @@ export function WalletLedgerScreen() {
           <Pressable style={StyleSheet.absoluteFill} onPress={handleCloseSpend} />
           <View style={styles.modalContent}>
             <MetalPanel glow style={styles.modalPanel}>
-              <Text style={styles.modalTitle}>Spend SLC</Text>
-              <Text style={styles.modalSubtitle}>
-                Select a spend reference and amount.
-              </Text>
+              <Text style={styles.modalTitle}>{t('wallet.spend.title')}</Text>
+              <Text style={styles.modalSubtitle}>{t('wallet.spend.subtitle')}</Text>
 
-              <Text style={styles.fieldLabel}>Spend for</Text>
+              <Text style={styles.fieldLabel}>{t('wallet.spend.referenceLabel')}</Text>
               {hasSpendReferences ? (
                 <View style={styles.referenceList}>
                   {COIN_SPEND_REFERENCES.map((reference) => {
@@ -2129,7 +2150,7 @@ export function WalletLedgerScreen() {
                   })}
                 </View>
               ) : (
-                <Text style={styles.formError}>No spend references configured.</Text>
+                <Text style={styles.formError}>{t('wallet.spend.noReferences')}</Text>
               )}
               {spendReferenceError ? (
                 <Text style={styles.fieldError}>{spendReferenceError}</Text>
@@ -2137,7 +2158,7 @@ export function WalletLedgerScreen() {
 
               <TextInput
                 style={styles.input}
-                placeholder="Amount (USD)"
+                placeholder={t('wallet.spend.amountPlaceholder')}
                 placeholderTextColor={theme.palette.graphite}
                 value={spendAmountInput}
                 onChangeText={(text) => {
@@ -2153,7 +2174,7 @@ export function WalletLedgerScreen() {
 
               <TextInput
                 style={styles.input}
-                placeholder="Memo (optional)"
+                placeholder={t('wallet.spend.memoPlaceholder')}
                 placeholderTextColor={theme.palette.graphite}
                 value={spendNoteInput}
                 onChangeText={(text) => {
@@ -2171,16 +2192,16 @@ export function WalletLedgerScreen() {
                 <MetalButton
                   title={
                     spending
-                      ? 'Spending...'
+                      ? t('wallet.actions.spending')
                       : isSpendThrottled
-                        ? 'Please wait...'
-                        : 'Spend'
+                        ? t('wallet.actions.pleaseWait')
+                        : t('wallet.actions.spend')
                   }
                   onPress={handleSubmitSpend}
                   disabled={spending || isSpendThrottled || !hasSpendReferences}
                 />
                 <TouchableOpacity onPress={handleCloseSpend} style={styles.cancelButton}>
-                  <Text style={styles.cancelText}>Cancel</Text>
+                  <Text style={styles.cancelText}>{t('common.cancel')}</Text>
                 </TouchableOpacity>
               </View>
             </MetalPanel>
@@ -2198,12 +2219,10 @@ export function WalletLedgerScreen() {
           <Pressable style={StyleSheet.absoluteFill} onPress={handleCloseIap} />
           <View style={styles.modalContent}>
             <MetalPanel glow style={styles.modalPanel}>
-              <Text style={styles.modalTitle}>Buy SLC (IAP)</Text>
-              <Text style={styles.modalSubtitle}>
-                Select a pack and complete the App Store or Play purchase.
-              </Text>
+              <Text style={styles.modalTitle}>{t('wallet.iap.title')}</Text>
+              <Text style={styles.modalSubtitle}>{t('wallet.iap.subtitle')}</Text>
 
-              <Text style={styles.fieldLabel}>Available packs</Text>
+              <Text style={styles.fieldLabel}>{t('wallet.iap.availablePacks')}</Text>
               {iapProductsLoading ? (
                 <View style={styles.inlineLoading}>
                   <ActivityIndicator color={theme.palette.platinum} />
@@ -2246,12 +2265,12 @@ export function WalletLedgerScreen() {
               {iapError ? <Text style={styles.formError}>{iapError}</Text> : null}
               <View style={styles.buttonRow}>
                 <MetalButton
-                  title={iapLoading ? 'Starting...' : 'Continue'}
+                  title={iapLoading ? t('wallet.actions.starting') : t('wallet.actions.continue')}
                   onPress={handleSubmitIap}
                   disabled={iapLoading || iapRestoring || !iapSelectedSku || !iapReady}
                 />
                 <TouchableOpacity onPress={handleCloseIap} style={styles.cancelButton}>
-                  <Text style={styles.cancelText}>Cancel</Text>
+                  <Text style={styles.cancelText}>{t('common.cancel')}</Text>
                 </TouchableOpacity>
               </View>
               <TouchableOpacity
@@ -2260,7 +2279,7 @@ export function WalletLedgerScreen() {
                 disabled={iapLoading || iapRestoring || !iapReady}
               >
                 <Text style={styles.inlineLinkText}>
-                  {iapRestoring ? 'Restoring...' : 'Restore purchases'}
+                  {iapRestoring ? t('wallet.actions.restoring') : t('wallet.actions.restore')}
                 </Text>
               </TouchableOpacity>
             </MetalPanel>
@@ -2278,12 +2297,10 @@ export function WalletLedgerScreen() {
           <Pressable style={StyleSheet.absoluteFill} onPress={handleCloseStripe} />
           <View style={styles.modalContent}>
             <MetalPanel glow style={styles.modalPanel}>
-              <Text style={styles.modalTitle}>Buy SLC</Text>
-              <Text style={styles.modalSubtitle}>
-                Choose an amount and currency to start Stripe checkout.
-              </Text>
+              <Text style={styles.modalTitle}>{t('wallet.stripe.title')}</Text>
+              <Text style={styles.modalSubtitle}>{t('wallet.stripe.subtitle')}</Text>
 
-              <Text style={styles.fieldLabel}>Currency</Text>
+              <Text style={styles.fieldLabel}>{t('wallet.checkout.currency')}</Text>
               <View style={styles.referenceList}>
                 {STRIPE_CURRENCIES.map((currency) => {
                   const selected = currency === stripeCurrency;
@@ -2318,7 +2335,7 @@ export function WalletLedgerScreen() {
 
               <TextInput
                 style={styles.input}
-                placeholder={`Amount (${stripeCurrency})`}
+                placeholder={t('wallet.checkout.amountPlaceholder', { currency: stripeCurrency })}
                 placeholderTextColor={theme.palette.graphite}
                 value={stripeAmountInput}
                 onChangeText={(text) => {
@@ -2335,12 +2352,14 @@ export function WalletLedgerScreen() {
               {stripeError ? <Text style={styles.formError}>{stripeError}</Text> : null}
               <View style={styles.buttonRow}>
                 <MetalButton
-                  title={stripeLoading ? 'Starting...' : 'Continue'}
+                  title={
+                    stripeLoading ? t('wallet.actions.starting') : t('wallet.actions.continue')
+                  }
                   onPress={handleSubmitStripe}
                   disabled={stripeLoading || stripeAmountCents <= 0}
                 />
                 <TouchableOpacity onPress={handleCloseStripe} style={styles.cancelButton}>
-                  <Text style={styles.cancelText}>Cancel</Text>
+                  <Text style={styles.cancelText}>{t('common.cancel')}</Text>
                 </TouchableOpacity>
               </View>
             </MetalPanel>
@@ -2358,12 +2377,10 @@ export function WalletLedgerScreen() {
           <Pressable style={StyleSheet.absoluteFill} onPress={handleCloseBtcpay} />
           <View style={styles.modalContent}>
             <MetalPanel glow style={styles.modalPanel}>
-              <Text style={styles.modalTitle}>Buy SLC (BTCPay)</Text>
-              <Text style={styles.modalSubtitle}>
-                Choose an amount and currency to start BTCPay checkout.
-              </Text>
+              <Text style={styles.modalTitle}>{t('wallet.btcpay.title')}</Text>
+              <Text style={styles.modalSubtitle}>{t('wallet.btcpay.subtitle')}</Text>
 
-              <Text style={styles.fieldLabel}>Currency</Text>
+              <Text style={styles.fieldLabel}>{t('wallet.checkout.currency')}</Text>
               <View style={styles.referenceList}>
                 {BTCPAY_CURRENCIES.map((currency) => {
                   const selected = currency === btcpayCurrency;
@@ -2398,7 +2415,7 @@ export function WalletLedgerScreen() {
 
               <TextInput
                 style={styles.input}
-                placeholder={`Amount (${btcpayCurrency})`}
+                placeholder={t('wallet.checkout.amountPlaceholder', { currency: btcpayCurrency })}
                 placeholderTextColor={theme.palette.graphite}
                 value={btcpayAmountInput}
                 onChangeText={(text) => {
@@ -2415,12 +2432,14 @@ export function WalletLedgerScreen() {
               {btcpayError ? <Text style={styles.formError}>{btcpayError}</Text> : null}
               <View style={styles.buttonRow}>
                 <MetalButton
-                  title={btcpayLoading ? 'Starting...' : 'Continue'}
+                  title={
+                    btcpayLoading ? t('wallet.actions.starting') : t('wallet.actions.continue')
+                  }
                   onPress={handleSubmitBtcpay}
                   disabled={btcpayLoading || btcpayAmountCents <= 0}
                 />
                 <TouchableOpacity onPress={handleCloseBtcpay} style={styles.cancelButton}>
-                  <Text style={styles.cancelText}>Cancel</Text>
+                  <Text style={styles.cancelText}>{t('common.cancel')}</Text>
                 </TouchableOpacity>
               </View>
             </MetalPanel>
@@ -2438,12 +2457,10 @@ export function WalletLedgerScreen() {
           <Pressable style={StyleSheet.absoluteFill} onPress={handleCloseIpay} />
           <View style={styles.modalContent}>
             <MetalPanel glow style={styles.modalPanel}>
-              <Text style={styles.modalTitle}>Buy SLC</Text>
-              <Text style={styles.modalSubtitle}>
-                Choose an amount and currency to start iPay checkout.
-              </Text>
+              <Text style={styles.modalTitle}>{t('wallet.ipay.title')}</Text>
+              <Text style={styles.modalSubtitle}>{t('wallet.ipay.subtitle')}</Text>
 
-              <Text style={styles.fieldLabel}>Currency</Text>
+              <Text style={styles.fieldLabel}>{t('wallet.checkout.currency')}</Text>
               <View style={styles.referenceList}>
                 {IPAY_CURRENCIES.map((currency) => {
                   const selected = currency === ipayCurrency;
@@ -2478,7 +2495,7 @@ export function WalletLedgerScreen() {
 
               <TextInput
                 style={styles.input}
-                placeholder={`Amount (${ipayCurrency})`}
+                placeholder={t('wallet.checkout.amountPlaceholder', { currency: ipayCurrency })}
                 placeholderTextColor={theme.palette.graphite}
                 value={ipayAmountInput}
                 onChangeText={(text) => {
@@ -2494,19 +2511,19 @@ export function WalletLedgerScreen() {
 
               {!hasIpayBaseUrl ? (
                 <Text style={styles.fieldError}>
-                  iPay checkout is not configured for this build.
+                  {t('wallet.ipay.notConfigured')}
                 </Text>
               ) : null}
 
               {ipayError ? <Text style={styles.formError}>{ipayError}</Text> : null}
               <View style={styles.buttonRow}>
                 <MetalButton
-                  title={ipayLoading ? 'Starting...' : 'Continue'}
+                  title={ipayLoading ? t('wallet.actions.starting') : t('wallet.actions.continue')}
                   onPress={handleSubmitIpay}
                   disabled={ipayLoading || ipayAmountCents <= 0 || !hasIpayBaseUrl}
                 />
                 <TouchableOpacity onPress={handleCloseIpay} style={styles.cancelButton}>
-                  <Text style={styles.cancelText}>Cancel</Text>
+                  <Text style={styles.cancelText}>{t('common.cancel')}</Text>
                 </TouchableOpacity>
               </View>
             </MetalPanel>

@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   Animated,
@@ -39,6 +40,7 @@ export function BirthLocationMapModal({
   onConfirm,
   onCancel,
 }: Props) {
+  const { t } = useTranslation();
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
   const [markerCoord, setMarkerCoord] = useState<Coordinate | null>(null);
@@ -67,9 +69,9 @@ export function BirthLocationMapModal({
       console.error(
         'BirthLocationMapModal: Google Maps API key missing for Android build.',
       );
-      setMapError('Map unavailable in this build. Missing Google Maps API key.');
+      setMapError(t('astro.birthData.map.errors.unavailable'));
     }
-  }, [mapsDisabled, visible]);
+  }, [mapsDisabled, t, visible]);
 
   useEffect(() => {
     if (!markerCoord) {
@@ -110,11 +112,14 @@ export function BirthLocationMapModal({
   const locationLabel = useMemo(() => {
     if (markerCoord) {
       return city && country
-        ? `Near ${city}, ${country}`
-        : `Lat ${markerCoord.latitude.toFixed(4)}, Lon ${markerCoord.longitude.toFixed(4)}`;
+        ? t('astro.birthData.map.summary.near', { city, country })
+        : t('astro.birthData.map.summary.coords', {
+            lat: markerCoord.latitude.toFixed(4),
+            lon: markerCoord.longitude.toFixed(4),
+          });
     }
-    return 'Tap on the map to choose a location.';
-  }, [city, country, markerCoord]);
+    return t('astro.birthData.map.tapToChoose');
+  }, [city, country, markerCoord, t]);
 
   const handleMapRetry = () => {
     if (mapsDisabled) {
@@ -133,32 +138,37 @@ export function BirthLocationMapModal({
               onPress={onCancel}
               style={styles.iconButton}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              accessibilityRole="button"
+              accessibilityLabel={t('astro.birthData.map.accessibility.back')}
             >
               <Ionicons name="chevron-back" size={22} color={theme.palette.platinum} />
             </TouchableOpacity>
-            <Text style={styles.title}>Select Birth Location</Text>
+            <Text style={styles.title}>{t('astro.birthData.map.title')}</Text>
             <View style={styles.iconPlaceholder} />
           </View>
 
           <Text style={styles.instructions}>
-            Drag the map or tap to place the pin at your exact birth place.
+            {t('astro.birthData.map.instructions')}
           </Text>
 
           <View style={styles.mapCard}>
             {showLoader ? (
               <View style={styles.mapLoader}>
                 <ActivityIndicator color={theme.palette.platinum} />
-                <Text style={styles.loaderText}>Loading map…</Text>
+                <Text style={styles.loaderText}>{t('astro.birthData.map.loading')}</Text>
               </View>
             ) : null}
             {mapError || mapsDisabled ? (
               <View style={styles.mapLoader}>
                 <Text style={styles.errorText}>
-                  {mapError ??
-                    'Map unavailable in this build. Missing Google Maps API key.'}
+                  {mapError ?? t('astro.birthData.map.errors.unavailable')}
                 </Text>
                 <MetalButton
-                  title={mapsDisabled ? 'Close' : 'Try Again'}
+                  title={
+                    mapsDisabled
+                      ? t('astro.birthData.map.actions.close')
+                      : t('astro.birthData.map.actions.tryAgain')
+                  }
                   onPress={handleMapRetry}
                 />
               </View>
@@ -188,12 +198,14 @@ export function BirthLocationMapModal({
           <View style={styles.summaryCard}>
             <Ionicons name="location" size={16} color={theme.palette.azure} />
             <View style={styles.summaryContent}>
-              <Text style={styles.summaryTitle}>Location selected</Text>
+              <Text style={styles.summaryTitle}>{t('astro.birthData.map.summary.title')}</Text>
               <Text style={styles.summaryText}>{locationLabel}</Text>
               {markerCoord ? (
                 <Text style={styles.summaryCoords}>
-                  Lat {markerCoord.latitude.toFixed(4)}, Lon{' '}
-                  {markerCoord.longitude.toFixed(4)}
+                  {t('astro.birthData.map.summary.coords', {
+                    lat: markerCoord.latitude.toFixed(4),
+                    lon: markerCoord.longitude.toFixed(4),
+                  })}
                 </Text>
               ) : null}
             </View>
@@ -211,15 +223,24 @@ export function BirthLocationMapModal({
                 onPress={() => markerCoord && onConfirm(markerCoord)}
                 disabled={!markerCoord}
                 activeOpacity={0.9}
+                accessibilityRole="button"
+                accessibilityLabel={t('astro.birthData.map.accessibility.useLocation')}
               >
-                <Text style={styles.primaryLabel}>Use This Location</Text>
+                <Text style={styles.primaryLabel}>
+                  {t('astro.birthData.map.actions.useThisLocation')}
+                </Text>
               </TouchableOpacity>
             </LinearGradient>
-            <TouchableOpacity onPress={onCancel} style={styles.cancelButton}>
-              <Text style={styles.cancelLabel}>Cancel</Text>
+            <TouchableOpacity
+              onPress={onCancel}
+              style={styles.cancelButton}
+              accessibilityRole="button"
+              accessibilityLabel={t('common.cancel')}
+            >
+              <Text style={styles.cancelLabel}>{t('common.cancel')}</Text>
             </TouchableOpacity>
             {!markerCoord ? (
-              <Text style={styles.helperText}>Tap on the map to choose a location.</Text>
+              <Text style={styles.helperText}>{t('astro.birthData.map.tapToChoose')}</Text>
             ) : null}
           </View>
         </SafeAreaView>

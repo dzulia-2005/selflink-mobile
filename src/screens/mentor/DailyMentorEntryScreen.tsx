@@ -1,5 +1,6 @@
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -17,8 +18,10 @@ import { fetchDailyMentorSession, type DailyMentorSession } from '@services/api/
 import { useTheme, type Theme } from '@theme';
 
 type RouteProps = RouteProp<MentorStackParamList, 'DailyMentorEntry'>;
+const BULLET_GLYPH = '\u2022';
 
 export function DailyMentorEntryScreen() {
+  const { t } = useTranslation();
   const { params } = useRoute<RouteProps>();
   const toast = useToast();
   const insets = useSafeAreaInsets();
@@ -35,11 +38,11 @@ export function DailyMentorEntryScreen() {
       setSession(response);
     } catch (error) {
       console.error('DailyMentorEntryScreen: failed to load session', error);
-      toast.push({ message: 'Unable to load this entry.', tone: 'error' });
+      toast.push({ message: t('mentor.dailyEntry.alerts.loadFailed'), tone: 'error' });
     } finally {
       setLoading(false);
     }
-  }, [params.sessionId, toast]);
+  }, [params.sessionId, t, toast]);
 
   useEffect(() => {
     loadSession().catch(() => undefined);
@@ -57,7 +60,7 @@ export function DailyMentorEntryScreen() {
     if (!session) {
       return (
         <View style={[styles.container, styles.centered]}>
-          <Text style={styles.subtitle}>Entry not found.</Text>
+          <Text style={styles.subtitle}>{t('mentor.dailyEntry.notFound')}</Text>
         </View>
       );
     }
@@ -71,31 +74,35 @@ export function DailyMentorEntryScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.topRow}>
-          <View>
-            <Text style={styles.title}>{session.date}</Text>
-            <Text style={styles.subtitle}>Session #{session.session_id}</Text>
+          <View style={styles.topRow}>
+            <View>
+              <Text style={styles.title}>{session.date}</Text>
+              <Text style={styles.subtitle}>
+                {t('mentor.daily.sessionTag', { id: session.session_id })}
+              </Text>
+            </View>
           </View>
-        </View>
 
-        <View style={styles.card}>
-          <Text style={styles.sectionLabel}>Your note</Text>
-          <Text style={styles.body}>{session.entry ?? 'No entry text available.'}</Text>
-        </View>
+          <View style={styles.card}>
+          <Text style={styles.sectionLabel}>{t('mentor.dailyEntry.yourNote')}</Text>
+          <Text style={styles.body}>
+            {session.entry ?? t('mentor.dailyEntry.noEntryText')}
+          </Text>
+          </View>
 
-        <View style={styles.card}>
-          <Text style={styles.sectionLabel}>Mentor&apos;s reply</Text>
+          <View style={styles.card}>
+          <Text style={styles.sectionLabel}>{t('mentor.daily.replyTitle')}</Text>
           {(typeof session.reply === 'string'
             ? session.reply.split(/\r?\n/).filter(Boolean)
             : []
           ).map((line, idx) => (
             <View style={styles.bulletRow} key={`${session.session_id}-detail-${idx}`}>
-              <Text style={styles.bullet}>•</Text>
+              <Text style={styles.bullet}>{BULLET_GLYPH}</Text>
               <Text style={styles.body}>{line.trim()}</Text>
             </View>
           ))}
           {!session.reply ? (
-            <Text style={styles.body}>Reply not available yet.</Text>
+            <Text style={styles.body}>{t('mentor.dailyEntry.replyNotAvailable')}</Text>
           ) : null}
         </View>
       </ScrollView>

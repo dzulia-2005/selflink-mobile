@@ -1,6 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { memo, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import type { MatrixInsightCard } from '@schemas/feed';
@@ -13,6 +14,7 @@ type Props = {
 };
 
 function MatrixFeedCardComponent({ data }: Props) {
+  const { t } = useTranslation();
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
   const navigation = useNavigation<any>();
@@ -40,7 +42,7 @@ function MatrixFeedCardComponent({ data }: Props) {
         >
           <View style={styles.inner}>
             <View style={styles.orb} />
-            <Text style={styles.label}>Matrix Insight</Text>
+            <Text style={styles.label}>{t('feed.cards.matrixInsight')}</Text>
             <Text style={styles.title}>{data.title}</Text>
             {data.subtitle ? <Text style={styles.subtitle}>{data.subtitle}</Text> : null}
             <TouchableOpacity
@@ -48,7 +50,7 @@ function MatrixFeedCardComponent({ data }: Props) {
               onPress={handlePress}
               activeOpacity={0.9}
             >
-              <Text style={styles.ctaText}>{data.cta ?? 'View matrix'}</Text>
+              <Text style={styles.ctaText}>{data.cta ?? t('feed.cards.viewMatrix')}</Text>
             </TouchableOpacity>
           </View>
         </LinearGradient>

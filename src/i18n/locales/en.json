@@ -1,0 +1,1147 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "loading": "Loading...",
+    "retry": "Retry",
+    "back": "Back",
+    "show": "Show",
+    "hide": "Hide",
+    "error": {
+      "title": "Error",
+      "defaultMessage": "Something went wrong.",
+      "tryAgain": "Try again"
+    },
+    "modal": {
+      "confirm": "Confirm",
+      "done": "Done"
+    }
+  },
+  "profile": {
+    "loadingProfile": "Loading profile...",
+    "namePlaceholder": "Name",
+    "bioPlaceholder": "Bio",
+    "birthPlacePlaceholder": "Birth place",
+    "gender": "Gender",
+    "orientation": "Orientation",
+    "relationshipGoal": "Relationship goal",
+    "attachmentStyle": "Attachment style",
+    "values": "Values",
+    "preferredLifestyle": "Preferred lifestyle",
+    "loveLanguage": "Love language",
+    "language": "Language",
+    "updated": "Profile updated",
+    "loadError": "Unable to load profile details.",
+    "saveError": "Could not update profile. Try again.",
+    "languageChangeError": "Could not switch language. Try again.",
+    "saving": "Saving...",
+    "loading": "Loading...",
+    "languageOptions": {
+      "en": "English",
+      "ru": "Russian",
+      "ka": "Georgian"
+    },
+    "options": {
+      "gender": {
+        "male": "Male",
+        "female": "Female",
+        "non_binary": "Non-binary",
+        "other": "Other",
+        "prefer_not_to_say": "Prefer not to say"
+      },
+      "orientation": {
+        "hetero": "Heterosexual",
+        "homo": "Homosexual",
+        "bi": "Bisexual",
+        "pan": "Pansexual",
+        "asexual": "Asexual",
+        "other": "Other",
+        "prefer_not_to_say": "Prefer not to say"
+      },
+      "relationshipGoal": {
+        "casual": "Casual",
+        "long_term": "Long-term",
+        "marriage": "Marriage",
+        "unsure": "Unsure"
+      },
+      "attachmentStyle": {
+        "secure": "Secure",
+        "anxious": "Anxious",
+        "avoidant": "Avoidant",
+        "mixed": "Mixed"
+      },
+      "values": {
+        "growth": "Growth",
+        "freedom": "Freedom",
+        "connection": "Connection",
+        "security": "Security",
+        "adventure": "Adventure",
+        "family": "Family",
+        "career": "Career"
+      },
+      "preferredLifestyle": {
+        "remote_work": "Remote work",
+        "travel": "Travel",
+        "fitness": "Fitness",
+        "nightlife": "Nightlife",
+        "early_riser": "Early riser",
+        "spirituality": "Spirituality"
+      },
+      "loveLanguage": {
+        "words": "Words",
+        "quality_time": "Quality time",
+        "acts": "Acts of service",
+        "gifts": "Gifts",
+        "touch": "Touch"
+      }
+    },
+    "empty": {
+      "loadFailed": "We could not load your profile."
+    },
+    "view": {
+      "recipientIdLabel": "Recipient ID (SLC)",
+      "recipientIdHint": "Share this ID to receive SLC.",
+      "notAvailable": "Not available",
+      "theme": {
+        "system": "System",
+        "light": "Light",
+        "dark": "Dark"
+      },
+      "sections": {
+        "appearance": "Appearance",
+        "personalMap": "Personal map",
+        "billing": "Billing",
+        "more": "More"
+      },
+      "personalMap": {
+        "firstName": "First name",
+        "lastName": "Last name",
+        "birthDate": "Birth date",
+        "birthTime": "Birth time",
+        "birthCity": "Birth city",
+        "country": "Country",
+        "emptyHint": "Complete your personal map to unlock mentor, matrix, and soul match insights."
+      }
+    },
+    "menu": {
+      "editProfile": "Edit profile",
+      "payments": "Payments",
+      "wallet": "Wallet",
+      "notifications": "Notifications",
+      "inbox": "Inbox",
+      "community": "Community"
+    },
+    "actions": {
+      "changePhoto": "Change photo",
+      "updatingPhoto": "Updating photo...",
+      "copy": "Copy",
+      "signOut": "Sign out",
+      "copiedToClipboard": "Copied to clipboard",
+      "copyFailed": "Unable to copy right now.",
+      "themeUpdated": "Theme updated"
+    },
+    "accessibility": {
+      "changePhoto": "Change photo",
+      "copyRecipientId": "Copy recipient ID",
+      "nameInput": "Name",
+      "bioInput": "Bio",
+      "birthPlaceInput": "Birth place"
+    }
+  },
+  "auth": {
+    "login": {
+      "emailPlaceholder": "Email",
+      "passwordPlaceholder": "Password",
+      "submit": "Log in",
+      "submitting": "Signing in...",
+      "socialLabel": "Or continue with",
+      "registerLink": "Registration",
+      "failed": "Login failed. Please try again."
+    },
+    "register": {
+      "title": "Create your account",
+      "subtitle": "Define your handle and sync your personal matrix.",
+      "fullNamePlaceholder": "Full name",
+      "usernamePlaceholder": "Username",
+      "emailPlaceholder": "Email",
+      "passwordPlaceholder": "Password",
+      "confirmPasswordPlaceholder": "Confirm password",
+      "submit": "Create account",
+      "submitting": "Creating...",
+      "signInLink": "Already have an account? Sign in",
+      "socialLink": "Continue with social login",
+      "failed": "Registration failed. Please try again."
+    },
+    "social": {
+      "title": "Social login",
+      "subtitle": "Continue with Google, Facebook, or GitHub.",
+      "missingProjectConfig": "Expo project owner/slug missing. Set expo.owner + expo.slug in app config.",
+      "googleFail": "Google sign-in failed. Please try again.",
+      "googleNoCredential": "Google login returned no credential.",
+      "googleUnable": "Unable to complete Google login.",
+      "githubFail": "GitHub sign-in failed. Please try again.",
+      "githubNoCode": "GitHub login returned no code.",
+      "githubUnable": "Unable to complete GitHub login.",
+      "facebookFail": "Facebook sign-in failed. Please try again.",
+      "facebookNoCode": "Facebook login returned no code.",
+      "facebookUnable": "Unable to complete Facebook login.",
+      "googleClientMissing": "Set EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID in .env and restart Expo with `npx expo start -c`.",
+      "githubClientMissing": "Set EXPO_PUBLIC_GITHUB_CLIENT_ID in .env and restart Expo with `npx expo start -c`.",
+      "facebookAppMissing": "Set EXPO_PUBLIC_FACEBOOK_APP_ID in .env and restart Expo with `npx expo start -c`.",
+      "googleNotReady": "Google login is not ready yet.",
+      "githubNotReady": "GitHub login is not ready yet.",
+      "facebookNotReady": "Facebook login is not ready yet.",
+      "continueGoogle": "Continue with Google",
+      "continueFacebook": "Continue with Facebook",
+      "continueGithub": "Continue with GitHub",
+      "preparingGoogle": "Preparing Google login...",
+      "preparingFacebook": "Preparing Facebook login...",
+      "preparingGithub": "Preparing GitHub login...",
+      "providerNotConfiguredGoogle": "Google login is not configured yet. Add `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` to your `.env`.",
+      "providerNotConfiguredFacebook": "Facebook login is not configured yet. Add `EXPO_PUBLIC_FACEBOOK_APP_ID` to your `.env`.",
+      "providerNotConfiguredGithub": "GitHub login is not configured yet. Add `EXPO_PUBLIC_GITHUB_CLIENT_ID` to your `.env`.",
+      "redirectHint": "Add `https://auth.expo.io/{{project}}` to GitHub and Facebook OAuth redirect URIs."
+    },
+    "validation": {
+      "invalidEmail": "Invalid email",
+      "passwordRequired": "Password is required",
+      "confirmPasswordRequired": "Please confirm your password",
+      "nameRequired": "Name is required",
+      "handleRequired": "Handle is required",
+      "passwordMismatch": "Passwords do not match"
+    }
+  },
+  "app": {
+    "preparingSelflink": "Preparing SelfLink..."
+  },
+  "nav": {
+    "tabs": {
+      "feed": "Feed",
+      "mentor": "Mentor",
+      "soulmatch": "SoulMatch",
+      "profile": "Profile",
+      "messages": "Messages"
+    },
+    "headers": {
+      "messages": "Messages",
+      "threads": "Threads",
+      "post": "Post",
+      "newPost": "New Post",
+      "searchProfiles": "Search Profiles",
+      "profile": "Profile",
+      "editProfile": "Edit Profile",
+      "payments": "Payments",
+      "wallet": "Wallet",
+      "notifications": "Notifications",
+      "community": "Community",
+      "inbox": "Inbox",
+      "birthData": "Birth Data",
+      "natalChart": "Natal Chart",
+      "natalMentor": "Natal Mentor",
+      "dailyMentor": "Daily Mentor",
+      "dailyEntry": "Daily Entry",
+      "aiMentor": "AI Mentor",
+      "soulmatchRecommendations": "SoulMatch Recommendations",
+      "soulmatch": "SoulMatch",
+      "soulmatchMentor": "SoulMatch Mentor",
+      "completePersonalMap": "Complete your personal map"
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": {
+      "body": "You are all caught up for now."
+    }
+  },
+  "mentor": {
+    "home": {
+      "title": "Mentor",
+      "subtitle": "Access your astro mentor, daily guidance, and SoulMatch insights.",
+      "natalCard": {
+        "title": "Build your natal chart",
+        "body": "Use your saved registration birth details or edit them before generating your chart.",
+        "birthDataOptions": "Birth Data Options",
+        "viewNatalChart": "View Natal Chart"
+      },
+      "chatCard": {
+        "title": "AI Mentor Chat",
+        "body": "Talk to your mentor with session-aware chat and keep your history in one place.",
+        "openChat": "Open Mentor Chat"
+      },
+      "readingsCard": {
+        "title": "AI Mentor Readings",
+        "natalMentor": "Natal Mentor",
+        "dailyMentor": "Daily Mentor"
+      }
+    },
+    "daily": {
+      "badge": "Daily Mentor",
+      "title": "A quick diary for today",
+      "subtitle": "Capture what happened and let your mentor reflect back with a short reply.",
+      "entrySectionTitle": "Today's entry",
+      "entryPlaceholder": "What happened today?",
+      "entryDate": "Entry date",
+      "entryDatePlaceholder": "YYYY-MM-DD",
+      "today": "Today",
+      "getReflection": "Get reflection",
+      "replying": "Daily Mentor is replying...",
+      "replyTitle": "Mentor's reply",
+      "sessionTag": "Session #{{id}}",
+      "recentEntries": "Recent entries",
+      "refresh": "Refresh",
+      "noEntries": "No entries yet. Your first note will show here.",
+      "alerts": {
+        "loadHistoryFailed": "Unable to load recent entries.",
+        "streamUnavailable": "Mentor is temporarily unavailable. Please try again."
+      },
+      "accessibility": {
+        "entryInput": "Daily entry",
+        "entryDateInput": "Entry date",
+        "todayButton": "Set date to today"
+      }
+    },
+    "dailyEntry": {
+      "notFound": "Entry not found.",
+      "yourNote": "Your note",
+      "noEntryText": "No entry text available.",
+      "replyNotAvailable": "Reply not available yet.",
+      "alerts": {
+        "loadFailed": "Unable to load this entry."
+      }
+    },
+    "natal": {
+      "title": "Natal Mentor",
+      "subtitle": "Deep explanation of your personality, emotions, and life themes.",
+      "defaultPrompt": "Give me a short natal mentor reading based on my chart.",
+      "loading": "Calling your natal mentor...",
+      "noReading": "No reading yet. Try again.",
+      "typing": "Natal Mentor is typing...",
+      "askLabel": "Ask about your natal chart",
+      "askPlaceholder": "Ask about strengths, challenges, or themes in your chart",
+      "askButton": "Ask Natal Mentor",
+      "accessibility": {
+        "promptInput": "Natal mentor prompt"
+      }
+    },
+    "chat": {
+      "newSession": "New session",
+      "typing": "Mentor is typing...",
+      "resend": "Resend",
+      "loadEarlier": "Load earlier messages",
+      "inputPlaceholder": "Ask your SelfLink Mentor...",
+      "empty": {
+        "title": "Start a new conversation",
+        "body": "Your mentor will remember the session ID for this chat."
+      },
+      "alerts": {
+        "loadHistoryFailed": "Unable to load mentor history.",
+        "copiedToClipboard": "Copied to clipboard",
+        "copyFailed": "Unable to copy right now."
+      },
+      "accessibility": {
+        "input": "Mentor chat input"
+      }
+    }
+  },
+  "inbox": {
+    "title": "Inbox",
+    "subtitle": "Choose a conversation. Each thread should feel intentional.",
+    "empty": {
+      "title": "No threads yet",
+      "body": "Once conversations begin, they'll appear right here."
+    },
+    "composer": {
+      "title": "Start a Conversation",
+      "subtitle": "Pick participants from your community and drop them a message.",
+      "titlePlaceholder": "Title (optional)",
+      "searchPlaceholder": "Search people by name or handle",
+      "messagePlaceholder": "Opening message",
+      "noParticipants": "No participants selected yet.",
+      "noMatches": "No matches found."
+    },
+    "user": {
+      "unnamed": "Unnamed",
+      "handleFallback": "handle"
+    },
+    "actions": {
+      "add": "Add",
+      "remove": "Remove",
+      "sending": "Sending...",
+      "startThread": "Start Thread",
+      "refreshPeopleList": "Refresh people list"
+    },
+    "alerts": {
+      "addParticipant": "Add at least one participant ID.",
+      "addOpeningMessage": "Add an opening message.",
+      "loadFailed": "Unable to load inbox. Please try again.",
+      "threadCreated": "Thread created.",
+      "createFailed": "Unable to create thread."
+    },
+    "accessibility": {
+      "titleInput": "Thread title",
+      "searchInput": "Search participants",
+      "messageInput": "Opening message",
+      "refreshPeopleList": "Refresh people list"
+    }
+  },
+  "threads": {
+    "empty": {
+      "title": "No messages yet",
+      "body": "Start a conversation by visiting someone's profile and tapping Message."
+    },
+    "actions": {
+      "deleteConversation": "Delete conversation"
+    },
+    "alerts": {
+      "deleteConfirm": {
+        "title": "Delete conversation?",
+        "body": "This removes the conversation from your inbox."
+      },
+      "deleteFailed": {
+        "title": "Unable to delete conversation",
+        "body": "Please try again."
+      }
+    },
+    "item": {
+      "unknownUser": "Unknown user",
+      "conversation": "Conversation",
+      "noMessagesYet": "No messages yet.",
+      "updatedAt": "Updated {{value}}"
+    },
+    "accessibility": {
+      "threadsList": "Threads list"
+    }
+  },
+  "feed": {
+    "tabs": {
+      "forYou": "For You",
+      "following": "Following",
+      "reels": "Reels"
+    },
+    "search": {
+      "placeholder": "Search"
+    },
+    "empty": {
+      "title": "No posts yet",
+      "body": "Posts from your network will appear here.",
+      "cta": "Create your first post"
+    },
+    "error": {
+      "title": "We lost the signal",
+      "retry": "Retry"
+    },
+    "composer": {
+      "cta": "New post"
+    },
+    "post": {
+      "like": "Like",
+      "comment": "Comment",
+      "share": "Share",
+      "save": "Save",
+      "report": "Report",
+      "more": "More",
+      "gift": "Send gift",
+      "syncing": "Syncing...",
+      "giftsCount": "{{count}} gifts",
+      "follow": {
+        "follow": "Follow",
+        "following": "Following",
+        "pending": "..."
+      },
+      "menu": {
+        "report": "Report",
+        "hide": "Hide",
+        "copyLink": "Copy link"
+      },
+      "alerts": {
+        "sessionExpired": {
+          "title": "Session expired",
+          "body": "Please sign in again."
+        },
+        "likeFailed": {
+          "title": "Unable to update like",
+          "body": "Please try again."
+        }
+      }
+    },
+    "cards": {
+      "mentorInsight": "Mentor Insight",
+      "openMentor": "Open mentor",
+      "matrixInsight": "Matrix Insight",
+      "viewMatrix": "View matrix",
+      "soulmatch": "SoulMatch",
+      "viewMatches": "View matches",
+      "addBirthDataToUnlock": "Add your birth data to unlock matches.",
+      "userFallback": "User",
+      "matchScorePercent": "{{score}}%"
+    },
+    "create": {
+      "placeholder": "Share something... Markdown supported.",
+      "addPhotos": "Add photos",
+      "addMorePhotos": "Add more photos",
+      "addVideo": "Add video",
+      "changeVideo": "Change video",
+      "useVideo": "Use video",
+      "videoSelected": "Video selected",
+      "videoReadyToUpload": "Ready to upload",
+      "videoBadge": "VIDEO",
+      "livePreview": "Live preview",
+      "publish": "Post",
+      "accessibility": {
+        "attachImage": "Attach image",
+        "attachVideo": "Attach video",
+        "removeVideo": "Remove selected video",
+        "removePhoto": "Remove selected photo"
+      },
+      "alerts": {
+        "chooseMediaType": {
+          "title": "Choose photos or a video",
+          "body": "You can attach either up to 4 photos OR one video per post."
+        },
+        "removeVideoFirst": {
+          "body": "Remove the selected video to add photos instead."
+        },
+        "limitReached": {
+          "title": "Limit reached",
+          "body": "You can attach up to 4 photos per post."
+        },
+        "replacePhotos": {
+          "title": "Replace photos with video?",
+          "body": "You can attach either up to 4 photos or one video per post."
+        },
+        "contentRequired": {
+          "title": "Content required",
+          "body": "Write something or attach media before posting."
+        },
+        "success": {
+          "title": "Success",
+          "body": "Post created successfully."
+        },
+        "createFailed": {
+          "title": "Unable to create post",
+          "body": "Unable to create post. Please try again."
+        }
+      }
+    }
+  },
+  "astro": {
+    "birthData": {
+      "title": "Birth Data",
+      "subtitle": "Precise birth details help us compute your Ascendant and houses. You can use the info you shared at registration or correct it here.",
+      "choice": {
+        "title": "Use saved details?",
+        "body": "We can use the birth info from your registration, or you can correct it now.",
+        "useRegistration": "Use registration data",
+        "usingRegistration": "Using registration data...",
+        "editData": "Edit / correct data"
+      },
+      "form": {
+        "required": "Required",
+        "firstNamePlaceholder": "First name",
+        "lastNamePlaceholder": "Last name",
+        "datePlaceholder": "Date of birth (YYYY-MM-DD)",
+        "timePlaceholder": "Time of birth (HH:MM, 24h)",
+        "location": "Location",
+        "cityPlaceholder": "City",
+        "countryPlaceholder": "Country",
+        "chooseOnMap": "Choose on Map",
+        "clear": "Clear",
+        "selectedOnMap": "Selected on map:",
+        "nearLocation": "near {{city}}, {{country}}",
+        "submitting": "Submitting...",
+        "saveAndGenerate": "Save & Generate Chart",
+        "hint": "Tip: if you are unsure of the exact time, use your best estimate. You can update later."
+      },
+      "validation": {
+        "latitudeRange": "Latitude must be between -90 and 90 degrees.",
+        "longitudeRange": "Longitude must be between -180 and 180 degrees."
+      },
+      "toasts": {
+        "locationSaved": "Birth location saved.",
+        "usingSavedData": "Using your saved birth data. Generating your chart...",
+        "needBirthDetails": "We need your birth details. Please fill them in.",
+        "unableToUseSavedData": "Unable to use your saved birth data. Please review your details.",
+        "savedAndGenerating": "Birth data saved. Generating your chart...",
+        "unableToSave": "Unable to save birth data. Please confirm the date, time, city, and country."
+      },
+      "accessibility": {
+        "firstNameInput": "First name",
+        "lastNameInput": "Last name",
+        "dateInput": "Date of birth",
+        "timeInput": "Time of birth",
+        "cityInput": "City",
+        "countryInput": "Country",
+        "chooseOnMap": "Choose on map",
+        "clearLocation": "Clear selected location"
+      },
+      "map": {
+        "title": "Select Birth Location",
+        "instructions": "Drag the map or tap to place the pin at your exact birth place.",
+        "loading": "Loading map...",
+        "tapToChoose": "Tap on the map to choose a location.",
+        "errors": {
+          "unavailable": "Map unavailable in this build. Missing Google Maps API key."
+        },
+        "actions": {
+          "close": "Close",
+          "tryAgain": "Try Again",
+          "useThisLocation": "Use This Location"
+        },
+        "summary": {
+          "title": "Location selected",
+          "near": "Near {{city}}, {{country}}",
+          "coords": "Lat {{lat}}, Lon {{lon}}"
+        },
+        "accessibility": {
+          "back": "Back",
+          "useLocation": "Use this location"
+        }
+      }
+    },
+    "natal": {
+      "title": "Natal Chart",
+      "subtitle": "Explore your core placements, houses, and aspects.",
+      "loading": "Loading natal chart...",
+      "generatedAt": "Generated at {{value}}",
+      "alerts": {
+        "notFound": "No natal chart yet. Add birth data to generate it.",
+        "loadFailed": "Unable to load your natal chart."
+      },
+      "chartWheel": {
+        "title": "Chart Wheel",
+        "description": "Tap a planet on the wheel to inspect details."
+      },
+      "empty": {
+        "noChart": "No natal chart available yet."
+      },
+      "actions": {
+        "updateBirthData": "Update Birth Data"
+      },
+      "accessibility": {
+        "refresh": "Refresh natal chart"
+      },
+      "labels": {
+        "sun": "Sun",
+        "moon": "Moon",
+        "ascendant": "Ascendant",
+        "house": "House {{number}}",
+        "orbValue": "{{value}}° orb"
+      },
+      "elements": {
+        "fire": "Fire",
+        "earth": "Earth",
+        "air": "Air",
+        "water": "Water"
+      },
+      "planets": {
+        "sun": "Sun",
+        "moon": "Moon",
+        "mercury": "Mercury",
+        "venus": "Venus",
+        "mars": "Mars",
+        "jupiter": "Jupiter",
+        "saturn": "Saturn",
+        "uranus": "Uranus",
+        "neptune": "Neptune",
+        "pluto": "Pluto"
+      },
+      "cards": {
+        "coreIdentity": {
+          "title": "Core Identity",
+          "description": "Your core trio that shapes personality and emotional style."
+        },
+        "keyAngles": {
+          "title": "Key Angles",
+          "description": "Ascendant, Descendant, Midheaven, and Imum Coeli.",
+          "ascendant": "Ascendant",
+          "descendant": "Descendant",
+          "midheaven": "Midheaven",
+          "imumCoeli": "Imum Coeli"
+        },
+        "planets": {
+          "title": "Planets",
+          "description": "Planet placements and house context."
+        },
+        "houses": {
+          "title": "Houses",
+          "description": "House cusp signs and degrees.",
+          "itemLabel": "House {{number}}"
+        },
+        "aspects": {
+          "title": "Aspects",
+          "description": "Key relationships between planets.",
+          "empty": "No major aspects found."
+        },
+        "elementBalance": {
+          "title": "Element Balance",
+          "description": "Distribution across Fire, Earth, Air, and Water."
+        },
+        "planetLegend": {
+          "title": "Planet Legend",
+          "description": "Color mapping used in the chart wheel."
+        },
+        "selectedPlanet": {
+          "title": "Selected Planet",
+          "description": "Details for the currently selected planet."
+        }
+      }
+    }
+  },
+  "post": {
+    "title": {
+      "notFound": "Post not found."
+    },
+    "comments": {
+      "title": "Comments",
+      "loading": "Loading comments...",
+      "empty": {
+        "title": "No comments yet.",
+        "body": "Be the first to comment."
+      },
+      "composer": {
+        "placeholder": "Write a comment (Markdown supported)",
+        "targetPlaceholder": "Add a comment to this {{target}}...",
+        "send": "Send",
+        "you": "You"
+      },
+      "targetType": {
+        "post": "post",
+        "reel": "reel"
+      },
+      "item": {
+        "like": "Like comment",
+        "gift": "Send gift",
+        "syncing": "Syncing..."
+      },
+      "alerts": {
+        "loadFailed": {
+          "body": "Unable to load comments."
+        },
+        "sendFailed": {
+          "body": "Unable to add comment. Please try again."
+        },
+        "likeFailed": {
+          "body": "Unable to update like."
+        }
+      }
+    },
+    "accessibility": {
+      "attachImages": "Attach images",
+      "removeSelectedImage": "Remove selected image",
+      "sendComment": "Send comment",
+      "closeComments": "Close comments"
+    }
+  },
+  "soulmatch": {
+    "home": {
+      "title": "SoulMatch",
+      "subtitle": "Discover your strongest compatibility signals and timing.",
+      "recommendationsTitle": "Recommendations",
+      "recommendationsBody": "See the people with the strongest potential alignment right now.",
+      "viewRecommendations": "View Recommendations"
+    },
+    "recommendations": {
+      "loading": "Loading recommendations...",
+      "mode": "Mode",
+      "explain": "Depth",
+      "modeOptions": {
+        "compat": "Compatibility",
+        "dating": "Dating"
+      },
+      "explainOptions": {
+        "free": "Free",
+        "premium": "Premium",
+        "premium_plus": "Premium+"
+      },
+      "empty": {
+        "title": "No recommendations yet",
+        "completeBirthData": "Complete your birth data to get matches.",
+        "completeProfile": "Complete your profile to improve matches.",
+        "noCandidates": "No compatible candidates found yet. Try again soon.",
+        "default": "Recommendations are not available right now."
+      },
+      "alerts": {
+        "loadFailed": "Unable to load recommendations."
+      },
+      "card": {
+        "whyScoreLocked": "Why this score 🔒",
+        "whyScore": "Why this score",
+        "approachLocked": "How to approach 🔒",
+        "approach": "How to approach",
+        "timing": "Timing: {{value}}",
+        "unlockTiming": "Unlock timing details",
+        "more": "More",
+        "unlockMore": "Unlock full explanation",
+        "howToApproach": "How to approach",
+        "unlockPremiumStrategy": "Unlock Premium+ strategy"
+      },
+      "upgradeFooter": {
+        "title": "Unlock more recommendations",
+        "subtitle": "Upgrade to see all results and deeper insights."
+      },
+      "debug": {
+        "title": "SoulMatch Debug",
+        "show": "Show",
+        "hide": "Hide",
+        "mode": "mode: {{value}}",
+        "reason": "reason: {{value}}",
+        "missing": "missing: {{value}}",
+        "results": "results: {{count}}"
+      }
+    },
+    "details": {
+      "defaultTitle": "SoulMatch",
+      "loading": "Loading SoulMatch...",
+      "subtitle": "SoulMatch compatibility",
+      "overallCompatibility": "Overall compatibility",
+      "scoreBadge": {
+        "highVibe": "High vibe",
+        "aligned": "Aligned"
+      },
+      "pending": {
+        "title": "SoulMatch is being calculated.",
+        "subtitle": "Pull to refresh in a moment to see your compatibility.",
+        "task": "task: {{taskId}} · {{pairKey}}"
+      },
+      "empty": {
+        "unableToLoad": "Unable to load match."
+      },
+      "alerts": {
+        "loadFailed": "Unable to load match details.",
+        "mentorUnavailable": "Mentor is unavailable. Try again later."
+      },
+      "sections": {
+        "highlights": "Highlights",
+        "scoreBreakdown": "Score Breakdown",
+        "whyMatch": "Why this match",
+        "howToApproach": "How to approach",
+        "timing": "Timing",
+        "mentorInsight": "Mentor insight"
+      },
+      "components": {
+        "astro": "Astro",
+        "matrix": "Matrix",
+        "psychology": "Psychology",
+        "lifestyle": "Lifestyle"
+      },
+      "scoreBreakdown": {
+        "lockedBody": "See what drives this score across astro, matrix, psychology, and lifestyle.",
+        "unlock": "See what drives this score 🔒",
+        "strongestSignal": "Strongest signal: {{component}} ({{score}})"
+      },
+      "actions": {
+        "refresh": "Refresh",
+        "more": "More",
+        "unlockWhyScore": "See why this score works 🔒",
+        "unlockApproach": "Get guidance on how to approach this connection 🔒",
+        "unlockTiming": "Unlock timing details 🔒",
+        "loadMentorInsight": "Load Mentor Insight",
+        "askMentorAboutUs": "Ask Mentor About Us",
+        "backToRecommendations": "Back to recommendations"
+      }
+    },
+    "mentor": {
+      "title": "SoulMatch Mentor",
+      "loading": "Opening SoulMatch mentor...",
+      "subtitleWithName": "Guidance about your connection with {{name}}.",
+      "subtitleWithUserId": "Guidance about your connection with user {{userId}}.",
+      "scoreLabel": "compatibility",
+      "empty": "No mentor text yet.",
+      "streaming": "Mentor is analyzing your match...",
+      "askLabel": "Ask about your compatibility",
+      "askPlaceholder": "Ask something specific about this match",
+      "askButton": "Ask Mentor",
+      "defaultPrompt": "What should I know about our compatibility?",
+      "defaultPromptWithName": "What should I know about my compatibility with {{name}}?",
+      "actions": {
+        "refresh": "Refresh"
+      },
+      "alerts": {
+        "loadFailed": "Unable to load mentor guidance."
+      }
+    },
+    "upgrade": {
+      "title": "Unlock Deeper SoulMatch",
+      "subtitle": "Understand compatibility, timing, and how to approach - not just scores.",
+      "selected": "Selected",
+      "tiers": {
+        "free": {
+          "title": "Free",
+          "subtitle": "Basics only",
+          "bullets": {
+            "compatibilityScore": "Compatibility score",
+            "keyBadges": "Key badges",
+            "topMatches": "Top 5 matches"
+          }
+        },
+        "premium": {
+          "title": "Premium",
+          "subtitle": "Deeper insight",
+          "highlight": "Most people choose this",
+          "bullets": {
+            "lensExplanations": "Lens explanations",
+            "timingSummary": "Timing summary",
+            "fullContext": "Full context"
+          }
+        },
+        "premiumPlus": {
+          "title": "Premium+",
+          "subtitle": "Full strategy",
+          "bullets": {
+            "everythingInPremium": "Everything in Premium",
+            "howToApproach": "How to approach",
+            "strategyNotes": "Strategy notes"
+          }
+        }
+      },
+      "preview": {
+        "title": "Preview",
+        "body": "Timing looks strongest over the next 4-6 weeks. Your lens suggests a strong emotional alignment when communication stays clear. With Premium+, we'll show how to approach this match."
+      },
+      "actions": {
+        "unlockPremium": "Unlock Premium",
+        "unlockPremiumPlus": "Unlock Premium+",
+        "continueFree": "Continue with Free"
+      },
+      "microcopy": "Cancel anytime - Secure payment"
+    }
+  },
+  "payments": {
+    "title": "Payments & Membership",
+    "subtitle": "Manage memberships, gifts, and SLC purchases.",
+    "membership": {
+      "title": "Membership Status",
+      "premiumPlusActive": "Premium+ is active.",
+      "premiumActive": "Premium is active.",
+      "noneActive": "No active membership yet.",
+      "premiumExpires": "Premium expires {{date}}",
+      "premiumPlusExpires": "Premium+ expires {{date}}"
+    },
+    "actions": {
+      "refreshStatus": "Refresh Status",
+      "topUpSlc": "Top up SLC",
+      "processing": "Processing...",
+      "buyWithSlc": "Buy with SLC",
+      "sendGift": "Send Gift",
+      "viewWallet": "View Wallet"
+    },
+    "buyWithSlc": {
+      "title": "Buy with SLC",
+      "loading": "Loading SLC products...",
+      "empty": "No SLC products available yet.",
+      "balance": "Your SLC balance: {{value}}"
+    },
+    "giftCatalog": {
+      "title": "Gift Catalog",
+      "empty": "No gifts available yet.",
+      "metaSeparator": " · "
+    },
+    "wallet": {
+      "title": "Wallet",
+      "body": "Monitor balances, gifts, and transaction history in one place."
+    },
+    "errors": {
+      "loadProducts": "Unable to load SLC products.",
+      "purchaseFailed": "Unable to complete purchase.",
+      "insufficientFunds": "Insufficient SLC balance. Top up to unlock Premium features."
+    },
+    "toasts": {
+      "purchaseSuccess": "Purchase successful."
+    }
+  },
+  "wallet": {
+    "title": "Wallet",
+    "subtitle": "Track payments and SLC credits in one place.",
+    "balance": {
+      "title": "Wallet (Payments)",
+      "available": "Available balance",
+      "empty": "Wallet not available yet."
+    },
+    "slc": {
+      "title": "SLC Balance (Credits)",
+      "rate": "1.00 SLC = $1.00",
+      "empty": "SLC balance not available.",
+      "unit": "SLC"
+    },
+    "actions": {
+      "sendSlc": "Send SLC",
+      "spendSlc": "Spend SLC",
+      "buySlcIap": "Buy SLC (IAP)",
+      "buySlcStripe": "Buy SLC",
+      "buySlcIpay": "Buy SLC (iPay)",
+      "buySlcBtcpay": "Buy SLC (BTCPay)",
+      "findUser": "Find a user to send SLC",
+      "retryVerification": "Retry verification",
+      "restore": "Restore purchases",
+      "restoring": "Restoring...",
+      "ivePaid": "I've paid",
+      "paste": "Paste",
+      "sending": "Sending...",
+      "pleaseWait": "Please wait...",
+      "send": "Send",
+      "spending": "Spending...",
+      "spend": "Spend",
+      "starting": "Starting...",
+      "continue": "Continue"
+    },
+    "pending": {
+      "iap": "Awaiting in-app purchase confirmation. It may take a moment.",
+      "finalizeFailed": "Purchase verified, but finalization failed. Tap Restore purchases.",
+      "stripe": "Awaiting Stripe payment confirmation. It may take a moment.",
+      "btcpay": "Awaiting BTCPay confirmation. It may take a moment.",
+      "ipay": "Awaiting iPay confirmation. It may take a moment."
+    },
+    "send": {
+      "title": "Send SLC",
+      "subtitle": "Enter a recipient ID (account key) and amount.",
+      "recipientLabel": "Recipient ID (account key)",
+      "recipientPlaceholder": "user:123",
+      "amountPlaceholder": "Amount (USD)",
+      "memoPlaceholder": "Memo (optional)"
+    },
+    "spend": {
+      "title": "Spend SLC",
+      "subtitle": "Select a spend reference and amount.",
+      "referenceLabel": "Spend for",
+      "noReferences": "No spend references configured.",
+      "amountPlaceholder": "Amount (USD)",
+      "memoPlaceholder": "Memo (optional)"
+    },
+    "iap": {
+      "title": "Buy SLC (IAP)",
+      "subtitle": "Select a pack and complete the App Store or Play purchase.",
+      "availablePacks": "Available packs"
+    },
+    "stripe": {
+      "title": "Buy SLC",
+      "subtitle": "Choose an amount and currency to start Stripe checkout."
+    },
+    "btcpay": {
+      "title": "Buy SLC (BTCPay)",
+      "subtitle": "Choose an amount and currency to start BTCPay checkout."
+    },
+    "ipay": {
+      "title": "Buy SLC",
+      "subtitle": "Choose an amount and currency to start iPay checkout.",
+      "notConfigured": "iPay checkout is not configured for this build."
+    },
+    "checkout": {
+      "currency": "Currency",
+      "amountPlaceholder": "Amount ({{currency}})"
+    },
+    "ledger": {
+      "title": {
+        "sent": "Sent SLC",
+        "received": "Received SLC",
+        "spent": "Spent SLC",
+        "minted": "Minted SLC",
+        "refunded": "Refunded SLC",
+        "default": "SLC Activity"
+      },
+      "counterparty": {
+        "toUser": "To user #{{id}}",
+        "fromUser": "From user #{{id}}",
+        "reference": "Reference: {{reference}}",
+        "mintedVia": "Minted via {{provider}}",
+        "default": "Account activity"
+      }
+    },
+    "errors": {
+      "sessionExpired": "Session expired. Please sign in again.",
+      "loadWallet": "Unable to load wallet balance.",
+      "loadSlcBalance": "Unable to load SLC balance.",
+      "loadSlcActivity": "Unable to load SLC activity.",
+      "loadMoreActivity": "Unable to load more activity.",
+      "refreshSlcBalance": "Unable to refresh SLC balance.",
+      "verifyPurchase": "Unable to verify purchase.",
+      "readPurchaseDetails": "Unable to read purchase details.",
+      "iapUnavailable": "In-app purchases are unavailable on this device.",
+      "noPurchasesToRestore": "No purchases available to restore.",
+      "selectProduct": "Select a product to continue.",
+      "noPendingPurchase": "No pending purchase to verify.",
+      "noProductsConfigured": "No products configured for this build.",
+      "loadIapProducts": "Unable to load in-app products.",
+      "amountGreaterThanZero": "Enter an amount greater than 0.",
+      "selectValidCurrency": "Select a valid currency.",
+      "missingBtcpayUrl": "Missing BTCPay checkout URL",
+      "cannotOpenBtcpayUrl": "Cannot open BTCPay checkout URL",
+      "startBtcpayCheckout": "Unable to start BTCPay checkout.",
+      "ipayNotConfigured": "iPay is not configured for this build.",
+      "missingIpayUrl": "Missing iPay checkout URL",
+      "cannotOpenIpayUrl": "Cannot open iPay checkout URL",
+      "startIpayCheckout": "Unable to start iPay checkout.",
+      "missingStripeUrl": "Missing Stripe checkout URL",
+      "cannotOpenStripeUrl": "Cannot open Stripe checkout URL",
+      "startStripeCheckout": "Unable to start Stripe checkout.",
+      "selectSpendReference": "Select a spend reference.",
+      "selectValidSpendReference": "Select a valid spend reference.",
+      "amountExceedsBalance": "Amount exceeds available SLC balance.",
+      "spendSlc": "Unable to spend SLC.",
+      "pasteFailed": "Unable to paste right now.",
+      "enterRecipientId": "Enter a recipient ID.",
+      "insufficientBalance": "Insufficient balance.",
+      "sendSlc": "Unable to send SLC.",
+      "signInToContinue": "Please sign in to continue.",
+      "networkUnavailable": "Unable to reach the server. Please try again."
+    },
+    "toasts": {
+      "invalidCursorRefreshed": "Activity refreshed due to an invalid cursor.",
+      "slcCredited": "SLC credited.",
+      "purchasePending": "Purchase pending. If you were charged, balance will update shortly. Pull to refresh.",
+      "balanceUpdated": "SLC balance updated.",
+      "paymentPending": "Payment pending. If you were charged, balance will update shortly. Pull to refresh.",
+      "purchaseConfirmed": "SLC purchase confirmed.",
+      "finalizeFailed": "Purchase verified, but finalization failed. Reopen the app or tap Restore Purchases.",
+      "restoreCompleted": "Restore check completed.",
+      "purchaseCancelled": "Purchase cancelled.",
+      "purchaseOwnedCheckingRestore": "Purchase already owned. Checking restores...",
+      "completeBtcpayCheckout": "Complete BTCPay checkout to receive SLC.",
+      "completeIpayCheckout": "Complete payment in iPay to receive SLC.",
+      "completeStripeCheckout": "Complete payment in Stripe to receive SLC.",
+      "clipboardEmpty": "Clipboard is empty.",
+      "slcSpent": "SLC spent. Balance and activity updated.",
+      "slcSent": "SLC sent. Balance and activity updated."
+    }
+  },
+  "transactions": {
+    "title": "SLC Activity",
+    "empty": "No activity yet.",
+    "loadMore": "Load more",
+    "loadingMore": "Loading more..."
+  },
+  "onboarding": {
+    "personalMap": {
+      "title": "Personal Map",
+      "subtitle": "Tell us more so we can align your astro-matrix intelligence.",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "birthDate": "Birth date (YYYY-MM-DD)",
+      "birthTime": "Birth time (HH:MM)",
+      "birthCountry": "Birth country",
+      "birthCity": "Birth city",
+      "actions": {
+        "saving": "Saving...",
+        "saveAndContinue": "Save and continue"
+      }
+    },
+    "validation": {
+      "firstNameRequired": "First name is required",
+      "lastNameRequired": "Last name is required",
+      "invalidDateFormat": "Invalid date format",
+      "invalidTimeFormat": "Invalid time format",
+      "countryRequired": "Birth country is required",
+      "cityRequired": "Birth city is required"
+    },
+    "alerts": {
+      "profileUpdated": {
+        "title": "Profile updated",
+        "birthUpdated": "Birth information updated.",
+        "completed": "Your personal map is complete."
+      },
+      "saveFailed": "We were unable to save your profile."
+    }
+  },
+  "splash": {
+    "loading": "Preparing SelfLink..."
+  }
+}

@@ -1,6 +1,7 @@
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   RefreshControl,
@@ -27,6 +28,7 @@ type Route = RouteProp<SoulMatchStackParamList, 'SoulMatchMentor'>;
 type Nav = NativeStackNavigationProp<SoulMatchStackParamList>;
 
 export function SoulMatchMentorScreen() {
+  const { t } = useTranslation();
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
   const route = useRoute<Route>();
@@ -42,8 +44,8 @@ export function SoulMatchMentorScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [prompt, setPrompt] = useState(
     displayName
-      ? `What should I know about my compatibility with ${displayName}?`
-      : 'What should I know about our compatibility?',
+      ? t('soulmatch.mentor.defaultPromptWithName', { name: displayName })
+      : t('soulmatch.mentor.defaultPrompt'),
   );
   const pendingPromptRef = useRef<string | null>(null);
 
@@ -92,7 +94,10 @@ export function SoulMatchMentorScreen() {
         console.debug('SoulMatch: mentor fetch ok', { userId });
       }
     } catch (error) {
-      const normalized = normalizeApiError(error, 'Unable to load mentor guidance.');
+      const normalized = normalizeApiError(
+        error,
+        t('soulmatch.mentor.alerts.loadFailed'),
+      );
       if (normalized.status === 401 || normalized.status === 403) {
         toast.push({ message: normalized.message, tone: 'error' });
         logout();
@@ -105,12 +110,14 @@ export function SoulMatchMentorScreen() {
     } finally {
       setLoading(false);
     }
-  }, [logout, toast, userId]);
+  }, [logout, t, toast, userId]);
 
   useEffect(() => {
-    navigation.setOptions?.({ title: displayName || 'SoulMatch Mentor' });
+    navigation.setOptions?.({
+      title: displayName || t('soulmatch.mentor.title'),
+    });
     load().catch(() => undefined);
-  }, [displayName, load, navigation]);
+  }, [displayName, load, navigation, t]);
 
   useEffect(() => {
     if (replyText) {
@@ -152,7 +159,7 @@ export function SoulMatchMentorScreen() {
   };
 
   if (loading) {
-    return <LoadingView message="Opening SoulMatch mentor…" />;
+    return <LoadingView message={t('soulmatch.mentor.loading')} />;
   }
 
   return (
@@ -163,16 +170,18 @@ export function SoulMatchMentorScreen() {
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#fff" />
       }
     >
-      <Text style={styles.headline}>SoulMatch Mentor</Text>
+      <Text style={styles.headline}>{t('soulmatch.mentor.title')}</Text>
       <Text style={styles.subtitle}>
-        Guidance about your connection with {displayName || `user ${userId}`}.
+        {displayName
+          ? t('soulmatch.mentor.subtitleWithName', { name: displayName })
+          : t('soulmatch.mentor.subtitleWithUserId', { userId })}
       </Text>
 
       <MetalPanel glow>
         {score !== null ? (
           <View style={styles.scoreBlock}>
             <Text style={styles.scoreValue}>{score}</Text>
-            <Text style={styles.scoreLabel}>compatibility</Text>
+            <Text style={styles.scoreLabel}>{t('soulmatch.mentor.scoreLabel')}</Text>
           </View>
         ) : null}
         <View style={styles.tagRow}>
@@ -189,23 +198,23 @@ export function SoulMatchMentorScreen() {
           <Text style={styles.body}>{mentorText}</Text>
         ) : (
           <View style={styles.centered}>
-            <Text style={styles.subtitle}>No mentor text yet.</Text>
-            <MetalButton title="Refresh" onPress={load} />
+            <Text style={styles.subtitle}>{t('soulmatch.mentor.empty')}</Text>
+            <MetalButton title={t('soulmatch.mentor.actions.refresh')} onPress={load} />
           </View>
         )}
         {isStreaming ? (
           <View style={styles.streamingRow}>
             <ActivityIndicator size="small" color={theme.palette.platinum} />
-            <Text style={styles.subtitle}>Mentor is analyzing your match…</Text>
+            <Text style={styles.subtitle}>{t('soulmatch.mentor.streaming')}</Text>
           </View>
         ) : null}
       </MetalPanel>
 
       <MetalPanel>
-        <Text style={styles.fieldLabel}>Ask about your compatibility</Text>
+        <Text style={styles.fieldLabel}>{t('soulmatch.mentor.askLabel')}</Text>
         <TextInput
           style={styles.input}
-          placeholder="Ask something specific about this match"
+          placeholder={t('soulmatch.mentor.askPlaceholder')}
           placeholderTextColor={theme.palette.silver}
           multiline
           value={prompt}
@@ -222,12 +231,12 @@ export function SoulMatchMentorScreen() {
           {isStreaming ? (
             <ActivityIndicator color={theme.palette.pearl} />
           ) : (
-            <Text style={styles.submitText}>Ask Mentor</Text>
+            <Text style={styles.submitText}>{t('soulmatch.mentor.askButton')}</Text>
           )}
         </TouchableOpacity>
       </MetalPanel>
 
-      <MetalButton title="Back" onPress={() => navigation.goBack()} />
+      <MetalButton title={t('common.back')} onPress={() => navigation.goBack()} />
     </ScrollView>
   );
 }

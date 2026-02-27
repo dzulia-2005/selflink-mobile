@@ -2,6 +2,7 @@ import { NavigatorScreenParams, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   FlatList,
@@ -28,6 +29,7 @@ import { useTheme, type Theme } from '@theme';
 type InboxNavigation = NativeStackNavigationProp<ProfileStackParamList, 'Inbox'>;
 
 export function InboxScreen() {
+  const { t } = useTranslation();
   const navigation = useNavigation<InboxNavigation>();
   const toast = useToast();
   const { theme, resolved } = useTheme();
@@ -89,7 +91,7 @@ export function InboxScreen() {
     if (selectedIds.length === 0) {
       toast.push({
         tone: 'error',
-        message: 'Add at least one participant ID.',
+        message: t('inbox.alerts.addParticipant'),
       });
       return;
     }
@@ -97,7 +99,7 @@ export function InboxScreen() {
     if (!message.trim()) {
       toast.push({
         tone: 'error',
-        message: 'Add an opening message.',
+        message: t('inbox.alerts.addOpeningMessage'),
       });
       return;
     }
@@ -117,7 +119,7 @@ export function InboxScreen() {
     } finally {
       setCreating(false);
     }
-  }, [creating, createThread, selectedIds, message, openThread, title, toast]);
+  }, [creating, createThread, selectedIds, message, openThread, t, title, toast]);
 
   const toggleUserSelection = useCallback(
     (user: UserProfile) => {
@@ -140,10 +142,8 @@ export function InboxScreen() {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar style={resolved === 'dark' ? 'light' : 'dark'} />
       <View style={styles.hero}>
-        <Text style={styles.title}>Inbox</Text>
-        <Text style={styles.subtitle}>
-          Choose a conversation. Each thread should feel as intentional as a Jobs keynote.
-        </Text>
+        <Text style={styles.title}>{t('inbox.title')}</Text>
+        <Text style={styles.subtitle}>{t('inbox.subtitle')}</Text>
       </View>
       <FlatList
         contentContainerStyle={styles.list}
@@ -175,37 +175,35 @@ export function InboxScreen() {
         ListEmptyComponent={
           !loading ? (
             <View style={styles.empty}>
-              <Text style={styles.emptyTitle}>No threads yet</Text>
-              <Text style={styles.emptyCopy}>
-                Once conversations begin, they'll appear right here.
-              </Text>
+              <Text style={styles.emptyTitle}>{t('inbox.empty.title')}</Text>
+              <Text style={styles.emptyCopy}>{t('inbox.empty.body')}</Text>
             </View>
           ) : null
         }
         ListHeaderComponent={
           <MetalPanel glow>
-            <Text style={styles.panelTitle}>Start a Conversation</Text>
-            <Text style={styles.helper}>
-              Pick participants from your community and drop them a message.
-            </Text>
+            <Text style={styles.panelTitle}>{t('inbox.composer.title')}</Text>
+            <Text style={styles.helper}>{t('inbox.composer.subtitle')}</Text>
             <TextInput
               style={styles.input}
-              placeholder="Title (optional)"
+              placeholder={t('inbox.composer.titlePlaceholder')}
               placeholderTextColor={theme.palette.graphite}
               value={title}
               onChangeText={setTitle}
+              accessibilityLabel={t('inbox.accessibility.titleInput')}
             />
             <TextInput
               style={styles.input}
-              placeholder="Search people by name or handle"
+              placeholder={t('inbox.composer.searchPlaceholder')}
               placeholderTextColor={theme.palette.graphite}
               value={search}
               onChangeText={setSearch}
               autoCapitalize="none"
+              accessibilityLabel={t('inbox.accessibility.searchInput')}
             />
             <View style={styles.selectedWrap}>
               {selectedUsers.length === 0 ? (
-                <Text style={styles.helper}>No participants selected yet.</Text>
+                <Text style={styles.helper}>{t('inbox.composer.noParticipants')}</Text>
               ) : (
                 selectedUsers.map((user) => (
                   <Pressable
@@ -224,11 +222,14 @@ export function InboxScreen() {
               {loadingDirectory ? (
                 <ActivityIndicator color={theme.palette.platinum} />
               ) : filteredDirectory.length === 0 ? (
-                <Text style={styles.helper}>No matches found.</Text>
+                <Text style={styles.helper}>{t('inbox.composer.noMatches')}</Text>
               ) : (
                 filteredDirectory.map((user) => {
                   const numericId = Number(user.id);
                   const isSelected = selectedIds.includes(numericId);
+                  const handleText = ['@', user.handle ?? t('inbox.user.handleFallback')].join(
+                    '',
+                  );
                   const initials =
                     user.name
                       ?.split(' ')
@@ -248,11 +249,13 @@ export function InboxScreen() {
                         <Text style={styles.userAvatarText}>{initials}</Text>
                       </View>
                       <View style={styles.userCopy}>
-                        <Text style={styles.userName}>{user.name ?? 'Unnamed'}</Text>
-                        <Text style={styles.userHandle}>@{user.handle ?? 'handle'}</Text>
+                        <Text style={styles.userName}>
+                          {user.name ?? t('inbox.user.unnamed')}
+                        </Text>
+                        <Text style={styles.userHandle}>{handleText}</Text>
                       </View>
                       <Text style={styles.userAction}>
-                        {isSelected ? 'Remove' : 'Add'}
+                        {isSelected ? t('inbox.actions.remove') : t('inbox.actions.add')}
                       </Text>
                     </Pressable>
                   );
@@ -261,19 +264,27 @@ export function InboxScreen() {
             </View>
             <TextInput
               style={[styles.input, styles.messageInput]}
-              placeholder="Opening message"
+              placeholder={t('inbox.composer.messagePlaceholder')}
               placeholderTextColor={theme.palette.graphite}
               value={message}
               onChangeText={setMessage}
               multiline
+              accessibilityLabel={t('inbox.accessibility.messageInput')}
             />
             <MetalButton
-              title={creating ? 'Sending…' : 'Start Thread'}
+              title={
+                creating ? t('inbox.actions.sending') : t('inbox.actions.startThread')
+              }
               onPress={handleCreateThread}
               disabled={creating || selectedUsers.length === 0}
             />
-            <Pressable style={styles.refreshDirectory} onPress={refreshDirectory}>
-              <Text style={styles.refreshText}>Refresh people list</Text>
+            <Pressable
+              style={styles.refreshDirectory}
+              onPress={refreshDirectory}
+              accessibilityRole="button"
+              accessibilityLabel={t('inbox.accessibility.refreshPeopleList')}
+            >
+              <Text style={styles.refreshText}>{t('inbox.actions.refreshPeopleList')}</Text>
             </Pressable>
           </MetalPanel>
         }

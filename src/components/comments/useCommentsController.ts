@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import * as socialApi from '@api/social';
 import type { User } from '@schemas/user';
@@ -28,13 +29,13 @@ type UseCommentsControllerResult = {
   submitting: boolean;
 };
 
-const buildFallbackAuthor = (): User => {
+const buildFallbackAuthor = (name: string): User => {
   const now = new Date().toISOString();
   return {
     id: 0,
     email: '',
     handle: 'you',
-    name: 'You',
+    name,
     bio: '',
     photo: '',
     birth_date: null,
@@ -67,6 +68,7 @@ export function useCommentsController({
   initialCommentCount,
   onCommentCountChange,
 }: UseCommentsControllerParams): UseCommentsControllerResult {
+  const { t } = useTranslation();
   const currentUser = useAuthStore((state) => state.currentUser);
   const addCommentToStore = useFeedStore((state) => state.addComment);
   const [comments, setComments] = useState<CommentWithOptimistic[]>([]);
@@ -113,14 +115,14 @@ export function useCommentsController({
         setPage(pageNumber);
       } catch (fetchError) {
         console.warn('CommentsBottomSheet: failed to load comments', fetchError);
-        setError('Unable to load comments.');
+        setError(t('post.comments.alerts.loadFailed.body'));
       } finally {
         setLoading(false);
         setLoadingMore(false);
         setRefreshing(false);
       }
     },
-    [targetId],
+    [t, targetId],
   );
 
   useEffect(() => {
@@ -159,7 +161,7 @@ export function useCommentsController({
     setError(null);
     setInput('');
 
-    const author = currentUser ?? buildFallbackAuthor();
+    const author = currentUser ?? buildFallbackAuthor(t('post.comments.composer.you'));
     const optimistic = buildOptimisticComment(targetId, trimmed, author);
     setComments((prev) => prev.concat(optimistic));
 
@@ -181,12 +183,22 @@ export function useCommentsController({
       );
       setInput(trimmed);
       setError(
-        submitError instanceof Error ? submitError.message : 'Unable to add comment.',
+        submitError instanceof Error
+          ? submitError.message
+          : t('post.comments.alerts.sendFailed.body'),
       );
     } finally {
       setSubmitting(false);
     }
-  }, [addCommentToStore, applyCommentCount, currentUser, input, submitting, targetId]);
+  }, [
+    addCommentToStore,
+    applyCommentCount,
+    currentUser,
+    input,
+    submitting,
+    t,
+    targetId,
+  ]);
 
   const canSubmit = useMemo(() => Boolean(input.trim()), [input]);
 

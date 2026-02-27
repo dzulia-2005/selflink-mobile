@@ -1,4 +1,4 @@
-import { apiClient } from '@services/api/client';
+import { serviceApiClient as apiClient } from '@api/client';
 import type { MessageUser } from '@services/api/messages';
 
 export type ThreadMember = {

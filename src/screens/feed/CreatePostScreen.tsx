@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { isAxiosError } from 'axios';
 import { useCallback, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   Alert,
@@ -22,6 +23,7 @@ import { useVideoPicker, type PickedVideo } from '@hooks/useVideoPicker';
 import { useFeedStore } from '@store/feedStore';
 
 export function CreatePostScreen() {
+  const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const [content, setContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -44,8 +46,8 @@ export function CreatePostScreen() {
     if (isPicking || isSubmitting || selectedVideo) {
       if (selectedVideo) {
         Alert.alert(
-          'Choose photos or a video',
-          'Remove the selected video to add photos instead.',
+          t('feed.create.alerts.chooseMediaType.title'),
+          t('feed.create.alerts.removeVideoFirst.body'),
         );
       }
       return;
@@ -54,13 +56,13 @@ export function CreatePostScreen() {
     if (asset) {
       setSelectedImages((prev) => {
         if (prev.length >= 4) {
-          Alert.alert('Limit reached', 'You can attach up to 4 photos per post.');
+          Alert.alert(t('feed.create.alerts.limitReached.title'), t('feed.create.alerts.limitReached.body'));
           return prev;
         }
         return [...prev, asset];
       });
     }
-  }, [isPicking, pickImage, isSubmitting, selectedVideo]);
+  }, [isPicking, pickImage, isSubmitting, selectedVideo, t]);
 
   const handlePickVideo = useCallback(async () => {
     if (isPickingVideo || isSubmitting) {
@@ -68,12 +70,12 @@ export function CreatePostScreen() {
     }
     if (selectedImages.length) {
       Alert.alert(
-        'Replace photos with video?',
-        'You can attach either up to 4 photos or one video per post.',
+        t('feed.create.alerts.replacePhotos.title'),
+        t('feed.create.alerts.replacePhotos.body'),
         [
-          { text: 'Cancel', style: 'cancel' },
+          { text: t('common.cancel'), style: 'cancel' },
           {
-            text: 'Use video',
+            text: t('feed.create.useVideo'),
             onPress: async () => {
               setSelectedImages([]);
               const asset = await pickVideo();
@@ -90,7 +92,7 @@ export function CreatePostScreen() {
     if (asset) {
       setSelectedVideo(asset);
     }
-  }, [isPickingVideo, isSubmitting, pickVideo, selectedImages.length]);
+  }, [isPickingVideo, isSubmitting, pickVideo, selectedImages.length, t]);
 
   const handleRemoveVideo = useCallback(() => {
     setSelectedVideo(null);
@@ -119,8 +121,8 @@ export function CreatePostScreen() {
         return detail;
       }
     }
-    return 'Unable to create post. Please try again.';
-  }, []);
+    return t('feed.create.alerts.createFailed.body');
+  }, [t]);
 
   const handleSubmit = useCallback(async () => {
     const trimmed = content.trim();
@@ -128,13 +130,16 @@ export function CreatePostScreen() {
     const hasVideo = Boolean(selectedVideo);
     if (hasImageSelection && hasVideo) {
       Alert.alert(
-        'Choose photos or a video',
-        'You can attach either up to 4 photos OR one video per post.',
+        t('feed.create.alerts.chooseMediaType.title'),
+        t('feed.create.alerts.chooseMediaType.body'),
       );
       return;
     }
     if (!trimmed && !hasImageSelection && !hasVideo) {
-      Alert.alert('Content required', 'Write something or attach media before posting.');
+      Alert.alert(
+        t('feed.create.alerts.contentRequired.title'),
+        t('feed.create.alerts.contentRequired.body'),
+      );
       return;
     }
     setIsSubmitting(true);
@@ -146,7 +151,7 @@ export function CreatePostScreen() {
         videoName: selectedVideo?.name,
         videoMimeType: selectedVideo?.type,
       });
-      Alert.alert('Success', 'Post created successfully.');
+      Alert.alert(t('feed.create.alerts.success.title'), t('feed.create.alerts.success.body'));
       setContent('');
       setSelectedImages([]);
       setSelectedVideo(null);
@@ -154,7 +159,7 @@ export function CreatePostScreen() {
       navigation.goBack();
     } catch (error) {
       const message = deriveErrorMessage(error);
-      Alert.alert('Unable to create post', message);
+      Alert.alert(t('feed.create.alerts.createFailed.title'), message);
     } finally {
       setIsSubmitting(false);
     }
@@ -165,13 +170,14 @@ export function CreatePostScreen() {
     markAllDirty,
     selectedImages,
     selectedVideo,
+    t,
   ]);
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <TextInput
         style={styles.input}
-        placeholder="Share something… Markdown supported."
+        placeholder={t('feed.create.placeholder')}
         placeholderTextColor="#94A3B8"
         value={content}
         onChangeText={setContent}
@@ -190,12 +196,14 @@ export function CreatePostScreen() {
           onPress={handlePickImage}
           disabled={isPicking || isSubmitting || Boolean(selectedVideo)}
           accessibilityRole="button"
-          accessibilityLabel="Attach image"
+          accessibilityLabel={t('feed.create.accessibility.attachImage')}
           activeOpacity={0.85}
         >
           <Ionicons name="image-outline" size={18} color="#0EA5E9" />
           <Text style={styles.actionLabel}>
-            {selectedImages.length ? 'Add more photos' : 'Add photos'}
+            {selectedImages.length
+              ? t('feed.create.addMorePhotos')
+              : t('feed.create.addPhotos')}
           </Text>
         </TouchableOpacity>
 
@@ -208,12 +216,12 @@ export function CreatePostScreen() {
           onPress={handlePickVideo}
           disabled={isPickingVideo || isSubmitting}
           accessibilityRole="button"
-          accessibilityLabel="Attach video"
+          accessibilityLabel={t('feed.create.accessibility.attachVideo')}
           activeOpacity={0.85}
         >
           <Ionicons name="videocam-outline" size={18} color="#22C55E" />
           <Text style={[styles.actionLabel, styles.videoActionLabel]}>
-            {selectedVideo ? 'Change video' : 'Add video'}
+            {selectedVideo ? t('feed.create.changeVideo') : t('feed.create.addVideo')}
           </Text>
         </TouchableOpacity>
       </View>
@@ -221,22 +229,22 @@ export function CreatePostScreen() {
       {selectedVideo ? (
         <View style={styles.videoPreviewContainer}>
           <View style={styles.videoPreview}>
-            <Ionicons name="videocam" size={28} color="#22C55E" />
-            <View style={styles.flexGrow}>
-              <Text style={styles.videoTitle}>Video selected</Text>
+              <Ionicons name="videocam" size={28} color="#22C55E" />
+              <View style={styles.flexGrow}>
+              <Text style={styles.videoTitle}>{t('feed.create.videoSelected')}</Text>
               <Text style={styles.videoMeta}>
-                {selectedDurationLabel ?? 'Ready to upload'}
+                {selectedDurationLabel ?? t('feed.create.videoReadyToUpload')}
               </Text>
-            </View>
-            <View style={styles.videoBadge}>
-              <Text style={styles.videoBadgeText}>VIDEO</Text>
-            </View>
+              </View>
+              <View style={styles.videoBadge}>
+              <Text style={styles.videoBadgeText}>{t('feed.create.videoBadge')}</Text>
+              </View>
           </View>
           <TouchableOpacity
             style={styles.removeButton}
             onPress={handleRemoveVideo}
             accessibilityRole="button"
-            accessibilityLabel="Remove selected video"
+            accessibilityLabel={t('feed.create.accessibility.removeVideo')}
           >
             <Ionicons name="close" size={16} color="#FFFFFF" />
           </TouchableOpacity>
@@ -260,7 +268,7 @@ export function CreatePostScreen() {
                   )
                 }
                 accessibilityRole="button"
-                accessibilityLabel="Remove selected photo"
+                accessibilityLabel={t('feed.create.accessibility.removePhoto')}
               >
                 <Ionicons name="close" size={16} color="#FFFFFF" />
               </Pressable>
@@ -271,7 +279,7 @@ export function CreatePostScreen() {
 
       {content.trim() ? (
         <View style={styles.markdownPreview}>
-          <Text style={styles.previewTitle}>Live preview</Text>
+          <Text style={styles.previewTitle}>{t('feed.create.livePreview')}</Text>
           <MarkdownText>{content}</MarkdownText>
         </View>
       ) : null}
@@ -284,13 +292,13 @@ export function CreatePostScreen() {
         onPress={handleSubmit}
         disabled={!canSubmit || isSubmitting}
         accessibilityRole="button"
-        accessibilityLabel="Publish post"
+        accessibilityLabel={t('feed.create.publish')}
         activeOpacity={0.9}
       >
         {isSubmitting ? (
           <ActivityIndicator color="#0B1120" />
         ) : (
-          <Text style={styles.submitLabel}>Post</Text>
+          <Text style={styles.submitLabel}>{t('feed.create.publish')}</Text>
         )}
       </TouchableOpacity>
     </ScrollView>

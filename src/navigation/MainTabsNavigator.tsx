@@ -5,6 +5,7 @@ import {
 } from '@react-navigation/bottom-tabs';
 import { useNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import type { ColorValue } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -99,20 +100,33 @@ const createTabBarIcon =
     return <Ionicons name={iconName} size={size} color={color as ColorValue} />;
   };
 
-const MessagesHeader = () => <TopBar title="Messages" />;
+const MessagesHeader = () => {
+  const { t } = useTranslation();
+  return <TopBar title={t('nav.headers.messages')} />;
+};
 
 function MessagesChatHeaderLeft() {
   const navigation = useNavigation<any>();
+  const { t } = useTranslation();
   const { theme } = useTheme();
+
+  const handlePress = () => {
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+      return;
+    }
+
+    navigation.navigate('Messages', { screen: 'Threads' });
+  };
 
   return (
     <TouchableOpacity
-      onPress={() => navigation.navigate('Threads')}
+      onPress={handlePress}
       style={messageHeaderStyles.backButton}
     >
       <Ionicons name="chevron-back" size={20} color={theme.text.primary} />
       <Text style={[messageHeaderStyles.backText, { color: theme.text.primary }]}>
-        Threads
+        {t('nav.headers.threads')}
       </Text>
     </TouchableOpacity>
   );
@@ -145,6 +159,7 @@ function CreatePostTabBarButton(props: BottomTabBarButtonProps) {
 }
 
 function FeedStackNavigator() {
+  const { t } = useTranslation();
   const { theme } = useTheme();
   return (
     <FeedStack.Navigator
@@ -162,22 +177,22 @@ function FeedStackNavigator() {
       <FeedStack.Screen
         name="PostDetails"
         component={PostDetailsScreen}
-        options={{ title: 'Post' }}
+        options={{ title: t('nav.headers.post') }}
       />
       <FeedStack.Screen
         name="CreatePost"
         component={CreatePostScreen}
-        options={{ title: 'New Post' }}
+        options={{ title: t('nav.headers.newPost') }}
       />
       <FeedStack.Screen
         name="SearchProfiles"
         component={SearchProfilesScreen}
-        options={{ title: 'Search Profiles' }}
+        options={{ title: t('nav.headers.searchProfiles') }}
       />
       <FeedStack.Screen
         name="UserProfile"
         component={UserProfileScreen}
-        options={{ title: 'Profile' }}
+        options={{ title: t('nav.headers.profile') }}
       />
       <FeedStack.Screen
         name="SoulReels"
@@ -189,6 +204,7 @@ function FeedStackNavigator() {
 }
 
 function MessagesStackNavigator() {
+  const { t } = useTranslation();
   const { theme } = useTheme();
   return (
     <MessagesStack.Navigator
@@ -207,7 +223,7 @@ function MessagesStackNavigator() {
         name="Chat"
         component={ChatScreen}
         options={{
-          title: 'Messages',
+          title: t('nav.headers.messages'),
           headerBackVisible: false,
           headerLeft: MessagesChatHeaderLeft,
         }}
@@ -217,6 +233,7 @@ function MessagesStackNavigator() {
 }
 
 function ProfileStackNavigator() {
+  const { t } = useTranslation();
   const { theme } = useTheme();
   return (
     <ProfileStack.Navigator
@@ -234,48 +251,49 @@ function ProfileStackNavigator() {
       <ProfileStack.Screen
         name="SearchProfiles"
         component={SearchProfilesScreen}
-        options={{ title: 'Search Profiles' }}
+        options={{ title: t('nav.headers.searchProfiles') }}
       />
       <ProfileStack.Screen
         name="UserProfile"
         component={UserProfileScreen}
-        options={{ title: 'Profile' }}
+        options={{ title: t('nav.headers.profile') }}
       />
       <ProfileStack.Screen
         name="ProfileEdit"
         component={ProfileEditScreen}
-        options={{ title: 'Edit Profile' }}
+        options={{ title: t('nav.headers.editProfile') }}
       />
       <ProfileStack.Screen
         name="Payments"
         component={PaymentsScreen}
-        options={{ title: 'Payments' }}
+        options={{ title: t('nav.headers.payments') }}
       />
       <ProfileStack.Screen
         name="WalletLedger"
         component={WalletLedgerScreen}
-        options={{ title: 'Wallet' }}
+        options={{ title: t('nav.headers.wallet') }}
       />
       <ProfileStack.Screen
         name="Notifications"
         component={NotificationsScreen}
-        options={{ title: 'Notifications' }}
+        options={{ title: t('nav.headers.notifications') }}
       />
       <ProfileStack.Screen
         name="Community"
         component={CommunityScreen}
-        options={{ title: 'Community' }}
+        options={{ title: t('nav.headers.community') }}
       />
       <ProfileStack.Screen
         name="Inbox"
         component={InboxScreen}
-        options={{ title: 'Inbox' }}
+        options={{ title: t('nav.headers.inbox') }}
       />
     </ProfileStack.Navigator>
   );
 }
 
 function MentorStackNavigator() {
+  const { t } = useTranslation();
   const { theme } = useTheme();
   return (
     <MentorStack.Navigator
@@ -293,38 +311,39 @@ function MentorStackNavigator() {
       <MentorStack.Screen
         name="BirthData"
         component={BirthDataScreen}
-        options={{ title: 'Birth Data' }}
+        options={{ title: t('nav.headers.birthData') }}
       />
       <MentorStack.Screen
         name="NatalChart"
         component={NatalChartScreen}
-        options={{ title: 'Natal Chart' }}
+        options={{ title: t('nav.headers.natalChart') }}
       />
       <MentorStack.Screen
         name="NatalMentor"
         component={NatalMentorScreen}
-        options={{ title: 'Natal Mentor' }}
+        options={{ title: t('nav.headers.natalMentor') }}
       />
       <MentorStack.Screen
         name="DailyMentor"
         component={DailyMentorScreen}
-        options={{ title: 'Daily Mentor' }}
+        options={{ title: t('nav.headers.dailyMentor') }}
       />
       <MentorStack.Screen
         name="DailyMentorEntry"
         component={DailyMentorEntryScreen}
-        options={{ title: 'Daily Entry' }}
+        options={{ title: t('nav.headers.dailyEntry') }}
       />
       <MentorStack.Screen
         name="MentorChat"
         component={MentorChatScreen}
-        options={{ title: 'AI Mentor' }}
+        options={{ title: t('nav.headers.aiMentor') }}
       />
     </MentorStack.Navigator>
   );
 }
 
 function SoulMatchStackNavigator() {
+  const { t } = useTranslation();
   const { theme } = useTheme();
   return (
     <SoulMatchStack.Navigator
@@ -342,17 +361,17 @@ function SoulMatchStackNavigator() {
       <SoulMatchStack.Screen
         name="SoulMatchRecommendations"
         component={SoulMatchRecommendationsScreen}
-        options={{ title: 'SoulMatch Recommendations' }}
+        options={{ title: t('nav.headers.soulmatchRecommendations') }}
       />
       <SoulMatchStack.Screen
         name="SoulMatchDetail"
         component={SoulMatchDetailsScreen}
-        options={{ title: 'SoulMatch' }}
+        options={{ title: t('nav.headers.soulmatch') }}
       />
       <SoulMatchStack.Screen
         name="SoulMatchMentor"
         component={SoulMatchMentorScreen}
-        options={{ title: 'SoulMatch Mentor' }}
+        options={{ title: t('nav.headers.soulmatchMentor') }}
       />
     </SoulMatchStack.Navigator>
   );
@@ -426,6 +445,7 @@ function TabBarTop({
 }
 
 export function MainTabsNavigator() {
+  const { t } = useTranslation();
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
   const safeBottom = Math.max(insets.bottom, 10);
@@ -458,6 +478,18 @@ export function MainTabsNavigator() {
         tabBarIconStyle: {
           marginTop: 2,
         },
+        tabBarLabel:
+          route.name === 'Feed'
+            ? t('nav.tabs.feed')
+            : route.name === 'Mentor'
+              ? t('nav.tabs.mentor')
+              : route.name === 'SoulMatch'
+                ? t('nav.tabs.soulmatch')
+                : route.name === 'Profile'
+                  ? t('nav.tabs.profile')
+                  : route.name === 'Messages'
+                    ? t('nav.tabs.messages')
+                    : route.name,
         tabBarIcon: createTabBarIcon(route.name),
       })}
     >

@@ -1,5 +1,6 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Animated,
   Dimensions,
@@ -21,34 +22,8 @@ import type { SoulmatchTier } from '@utils/soulmatchUpgradeGate';
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const SHEET_HEIGHT = Math.round(SCREEN_HEIGHT * 0.7);
 const CLOSE_THRESHOLD = SHEET_HEIGHT * 0.25;
-
-const TIERS: Array<{
-  tier: SoulmatchTier;
-  title: string;
-  subtitle: string;
-  bullets: string[];
-  highlight?: string;
-}> = [
-  {
-    tier: 'free',
-    title: 'Free',
-    subtitle: 'Basics only',
-    bullets: ['Compatibility score', 'Key badges', 'Top 5 matches'],
-  },
-  {
-    tier: 'premium',
-    title: 'Premium',
-    subtitle: 'Deeper insight',
-    bullets: ['Lens explanations', 'Timing summary', 'Full context'],
-    highlight: 'Most people choose this',
-  },
-  {
-    tier: 'premium_plus',
-    title: 'Premium+',
-    subtitle: 'Full strategy',
-    bullets: ['Everything in Premium', 'How to approach', 'Strategy notes'],
-  },
-];
+const CLOSE_ICON = '\u2715';
+const BULLET_PREFIX = '\u2022';
 
 type Props = {
   visible: boolean;
@@ -67,11 +42,54 @@ export function SoulMatchUpgradeSheet({
   onContinueFree,
   previewText,
 }: Props) {
+  const { t } = useTranslation();
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
   const insets = useSafeAreaInsets();
   const translateY = useRef(new Animated.Value(SHEET_HEIGHT)).current;
   const closingRef = useRef(false);
+  const tiers = useMemo(
+    () => [
+      {
+        tier: 'free',
+        title: t('soulmatch.upgrade.tiers.free.title'),
+        subtitle: t('soulmatch.upgrade.tiers.free.subtitle'),
+        bullets: [
+          t('soulmatch.upgrade.tiers.free.bullets.compatibilityScore'),
+          t('soulmatch.upgrade.tiers.free.bullets.keyBadges'),
+          t('soulmatch.upgrade.tiers.free.bullets.topMatches'),
+        ],
+      },
+      {
+        tier: 'premium',
+        title: t('soulmatch.upgrade.tiers.premium.title'),
+        subtitle: t('soulmatch.upgrade.tiers.premium.subtitle'),
+        bullets: [
+          t('soulmatch.upgrade.tiers.premium.bullets.lensExplanations'),
+          t('soulmatch.upgrade.tiers.premium.bullets.timingSummary'),
+          t('soulmatch.upgrade.tiers.premium.bullets.fullContext'),
+        ],
+        highlight: t('soulmatch.upgrade.tiers.premium.highlight'),
+      },
+      {
+        tier: 'premium_plus',
+        title: t('soulmatch.upgrade.tiers.premiumPlus.title'),
+        subtitle: t('soulmatch.upgrade.tiers.premiumPlus.subtitle'),
+        bullets: [
+          t('soulmatch.upgrade.tiers.premiumPlus.bullets.everythingInPremium'),
+          t('soulmatch.upgrade.tiers.premiumPlus.bullets.howToApproach'),
+          t('soulmatch.upgrade.tiers.premiumPlus.bullets.strategyNotes'),
+        ],
+      },
+    ] as Array<{
+      tier: SoulmatchTier;
+      title: string;
+      subtitle: string;
+      bullets: string[];
+      highlight?: string;
+    }>,
+    [t],
+  );
 
   useEffect(() => {
     if (!visible) {
@@ -151,18 +169,16 @@ export function SoulMatchUpgradeSheet({
         </View>
         <View style={styles.headerRow}>
           <View style={styles.headerTextBlock}>
-            <Text style={styles.title}>Unlock Deeper SoulMatch</Text>
-            <Text style={styles.subtitle}>
-              Understand compatibility, timing, and how to approach — not just scores.
-            </Text>
+            <Text style={styles.title}>{t('soulmatch.upgrade.title')}</Text>
+            <Text style={styles.subtitle}>{t('soulmatch.upgrade.subtitle')}</Text>
           </View>
           <TouchableOpacity onPress={closeSheet} hitSlop={10}>
-            <Text style={styles.closeLabel}>✕</Text>
+            <Text style={styles.closeLabel}>{CLOSE_ICON}</Text>
           </TouchableOpacity>
         </View>
 
         <View style={styles.tierList}>
-          {TIERS.map((tier) => {
+          {tiers.map((tier) => {
             const isSelected = selectedTier === tier.tier;
             return (
               <MetalPanel
@@ -184,16 +200,21 @@ export function SoulMatchUpgradeSheet({
                       <Text style={styles.tierHighlight}>{tier.highlight}</Text>
                     ) : null}
                     {isSelected ? (
-                      <Text style={styles.tierSelected}>Selected</Text>
+                      <Text style={styles.tierSelected}>
+                        {t('soulmatch.upgrade.selected')}
+                      </Text>
                     ) : null}
                   </View>
                   <Text style={styles.tierSubtitle}>{tier.subtitle}</Text>
                   <View style={styles.tierBullets}>
-                    {tier.bullets.map((bullet) => (
-                      <Text key={bullet} style={styles.tierBullet}>
-                        • {bullet}
-                      </Text>
-                    ))}
+                    {tier.bullets.map((bullet) => {
+                      const bulletLabel = `${BULLET_PREFIX} ${bullet}`;
+                      return (
+                        <Text key={bullet} style={styles.tierBullet}>
+                          {bulletLabel}
+                        </Text>
+                      );
+                    })}
                   </View>
                 </TouchableOpacity>
               </MetalPanel>
@@ -202,10 +223,10 @@ export function SoulMatchUpgradeSheet({
         </View>
 
         <MetalPanel style={styles.previewCard}>
-          <Text style={styles.previewTitle}>Preview</Text>
+          <Text style={styles.previewTitle}>{t('soulmatch.upgrade.preview.title')}</Text>
           <Text style={styles.previewText} numberOfLines={5}>
             {previewText ||
-              'Timing looks strongest over the next 4-6 weeks. Your lens suggests a strong emotional alignment when communication stays clear. With Premium+, we\'ll show how to approach this match.'}
+              t('soulmatch.upgrade.preview.body')}
           </Text>
           <LinearGradient
             colors={['rgba(15,23,42,0)', 'rgba(15,23,42,0.9)']}
@@ -214,17 +235,24 @@ export function SoulMatchUpgradeSheet({
         </MetalPanel>
 
         <View style={styles.ctaBlock}>
-          <MetalButton title="Unlock Premium" onPress={() => onSelectTier('premium')} />
+          <MetalButton
+            title={t('soulmatch.upgrade.actions.unlockPremium')}
+            onPress={() => onSelectTier('premium')}
+          />
           <TouchableOpacity
             style={styles.secondaryButton}
             onPress={() => onSelectTier('premium_plus')}
           >
-            <Text style={styles.secondaryButtonText}>Unlock Premium+</Text>
+            <Text style={styles.secondaryButtonText}>
+              {t('soulmatch.upgrade.actions.unlockPremiumPlus')}
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.freeButton} onPress={onContinueFree}>
-            <Text style={styles.freeButtonText}>Continue with Free</Text>
+            <Text style={styles.freeButtonText}>
+              {t('soulmatch.upgrade.actions.continueFree')}
+            </Text>
           </TouchableOpacity>
-          <Text style={styles.microcopy}>Cancel anytime • Secure payment</Text>
+          <Text style={styles.microcopy}>{t('soulmatch.upgrade.microcopy')}</Text>
         </View>
       </Animated.View>
     </Modal>
