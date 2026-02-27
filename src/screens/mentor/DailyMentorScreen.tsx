@@ -1,6 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   FlatList,
@@ -25,6 +26,7 @@ import { useAuthStore } from '@store/authStore';
 import { useTheme, type Theme } from '@theme';
 
 const todayString = () => new Date().toISOString().slice(0, 10);
+const BULLET_GLYPH = '\u2022';
 const makePreview = (value: string) => {
   if (!value) {
     return '';
@@ -40,6 +42,7 @@ type DailyMentorReply = {
 };
 
 export function DailyMentorScreen() {
+  const { t } = useTranslation();
   const toast = useToast();
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
@@ -91,13 +94,13 @@ export function DailyMentorScreen() {
       setHistory(items);
     } catch (error) {
       console.error('DailyMentorScreen: failed to load history', error);
-      toast.push({ message: 'Unable to load recent entries.', tone: 'error' });
+      toast.push({ message: t('mentor.daily.alerts.loadHistoryFailed'), tone: 'error' });
     } finally {
       historyRequestRef.current = false;
       setHistoryLoading(false);
       setRefreshing(false);
     }
-  }, [toast]);
+  }, [t, toast]);
 
   useEffect(() => {
     loadHistory().catch(() => undefined);
@@ -203,10 +206,10 @@ export function DailyMentorScreen() {
     setSubmitting(false);
     setLatestReply(null);
     toast.push({
-      message: streamError || 'Mentor is temporarily unavailable. Please try again.',
+      message: streamError || t('mentor.daily.alerts.streamUnavailable'),
       tone: 'error',
     });
-  }, [streamError, toast]);
+  }, [streamError, t, toast]);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -227,7 +230,9 @@ export function DailyMentorScreen() {
       >
         <View style={styles.historyTopRow}>
           <Text style={styles.historyDate}>{item.date}</Text>
-          <Text style={styles.historySession}>#{item.session_id}</Text>
+          <Text style={styles.historySession}>
+            {t('mentor.daily.sessionTag', { id: item.session_id })}
+          </Text>
         </View>
         <Text style={styles.historyPreview} numberOfLines={2}>
           {item.entry_preview}
@@ -245,6 +250,7 @@ export function DailyMentorScreen() {
       styles.historyReply,
       styles.historySession,
       styles.historyTopRow,
+      t,
     ],
   );
 
@@ -279,6 +285,7 @@ export function DailyMentorScreen() {
               onRefresh={onRefresh}
               historyLoading={historyLoading}
               hasHistory={hasHistory}
+              t={t}
             />
           }
           contentContainerStyle={[
@@ -312,6 +319,7 @@ type HeaderProps = {
   onRefresh: () => void;
   historyLoading: boolean;
   hasHistory: boolean;
+  t: (key: string, options?: Record<string, unknown>) => string;
 };
 
 function DailyMentorHeader({
@@ -326,6 +334,7 @@ function DailyMentorHeader({
   onRefresh,
   historyLoading,
   hasHistory,
+  t,
 }: HeaderProps) {
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
@@ -333,43 +342,45 @@ function DailyMentorHeader({
     <View style={styles.content}>
       <View style={styles.headerBlock}>
         <View style={styles.pill}>
-          <Text style={styles.pillText}>Daily Mentor</Text>
+          <Text style={styles.pillText}>{t('mentor.daily.badge')}</Text>
         </View>
-        <Text style={styles.title}>A quick diary for today</Text>
-        <Text style={styles.subtitle}>
-          Capture what happened and let your mentor reflect back with a short reply.
-        </Text>
+        <Text style={styles.title}>{t('mentor.daily.title')}</Text>
+        <Text style={styles.subtitle}>{t('mentor.daily.subtitle')}</Text>
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.sectionLabel}>Today&apos;s entry</Text>
+        <Text style={styles.sectionLabel}>{t('mentor.daily.entrySectionTitle')}</Text>
         <TextInput
           style={styles.input}
-          placeholder="What happened today?"
+          placeholder={t('mentor.daily.entryPlaceholder')}
           placeholderTextColor={theme.palette.silver}
           multiline
           scrollEnabled
           value={entry}
           onChangeText={onChangeEntry}
           textAlignVertical="top"
+          accessibilityLabel={t('mentor.daily.accessibility.entryInput')}
         />
 
         <View style={styles.dateRow}>
           <View style={styles.dateField}>
-            <Text style={styles.fieldLabel}>Entry date</Text>
+            <Text style={styles.fieldLabel}>{t('mentor.daily.entryDate')}</Text>
             <TextInput
               style={styles.dateInput}
               value={entryDate}
               onChangeText={onChangeEntryDate}
-              placeholder="YYYY-MM-DD"
+              placeholder={t('mentor.daily.entryDatePlaceholder')}
               placeholderTextColor={theme.palette.silver}
+              accessibilityLabel={t('mentor.daily.accessibility.entryDateInput')}
             />
           </View>
           <TouchableOpacity
             onPress={() => onChangeEntryDate(todayString())}
             style={styles.todayButton}
+            accessibilityRole="button"
+            accessibilityLabel={t('mentor.daily.accessibility.todayButton')}
           >
-            <Text style={styles.todayText}>Today</Text>
+            <Text style={styles.todayText}>{t('mentor.daily.today')}</Text>
           </TouchableOpacity>
         </View>
 
@@ -386,22 +397,24 @@ function DailyMentorHeader({
           {submitting || isStreaming ? (
             <ActivityIndicator color={theme.palette.pearl} />
           ) : (
-            <Text style={styles.submitText}>Get reflection</Text>
+            <Text style={styles.submitText}>{t('mentor.daily.getReflection')}</Text>
           )}
         </TouchableOpacity>
 
         {isStreaming ? (
           <View style={styles.streamingRow}>
             <ActivityIndicator color={theme.palette.pearl} size="small" />
-            <Text style={styles.streamingText}>Daily Mentor is replying…</Text>
+            <Text style={styles.streamingText}>{t('mentor.daily.replying')}</Text>
           </View>
         ) : null}
 
         {latestReply ? (
           <View style={styles.replyBlock}>
             <View style={styles.replyHeader}>
-              <Text style={styles.replyTitle}>Mentor&apos;s reply</Text>
-              <Text style={styles.sessionTag}>Session #{latestReply.session_id}</Text>
+              <Text style={styles.replyTitle}>{t('mentor.daily.replyTitle')}</Text>
+              <Text style={styles.sessionTag}>
+                {t('mentor.daily.sessionTag', { id: latestReply.session_id })}
+              </Text>
             </View>
             {latestReply.reply
               .split('\n')
@@ -411,7 +424,7 @@ function DailyMentorHeader({
                   style={styles.bulletRow}
                   key={`${latestReply.session_id}-line-${idx}`}
                 >
-                  <Text style={styles.bullet}>•</Text>
+                  <Text style={styles.bullet}>{BULLET_GLYPH}</Text>
                   <Text style={styles.bulletText}>{line.trim()}</Text>
                 </View>
               ))}
@@ -420,9 +433,9 @@ function DailyMentorHeader({
       </View>
 
       <View style={styles.historyHeaderRow}>
-        <Text style={styles.sectionLabel}>Recent entries</Text>
+        <Text style={styles.sectionLabel}>{t('mentor.daily.recentEntries')}</Text>
         <TouchableOpacity onPress={onRefresh}>
-          <Text style={styles.refreshText}>Refresh</Text>
+          <Text style={styles.refreshText}>{t('mentor.daily.refresh')}</Text>
         </TouchableOpacity>
       </View>
       {historyLoading ? (
@@ -431,9 +444,7 @@ function DailyMentorHeader({
         </View>
       ) : !hasHistory ? (
         <View style={styles.historyPlaceholder}>
-          <Text style={styles.subtitle}>
-            No entries yet. Your first note will show here.
-          </Text>
+          <Text style={styles.subtitle}>{t('mentor.daily.noEntries')}</Text>
         </View>
       ) : null}
     </View>

@@ -63,6 +63,11 @@ module.exports = {
         'src/screens/messaging/ThreadsScreen.tsx',
         'src/components/messaging/ThreadListItem.tsx',
         'src/components/ThreadCard.tsx',
+        'src/screens/mentor/MentorHomeScreen.tsx',
+        'src/screens/mentor/DailyMentorScreen.tsx',
+        'src/screens/mentor/DailyMentorEntryScreen.tsx',
+        'src/screens/mentor/NatalMentorScreen.tsx',
+        'src/screens/mentor/MentorChatScreen.tsx',
       ],
       rules: {
         'react/jsx-no-literals': ['error', { noStrings: true, ignoreProps: true }],

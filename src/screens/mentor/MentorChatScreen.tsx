@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   FlatList,
@@ -64,6 +65,7 @@ const formatTime = (value: string) => {
 };
 
 export function MentorChatScreen() {
+  const { t } = useTranslation();
   const toast = useToast();
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
@@ -141,7 +143,7 @@ export function MentorChatScreen() {
         }
       } catch (error) {
         console.error('MentorChatScreen: failed to load history', error);
-        toast.push({ message: 'Unable to load mentor history.', tone: 'error' });
+        toast.push({ message: t('mentor.chat.alerts.loadHistoryFailed'), tone: 'error' });
       } finally {
         historyRequestRef.current = false;
         if (append) {
@@ -154,7 +156,7 @@ export function MentorChatScreen() {
         }
       }
     },
-    [toast],
+    [t, toast],
   );
 
   useEffect(() => {
@@ -274,13 +276,17 @@ export function MentorChatScreen() {
     async (text: string) => {
       try {
         await Clipboard.setStringAsync(text);
-        toast.push({ message: 'Copied to clipboard', tone: 'info', duration: 1500 });
+        toast.push({
+          message: t('mentor.chat.alerts.copiedToClipboard'),
+          tone: 'info',
+          duration: 1500,
+        });
       } catch (error) {
         console.warn('MentorChatScreen: copy failed', error);
-        toast.push({ message: 'Unable to copy right now.', tone: 'error' });
+        toast.push({ message: t('mentor.chat.alerts.copyFailed'), tone: 'error' });
       }
     },
-    [toast],
+    [t, toast],
   );
 
   const sendMessage = useCallback(
@@ -350,14 +356,9 @@ export function MentorChatScreen() {
           : chatTheme.spacing.md;
       const sessionLabel =
         item.session_id && item.session_id > 0
-          ? `Session #${item.session_id}`
-          : 'New session';
-      const onLongPress =
-        !isUser && item.content
-          ? () => {
-              handleCopy(item.content);
-            }
-          : undefined;
+          ? t('mentor.daily.sessionTag', { id: item.session_id })
+          : t('mentor.chat.newSession');
+      const onLongPress = !isUser && item.content ? () => handleCopy(item.content) : undefined;
       return (
         <View>
           {showSessionDivider ? (
@@ -402,6 +403,7 @@ export function MentorChatScreen() {
       chatTheme.spacing.xs,
       handleCopy,
       messages,
+      t,
       styles.bubble,
       styles.mentorBubble,
       styles.mentorShadow,
@@ -424,7 +426,7 @@ export function MentorChatScreen() {
           <View style={[styles.messageRow, styles.messageRowLeft, styles.typingRow]}>
             <View style={[styles.bubble, styles.mentorBubble, styles.typingBubble]}>
               <ActivityIndicator size="small" color={chatTheme.bubble.mentor.text} />
-              <Text style={styles.typingText}>Mentor is typing…</Text>
+              <Text style={styles.typingText}>{t('mentor.chat.typing')}</Text>
             </View>
           </View>
         ) : null}
@@ -434,7 +436,7 @@ export function MentorChatScreen() {
             <Text style={styles.errorText}>{sendError}</Text>
             {lastFailedMessage ? (
               <TouchableOpacity onPress={handleResend} style={styles.resendButton}>
-                <Text style={styles.resendText}>Resend</Text>
+                <Text style={styles.resendText}>{t('mentor.chat.resend')}</Text>
               </TouchableOpacity>
             ) : null}
           </View>
@@ -444,7 +446,7 @@ export function MentorChatScreen() {
           <ActivityIndicator color={theme.palette.platinum} />
         ) : nextCursor ? (
           <TouchableOpacity style={styles.loadMore} onPress={handleLoadMore}>
-            <Text style={styles.loadMoreText}>Load earlier messages</Text>
+            <Text style={styles.loadMoreText}>{t('mentor.chat.loadEarlier')}</Text>
           </TouchableOpacity>
         ) : (
           <View style={styles.footerSpacer} />
@@ -476,6 +478,7 @@ export function MentorChatScreen() {
     styles.typingBubble,
     styles.typingRow,
     styles.typingText,
+    t,
     theme.palette.platinum,
   ]);
 
@@ -506,10 +509,8 @@ export function MentorChatScreen() {
                 }
                 ListEmptyComponent={
                   <View style={styles.emptyState}>
-                    <Text style={styles.emptyTitle}>Start a new conversation</Text>
-                    <Text style={styles.emptySubtitle}>
-                      Your mentor will remember the session ID for this chat.
-                    </Text>
+                    <Text style={styles.emptyTitle}>{t('mentor.chat.empty.title')}</Text>
+                    <Text style={styles.emptySubtitle}>{t('mentor.chat.empty.body')}</Text>
                   </View>
                 }
                 ListFooterComponent={footer}
@@ -540,7 +541,7 @@ export function MentorChatScreen() {
                     height: Math.max(48, Math.min(inputHeight || 0, 160)),
                   },
                 ]}
-                placeholder="Ask your SelfLink Mentor…"
+                placeholder={t('mentor.chat.inputPlaceholder')}
                 placeholderTextColor={chatTheme.input.placeholder}
                 value={input}
                 onChangeText={setInput}
@@ -549,6 +550,7 @@ export function MentorChatScreen() {
                 }
                 editable={!isSending}
                 multiline
+                accessibilityLabel={t('mentor.chat.accessibility.input')}
               />
               <TouchableOpacity
                 style={styles.sendButton}

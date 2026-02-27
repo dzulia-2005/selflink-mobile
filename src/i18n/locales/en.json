@@ -2,7 +2,8 @@
   "common": {
     "save": "Save",
     "cancel": "Cancel",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "retry": "Retry"
   },
   "profile": {
     "loadingProfile": "Loading profile...",
@@ -235,6 +236,96 @@
     "title": "Notifications",
     "empty": {
       "body": "You are all caught up for now."
+    }
+  },
+  "mentor": {
+    "home": {
+      "title": "Mentor",
+      "subtitle": "Access your astro mentor, daily guidance, and SoulMatch insights.",
+      "natalCard": {
+        "title": "Build your natal chart",
+        "body": "Use your saved registration birth details or edit them before generating your chart.",
+        "birthDataOptions": "Birth Data Options",
+        "viewNatalChart": "View Natal Chart"
+      },
+      "chatCard": {
+        "title": "AI Mentor Chat",
+        "body": "Talk to your mentor with session-aware chat and keep your history in one place.",
+        "openChat": "Open Mentor Chat"
+      },
+      "readingsCard": {
+        "title": "AI Mentor Readings",
+        "natalMentor": "Natal Mentor",
+        "dailyMentor": "Daily Mentor"
+      }
+    },
+    "daily": {
+      "badge": "Daily Mentor",
+      "title": "A quick diary for today",
+      "subtitle": "Capture what happened and let your mentor reflect back with a short reply.",
+      "entrySectionTitle": "Today's entry",
+      "entryPlaceholder": "What happened today?",
+      "entryDate": "Entry date",
+      "entryDatePlaceholder": "YYYY-MM-DD",
+      "today": "Today",
+      "getReflection": "Get reflection",
+      "replying": "Daily Mentor is replying...",
+      "replyTitle": "Mentor's reply",
+      "sessionTag": "Session #{{id}}",
+      "recentEntries": "Recent entries",
+      "refresh": "Refresh",
+      "noEntries": "No entries yet. Your first note will show here.",
+      "alerts": {
+        "loadHistoryFailed": "Unable to load recent entries.",
+        "streamUnavailable": "Mentor is temporarily unavailable. Please try again."
+      },
+      "accessibility": {
+        "entryInput": "Daily entry",
+        "entryDateInput": "Entry date",
+        "todayButton": "Set date to today"
+      }
+    },
+    "dailyEntry": {
+      "notFound": "Entry not found.",
+      "yourNote": "Your note",
+      "noEntryText": "No entry text available.",
+      "replyNotAvailable": "Reply not available yet.",
+      "alerts": {
+        "loadFailed": "Unable to load this entry."
+      }
+    },
+    "natal": {
+      "title": "Natal Mentor",
+      "subtitle": "Deep explanation of your personality, emotions, and life themes.",
+      "defaultPrompt": "Give me a short natal mentor reading based on my chart.",
+      "loading": "Calling your natal mentor...",
+      "noReading": "No reading yet. Try again.",
+      "typing": "Natal Mentor is typing...",
+      "askLabel": "Ask about your natal chart",
+      "askPlaceholder": "Ask about strengths, challenges, or themes in your chart",
+      "askButton": "Ask Natal Mentor",
+      "accessibility": {
+        "promptInput": "Natal mentor prompt"
+      }
+    },
+    "chat": {
+      "newSession": "New session",
+      "typing": "Mentor is typing...",
+      "resend": "Resend",
+      "loadEarlier": "Load earlier messages",
+      "inputPlaceholder": "Ask your SelfLink Mentor...",
+      "empty": {
+        "title": "Start a new conversation",
+        "body": "Your mentor will remember the session ID for this chat."
+      },
+      "alerts": {
+        "loadHistoryFailed": "Unable to load mentor history.",
+        "copiedToClipboard": "Copied to clipboard",
+        "copyFailed": "Unable to copy right now."
+      },
+      "accessibility": {
+        "input": "Mentor chat input"
+      }
     }
   },
   "inbox": {
