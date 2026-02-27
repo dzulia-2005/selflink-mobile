@@ -45,45 +45,39 @@ The project exists to explore:
 
 ```text
 src/
-├── components/     # UI components (Buttons, Inputs, Cards)
-├── screens/        # Screen-level views and flows
-├── navigation/     # Navigators, route configs
-├── services/       
-│   └── api/        # Frontend API wrapper layer
-├── hooks/          # Custom shared hooks and state helpers
-├── theme/          # Design tokens and styling primitives
-└── docs/           # Architecture notes and API documentation
+├── screens/                 # Feature screens (auth, feed, mentor, soulmatch, wallet, etc.)
+├── components/              # Reusable UI building blocks
+│   ├── comments/            # Comment UI + helpers
+│   ├── gifts/               # Gifts/payments visual components
+│   ├── messaging/           # Chat/thread visual components
+│   ├── astro/               # Astrology-specific presentational components
+│   └── soulmatch/           # SoulMatch-specific presentational components
+├── navigation/              # Root/tabs/stacks and route typing
+├── i18n/                    # i18next setup + locale JSON dictionaries (en/ru/ka)
+├── api/                     # Canonical HTTP client + API modules (single client source)
+├── services/api/            # Domain-level API wrappers still used in parts of app
+├── hooks/                   # Shared logic and data-fetching hooks
+├── store/                   # Zustand stores and app state
+├── context/                 # React context providers (auth, toast)
+├── theme/                   # Design tokens, theme primitives
+├── utils/                   # Utilities (parsing, polling, mappers, helpers)
+├── config/                  # Runtime env/config wiring
+├── realtime/                # Realtime connection helpers/channels
+├── constants/               # Shared constants and enum-like maps
+├── types/                   # Shared domain and API types
+├── styles/                  # Cross-screen style helpers/animations
+└── __tests__/               # App-level integration/smoke tests
 ```
+
+Quick orientation:
+- Start app flow: `index.ts` -> `src/App.tsx` -> `src/navigation/RootNavigator.tsx`
+- New feature UI: add screen in `src/screens/<feature>/` and shared pieces in `src/components/`
+- API work: prefer `src/api/` and keep transport concerns centralized
+- Text updates: use `src/i18n/locales/*.json` and avoid hardcoded UI strings
 
 ## API Overview
 
 See [`docs/API.md`](docs/API.md) for a frontend-facing map of API calls and wrapper modules. This is not backend documentation; it is a guide to how the mobile client talks to the REST API.
-
-- Wallet + SLC integration notes live in [`docs/WALLET_SLC.md`](docs/WALLET_SLC.md).
-
-- Wallet + iPay purchase flow notes live in [`docs/WALLET_SLC_IPAY.md`](docs/WALLET_SLC_IPAY.md).
-
-- Wallet + Stripe purchase flow notes live in [`docs/WALLET_SLC_STRIPE.md`](docs/WALLET_SLC_STRIPE.md).
-
-- Wallet + BTCPay purchase flow notes live in [`docs/WALLET_SLC_BTCPAY.md`](docs/WALLET_SLC_BTCPAY.md).
-
-- Wallet + IAP purchase flow notes live in [`docs/WALLET_SLC_IAP.md`](docs/WALLET_SLC_IAP.md).
-
-- Payments gifts notes live in [`docs/PAYMENTS_GIFTS_NOTES.md`](docs/PAYMENTS_GIFTS_NOTES.md).
-
-- Mobile gifts + paid reactions guide lives in [`docs/GIFTS_MOBILE.md`](docs/GIFTS_MOBILE.md).
-
-- Feed likes + gifts implementation notes live in [`docs/WALLET_FEED_GIFTS.md`](docs/WALLET_FEED_GIFTS.md).
-
-- Mobile wallet + SLC overview lives in [`docs/MOBILE_WALLET_SLC_OVERVIEW.md`](docs/MOBILE_WALLET_SLC_OVERVIEW.md).
-
-- Mobile payments providers guide lives in [`docs/MOBILE_PAYMENTS_PROVIDERS.md`](docs/MOBILE_PAYMENTS_PROVIDERS.md).
-
-- Mobile gifts UI guide lives in [`docs/MOBILE_GIFTS_UI.md`](docs/MOBILE_GIFTS_UI.md).
-
-- Gift rendering UI guide lives in [`docs/GIFTS_UI.md`](docs/GIFTS_UI.md).
-
-- Mobile local runbook lives in [`docs/MOBILE_RUNBOOK_LOCAL.md`](docs/MOBILE_RUNBOOK_LOCAL.md).
 
 ## Getting Started
 
@@ -136,12 +130,35 @@ npx expo start -c
 
 ## Internationalization (i18n)
 
-We aim to make this project accessible to everyone, regardless of their language. Support is actively evolving, and we welcome contributions in the following areas:
-* Adding new language localizations.
-* Refactoring UI components for better translation readiness.
-* Cleaning up and proofreading existing display text.
+Current app languages:
+- English (`en`)
+- Russian (`ru`)
+- Georgian (`ka`)
 
-*Note: You do not need to be multilingual to help with the technical side of i18n!*
+Source of truth:
+- i18n setup: `src/i18n/index.ts`
+- locale dictionaries: `src/i18n/locales/en.json`, `ru.json`, `ka.json`
+
+Key conventions:
+- Use translation keys for user-facing UI text (do not hardcode strings in screens/components).
+- Keep the same keyset in all locale files.
+- Use shared keys under `common.*` for reusable labels (`save`, `cancel`, `retry`, etc.).
+
+Checks before opening PR:
+```bash
+npx jest src/i18n/__tests__/localeKeyParity.test.ts --runInBand
+npm run lint
+```
+
+Helpful scan for leftover literals:
+```bash
+rg -n ">([^<{][^<]*)<" src/screens src/components
+```
+
+If you add new UI copy:
+1. Add keys in `en.json`.
+2. Mirror the same keys in `ru.json` and `ka.json`.
+3. Replace literals in UI with `t('...')`.
 
 ## AI Features
 
@@ -149,25 +166,35 @@ AI features, where present, are designed to augment user actions. No critical pa
 
 ## Contributing
 
-Start with [`CONTRIBUTING.md`](CONTRIBUTING.md) for workflow and expectations. Examples of good first contributions:
+Start with [`CONTRIBUTING.md`](CONTRIBUTING.md) for workflow and expectations.
 
-- improve README or inline documentation
-- tighten up TypeScript types or linting
-- add small tests around existing components
-- refactor a screen or component for clarity
-- refine API wrapper functions in `src/services/api/`
-- help with i18n readiness or UI text consistency
+Before opening a PR, run:
+```bash
+npm run lint
+npm run typecheck
+npm run test
+```
+
+If your PR touches translations, also run:
+```bash
+npx jest src/i18n/__tests__/localeKeyParity.test.ts --runInBand
+```
 
 For questions or collaboration, join our [Discord](https://discord.gg/GQdQagsw)!
 
 ## Project Status
 
-This project is in an early exploratory phase. Current focus areas include:
+This project is still evolving, but core foundations are now in place:
 
-- navigation, screens, and core UI flows
-- API wrapper consistency and error handling
-- internationalization readiness
-- testing and developer experience improvements
-- architecture cleanup and documentation
+- primary navigation stacks and key mobile flows are implemented
+- i18n is integrated with active `en/ru/ka` localization coverage
+- locale key parity is enforced by automated tests
+- lint/typecheck/test are part of the expected contributor workflow
+- API and wallet/payment integrations are implemented with ongoing hardening
 
-No detailed roadmap is committed at this stage.
+Current focus areas:
+
+- finishing localization on remaining legacy screens
+- reducing test noise (non-failing warnings/log verbosity)
+- incremental architecture cleanup and consistency improvements
+- UX polish and reliability for production builds
