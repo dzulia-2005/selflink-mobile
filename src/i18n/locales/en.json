@@ -6,7 +6,16 @@
     "retry": "Retry",
     "back": "Back",
     "show": "Show",
-    "hide": "Hide"
+    "hide": "Hide",
+    "error": {
+      "title": "Error",
+      "defaultMessage": "Something went wrong.",
+      "tryAgain": "Try again"
+    },
+    "modal": {
+      "confirm": "Confirm",
+      "done": "Done"
+    }
   },
   "profile": {
     "loadingProfile": "Loading profile...",
@@ -1096,5 +1105,40 @@
     "empty": "No activity yet.",
     "loadMore": "Load more",
     "loadingMore": "Loading more..."
+  },
+  "onboarding": {
+    "personalMap": {
+      "title": "Personal Map",
+      "subtitle": "Tell us more so we can align your astro-matrix intelligence.",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "birthDate": "Birth date (YYYY-MM-DD)",
+      "birthTime": "Birth time (HH:MM)",
+      "birthCountry": "Birth country",
+      "birthCity": "Birth city",
+      "actions": {
+        "saving": "Saving...",
+        "saveAndContinue": "Save and continue"
+      }
+    },
+    "validation": {
+      "firstNameRequired": "First name is required",
+      "lastNameRequired": "Last name is required",
+      "invalidDateFormat": "Invalid date format",
+      "invalidTimeFormat": "Invalid time format",
+      "countryRequired": "Birth country is required",
+      "cityRequired": "Birth city is required"
+    },
+    "alerts": {
+      "profileUpdated": {
+        "title": "Profile updated",
+        "birthUpdated": "Birth information updated.",
+        "completed": "Your personal map is complete."
+      },
+      "saveFailed": "We were unable to save your profile."
+    }
+  },
+  "splash": {
+    "loading": "Preparing SelfLink..."
   }
 }

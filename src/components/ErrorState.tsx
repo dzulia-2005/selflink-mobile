@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 type Props = {
@@ -5,13 +6,15 @@ type Props = {
   onRetry?: () => void;
 };
 
-export function ErrorState({ message = 'Something went wrong.', onRetry }: Props) {
+export function ErrorState({ message, onRetry }: Props) {
+  const { t } = useTranslation();
+  const resolvedMessage = message ?? t('common.error.defaultMessage');
   return (
     <View style={styles.container}>
-      <Text style={styles.message}>{message}</Text>
+      <Text style={styles.message}>{resolvedMessage}</Text>
       {onRetry ? (
         <TouchableOpacity onPress={onRetry} style={styles.retryButton}>
-          <Text style={styles.retryLabel}>Try again</Text>
+          <Text style={styles.retryLabel}>{t('common.error.tryAgain')}</Text>
         </TouchableOpacity>
       ) : null}
     </View>

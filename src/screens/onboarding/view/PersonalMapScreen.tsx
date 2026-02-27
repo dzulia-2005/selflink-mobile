@@ -4,6 +4,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import {
   Alert,
   ScrollView,
@@ -24,6 +25,7 @@ import { initialFormStateTypes } from '../types/index.type';
 
 
 const PersonalMapScreen = () => {
+  const { t } = useTranslation();
   const navigation =
     useNavigation<NativeStackNavigationProp<OnboardingStackParamList, 'PersonalMap'>>();
   const { theme } = useTheme();
@@ -46,10 +48,10 @@ const PersonalMapScreen = () => {
     try {
       await savePersonalMap(payload);
       Alert.alert(
-        'Profile updated',
+        t('onboarding.alerts.profileUpdated.title'),
         hasCompletedPersonalMap
-          ? 'Birth information updated.'
-          : 'Your personal map is complete.',
+          ? t('onboarding.alerts.profileUpdated.birthUpdated')
+          : t('onboarding.alerts.profileUpdated.completed'),
       );
       const rootNav =
         navigation.getParent<NativeStackNavigationProp<RootStackParamList>>() ??
@@ -58,7 +60,7 @@ const PersonalMapScreen = () => {
       rootNav.navigate('Main');
     } catch (error) {
       console.warn('personal map save failed', error);
-      Alert.alert('Error', 'We were unable to save your profile.');
+      Alert.alert(t('common.error.title'), t('onboarding.alerts.saveFailed'));
     } finally {
       setSubmitting(false);
     }
@@ -69,16 +71,14 @@ const PersonalMapScreen = () => {
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.card}>
           <LinearGradient colors={theme.gradients.matrix} style={styles.cardBadge} />
-          <Text style={styles.title}>Personal Map</Text>
-          <Text style={styles.subtitle}>
-            Tell us more so we can align your astro-matrix intelligence.
-          </Text>
+          <Text style={styles.title}>{t('onboarding.personalMap.title')}</Text>
+          <Text style={styles.subtitle}>{t('onboarding.personalMap.subtitle')}</Text>
           <Controller
             name="first_name"
             control={control}
             render={({field:{onChange,value}})=>(
               <Input
-                label="First name"
+                label={t('onboarding.personalMap.firstName')}
                 value={value}
                 onChangeText={onChange}
                 required
@@ -91,7 +91,7 @@ const PersonalMapScreen = () => {
             control={control}
             render={({field:{onChange,value}})=>(
               <Input
-                label="Last name"
+                label={t('onboarding.personalMap.lastName')}
                 value={value}
                 onChangeText={onChange}
                 required
@@ -104,7 +104,7 @@ const PersonalMapScreen = () => {
             control={control}
             render={({field:{onChange,value}})=>(
               <Input
-                label="Birth date (YYYY-MM-DD)"
+                label={t('onboarding.personalMap.birthDate')}
                 value={value}
                 onChangeText={onChange}
                 required
@@ -117,7 +117,7 @@ const PersonalMapScreen = () => {
             control={control}
             render={({field:{onChange,value}})=>(
               <Input
-                label="Birth time (HH:MM)"
+                label={t('onboarding.personalMap.birthTime')}
                 value={value}
                 onChangeText={onChange}
                 required
@@ -130,7 +130,7 @@ const PersonalMapScreen = () => {
             control={control}
             render={({field:{onChange,value}})=>(
               <Input
-                label="Birth country"
+                label={t('onboarding.personalMap.birthCountry')}
                 value={value}
                 onChangeText={onChange}
                 required
@@ -143,7 +143,7 @@ const PersonalMapScreen = () => {
             control={control}
             render={({field:{onChange,value}})=>(
               <Input
-                label="Birth city"
+                label={t('onboarding.personalMap.birthCity')}
                 value={value}
                 onChangeText={onChange}
                 required
@@ -164,7 +164,9 @@ const PersonalMapScreen = () => {
               style={styles.buttonGradient}
             >
               <Text style={styles.buttonLabel}>
-                {submitting ? 'Saving…' : 'Save and continue'}
+                {submitting
+                  ? t('onboarding.personalMap.actions.saving')
+                  : t('onboarding.personalMap.actions.saveAndContinue')}
               </Text>
             </LinearGradient>
           </TouchableOpacity>

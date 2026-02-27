@@ -6,7 +6,16 @@
     "retry": "თავიდან ცდა",
     "back": "უკან",
     "show": "ჩვენება",
-    "hide": "დამალვა"
+    "hide": "დამალვა",
+    "error": {
+      "title": "შეცდომა",
+      "defaultMessage": "რაღაც შეცდომით დასრულდა.",
+      "tryAgain": "თავიდან ცდა"
+    },
+    "modal": {
+      "confirm": "დადასტურება",
+      "done": "მზადაა"
+    }
   },
   "profile": {
     "loadingProfile": "პროფილი იტვირთება...",
@@ -1099,5 +1108,40 @@
     "empty": "აქტივობა ჯერ არ არის.",
     "loadMore": "მეტის ჩატვირთვა",
     "loadingMore": "იტვირთება..."
+  },
+  "onboarding": {
+    "personalMap": {
+      "title": "პირადი რუკა",
+      "subtitle": "გვითხარი მეტი, რომ ზუსტად მოვარგოთ შენი ასტრო-მატრიცა.",
+      "firstName": "სახელი",
+      "lastName": "გვარი",
+      "birthDate": "დაბადების თარიღი (YYYY-MM-DD)",
+      "birthTime": "დაბადების დრო (HH:MM)",
+      "birthCountry": "დაბადების ქვეყანა",
+      "birthCity": "დაბადების ქალაქი",
+      "actions": {
+        "saving": "ინახება...",
+        "saveAndContinue": "შენახვა და გაგრძელება"
+      }
+    },
+    "validation": {
+      "firstNameRequired": "სახელი სავალდებულოა",
+      "lastNameRequired": "გვარი სავალდებულოა",
+      "invalidDateFormat": "თარიღის ფორმატი არასწორია",
+      "invalidTimeFormat": "დროის ფორმატი არასწორია",
+      "countryRequired": "დაბადების ქვეყანა სავალდებულოა",
+      "cityRequired": "დაბადების ქალაქი სავალდებულოა"
+    },
+    "alerts": {
+      "profileUpdated": {
+        "title": "პროფილი განახლდა",
+        "birthUpdated": "დაბადების ინფორმაცია განახლდა.",
+        "completed": "თქვენი პირადი რუკა შევსებულია."
+      },
+      "saveFailed": "თქვენი პროფილის შენახვა ვერ მოხერხდა."
+    }
+  },
+  "splash": {
+    "loading": "SelfLink მზადდება..."
   }
 }

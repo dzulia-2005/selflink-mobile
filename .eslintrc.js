@@ -77,6 +77,11 @@ module.exports = {
         'src/components/astro/natal/NatalCards.tsx',
         'src/screens/PaymentsScreen.tsx',
         'src/screens/WalletLedgerScreen.tsx',
+        'src/App.tsx',
+        'src/screens/onboarding/view/PersonalMapScreen.tsx',
+        'src/components/ErrorState.tsx',
+        'src/components/StateViews.tsx',
+        'src/components/LoadingOverlay.tsx',
       ],
       rules: {
         'react/jsx-no-literals': ['error', { noStrings: true, ignoreProps: true }],

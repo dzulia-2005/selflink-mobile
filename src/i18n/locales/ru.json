@@ -6,7 +6,16 @@
     "retry": "Повторить",
     "back": "Назад",
     "show": "Показать",
-    "hide": "Скрыть"
+    "hide": "Скрыть",
+    "error": {
+      "title": "Ошибка",
+      "defaultMessage": "Что-то пошло не так.",
+      "tryAgain": "Повторить"
+    },
+    "modal": {
+      "confirm": "Подтвердить",
+      "done": "Готово"
+    }
   },
   "profile": {
     "loadingProfile": "Загрузка профиля...",
@@ -1099,5 +1108,40 @@
     "empty": "Операций пока нет.",
     "loadMore": "Загрузить еще",
     "loadingMore": "Загрузка..."
+  },
+  "onboarding": {
+    "personalMap": {
+      "title": "Личная карта",
+      "subtitle": "Расскажите о себе, чтобы мы точнее настроили вашу астро-матрицу.",
+      "firstName": "Имя",
+      "lastName": "Фамилия",
+      "birthDate": "Дата рождения (YYYY-MM-DD)",
+      "birthTime": "Время рождения (HH:MM)",
+      "birthCountry": "Страна рождения",
+      "birthCity": "Город рождения",
+      "actions": {
+        "saving": "Сохранение...",
+        "saveAndContinue": "Сохранить и продолжить"
+      }
+    },
+    "validation": {
+      "firstNameRequired": "Имя обязательно",
+      "lastNameRequired": "Фамилия обязательна",
+      "invalidDateFormat": "Неверный формат даты",
+      "invalidTimeFormat": "Неверный формат времени",
+      "countryRequired": "Страна рождения обязательна",
+      "cityRequired": "Город рождения обязателен"
+    },
+    "alerts": {
+      "profileUpdated": {
+        "title": "Профиль обновлен",
+        "birthUpdated": "Данные рождения обновлены.",
+        "completed": "Ваша личная карта заполнена."
+      },
+      "saveFailed": "Не удалось сохранить ваш профиль."
+    }
+  },
+  "splash": {
+    "loading": "Подготовка SelfLink..."
   }
 }
