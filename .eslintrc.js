@@ -68,6 +68,13 @@ module.exports = {
         'src/screens/mentor/DailyMentorEntryScreen.tsx',
         'src/screens/mentor/NatalMentorScreen.tsx',
         'src/screens/mentor/MentorChatScreen.tsx',
+        'src/screens/SoulMatchScreen.tsx',
+        'src/screens/soulmatch/SoulMatchRecommendationsScreen.tsx',
+        'src/screens/soulmatch/SoulMatchDetailsScreen.tsx',
+        'src/screens/soulmatch/SoulMatchMentorScreen.tsx',
+        'src/components/soulmatch/SoulMatchUpgradeSheet.tsx',
+        'src/screens/astro/NatalChartScreen.tsx',
+        'src/components/astro/natal/NatalCards.tsx',
       ],
       rules: {
         'react/jsx-no-literals': ['error', { noStrings: true, ignoreProps: true }],

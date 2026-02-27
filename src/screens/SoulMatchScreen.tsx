@@ -2,6 +2,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -11,6 +12,7 @@ import { SoulMatchStackParamList } from '@navigation/types';
 import { useTheme, type Theme } from '@theme';
 
 export function SoulMatchScreen() {
+  const { t } = useTranslation();
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
   const navigation = useNavigation<NativeStackNavigationProp<SoulMatchStackParamList>>();
@@ -19,18 +21,14 @@ export function SoulMatchScreen() {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar style="light" />
       <View style={styles.content}>
-        <Text style={styles.headline}>SoulMatch</Text>
-        <Text style={styles.subtitle}>
-          Explore your top matches, detailed compatibility, and mentor guidance.
-        </Text>
+        <Text style={styles.headline}>{t('soulmatch.home.title')}</Text>
+        <Text style={styles.subtitle}>{t('soulmatch.home.subtitle')}</Text>
 
         <MetalPanel glow>
-          <Text style={styles.panelTitle}>Recommendations</Text>
-          <Text style={styles.cardText}>
-            Browse suggested matches sorted by compatibility.
-          </Text>
+          <Text style={styles.panelTitle}>{t('soulmatch.home.recommendationsTitle')}</Text>
+          <Text style={styles.cardText}>{t('soulmatch.home.recommendationsBody')}</Text>
           <MetalButton
-            title="View Recommendations"
+            title={t('soulmatch.home.viewRecommendations')}
             onPress={() => navigation.navigate('SoulMatchRecommendations')}
           />
         </MetalPanel>

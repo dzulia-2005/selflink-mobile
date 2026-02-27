@@ -3,7 +3,10 @@
     "save": "Save",
     "cancel": "Cancel",
     "loading": "Loading...",
-    "retry": "Retry"
+    "retry": "Retry",
+    "back": "Back",
+    "show": "Show",
+    "hide": "Hide"
   },
   "profile": {
     "loadingProfile": "Loading profile...",
@@ -582,6 +585,94 @@
           "useLocation": "Use this location"
         }
       }
+    },
+    "natal": {
+      "title": "Natal Chart",
+      "subtitle": "Explore your core placements, houses, and aspects.",
+      "loading": "Loading natal chart...",
+      "generatedAt": "Generated at {{value}}",
+      "alerts": {
+        "notFound": "No natal chart yet. Add birth data to generate it.",
+        "loadFailed": "Unable to load your natal chart."
+      },
+      "chartWheel": {
+        "title": "Chart Wheel",
+        "description": "Tap a planet on the wheel to inspect details."
+      },
+      "empty": {
+        "noChart": "No natal chart available yet."
+      },
+      "actions": {
+        "updateBirthData": "Update Birth Data"
+      },
+      "accessibility": {
+        "refresh": "Refresh natal chart"
+      },
+      "labels": {
+        "sun": "Sun",
+        "moon": "Moon",
+        "ascendant": "Ascendant",
+        "house": "House {{number}}",
+        "orbValue": "{{value}}° orb"
+      },
+      "elements": {
+        "fire": "Fire",
+        "earth": "Earth",
+        "air": "Air",
+        "water": "Water"
+      },
+      "planets": {
+        "sun": "Sun",
+        "moon": "Moon",
+        "mercury": "Mercury",
+        "venus": "Venus",
+        "mars": "Mars",
+        "jupiter": "Jupiter",
+        "saturn": "Saturn",
+        "uranus": "Uranus",
+        "neptune": "Neptune",
+        "pluto": "Pluto"
+      },
+      "cards": {
+        "coreIdentity": {
+          "title": "Core Identity",
+          "description": "Your core trio that shapes personality and emotional style."
+        },
+        "keyAngles": {
+          "title": "Key Angles",
+          "description": "Ascendant, Descendant, Midheaven, and Imum Coeli.",
+          "ascendant": "Ascendant",
+          "descendant": "Descendant",
+          "midheaven": "Midheaven",
+          "imumCoeli": "Imum Coeli"
+        },
+        "planets": {
+          "title": "Planets",
+          "description": "Planet placements and house context."
+        },
+        "houses": {
+          "title": "Houses",
+          "description": "House cusp signs and degrees.",
+          "itemLabel": "House {{number}}"
+        },
+        "aspects": {
+          "title": "Aspects",
+          "description": "Key relationships between planets.",
+          "empty": "No major aspects found."
+        },
+        "elementBalance": {
+          "title": "Element Balance",
+          "description": "Distribution across Fire, Earth, Air, and Water."
+        },
+        "planetLegend": {
+          "title": "Planet Legend",
+          "description": "Color mapping used in the chart wheel."
+        },
+        "selectedPlanet": {
+          "title": "Selected Planet",
+          "description": "Details for the currently selected planet."
+        }
+      }
     }
   },
   "post": {
@@ -627,6 +718,180 @@
       "removeSelectedImage": "Remove selected image",
       "sendComment": "Send comment",
       "closeComments": "Close comments"
+    }
+  },
+  "soulmatch": {
+    "home": {
+      "title": "SoulMatch",
+      "subtitle": "Discover your strongest compatibility signals and timing.",
+      "recommendationsTitle": "Recommendations",
+      "recommendationsBody": "See the people with the strongest potential alignment right now.",
+      "viewRecommendations": "View Recommendations"
+    },
+    "recommendations": {
+      "loading": "Loading recommendations...",
+      "mode": "Mode",
+      "explain": "Depth",
+      "modeOptions": {
+        "compat": "Compatibility",
+        "dating": "Dating"
+      },
+      "explainOptions": {
+        "free": "Free",
+        "premium": "Premium",
+        "premium_plus": "Premium+"
+      },
+      "empty": {
+        "title": "No recommendations yet",
+        "completeBirthData": "Complete your birth data to get matches.",
+        "completeProfile": "Complete your profile to improve matches.",
+        "noCandidates": "No compatible candidates found yet. Try again soon.",
+        "default": "Recommendations are not available right now."
+      },
+      "alerts": {
+        "loadFailed": "Unable to load recommendations."
+      },
+      "card": {
+        "whyScoreLocked": "Why this score 🔒",
+        "whyScore": "Why this score",
+        "approachLocked": "How to approach 🔒",
+        "approach": "How to approach",
+        "timing": "Timing: {{value}}",
+        "unlockTiming": "Unlock timing details",
+        "more": "More",
+        "unlockMore": "Unlock full explanation",
+        "howToApproach": "How to approach",
+        "unlockPremiumStrategy": "Unlock Premium+ strategy"
+      },
+      "upgradeFooter": {
+        "title": "Unlock more recommendations",
+        "subtitle": "Upgrade to see all results and deeper insights."
+      },
+      "debug": {
+        "title": "SoulMatch Debug",
+        "show": "Show",
+        "hide": "Hide",
+        "mode": "mode: {{value}}",
+        "reason": "reason: {{value}}",
+        "missing": "missing: {{value}}",
+        "results": "results: {{count}}"
+      }
+    },
+    "details": {
+      "defaultTitle": "SoulMatch",
+      "loading": "Loading SoulMatch...",
+      "subtitle": "SoulMatch compatibility",
+      "overallCompatibility": "Overall compatibility",
+      "scoreBadge": {
+        "highVibe": "High vibe",
+        "aligned": "Aligned"
+      },
+      "pending": {
+        "title": "SoulMatch is being calculated.",
+        "subtitle": "Pull to refresh in a moment to see your compatibility.",
+        "task": "task: {{taskId}} · {{pairKey}}"
+      },
+      "empty": {
+        "unableToLoad": "Unable to load match."
+      },
+      "alerts": {
+        "loadFailed": "Unable to load match details.",
+        "mentorUnavailable": "Mentor is unavailable. Try again later."
+      },
+      "sections": {
+        "highlights": "Highlights",
+        "scoreBreakdown": "Score Breakdown",
+        "whyMatch": "Why this match",
+        "howToApproach": "How to approach",
+        "timing": "Timing",
+        "mentorInsight": "Mentor insight"
+      },
+      "components": {
+        "astro": "Astro",
+        "matrix": "Matrix",
+        "psychology": "Psychology",
+        "lifestyle": "Lifestyle"
+      },
+      "scoreBreakdown": {
+        "lockedBody": "See what drives this score across astro, matrix, psychology, and lifestyle.",
+        "unlock": "See what drives this score 🔒",
+        "strongestSignal": "Strongest signal: {{component}} ({{score}})"
+      },
+      "actions": {
+        "refresh": "Refresh",
+        "more": "More",
+        "unlockWhyScore": "See why this score works 🔒",
+        "unlockApproach": "Get guidance on how to approach this connection 🔒",
+        "unlockTiming": "Unlock timing details 🔒",
+        "loadMentorInsight": "Load Mentor Insight",
+        "askMentorAboutUs": "Ask Mentor About Us",
+        "backToRecommendations": "Back to recommendations"
+      }
+    },
+    "mentor": {
+      "title": "SoulMatch Mentor",
+      "loading": "Opening SoulMatch mentor...",
+      "subtitleWithName": "Guidance about your connection with {{name}}.",
+      "subtitleWithUserId": "Guidance about your connection with user {{userId}}.",
+      "scoreLabel": "compatibility",
+      "empty": "No mentor text yet.",
+      "streaming": "Mentor is analyzing your match...",
+      "askLabel": "Ask about your compatibility",
+      "askPlaceholder": "Ask something specific about this match",
+      "askButton": "Ask Mentor",
+      "defaultPrompt": "What should I know about our compatibility?",
+      "defaultPromptWithName": "What should I know about my compatibility with {{name}}?",
+      "actions": {
+        "refresh": "Refresh"
+      },
+      "alerts": {
+        "loadFailed": "Unable to load mentor guidance."
+      }
+    },
+    "upgrade": {
+      "title": "Unlock Deeper SoulMatch",
+      "subtitle": "Understand compatibility, timing, and how to approach - not just scores.",
+      "selected": "Selected",
+      "tiers": {
+        "free": {
+          "title": "Free",
+          "subtitle": "Basics only",
+          "bullets": {
+            "compatibilityScore": "Compatibility score",
+            "keyBadges": "Key badges",
+            "topMatches": "Top 5 matches"
+          }
+        },
+        "premium": {
+          "title": "Premium",
+          "subtitle": "Deeper insight",
+          "highlight": "Most people choose this",
+          "bullets": {
+            "lensExplanations": "Lens explanations",
+            "timingSummary": "Timing summary",
+            "fullContext": "Full context"
+          }
+        },
+        "premiumPlus": {
+          "title": "Premium+",
+          "subtitle": "Full strategy",
+          "bullets": {
+            "everythingInPremium": "Everything in Premium",
+            "howToApproach": "How to approach",
+            "strategyNotes": "Strategy notes"
+          }
+        }
+      },
+      "preview": {
+        "title": "Preview",
+        "body": "Timing looks strongest over the next 4-6 weeks. Your lens suggests a strong emotional alignment when communication stays clear. With Premium+, we'll show how to approach this match."
+      },
+      "actions": {
+        "unlockPremium": "Unlock Premium",
+        "unlockPremiumPlus": "Unlock Premium+",
+        "continueFree": "Continue with Free"
+      },
+      "microcopy": "Cancel anytime - Secure payment"
     }
   }
 }

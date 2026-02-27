@@ -1,4 +1,5 @@
 import { ReactNode, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View, ViewStyle } from 'react-native';
 
 import { PLANET_COLORS } from '@components/astro/AstroWheel';
@@ -114,10 +115,11 @@ export function CoreIdentityCard({
   placements: { label: string; placement?: PlanetPosition }[];
   formatPlacement: (placement?: PlanetPosition) => string;
 }) {
+  const { t } = useTranslation();
   return (
     <SectionPanel
-      title="Core Identity"
-      description="Sun, Moon, and Ascendant anchor your baseline energy."
+      title={t('astro.natal.cards.coreIdentity.title')}
+      description={t('astro.natal.cards.coreIdentity.description')}
       glow
     >
       {placements.map((item) => (
@@ -132,17 +134,18 @@ export function CoreIdentityCard({
 }
 
 export function KeyAnglesCard({ houses, formatPlacement }: AnglesCardProps) {
+  const { t } = useTranslation();
   const angleLabels: { key: string; label: string }[] = [
-    { key: '1', label: 'Ascendant' },
-    { key: '7', label: 'Descendant' },
-    { key: '10', label: 'Midheaven (MC)' },
-    { key: '4', label: 'Imum Coeli (IC)' },
+    { key: '1', label: t('astro.natal.cards.keyAngles.ascendant') },
+    { key: '7', label: t('astro.natal.cards.keyAngles.descendant') },
+    { key: '10', label: t('astro.natal.cards.keyAngles.midheaven') },
+    { key: '4', label: t('astro.natal.cards.keyAngles.imumCoeli') },
   ];
 
   return (
     <SectionPanel
-      title="Key Angles"
-      description="Where your chart opens, roots, relates, and aims."
+      title={t('astro.natal.cards.keyAngles.title')}
+      description={t('astro.natal.cards.keyAngles.description')}
     >
       {angleLabels.map((angle) => (
         <PlacementRow
@@ -162,10 +165,11 @@ export function PlanetsCard({
   getHouseLabel,
   retrogradeTag,
 }: PlanetsCardProps) {
+  const { t } = useTranslation();
   return (
     <SectionPanel
-      title="Planets"
-      description="All placements returned from the ephemeris."
+      title={t('astro.natal.cards.planets.title')}
+      description={t('astro.natal.cards.planets.description')}
     >
       {orderedKeys.map((key) => {
         const placement = planets[key];
@@ -174,7 +178,9 @@ export function PlanetsCard({
         return (
           <PlacementRow
             key={key}
-            label={key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
+            label={t(`astro.natal.planets.${key}`, {
+              defaultValue: key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
+            })}
             value={formatPlacement(placement)}
             detail={houseText || undefined}
             tag={tag || undefined}
@@ -186,16 +192,17 @@ export function PlanetsCard({
 }
 
 export function HousesCard({ houses, formatPlacement }: HousesCardProps) {
+  const { t } = useTranslation();
   const sorted = Object.keys(houses).sort((a, b) => Number(a) - Number(b));
   return (
     <SectionPanel
-      title="Houses"
-      description="Where each area of life begins in your chart."
+      title={t('astro.natal.cards.houses.title')}
+      description={t('astro.natal.cards.houses.description')}
     >
       {sorted.map((houseKey) => (
         <PlacementRow
           key={houseKey}
-          label={`House ${houseKey}`}
+          label={t('astro.natal.cards.houses.itemLabel', { number: houseKey })}
           value={formatPlacement(houses[houseKey])}
         />
       ))}
@@ -204,14 +211,15 @@ export function HousesCard({ houses, formatPlacement }: HousesCardProps) {
 }
 
 export function AspectsCard({ aspects, renderAspect }: AspectsCardProps) {
+  const { t } = useTranslation();
   const styles = useNatalStyles();
   return (
     <SectionPanel
-      title="Aspects"
-      description="Major relationships between planets, straight from the API."
+      title={t('astro.natal.cards.aspects.title')}
+      description={t('astro.natal.cards.aspects.description')}
     >
       {aspects.length === 0 ? (
-        <Text style={styles.muted}>No aspects returned.</Text>
+        <Text style={styles.muted}>{t('astro.natal.cards.aspects.empty')}</Text>
       ) : (
         aspects.map((aspect, index) => (
           <View key={index} style={styles.aspectRow}>
@@ -224,6 +232,7 @@ export function AspectsCard({ aspects, renderAspect }: AspectsCardProps) {
 }
 
 export function ElementBalanceCard({ elements }: ElementBalanceCardProps) {
+  const { t } = useTranslation();
   const styles = useNatalStyles();
   const { theme } = useTheme();
   const maxCount = Math.max(...elements.map((item) => item.count), 1);
@@ -236,15 +245,19 @@ export function ElementBalanceCard({ elements }: ElementBalanceCardProps) {
 
   return (
     <SectionPanel
-      title="Element Balance"
-      description="Quick pulse of your fire, earth, air, and water placements."
+      title={t('astro.natal.cards.elementBalance.title')}
+      description={t('astro.natal.cards.elementBalance.description')}
     >
       {elements.map((item, idx) => {
         const widthPercent = Math.max((item.count / maxCount) * 100, 4);
         const barColor = palette[idx % palette.length];
         return (
           <View key={item.element} style={styles.elementRow}>
-            <Text style={styles.rowLabel}>{item.element}</Text>
+            <Text style={styles.rowLabel}>
+              {t(`astro.natal.elements.${item.element.toLowerCase()}`, {
+                defaultValue: item.element,
+              })}
+            </Text>
             <View style={styles.barTrack}>
               <View
                 style={[
@@ -262,13 +275,17 @@ export function ElementBalanceCard({ elements }: ElementBalanceCardProps) {
 }
 
 export function PlanetLegend({ planetKeys }: PlanetLegendProps) {
+  const { t } = useTranslation();
   const styles = useNatalStyles();
   const { theme } = useTheme();
   if (planetKeys.length === 0) {
     return null;
   }
   return (
-    <SectionPanel title="Planet Legend" description="Dot colors match the wheel.">
+    <SectionPanel
+      title={t('astro.natal.cards.planetLegend.title')}
+      description={t('astro.natal.cards.planetLegend.description')}
+    >
       <View style={styles.legendGrid}>
         {planetKeys.map((key) => {
           const color = PLANET_COLORS[key.toLowerCase()] ?? theme.palette.platinum;
@@ -276,7 +293,11 @@ export function PlanetLegend({ planetKeys }: PlanetLegendProps) {
             <View key={key} style={styles.legendItem}>
               <View style={[styles.legendDot, { backgroundColor: color }]} />
               <Text style={styles.rowLabel}>
-                {key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
+                {t(`astro.natal.planets.${key}`, {
+                  defaultValue: key
+                    .replace(/_/g, ' ')
+                    .replace(/\b\w/g, (c) => c.toUpperCase()),
+                })}
               </Text>
             </View>
           );
@@ -293,16 +314,21 @@ export function SelectedPlanetCard({
   formatPlacement,
   retrogradeTag,
 }: SelectedPlanetProps) {
+  const { t } = useTranslation();
   if (!planetKey || !placement) {
     return null;
   }
   return (
     <SectionPanel
-      title="Selected Planet"
-      description="Tap a planet on the wheel to inspect."
+      title={t('astro.natal.cards.selectedPlanet.title')}
+      description={t('astro.natal.cards.selectedPlanet.description')}
     >
       <PlacementRow
-        label={planetKey.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
+        label={t(`astro.natal.planets.${planetKey}`, {
+          defaultValue: planetKey
+            .replace(/_/g, ' ')
+            .replace(/\b\w/g, (c) => c.toUpperCase()),
+        })}
         value={formatPlacement(placement)}
         detail={houseLabel || undefined}
         tag={retrogradeTag?.(placement) || undefined}

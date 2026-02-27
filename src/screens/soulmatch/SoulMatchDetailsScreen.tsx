@@ -1,6 +1,7 @@
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Animated,
   RefreshControl,
@@ -48,6 +49,7 @@ export function SoulMatchDetailsScreen({
   prefetchedData = null,
   skipAutoLoad = false,
 }: Props) {
+  const { t } = useTranslation();
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
   const navigation = useNavigation<Nav>();
@@ -70,7 +72,10 @@ export function SoulMatchDetailsScreen({
   const headerTranslate = useRef(new Animated.Value(12)).current;
   const pendingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const title = useMemo(() => displayName || 'SoulMatch', [displayName]);
+  const title = useMemo(
+    () => displayName || t('soulmatch.details.defaultTitle'),
+    [displayName, t],
+  );
 
   const clearPendingTimer = useCallback(() => {
     if (pendingTimeoutRef.current) {
@@ -126,7 +131,10 @@ export function SoulMatchDetailsScreen({
         });
       }
     } catch (error) {
-      const normalized = normalizeApiError(error, 'Unable to load match details.');
+      const normalized = normalizeApiError(
+        error,
+        t('soulmatch.details.alerts.loadFailed'),
+      );
       if (!options?.polling) {
         if (normalized.status === 401 || normalized.status === 403) {
           toast.push({ message: normalized.message, tone: 'error', duration: 4000 });
@@ -143,7 +151,7 @@ export function SoulMatchDetailsScreen({
         setLoading(false);
       }
     }
-  }, [clearPendingTimer, explainLevel, logout, mode, toast, userId]);
+  }, [clearPendingTimer, explainLevel, logout, mode, t, toast, userId]);
 
   useEffect(() => {
     navigation.setOptions?.({ title });
@@ -194,7 +202,7 @@ export function SoulMatchDetailsScreen({
     } catch (error) {
       const normalized = normalizeApiError(
         error,
-        'Mentor is unavailable. Try again later.',
+        t('soulmatch.details.alerts.mentorUnavailable'),
       );
       if (normalized.status === 401 || normalized.status === 403) {
         toast.push({ message: normalized.message, tone: 'error' });
@@ -203,7 +211,7 @@ export function SoulMatchDetailsScreen({
       }
       toast.push({ message: normalized.message, tone: 'error' });
     }
-  }, [logout, toast, userId]);
+  }, [logout, t, toast, userId]);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -212,23 +220,24 @@ export function SoulMatchDetailsScreen({
   };
 
   if (loading) {
-    return <LoadingView message="Loading SoulMatch…" />;
+    return <LoadingView message={t('soulmatch.details.loading')} />;
   }
 
   if (pendingTask) {
     return (
       <View style={styles.empty}>
-        <Text style={styles.emptyTitle}>SoulMatch is being calculated.</Text>
-        <Text style={styles.emptySubtitle}>
-          Pull to refresh in a moment to see your compatibility.
-        </Text>
+        <Text style={styles.emptyTitle}>{t('soulmatch.details.pending.title')}</Text>
+        <Text style={styles.emptySubtitle}>{t('soulmatch.details.pending.subtitle')}</Text>
         {typeof __DEV__ !== 'undefined' && __DEV__ ? (
           <Text style={styles.emptySubtitle}>
-            task: {pendingTask.task_id} · {pendingTask.pair_key}
+            {t('soulmatch.details.pending.task', {
+              taskId: pendingTask.task_id,
+              pairKey: pendingTask.pair_key,
+            })}
           </Text>
         ) : null}
-        <MetalButton title="Refresh" onPress={() => load()} />
-        <MetalButton title="Back" onPress={() => navigation.goBack()} />
+        <MetalButton title={t('soulmatch.details.actions.refresh')} onPress={() => load()} />
+        <MetalButton title={t('common.back')} onPress={() => navigation.goBack()} />
       </View>
     );
   }
@@ -236,8 +245,8 @@ export function SoulMatchDetailsScreen({
   if (!data) {
     return (
       <View style={styles.empty}>
-        <Text style={styles.emptyTitle}>Unable to load match.</Text>
-        <MetalButton title="Back" onPress={() => navigation.goBack()} />
+        <Text style={styles.emptyTitle}>{t('soulmatch.details.empty.unableToLoad')}</Text>
+        <MetalButton title={t('common.back')} onPress={() => navigation.goBack()} />
       </View>
     );
   }
@@ -246,12 +255,10 @@ export function SoulMatchDetailsScreen({
   if (isPending) {
     return (
       <View style={styles.empty}>
-        <Text style={styles.emptyTitle}>SoulMatch is being calculated.</Text>
-        <Text style={styles.emptySubtitle}>
-          Pull to refresh in a moment to see your compatibility.
-        </Text>
-        <MetalButton title="Refresh" onPress={() => load()} />
-        <MetalButton title="Back" onPress={() => navigation.goBack()} />
+        <Text style={styles.emptyTitle}>{t('soulmatch.details.pending.title')}</Text>
+        <Text style={styles.emptySubtitle}>{t('soulmatch.details.pending.subtitle')}</Text>
+        <MetalButton title={t('soulmatch.details.actions.refresh')} onPress={() => load()} />
+        <MetalButton title={t('common.back')} onPress={() => navigation.goBack()} />
       </View>
     );
   }
@@ -296,24 +303,28 @@ export function SoulMatchDetailsScreen({
       >
         <UserAvatar size={72} uri={data.user?.photo ?? undefined} label={title} />
         <Text style={styles.headline}>{title}</Text>
-        <Text style={styles.subtitle}>SoulMatch compatibility</Text>
+        <Text style={styles.subtitle}>{t('soulmatch.details.subtitle')}</Text>
         <MetalPanel glow style={styles.heroPanel}>
           <View style={styles.heroScoreRow}>
             <Text style={styles.scoreValue}>{formatScore(data.score)}</Text>
             <BadgePill
-              label={tone === 'positive' ? 'High vibe' : 'Aligned'}
+              label={
+                tone === 'positive'
+                  ? t('soulmatch.details.scoreBadge.highVibe')
+                  : t('soulmatch.details.scoreBadge.aligned')
+              }
               tone={tone}
             />
           </View>
           <View style={styles.heroBar}>
             <CompatibilityBar value={data.score} />
-            <Text style={styles.scoreLabel}>Overall compatibility</Text>
+            <Text style={styles.scoreLabel}>{t('soulmatch.details.overallCompatibility')}</Text>
           </View>
         </MetalPanel>
       </Animated.View>
 
       <MetalPanel>
-        <Text style={styles.sectionTitle}>Highlights</Text>
+        <Text style={styles.sectionTitle}>{t('soulmatch.details.sections.highlights')}</Text>
         <View style={styles.tagRow}>
           {lensLabel ? <BadgePill label={lensLabel} tone="default" /> : null}
           {badges.map((tag) => (
@@ -324,11 +335,11 @@ export function SoulMatchDetailsScreen({
       </MetalPanel>
 
       <MetalPanel>
-        <Text style={styles.sectionTitle}>Score Breakdown</Text>
+        <Text style={styles.sectionTitle}>{t('soulmatch.details.sections.scoreBreakdown')}</Text>
         {isSectionLocked('full', userTier) ? (
           <>
             <Text style={styles.body}>
-              See what drives this score across astro, matrix, psychology, and lifestyle.
+              {t('soulmatch.details.scoreBreakdown.lockedBody')}
             </Text>
             <TouchableOpacity
               onPress={() => {
@@ -336,7 +347,9 @@ export function SoulMatchDetailsScreen({
                 setUpgradeVisible(true);
               }}
             >
-              <Text style={styles.unlockText}>See what drives this score 🔒</Text>
+              <Text style={styles.unlockText}>
+                {t('soulmatch.details.scoreBreakdown.unlock')}
+              </Text>
             </TouchableOpacity>
           </>
         ) : (
@@ -345,7 +358,11 @@ export function SoulMatchDetailsScreen({
               {componentEntries.map(([key, value]) => (
                 <View key={key} style={styles.componentRow}>
                   <View style={styles.componentHeader}>
-                    <Text style={styles.componentLabel}>{key}</Text>
+                    <Text style={styles.componentLabel}>
+                      {t(`soulmatch.details.components.${key}`, {
+                        defaultValue: key,
+                      })}
+                    </Text>
                     <Text style={styles.componentValue}>{formatScore(value ?? 0)}</Text>
                   </View>
                   <CompatibilityBar value={value ?? 0} size="sm" />
@@ -354,7 +371,12 @@ export function SoulMatchDetailsScreen({
             </View>
             {topComponent ? (
               <Text style={styles.muted}>
-                Strongest signal: {topComponent[0]} ({formatScore(topComponent[1])})
+                {t('soulmatch.details.scoreBreakdown.strongestSignal', {
+                  component: t(`soulmatch.details.components.${topComponent[0]}`, {
+                    defaultValue: topComponent[0],
+                  }),
+                  score: formatScore(topComponent[1]),
+                })}
               </Text>
             ) : null}
           </>
@@ -363,13 +385,13 @@ export function SoulMatchDetailsScreen({
 
       {(data.explanation?.short || showFull) && (
         <MetalPanel>
-          <Text style={styles.sectionTitle}>Why this match</Text>
+          <Text style={styles.sectionTitle}>{t('soulmatch.details.sections.whyMatch')}</Text>
           {data.explanation?.short ? (
             <Text style={styles.body}>{data.explanation.short}</Text>
           ) : null}
           {showFull ? (
             <ExpandableSection
-              title="More"
+              title={t('soulmatch.details.actions.more')}
               text={data.explanation?.full}
               styles={styles}
             />
@@ -380,7 +402,9 @@ export function SoulMatchDetailsScreen({
                 setUpgradeVisible(true);
               }}
             >
-              <Text style={styles.unlockText}>See why this score works 🔒</Text>
+              <Text style={styles.unlockText}>
+                {t('soulmatch.details.actions.unlockWhyScore')}
+              </Text>
             </TouchableOpacity>
           ) : null}
         </MetalPanel>
@@ -388,7 +412,7 @@ export function SoulMatchDetailsScreen({
 
       {data.explanation?.strategy || lockedStrategy ? (
         <MetalPanel>
-          <Text style={styles.sectionTitle}>How to approach</Text>
+          <Text style={styles.sectionTitle}>{t('soulmatch.details.sections.howToApproach')}</Text>
           {showStrategy ? (
             <Text style={styles.body}>{data.explanation?.strategy}</Text>
           ) : (
@@ -399,7 +423,7 @@ export function SoulMatchDetailsScreen({
               }}
             >
               <Text style={styles.unlockText}>
-                Get guidance on how to approach this connection 🔒
+                {t('soulmatch.details.actions.unlockApproach')}
               </Text>
             </TouchableOpacity>
           )}
@@ -408,7 +432,7 @@ export function SoulMatchDetailsScreen({
 
       {timingSummary || timingWindow || trend ? (
         <MetalPanel>
-          <Text style={styles.sectionTitle}>Timing</Text>
+          <Text style={styles.sectionTitle}>{t('soulmatch.details.sections.timing')}</Text>
           {timingSummary ? <Text style={styles.body}>{timingSummary}</Text> : null}
           {!isSectionLocked('timing', userTier) ? (
             <>
@@ -424,21 +448,26 @@ export function SoulMatchDetailsScreen({
                 setUpgradeVisible(true);
               }}
             >
-              <Text style={styles.unlockText}>Unlock timing details 🔒</Text>
+              <Text style={styles.unlockText}>
+                {t('soulmatch.details.actions.unlockTiming')}
+              </Text>
             </TouchableOpacity>
           ) : null}
         </MetalPanel>
       ) : null}
 
       <MetalPanel>
-        <Text style={styles.sectionTitle}>Mentor insight</Text>
+        <Text style={styles.sectionTitle}>{t('soulmatch.details.sections.mentorInsight')}</Text>
         {mentorText ? (
           <Text style={styles.mentorText}>{mentorText}</Text>
         ) : (
-          <MetalButton title="Load Mentor Insight" onPress={loadMentor} />
+          <MetalButton
+            title={t('soulmatch.details.actions.loadMentorInsight')}
+            onPress={loadMentor}
+          />
         )}
         <MetalButton
-          title="Ask Mentor About Us"
+          title={t('soulmatch.details.actions.askMentorAboutUs')}
           onPress={() =>
             navigation.navigate('SoulMatchMentor', {
               userId: data.user?.id ?? data.user_id ?? userId,
@@ -448,7 +477,10 @@ export function SoulMatchDetailsScreen({
         />
       </MetalPanel>
 
-      <MetalButton title="Back to recommendations" onPress={() => navigation.goBack()} />
+      <MetalButton
+        title={t('soulmatch.details.actions.backToRecommendations')}
+        onPress={() => navigation.goBack()}
+      />
       <SoulMatchUpgradeSheet
         visible={upgradeVisible}
         selectedTier={requestedTier}
@@ -473,6 +505,7 @@ function ExpandableSection({
   text?: string | null;
   styles: ReturnType<typeof createStyles>;
 }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   if (!text) {
     return null;
@@ -484,7 +517,7 @@ function ExpandableSection({
         onPress={() => setOpen((prev) => !prev)}
       >
         <Text style={styles.expandTitle}>{title}</Text>
-        <Text style={styles.expandToggle}>{open ? 'Hide' : 'Show'}</Text>
+        <Text style={styles.expandToggle}>{open ? t('common.hide') : t('common.show')}</Text>
       </TouchableOpacity>
       {open ? <Text style={styles.body}>{text}</Text> : null}
     </View>

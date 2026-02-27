@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   RefreshControl,
   ScrollView,
@@ -44,19 +45,19 @@ const BASE_PLANET_ORDER = [
   'pluto',
 ];
 
-const SIGN_ELEMENT: Record<string, string> = {
-  aries: 'Fire',
-  leo: 'Fire',
-  sagittarius: 'Fire',
-  taurus: 'Earth',
-  virgo: 'Earth',
-  capricorn: 'Earth',
-  gemini: 'Air',
-  libra: 'Air',
-  aquarius: 'Air',
-  cancer: 'Water',
-  scorpio: 'Water',
-  pisces: 'Water',
+const SIGN_ELEMENT: Record<string, 'fire' | 'earth' | 'air' | 'water'> = {
+  aries: 'fire',
+  leo: 'fire',
+  sagittarius: 'fire',
+  taurus: 'earth',
+  virgo: 'earth',
+  capricorn: 'earth',
+  gemini: 'air',
+  libra: 'air',
+  aquarius: 'air',
+  cancer: 'water',
+  scorpio: 'water',
+  pisces: 'water',
 };
 
 const formatPlacement = (placement?: {
@@ -103,7 +104,7 @@ const resolveHouseForLongitude = (
       chosen = house;
     }
   }
-  return `House ${chosen.key}`;
+  return chosen.key;
 };
 
 const summarizeAspect = (aspect: Aspect) => {
@@ -137,12 +138,10 @@ const summarizeAspect = (aspect: Aspect) => {
       : typeof aspect.orb_deg === 'number'
         ? aspect.orb_deg
         : undefined;
-  const orbText =
-    typeof orbValue === 'number' ? `${Math.abs(orbValue).toFixed(1)}° orb` : undefined;
   const labelParts = [primary, aspectName, secondary].filter(Boolean) as string[];
   const label =
     labelParts.length > 0 ? labelParts.join(' ') : JSON.stringify(aspect).slice(0, 80);
-  return { label, orbText };
+  return { label, orbValue };
 };
 
 type NatalChartScreenProps = {
@@ -154,6 +153,7 @@ export function NatalChartScreen({
   prefetchedChart = null,
   skipAutoFetch = false,
 }: NatalChartScreenProps) {
+  const { t } = useTranslation();
   const navigation =
     useNavigation<NativeStackNavigationProp<MentorStackParamList, 'NatalChart'>>();
   const { theme } = useTheme();
@@ -178,14 +178,14 @@ export function NatalChartScreen({
     } catch (err) {
       const message =
         err instanceof Error && err.message.includes('(404)')
-          ? 'No natal chart found. Please enter your birth data first.'
-          : 'Unable to load natal chart.';
+          ? t('astro.natal.alerts.notFound')
+          : t('astro.natal.alerts.loadFailed');
       setError(message);
       setChart(null);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     if (skipAutoFetch) {
@@ -209,10 +209,15 @@ export function NatalChartScreen({
   }, [planets]);
 
   const elementBalance = useMemo(() => {
-    const counts: Record<string, number> = { Fire: 0, Earth: 0, Air: 0, Water: 0 };
+    const counts: Record<'fire' | 'earth' | 'air' | 'water', number> = {
+      fire: 0,
+      earth: 0,
+      air: 0,
+      water: 0,
+    };
     Object.values(planets).forEach((placement) => {
       const signKey = placement.sign?.toLowerCase();
-      const element = signKey ? SIGN_ELEMENT[signKey] : null;
+      const element = signKey ? SIGN_ELEMENT[signKey] : undefined;
       if (element) {
         counts[element] += 1;
       }
@@ -232,7 +237,7 @@ export function NatalChartScreen({
   );
 
   if (loading) {
-    return <LoadingView message="Loading your natal chart…" />;
+    return <LoadingView message={t('astro.natal.loading')} />;
   }
 
   if (error) {
@@ -241,11 +246,11 @@ export function NatalChartScreen({
         <View style={styles.errorBlock}>
           <ErrorView
             message={error}
-            actionLabel="Try again"
+            actionLabel={t('common.retry')}
             onRetry={() => loadChart().catch(() => undefined)}
           />
           <MetalButton
-            title="Update Birth Data"
+            title={t('astro.natal.actions.updateBirthData')}
             onPress={() => navigation.navigate('BirthData')}
           />
         </View>
@@ -257,7 +262,7 @@ export function NatalChartScreen({
     return (
       <SafeAreaView style={styles.safeArea}>
         <ErrorView
-          message="No natal chart yet."
+          message={t('astro.natal.empty.noChart')}
           onRetry={() => navigation.navigate('BirthData')}
         />
       </SafeAreaView>
@@ -278,14 +283,11 @@ export function NatalChartScreen({
       >
         <View style={styles.headerRow}>
           <View style={styles.titleBlock}>
-            <Text style={styles.headline}>My Natal Chart</Text>
-            <Text style={styles.subtitle}>
-              Your Sun, Moon, Ascendant and planets form the core roadmap of your
-              personality. Update birth data anytime to refresh.
-            </Text>
+            <Text style={styles.headline}>{t('astro.natal.title')}</Text>
+            <Text style={styles.subtitle}>{t('astro.natal.subtitle')}</Text>
           </View>
           <TouchableOpacity
-            accessibilityLabel="Refresh natal chart"
+            accessibilityLabel={t('astro.natal.accessibility.refresh')}
             onPress={() => handleRefresh().catch(() => undefined)}
             style={styles.refreshButton}
           >
@@ -295,10 +297,8 @@ export function NatalChartScreen({
 
         <MetalPanel glow style={styles.chartPanel}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Chart Wheel</Text>
-            <Text style={styles.sectionDescription}>
-              Tap a planet to highlight it. Colors match the legend below.
-            </Text>
+            <Text style={styles.sectionTitle}>{t('astro.natal.chartWheel.title')}</Text>
+            <Text style={styles.sectionDescription}>{t('astro.natal.chartWheel.description')}</Text>
           </View>
           <View style={styles.wheelWrapper}>
             <AstroWheel
@@ -323,10 +323,10 @@ export function NatalChartScreen({
 
         <CoreIdentityCard
           placements={[
-            { label: 'Sun', placement: planets.sun },
-            { label: 'Moon', placement: planets.moon },
+            { label: t('astro.natal.labels.sun'), placement: planets.sun },
+            { label: t('astro.natal.labels.moon'), placement: planets.moon },
             {
-              label: 'Ascendant',
+              label: t('astro.natal.labels.ascendant'),
               placement: houses['1']
                 ? { lon: houses['1'].cusp_lon, sign: houses['1'].sign }
                 : undefined,
@@ -341,7 +341,10 @@ export function NatalChartScreen({
           planets={planets}
           orderedKeys={orderedPlanets}
           formatPlacement={formatPlacement}
-          getHouseLabel={(key) => resolveHouseForLongitude(houses, planets[key]?.lon)}
+          getHouseLabel={(key) => {
+            const house = resolveHouseForLongitude(houses, planets[key]?.lon);
+            return house ? t('astro.natal.labels.house', { number: house }) : null;
+          }}
           retrogradeTag={retrogradeTag}
         />
 
@@ -350,11 +353,17 @@ export function NatalChartScreen({
         <AspectsCard
           aspects={aspects}
           renderAspect={(aspect) => {
-            const { label, orbText } = summarizeAspect(aspect);
+            const { label, orbValue } = summarizeAspect(aspect);
             return (
               <View>
                 <Text style={styles.aspectTitle}>{label}</Text>
-                {orbText ? <Text style={styles.aspectMeta}>{orbText}</Text> : null}
+                {typeof orbValue === 'number' ? (
+                  <Text style={styles.aspectMeta}>
+                    {t('astro.natal.labels.orbValue', {
+                      value: Math.abs(orbValue).toFixed(1),
+                    })}
+                  </Text>
+                ) : null}
               </View>
             );
           }}
@@ -363,13 +372,15 @@ export function NatalChartScreen({
         <ElementBalanceCard elements={elementBalance} />
 
         <MetalButton
-          title="Update Birth Data"
+          title={t('astro.natal.actions.updateBirthData')}
           onPress={() => navigation.navigate('BirthData')}
         />
 
         {chart.calculated_at ? (
           <Text style={styles.footnote}>
-            Generated at {new Date(chart.calculated_at).toLocaleString()}
+            {t('astro.natal.generatedAt', {
+              value: new Date(chart.calculated_at).toLocaleString(),
+            })}
           </Text>
         ) : null}
       </ScrollView>
