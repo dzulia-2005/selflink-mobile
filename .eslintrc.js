@@ -51,6 +51,10 @@ module.exports = {
         'src/components/MentorFeedCard.tsx',
         'src/components/MatrixFeedCard.tsx',
         'src/components/SoulMatchFeedCard.tsx',
+        'src/screens/feed/PostDetailsScreen.tsx',
+        'src/components/comments/CommentsBottomSheet.tsx',
+        'src/components/comments/CommentComposer.tsx',
+        'src/components/comments/CommentItem.tsx',
       ],
       rules: {
         'react/jsx-no-literals': ['error', { noStrings: true, ignoreProps: true }],

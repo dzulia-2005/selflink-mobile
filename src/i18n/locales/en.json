@@ -292,5 +292,50 @@
         }
       }
     }
+  },
+  "post": {
+    "title": {
+      "notFound": "Post not found."
+    },
+    "comments": {
+      "title": "Comments",
+      "loading": "Loading comments...",
+      "empty": {
+        "title": "No comments yet.",
+        "body": "Be the first to comment."
+      },
+      "composer": {
+        "placeholder": "Write a comment (Markdown supported)",
+        "targetPlaceholder": "Add a comment to this {{target}}...",
+        "send": "Send",
+        "you": "You"
+      },
+      "targetType": {
+        "post": "post",
+        "reel": "reel"
+      },
+      "item": {
+        "like": "Like comment",
+        "gift": "Send gift",
+        "syncing": "Syncing..."
+      },
+      "alerts": {
+        "loadFailed": {
+          "body": "Unable to load comments."
+        },
+        "sendFailed": {
+          "body": "Unable to add comment. Please try again."
+        },
+        "likeFailed": {
+          "body": "Unable to update like."
+        }
+      }
+    },
+    "accessibility": {
+      "attachImages": "Attach images",
+      "removeSelectedImage": "Remove selected image",
+      "sendComment": "Send comment",
+      "closeComments": "Close comments"
+    }
   }
 }

@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { memo, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { CommentContent } from '@components/comments/CommentContent';
@@ -46,6 +47,7 @@ function CommentItemComponent({
   onLikePress,
   onGiftPress,
 }: Props) {
+  const { t } = useTranslation();
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
   const timestamp = useMemo(
@@ -121,6 +123,8 @@ function CommentItemComponent({
             style={styles.actionButton}
             onPress={onLikePress}
             disabled={!onLikePress}
+            accessibilityRole="button"
+            accessibilityLabel={t('post.comments.item.like')}
           >
             <Ionicons
               name={liked ? 'heart' : 'heart-outline'}
@@ -133,6 +137,8 @@ function CommentItemComponent({
             style={styles.actionButton}
             onPress={onGiftPress}
             disabled={!onGiftPress}
+            accessibilityRole="button"
+            accessibilityLabel={t('post.comments.item.gift')}
           >
             <Animated.View style={giftPulse.animatedStyle}>
               <Ionicons name="gift-outline" size={14} color={theme.reels.textSecondary} />
@@ -140,7 +146,9 @@ function CommentItemComponent({
             <Animated.Text style={[styles.actionText, giftPulse.animatedStyle]}>
               {giftCount > 0 ? giftCount : ''}
             </Animated.Text>
-            {giftSyncing ? <Text style={styles.syncText}>Syncing…</Text> : null}
+            {giftSyncing ? (
+              <Text style={styles.syncText}>{t('post.comments.item.syncing')}</Text>
+            ) : null}
           </TouchableOpacity>
         </View>
       </View>

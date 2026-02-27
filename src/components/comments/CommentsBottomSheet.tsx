@@ -1,4 +1,6 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   AppState,
@@ -60,10 +62,11 @@ export function CommentsBottomSheet({
   targetType,
   targetId,
   initialCommentCount,
-  headerTitle = 'Comments',
+  headerTitle,
   onClose,
   onCommentCountChange,
 }: Props) {
+  const { t } = useTranslation();
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
   const insets = useSafeAreaInsets();
@@ -378,7 +381,10 @@ export function CommentsBottomSheet({
           },
         }));
       } catch (err) {
-        const normalized = normalizeLikesApiError(err, 'Unable to update like.');
+        const normalized = normalizeLikesApiError(
+          err,
+          t('post.comments.alerts.likeFailed.body'),
+        );
         if (normalized.status === 401 || normalized.status === 403) {
           handleAuthError(normalized.message);
           return;
@@ -392,7 +398,7 @@ export function CommentsBottomSheet({
         commentLikePendingRef.current[key] = false;
       }
     },
-    [commentReactions, handleAuthError, toast],
+    [commentReactions, handleAuthError, t, toast],
   );
 
   const handleOpenGiftPicker = useCallback((commentId: string | number) => {
@@ -470,8 +476,10 @@ export function CommentsBottomSheet({
     ],
   );
 
-  const avatarLabel = currentUser?.name ?? 'You';
+  const avatarLabel = currentUser?.name ?? t('post.comments.composer.you');
   const avatarUrl = currentUser?.photo ?? null;
+  const resolvedHeaderTitle = headerTitle ?? t('post.comments.title');
+  const targetTypeLabel = t(`post.comments.targetType.${targetType}`);
 
   const onViewableItemsChanged = useCallback(
     ({ viewableItems }: { viewableItems: Array<ViewToken<CommentWithOptimistic>> }) => {
@@ -514,15 +522,26 @@ export function CommentsBottomSheet({
             <View style={styles.handle} />
           </View>
           <View style={styles.header}>
-            <Text style={styles.title}>{headerTitle}</Text>
-            <TouchableOpacity onPress={closeSheet} hitSlop={10}>
-              <Text style={styles.closeLabel}>✕</Text>
+            <Text style={styles.title}>{resolvedHeaderTitle}</Text>
+            <TouchableOpacity
+              onPress={closeSheet}
+              hitSlop={10}
+              accessibilityRole="button"
+              accessibilityLabel={t('post.accessibility.closeComments')}
+            >
+              <Ionicons
+                name="close"
+                size={18}
+                color={theme.reels.textSecondary}
+                style={styles.closeIcon}
+              />
             </TouchableOpacity>
           </View>
           <View style={styles.listContainer}>
             {loading ? (
               <View style={styles.loader}>
                 <ActivityIndicator color={theme.reels.textPrimary} />
+                <Text style={styles.loaderText}>{t('post.comments.loading')}</Text>
               </View>
             ) : (
               <FlatList
@@ -534,7 +553,7 @@ export function CommentsBottomSheet({
                   comments.length === 0 && styles.commentsListEmpty,
                 ]}
                 ListEmptyComponent={
-                  <Text style={styles.emptyText}>Be the first to comment</Text>
+                  <Text style={styles.emptyText}>{t('post.comments.empty.body')}</Text>
                 }
                 onEndReached={loadMore}
                 onEndReachedThreshold={0.4}
@@ -542,6 +561,7 @@ export function CommentsBottomSheet({
                   loadingMore ? (
                     <View style={styles.loader}>
                       <ActivityIndicator color={theme.reels.textPrimary} />
+                      <Text style={styles.loaderText}>{t('post.comments.loading')}</Text>
                     </View>
                   ) : null
                 }
@@ -563,7 +583,9 @@ export function CommentsBottomSheet({
             pending={submitting}
             avatarLabel={avatarLabel}
             avatarUrl={avatarUrl}
-            placeholder={`Add a comment to this ${targetType}…`}
+            placeholder={t('post.comments.composer.targetPlaceholder', {
+              target: targetTypeLabel,
+            })}
           />
         </Animated.View>
       </KeyboardAvoidingView>
@@ -623,9 +645,8 @@ const createStyles = (theme: Theme) =>
       fontWeight: '800',
       fontSize: 16,
     },
-    closeLabel: {
-      color: theme.reels.textSecondary,
-      fontSize: 18,
+    closeIcon: {
+      lineHeight: 18,
     },
     listContainer: {
       flex: 1,
@@ -642,6 +663,11 @@ const createStyles = (theme: Theme) =>
       paddingVertical: 12,
       alignItems: 'center',
       justifyContent: 'center',
+      gap: 8,
+    },
+    loaderText: {
+      color: theme.reels.textSecondary,
+      fontSize: 12,
     },
     emptyText: {
       textAlign: 'center',
