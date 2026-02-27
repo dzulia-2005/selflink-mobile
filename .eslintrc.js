@@ -75,6 +75,8 @@ module.exports = {
         'src/components/soulmatch/SoulMatchUpgradeSheet.tsx',
         'src/screens/astro/NatalChartScreen.tsx',
         'src/components/astro/natal/NatalCards.tsx',
+        'src/screens/PaymentsScreen.tsx',
+        'src/screens/WalletLedgerScreen.tsx',
       ],
       rules: {
         'react/jsx-no-literals': ['error', { noStrings: true, ignoreProps: true }],

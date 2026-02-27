@@ -896,5 +896,208 @@
       },
       "microcopy": "Отмена в любой момент - Безопасная оплата"
     }
+  },
+  "payments": {
+    "title": "Платежи и подписка",
+    "subtitle": "Управляйте подписками, подарками и покупками SLC.",
+    "membership": {
+      "title": "Статус подписки",
+      "premiumPlusActive": "Premium+ активен.",
+      "premiumActive": "Premium активен.",
+      "noneActive": "Активной подписки пока нет.",
+      "premiumExpires": "Premium истекает {{date}}",
+      "premiumPlusExpires": "Premium+ истекает {{date}}"
+    },
+    "actions": {
+      "refreshStatus": "Обновить статус",
+      "topUpSlc": "Пополнить SLC",
+      "processing": "Обработка...",
+      "buyWithSlc": "Купить за SLC",
+      "sendGift": "Отправить подарок",
+      "viewWallet": "Открыть кошелек"
+    },
+    "buyWithSlc": {
+      "title": "Покупка за SLC",
+      "loading": "Загрузка продуктов SLC...",
+      "empty": "Продукты SLC пока недоступны.",
+      "balance": "Ваш баланс SLC: {{value}}"
+    },
+    "giftCatalog": {
+      "title": "Каталог подарков",
+      "empty": "Подарков пока нет.",
+      "metaSeparator": " · "
+    },
+    "wallet": {
+      "title": "Кошелек",
+      "body": "Отслеживайте баланс, подарки и историю операций в одном месте."
+    },
+    "errors": {
+      "loadProducts": "Не удалось загрузить продукты SLC.",
+      "purchaseFailed": "Не удалось завершить покупку.",
+      "insufficientFunds": "Недостаточно SLC. Пополните баланс для Premium-функций."
+    },
+    "toasts": {
+      "purchaseSuccess": "Покупка успешна."
+    }
+  },
+  "wallet": {
+    "title": "Кошелек",
+    "subtitle": "Отслеживайте платежи и зачисления SLC в одном месте.",
+    "balance": {
+      "title": "Кошелек (Платежи)",
+      "available": "Доступный баланс",
+      "empty": "Кошелек пока недоступен."
+    },
+    "slc": {
+      "title": "Баланс SLC (кредиты)",
+      "rate": "1.00 SLC = $1.00",
+      "empty": "Баланс SLC недоступен.",
+      "unit": "SLC"
+    },
+    "actions": {
+      "sendSlc": "Отправить SLC",
+      "spendSlc": "Списать SLC",
+      "buySlcIap": "Купить SLC (IAP)",
+      "buySlcStripe": "Купить SLC",
+      "buySlcIpay": "Купить SLC (iPay)",
+      "buySlcBtcpay": "Купить SLC (BTCPay)",
+      "findUser": "Найти пользователя для отправки SLC",
+      "retryVerification": "Повторить проверку",
+      "restore": "Восстановить покупки",
+      "restoring": "Восстановление...",
+      "ivePaid": "Я оплатил",
+      "paste": "Вставить",
+      "sending": "Отправка...",
+      "pleaseWait": "Подождите...",
+      "send": "Отправить",
+      "spending": "Списание...",
+      "spend": "Списать",
+      "starting": "Запуск...",
+      "continue": "Продолжить"
+    },
+    "pending": {
+      "iap": "Ожидается подтверждение покупки в приложении. Это может занять немного времени.",
+      "finalizeFailed": "Покупка подтверждена, но финализация не удалась. Нажмите «Восстановить покупки».",
+      "stripe": "Ожидается подтверждение Stripe. Это может занять немного времени.",
+      "btcpay": "Ожидается подтверждение BTCPay. Это может занять немного времени.",
+      "ipay": "Ожидается подтверждение iPay. Это может занять немного времени."
+    },
+    "send": {
+      "title": "Отправка SLC",
+      "subtitle": "Введите ID получателя (ключ аккаунта) и сумму.",
+      "recipientLabel": "ID получателя (ключ аккаунта)",
+      "recipientPlaceholder": "user:123",
+      "amountPlaceholder": "Сумма (USD)",
+      "memoPlaceholder": "Комментарий (необязательно)"
+    },
+    "spend": {
+      "title": "Списание SLC",
+      "subtitle": "Выберите назначение и сумму списания.",
+      "referenceLabel": "Списать за",
+      "noReferences": "Справочники списания не настроены.",
+      "amountPlaceholder": "Сумма (USD)",
+      "memoPlaceholder": "Комментарий (необязательно)"
+    },
+    "iap": {
+      "title": "Купить SLC (IAP)",
+      "subtitle": "Выберите пакет и завершите покупку в App Store или Play.",
+      "availablePacks": "Доступные пакеты"
+    },
+    "stripe": {
+      "title": "Купить SLC",
+      "subtitle": "Выберите сумму и валюту для Stripe checkout."
+    },
+    "btcpay": {
+      "title": "Купить SLC (BTCPay)",
+      "subtitle": "Выберите сумму и валюту для BTCPay checkout."
+    },
+    "ipay": {
+      "title": "Купить SLC",
+      "subtitle": "Выберите сумму и валюту для iPay checkout.",
+      "notConfigured": "iPay checkout не настроен для этой сборки."
+    },
+    "checkout": {
+      "currency": "Валюта",
+      "amountPlaceholder": "Сумма ({{currency}})"
+    },
+    "ledger": {
+      "title": {
+        "sent": "Отправлено SLC",
+        "received": "Получено SLC",
+        "spent": "Списано SLC",
+        "minted": "Начислено SLC",
+        "refunded": "Возврат SLC",
+        "default": "Активность SLC"
+      },
+      "counterparty": {
+        "toUser": "Пользователю #{{id}}",
+        "fromUser": "От пользователя #{{id}}",
+        "reference": "Референс: {{reference}}",
+        "mintedVia": "Начислено через {{provider}}",
+        "default": "Активность аккаунта"
+      }
+    },
+    "errors": {
+      "sessionExpired": "Сессия истекла. Войдите снова.",
+      "loadWallet": "Не удалось загрузить баланс кошелька.",
+      "loadSlcBalance": "Не удалось загрузить баланс SLC.",
+      "loadSlcActivity": "Не удалось загрузить активность SLC.",
+      "loadMoreActivity": "Не удалось загрузить больше операций.",
+      "refreshSlcBalance": "Не удалось обновить баланс SLC.",
+      "verifyPurchase": "Не удалось проверить покупку.",
+      "readPurchaseDetails": "Не удалось прочитать данные покупки.",
+      "iapUnavailable": "Встроенные покупки недоступны на этом устройстве.",
+      "noPurchasesToRestore": "Нет покупок для восстановления.",
+      "selectProduct": "Выберите продукт для продолжения.",
+      "noPendingPurchase": "Нет ожидающей проверки покупки.",
+      "noProductsConfigured": "Для этой сборки не настроены продукты.",
+      "loadIapProducts": "Не удалось загрузить продукты IAP.",
+      "amountGreaterThanZero": "Введите сумму больше 0.",
+      "selectValidCurrency": "Выберите корректную валюту.",
+      "missingBtcpayUrl": "Отсутствует ссылка BTCPay checkout",
+      "cannotOpenBtcpayUrl": "Не удается открыть ссылку BTCPay",
+      "startBtcpayCheckout": "Не удалось запустить BTCPay checkout.",
+      "ipayNotConfigured": "iPay не настроен для этой сборки.",
+      "missingIpayUrl": "Отсутствует ссылка iPay checkout",
+      "cannotOpenIpayUrl": "Не удается открыть ссылку iPay",
+      "startIpayCheckout": "Не удалось запустить iPay checkout.",
+      "missingStripeUrl": "Отсутствует ссылка Stripe checkout",
+      "cannotOpenStripeUrl": "Не удается открыть ссылку Stripe",
+      "startStripeCheckout": "Не удалось запустить Stripe checkout.",
+      "selectSpendReference": "Выберите назначение списания.",
+      "selectValidSpendReference": "Выберите корректное назначение списания.",
+      "amountExceedsBalance": "Сумма превышает доступный баланс SLC.",
+      "spendSlc": "Не удалось списать SLC.",
+      "pasteFailed": "Не удалось вставить сейчас.",
+      "enterRecipientId": "Введите ID получателя.",
+      "insufficientBalance": "Недостаточно средств.",
+      "sendSlc": "Не удалось отправить SLC.",
+      "signInToContinue": "Войдите, чтобы продолжить.",
+      "networkUnavailable": "Не удается подключиться к серверу. Попробуйте снова."
+    },
+    "toasts": {
+      "invalidCursorRefreshed": "Активность обновлена из-за некорректного курсора.",
+      "slcCredited": "SLC зачислены.",
+      "purchasePending": "Платеж в ожидании. Если списание прошло, баланс обновится позже. Потяните для обновления.",
+      "balanceUpdated": "Баланс SLC обновлен.",
+      "paymentPending": "Платеж в ожидании. Если списание прошло, баланс обновится позже. Потяните для обновления.",
+      "purchaseConfirmed": "Покупка SLC подтверждена.",
+      "finalizeFailed": "Покупка подтверждена, но финализация не удалась. Откройте приложение снова или нажмите «Восстановить покупки».",
+      "restoreCompleted": "Проверка восстановления завершена.",
+      "purchaseCancelled": "Покупка отменена.",
+      "purchaseOwnedCheckingRestore": "Покупка уже принадлежит вам. Проверяем восстановление...",
+      "completeBtcpayCheckout": "Завершите оплату в BTCPay, чтобы получить SLC.",
+      "completeIpayCheckout": "Завершите оплату в iPay, чтобы получить SLC.",
+      "completeStripeCheckout": "Завершите оплату в Stripe, чтобы получить SLC.",
+      "clipboardEmpty": "Буфер обмена пуст.",
+      "slcSpent": "SLC списаны. Баланс и активность обновлены.",
+      "slcSent": "SLC отправлены. Баланс и активность обновлены."
+    }
+  },
+  "transactions": {
+    "title": "Активность SLC",
+    "empty": "Операций пока нет.",
+    "loadMore": "Загрузить еще",
+    "loadingMore": "Загрузка..."
   }
 }

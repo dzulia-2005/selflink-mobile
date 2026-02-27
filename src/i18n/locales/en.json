@@ -893,5 +893,208 @@
       },
       "microcopy": "Cancel anytime - Secure payment"
     }
+  },
+  "payments": {
+    "title": "Payments & Membership",
+    "subtitle": "Manage memberships, gifts, and SLC purchases.",
+    "membership": {
+      "title": "Membership Status",
+      "premiumPlusActive": "Premium+ is active.",
+      "premiumActive": "Premium is active.",
+      "noneActive": "No active membership yet.",
+      "premiumExpires": "Premium expires {{date}}",
+      "premiumPlusExpires": "Premium+ expires {{date}}"
+    },
+    "actions": {
+      "refreshStatus": "Refresh Status",
+      "topUpSlc": "Top up SLC",
+      "processing": "Processing...",
+      "buyWithSlc": "Buy with SLC",
+      "sendGift": "Send Gift",
+      "viewWallet": "View Wallet"
+    },
+    "buyWithSlc": {
+      "title": "Buy with SLC",
+      "loading": "Loading SLC products...",
+      "empty": "No SLC products available yet.",
+      "balance": "Your SLC balance: {{value}}"
+    },
+    "giftCatalog": {
+      "title": "Gift Catalog",
+      "empty": "No gifts available yet.",
+      "metaSeparator": " · "
+    },
+    "wallet": {
+      "title": "Wallet",
+      "body": "Monitor balances, gifts, and transaction history in one place."
+    },
+    "errors": {
+      "loadProducts": "Unable to load SLC products.",
+      "purchaseFailed": "Unable to complete purchase.",
+      "insufficientFunds": "Insufficient SLC balance. Top up to unlock Premium features."
+    },
+    "toasts": {
+      "purchaseSuccess": "Purchase successful."
+    }
+  },
+  "wallet": {
+    "title": "Wallet",
+    "subtitle": "Track payments and SLC credits in one place.",
+    "balance": {
+      "title": "Wallet (Payments)",
+      "available": "Available balance",
+      "empty": "Wallet not available yet."
+    },
+    "slc": {
+      "title": "SLC Balance (Credits)",
+      "rate": "1.00 SLC = $1.00",
+      "empty": "SLC balance not available.",
+      "unit": "SLC"
+    },
+    "actions": {
+      "sendSlc": "Send SLC",
+      "spendSlc": "Spend SLC",
+      "buySlcIap": "Buy SLC (IAP)",
+      "buySlcStripe": "Buy SLC",
+      "buySlcIpay": "Buy SLC (iPay)",
+      "buySlcBtcpay": "Buy SLC (BTCPay)",
+      "findUser": "Find a user to send SLC",
+      "retryVerification": "Retry verification",
+      "restore": "Restore purchases",
+      "restoring": "Restoring...",
+      "ivePaid": "I've paid",
+      "paste": "Paste",
+      "sending": "Sending...",
+      "pleaseWait": "Please wait...",
+      "send": "Send",
+      "spending": "Spending...",
+      "spend": "Spend",
+      "starting": "Starting...",
+      "continue": "Continue"
+    },
+    "pending": {
+      "iap": "Awaiting in-app purchase confirmation. It may take a moment.",
+      "finalizeFailed": "Purchase verified, but finalization failed. Tap Restore purchases.",
+      "stripe": "Awaiting Stripe payment confirmation. It may take a moment.",
+      "btcpay": "Awaiting BTCPay confirmation. It may take a moment.",
+      "ipay": "Awaiting iPay confirmation. It may take a moment."
+    },
+    "send": {
+      "title": "Send SLC",
+      "subtitle": "Enter a recipient ID (account key) and amount.",
+      "recipientLabel": "Recipient ID (account key)",
+      "recipientPlaceholder": "user:123",
+      "amountPlaceholder": "Amount (USD)",
+      "memoPlaceholder": "Memo (optional)"
+    },
+    "spend": {
+      "title": "Spend SLC",
+      "subtitle": "Select a spend reference and amount.",
+      "referenceLabel": "Spend for",
+      "noReferences": "No spend references configured.",
+      "amountPlaceholder": "Amount (USD)",
+      "memoPlaceholder": "Memo (optional)"
+    },
+    "iap": {
+      "title": "Buy SLC (IAP)",
+      "subtitle": "Select a pack and complete the App Store or Play purchase.",
+      "availablePacks": "Available packs"
+    },
+    "stripe": {
+      "title": "Buy SLC",
+      "subtitle": "Choose an amount and currency to start Stripe checkout."
+    },
+    "btcpay": {
+      "title": "Buy SLC (BTCPay)",
+      "subtitle": "Choose an amount and currency to start BTCPay checkout."
+    },
+    "ipay": {
+      "title": "Buy SLC",
+      "subtitle": "Choose an amount and currency to start iPay checkout.",
+      "notConfigured": "iPay checkout is not configured for this build."
+    },
+    "checkout": {
+      "currency": "Currency",
+      "amountPlaceholder": "Amount ({{currency}})"
+    },
+    "ledger": {
+      "title": {
+        "sent": "Sent SLC",
+        "received": "Received SLC",
+        "spent": "Spent SLC",
+        "minted": "Minted SLC",
+        "refunded": "Refunded SLC",
+        "default": "SLC Activity"
+      },
+      "counterparty": {
+        "toUser": "To user #{{id}}",
+        "fromUser": "From user #{{id}}",
+        "reference": "Reference: {{reference}}",
+        "mintedVia": "Minted via {{provider}}",
+        "default": "Account activity"
+      }
+    },
+    "errors": {
+      "sessionExpired": "Session expired. Please sign in again.",
+      "loadWallet": "Unable to load wallet balance.",
+      "loadSlcBalance": "Unable to load SLC balance.",
+      "loadSlcActivity": "Unable to load SLC activity.",
+      "loadMoreActivity": "Unable to load more activity.",
+      "refreshSlcBalance": "Unable to refresh SLC balance.",
+      "verifyPurchase": "Unable to verify purchase.",
+      "readPurchaseDetails": "Unable to read purchase details.",
+      "iapUnavailable": "In-app purchases are unavailable on this device.",
+      "noPurchasesToRestore": "No purchases available to restore.",
+      "selectProduct": "Select a product to continue.",
+      "noPendingPurchase": "No pending purchase to verify.",
+      "noProductsConfigured": "No products configured for this build.",
+      "loadIapProducts": "Unable to load in-app products.",
+      "amountGreaterThanZero": "Enter an amount greater than 0.",
+      "selectValidCurrency": "Select a valid currency.",
+      "missingBtcpayUrl": "Missing BTCPay checkout URL",
+      "cannotOpenBtcpayUrl": "Cannot open BTCPay checkout URL",
+      "startBtcpayCheckout": "Unable to start BTCPay checkout.",
+      "ipayNotConfigured": "iPay is not configured for this build.",
+      "missingIpayUrl": "Missing iPay checkout URL",
+      "cannotOpenIpayUrl": "Cannot open iPay checkout URL",
+      "startIpayCheckout": "Unable to start iPay checkout.",
+      "missingStripeUrl": "Missing Stripe checkout URL",
+      "cannotOpenStripeUrl": "Cannot open Stripe checkout URL",
+      "startStripeCheckout": "Unable to start Stripe checkout.",
+      "selectSpendReference": "Select a spend reference.",
+      "selectValidSpendReference": "Select a valid spend reference.",
+      "amountExceedsBalance": "Amount exceeds available SLC balance.",
+      "spendSlc": "Unable to spend SLC.",
+      "pasteFailed": "Unable to paste right now.",
+      "enterRecipientId": "Enter a recipient ID.",
+      "insufficientBalance": "Insufficient balance.",
+      "sendSlc": "Unable to send SLC.",
+      "signInToContinue": "Please sign in to continue.",
+      "networkUnavailable": "Unable to reach the server. Please try again."
+    },
+    "toasts": {
+      "invalidCursorRefreshed": "Activity refreshed due to an invalid cursor.",
+      "slcCredited": "SLC credited.",
+      "purchasePending": "Purchase pending. If you were charged, balance will update shortly. Pull to refresh.",
+      "balanceUpdated": "SLC balance updated.",
+      "paymentPending": "Payment pending. If you were charged, balance will update shortly. Pull to refresh.",
+      "purchaseConfirmed": "SLC purchase confirmed.",
+      "finalizeFailed": "Purchase verified, but finalization failed. Reopen the app or tap Restore Purchases.",
+      "restoreCompleted": "Restore check completed.",
+      "purchaseCancelled": "Purchase cancelled.",
+      "purchaseOwnedCheckingRestore": "Purchase already owned. Checking restores...",
+      "completeBtcpayCheckout": "Complete BTCPay checkout to receive SLC.",
+      "completeIpayCheckout": "Complete payment in iPay to receive SLC.",
+      "completeStripeCheckout": "Complete payment in Stripe to receive SLC.",
+      "clipboardEmpty": "Clipboard is empty.",
+      "slcSpent": "SLC spent. Balance and activity updated.",
+      "slcSent": "SLC sent. Balance and activity updated."
+    }
+  },
+  "transactions": {
+    "title": "SLC Activity",
+    "empty": "No activity yet.",
+    "loadMore": "Load more",
+    "loadingMore": "Loading more..."
   }
 }

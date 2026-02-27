@@ -896,5 +896,208 @@
       },
       "microcopy": "ნებისმიერ დროს გაუქმება - უსაფრთხო გადახდა"
     }
+  },
+  "payments": {
+    "title": "გადახდები და წევრობა",
+    "subtitle": "მართე წევრობა, საჩუქრები და SLC შესყიდვები.",
+    "membership": {
+      "title": "წევრობის სტატუსი",
+      "premiumPlusActive": "Premium+ აქტიურია.",
+      "premiumActive": "Premium აქტიურია.",
+      "noneActive": "აქტიური წევრობა ჯერ არ არის.",
+      "premiumExpires": "Premium იწურება {{date}}",
+      "premiumPlusExpires": "Premium+ იწურება {{date}}"
+    },
+    "actions": {
+      "refreshStatus": "სტატუსის განახლება",
+      "topUpSlc": "SLC-ის შევსება",
+      "processing": "მუშავდება...",
+      "buyWithSlc": "SLC-ით ყიდვა",
+      "sendGift": "საჩუქრის გაგზავნა",
+      "viewWallet": "საფულის ნახვა"
+    },
+    "buyWithSlc": {
+      "title": "SLC-ით ყიდვა",
+      "loading": "SLC პროდუქტები იტვირთება...",
+      "empty": "SLC პროდუქტები ჯერ არ არის ხელმისაწვდომი.",
+      "balance": "თქვენი SLC ბალანსი: {{value}}"
+    },
+    "giftCatalog": {
+      "title": "საჩუქრების კატალოგი",
+      "empty": "საჩუქრები ჯერ არ არის.",
+      "metaSeparator": " · "
+    },
+    "wallet": {
+      "title": "საფულე",
+      "body": "ბალანსები, საჩუქრები და ტრანზაქციების ისტორია ერთ ეკრანზე."
+    },
+    "errors": {
+      "loadProducts": "SLC პროდუქტების ჩატვირთვა ვერ მოხერხდა.",
+      "purchaseFailed": "შესყიდვის დასრულება ვერ მოხერხდა.",
+      "insufficientFunds": "SLC ბალანსი არასაკმარისია. Premium ფუნქციებისთვის შეავსეთ ბალანსი."
+    },
+    "toasts": {
+      "purchaseSuccess": "შესყიდვა წარმატებით შესრულდა."
+    }
+  },
+  "wallet": {
+    "title": "საფულე",
+    "subtitle": "გადახდები და SLC ჩარიცხვები ერთ სივრცეში.",
+    "balance": {
+      "title": "საფულე (გადახდები)",
+      "available": "ხელმისაწვდომი ბალანსი",
+      "empty": "საფულე ჯერ მიუწვდომელია."
+    },
+    "slc": {
+      "title": "SLC ბალანსი (კრედიტები)",
+      "rate": "1.00 SLC = $1.00",
+      "empty": "SLC ბალანსი მიუწვდომელია.",
+      "unit": "SLC"
+    },
+    "actions": {
+      "sendSlc": "SLC-ის გაგზავნა",
+      "spendSlc": "SLC-ის დახარჯვა",
+      "buySlcIap": "SLC ყიდვა (IAP)",
+      "buySlcStripe": "SLC ყიდვა",
+      "buySlcIpay": "SLC ყიდვა (iPay)",
+      "buySlcBtcpay": "SLC ყიდვა (BTCPay)",
+      "findUser": "მომხმარებლის მოძებნა SLC-ის გასაგზავნად",
+      "retryVerification": "ვერიფიკაციის გამეორება",
+      "restore": "შესყიდვების აღდგენა",
+      "restoring": "აღდგენა...",
+      "ivePaid": "გადახდილი მაქვს",
+      "paste": "ჩასმა",
+      "sending": "იგზავნება...",
+      "pleaseWait": "გთხოვთ დაელოდოთ...",
+      "send": "გაგზავნა",
+      "spending": "იხარჯება...",
+      "spend": "დახარჯვა",
+      "starting": "იწყება...",
+      "continue": "გაგრძელება"
+    },
+    "pending": {
+      "iap": "აპის შიდა შეძენის დადასტურებას ველოდებით. ამას შეიძლება ცოტა დრო დასჭირდეს.",
+      "finalizeFailed": "შესყიდვა დადასტურდა, მაგრამ საბოლოო დასრულება ვერ მოხერხდა. დააჭირეთ „შესყიდვების აღდგენას“.",
+      "stripe": "Stripe დადასტურებას ველოდებით. ამას შეიძლება ცოტა დრო დასჭირდეს.",
+      "btcpay": "BTCPay დადასტურებას ველოდებით. ამას შეიძლება ცოტა დრო დასჭირდეს.",
+      "ipay": "iPay დადასტურებას ველოდებით. ამას შეიძლება ცოტა დრო დასჭირდეს."
+    },
+    "send": {
+      "title": "SLC-ის გაგზავნა",
+      "subtitle": "შეიყვანეთ მიმღების ID (account key) და თანხა.",
+      "recipientLabel": "მიმღების ID (account key)",
+      "recipientPlaceholder": "user:123",
+      "amountPlaceholder": "თანხა (USD)",
+      "memoPlaceholder": "მემო (სურვილისამებრ)"
+    },
+    "spend": {
+      "title": "SLC-ის დახარჯვა",
+      "subtitle": "აირჩიეთ ხარჯვის მიზანი და თანხა.",
+      "referenceLabel": "რისთვის იხარჯება",
+      "noReferences": "ხარჯვის რეფერენსები კონფიგურირებული არ არის.",
+      "amountPlaceholder": "თანხა (USD)",
+      "memoPlaceholder": "მემო (სურვილისამებრ)"
+    },
+    "iap": {
+      "title": "SLC ყიდვა (IAP)",
+      "subtitle": "აირჩიეთ პაკეტი და დაასრულეთ შესყიდვა App Store/Play-ში.",
+      "availablePacks": "ხელმისაწვდომი პაკეტები"
+    },
+    "stripe": {
+      "title": "SLC ყიდვა",
+      "subtitle": "აირჩიეთ თანხა და ვალუტა Stripe checkout-ის დასაწყებად."
+    },
+    "btcpay": {
+      "title": "SLC ყიდვა (BTCPay)",
+      "subtitle": "აირჩიეთ თანხა და ვალუტა BTCPay checkout-ის დასაწყებად."
+    },
+    "ipay": {
+      "title": "SLC ყიდვა",
+      "subtitle": "აირჩიეთ თანხა და ვალუტა iPay checkout-ის დასაწყებად.",
+      "notConfigured": "iPay checkout ამ ბილდში კონფიგურირებული არ არის."
+    },
+    "checkout": {
+      "currency": "ვალუტა",
+      "amountPlaceholder": "თანხა ({{currency}})"
+    },
+    "ledger": {
+      "title": {
+        "sent": "SLC გაგზავნილი",
+        "received": "SLC მიღებული",
+        "spent": "SLC დახარჯული",
+        "minted": "SLC ჩარიცხული",
+        "refunded": "SLC დაბრუნებული",
+        "default": "SLC აქტივობა"
+      },
+      "counterparty": {
+        "toUser": "მომხმარებელთან #{{id}}",
+        "fromUser": "მომხმარებლისგან #{{id}}",
+        "reference": "რეფერენსი: {{reference}}",
+        "mintedVia": "ჩარიცხვა წყაროდან: {{provider}}",
+        "default": "ანგარიშის აქტივობა"
+      }
+    },
+    "errors": {
+      "sessionExpired": "სესიის ვადა ამოიწურა. თავიდან შედით.",
+      "loadWallet": "საფულის ბალანსის ჩატვირთვა ვერ მოხერხდა.",
+      "loadSlcBalance": "SLC ბალანსის ჩატვირთვა ვერ მოხერხდა.",
+      "loadSlcActivity": "SLC აქტივობის ჩატვირთვა ვერ მოხერხდა.",
+      "loadMoreActivity": "მეტი აქტივობის ჩატვირთვა ვერ მოხერხდა.",
+      "refreshSlcBalance": "SLC ბალანსის განახლება ვერ მოხერხდა.",
+      "verifyPurchase": "შესყიდვის ვერიფიკაცია ვერ მოხერხდა.",
+      "readPurchaseDetails": "შესყიდვის დეტალების წაკითხვა ვერ მოხერხდა.",
+      "iapUnavailable": "ამ მოწყობილობაზე in-app purchases მიუწვდომელია.",
+      "noPurchasesToRestore": "აღსადგენი შესყიდვები ვერ მოიძებნა.",
+      "selectProduct": "გასაგრძელებლად აირჩიეთ პროდუქტი.",
+      "noPendingPurchase": "დასადასტურებელი შესყიდვა არ მოიძებნა.",
+      "noProductsConfigured": "ამ ბილდისთვის პროდუქტები კონფიგურირებული არ არის.",
+      "loadIapProducts": "IAP პროდუქტების ჩატვირთვა ვერ მოხერხდა.",
+      "amountGreaterThanZero": "შეიყვანეთ 0-ზე მეტი თანხა.",
+      "selectValidCurrency": "აირჩიეთ სწორი ვალუტა.",
+      "missingBtcpayUrl": "BTCPay checkout URL არ მოიძებნა",
+      "cannotOpenBtcpayUrl": "BTCPay URL ვერ გაიხსნა",
+      "startBtcpayCheckout": "BTCPay checkout-ის დაწყება ვერ მოხერხდა.",
+      "ipayNotConfigured": "iPay ამ ბილდში კონფიგურირებული არ არის.",
+      "missingIpayUrl": "iPay checkout URL არ მოიძებნა",
+      "cannotOpenIpayUrl": "iPay URL ვერ გაიხსნა",
+      "startIpayCheckout": "iPay checkout-ის დაწყება ვერ მოხერხდა.",
+      "missingStripeUrl": "Stripe checkout URL არ მოიძებნა",
+      "cannotOpenStripeUrl": "Stripe URL ვერ გაიხსნა",
+      "startStripeCheckout": "Stripe checkout-ის დაწყება ვერ მოხერხდა.",
+      "selectSpendReference": "აირჩიეთ ხარჯვის რეფერენსი.",
+      "selectValidSpendReference": "აირჩიეთ სწორი ხარჯვის რეფერენსი.",
+      "amountExceedsBalance": "თანხა აჭარბებს ხელმისაწვდომ SLC ბალანსს.",
+      "spendSlc": "SLC-ის დახარჯვა ვერ მოხერხდა.",
+      "pasteFailed": "ამჟამად ჩასმა ვერ მოხერხდა.",
+      "enterRecipientId": "შეიყვანეთ მიმღების ID.",
+      "insufficientBalance": "ბალანსი არასაკმარისია.",
+      "sendSlc": "SLC-ის გაგზავნა ვერ მოხერხდა.",
+      "signInToContinue": "გასაგრძელებლად შედით ანგარიშში.",
+      "networkUnavailable": "სერვერთან დაკავშირება ვერ მოხერხდა. სცადეთ თავიდან."
+    },
+    "toasts": {
+      "invalidCursorRefreshed": "არასწორი კურსორის გამო აქტივობა განახლდა.",
+      "slcCredited": "SLC ჩაირიცხა.",
+      "purchasePending": "გადახდა მოლოდინშია. თუ თანხა ჩამოიჭრა, ბალანსი მალე განახლდება. ჩამოქაჩეთ განახლებისთვის.",
+      "balanceUpdated": "SLC ბალანსი განახლდა.",
+      "paymentPending": "გადახდა მოლოდინშია. თუ თანხა ჩამოიჭრა, ბალანსი მალე განახლდება. ჩამოქაჩეთ განახლებისთვის.",
+      "purchaseConfirmed": "SLC შესყიდვა დადასტურდა.",
+      "finalizeFailed": "შესყიდვა დადასტურდა, მაგრამ დასრულება ვერ მოხერხდა. გახსენით აპი თავიდან ან დააჭირეთ „შესყიდვების აღდგენას“.",
+      "restoreCompleted": "აღდგენის შემოწმება დასრულდა.",
+      "purchaseCancelled": "შესყიდვა გაუქმდა.",
+      "purchaseOwnedCheckingRestore": "შესყიდვა უკვე გეკუთვნით. აღდგენა მოწმდება...",
+      "completeBtcpayCheckout": "SLC მისაღებად დაასრულეთ BTCPay checkout.",
+      "completeIpayCheckout": "SLC მისაღებად დაასრულეთ iPay გადახდა.",
+      "completeStripeCheckout": "SLC მისაღებად დაასრულეთ Stripe გადახდა.",
+      "clipboardEmpty": "ბუფერი ცარიელია.",
+      "slcSpent": "SLC დაიხარჯა. ბალანსი და აქტივობა განახლდა.",
+      "slcSent": "SLC გაიგზავნა. ბალანსი და აქტივობა განახლდა."
+    }
+  },
+  "transactions": {
+    "title": "SLC აქტივობა",
+    "empty": "აქტივობა ჯერ არ არის.",
+    "loadMore": "მეტის ჩატვირთვა",
+    "loadingMore": "იტვირთება..."
   }
 }

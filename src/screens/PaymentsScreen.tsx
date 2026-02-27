@@ -2,6 +2,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   ScrollView,
@@ -29,6 +30,7 @@ import { useTheme, type Theme } from '@theme';
 type PaymentsNavigation = NativeStackNavigationProp<ProfileStackParamList, 'Payments'>;
 
 export function PaymentsScreen() {
+  const { t } = useTranslation();
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
   const navigation = useNavigation<PaymentsNavigation>();
@@ -55,11 +57,11 @@ export function PaymentsScreen() {
       setProducts(fetchedProducts);
       setSlcBalance(balance?.balance_cents ?? null);
     } catch (error) {
-      setProductsError('Unable to load SLC products.');
+      setProductsError(t('payments.errors.loadProducts'));
     } finally {
       setProductsLoading(false);
     }
-  }, []);
+  }, [t]);
 
   const handleOpenWallet = useCallback(() => {
     navigation.navigate('WalletLedger');
@@ -91,16 +93,16 @@ export function PaymentsScreen() {
         });
         setEntitlements(result.entitlements);
         await loadProducts();
-        toast.push({ tone: 'info', message: 'Purchase successful.' });
+        toast.push({ tone: 'info', message: t('payments.toasts.purchaseSuccess') });
       } catch (error) {
-        const normalized = normalizeCoinApiError(error, 'Unable to complete purchase.');
+        const normalized = normalizeCoinApiError(error, t('payments.errors.purchaseFailed'));
         setPurchaseErrorCode(normalized.code ?? null);
         toast.push({ tone: 'error', message: normalized.message, duration: 4000 });
       } finally {
         setPurchasingCode(null);
       }
     },
-    [loadProducts, purchasingCode, setEntitlements, toast],
+    [loadProducts, purchasingCode, setEntitlements, t, toast],
   );
 
   const handleRefreshAll = useCallback(async () => {
@@ -115,47 +117,46 @@ export function PaymentsScreen() {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar style="light" />
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.headline}>Payments & Membership</Text>
-        <Text style={styles.subtitle}>
-          Mirror the precision of Apple Pay—clean cards, soft highlights, friendly copy.
-          Stripe integration will power the real flow.
-        </Text>
+        <Text style={styles.headline}>{t('payments.title')}</Text>
+        <Text style={styles.subtitle}>{t('payments.subtitle')}</Text>
 
         <MetalPanel glow>
-          <Text style={styles.panelTitle}>Membership Status</Text>
+          <Text style={styles.panelTitle}>{t('payments.membership.title')}</Text>
           {entitlements?.premium_plus?.active ? (
-            <Text style={styles.body}>Premium+ is active.</Text>
+            <Text style={styles.body}>{t('payments.membership.premiumPlusActive')}</Text>
           ) : entitlements?.premium?.active ? (
-            <Text style={styles.body}>Premium is active.</Text>
+            <Text style={styles.body}>{t('payments.membership.premiumActive')}</Text>
           ) : (
-            <Text style={styles.body}>No active membership yet.</Text>
+            <Text style={styles.body}>{t('payments.membership.noneActive')}</Text>
           )}
           {entitlements?.premium?.active_until ? (
             <Text style={styles.caption}>
-              Premium expires{' '}
-              {new Date(entitlements.premium.active_until).toLocaleDateString()}
+              {t('payments.membership.premiumExpires', {
+                date: new Date(entitlements.premium.active_until).toLocaleDateString(),
+              })}
             </Text>
           ) : null}
           {entitlements?.premium_plus?.active_until ? (
             <Text style={styles.caption}>
-              Premium+ expires{' '}
-              {new Date(entitlements.premium_plus.active_until).toLocaleDateString()}
+              {t('payments.membership.premiumPlusExpires', {
+                date: new Date(entitlements.premium_plus.active_until).toLocaleDateString(),
+              })}
             </Text>
           ) : null}
           <View style={styles.buttonRow}>
-            <MetalButton title="Refresh Status" onPress={handleRefreshAll} />
-            <MetalButton title="Top up SLC" onPress={handleOpenWallet} />
+            <MetalButton title={t('payments.actions.refreshStatus')} onPress={handleRefreshAll} />
+            <MetalButton title={t('payments.actions.topUpSlc')} onPress={handleOpenWallet} />
           </View>
         </MetalPanel>
 
         <MetalPanel>
-          <Text style={styles.panelTitle}>Buy with SLC</Text>
+          <Text style={styles.panelTitle}>{t('payments.buyWithSlc.title')}</Text>
           {productsLoading ? (
-            <Text style={styles.body}>Loading SLC products…</Text>
+            <Text style={styles.body}>{t('payments.buyWithSlc.loading')}</Text>
           ) : productsError ? (
             <Text style={styles.body}>{productsError}</Text>
           ) : products.length === 0 ? (
-            <Text style={styles.body}>No SLC products available yet.</Text>
+            <Text style={styles.body}>{t('payments.buyWithSlc.empty')}</Text>
           ) : (
             products.map((product) => (
               <View key={product.code} style={styles.card}>
@@ -168,7 +169,9 @@ export function PaymentsScreen() {
                 ) : null}
                 <MetalButton
                   title={
-                    purchasingCode === product.code ? 'Processing…' : 'Buy with SLC'
+                    purchasingCode === product.code
+                      ? t('payments.actions.processing')
+                      : t('payments.actions.buyWithSlc')
                   }
                   onPress={() => handlePurchase(product)}
                   disabled={purchasingCode === product.code}
@@ -177,25 +180,23 @@ export function PaymentsScreen() {
             ))
           )}
           {slcBalance !== null ? (
-            <Text style={styles.caption}>Your SLC balance: {formatSlc(slcBalance)}</Text>
+            <Text style={styles.caption}>
+              {t('payments.buyWithSlc.balance', { value: formatSlc(slcBalance) })}
+            </Text>
           ) : null}
         </MetalPanel>
 
         {purchaseErrorCode === 'insufficient_funds' ? (
           <MetalPanel>
-            <Text style={styles.body}>
-              Insufficient SLC balance. Top up to unlock Premium features.
-            </Text>
-            <MetalButton title="Top up SLC" onPress={handleOpenWallet} />
+            <Text style={styles.body}>{t('payments.errors.insufficientFunds')}</Text>
+            <MetalButton title={t('payments.actions.topUpSlc')} onPress={handleOpenWallet} />
           </MetalPanel>
         ) : null}
 
         <MetalPanel>
-          <Text style={styles.panelTitle}>Gift Catalog</Text>
+          <Text style={styles.panelTitle}>{t('payments.giftCatalog.title')}</Text>
           {gifts.length === 0 ? (
-            <Text style={styles.body}>
-              Gifts are the playful, Musk-level audacity we&apos;ll add soon.
-            </Text>
+            <Text style={styles.body}>{t('payments.giftCatalog.empty')}</Text>
           ) : (
             gifts.map((gift) => (
               <View key={gift.id} style={styles.card}>
@@ -205,22 +206,19 @@ export function PaymentsScreen() {
                   <Text style={styles.feature}>
                     {Object.entries(gift.metadata)
                       .map(([key, value]) => `${key}: ${String(value)}`)
-                      .join(' · ')}
+                      .join(t('payments.giftCatalog.metaSeparator'))}
                   </Text>
                 ) : null}
-                <MetalButton title="Send Gift" onPress={handleOpenWallet} />
+                <MetalButton title={t('payments.actions.sendGift')} onPress={handleOpenWallet} />
               </View>
             ))
           )}
         </MetalPanel>
 
         <MetalPanel>
-          <Text style={styles.panelTitle}>Wallet</Text>
-          <Text style={styles.body}>
-            Soon: monitor balances, gifts, and transaction history with a
-            Torvalds-approved clarity.
-          </Text>
-          <MetalButton title="View Wallet" onPress={handleOpenWallet} />
+          <Text style={styles.panelTitle}>{t('payments.wallet.title')}</Text>
+          <Text style={styles.body}>{t('payments.wallet.body')}</Text>
+          <MetalButton title={t('payments.actions.viewWallet')} onPress={handleOpenWallet} />
         </MetalPanel>
       </ScrollView>
       {loading ? (
