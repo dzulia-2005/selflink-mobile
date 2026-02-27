@@ -142,7 +142,10 @@
     },
     "accessibility": {
       "changePhoto": "Change photo",
-      "copyRecipientId": "Copy recipient ID"
+      "copyRecipientId": "Copy recipient ID",
+      "nameInput": "Name",
+      "bioInput": "Bio",
+      "birthPlaceInput": "Birth place"
     }
   },
   "auth": {

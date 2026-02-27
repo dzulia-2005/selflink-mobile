@@ -58,6 +58,14 @@ Thanks for your interest in contributing to this project! Contributions of all s
 - Add comments where behavior is non-obvious.
 - Update docs when behavior changes.
 
+## i18n literal checks
+
+- Run a quick leftover literal scan before opening PRs:
+  - `rg -n ">([^<{][^<]*)<" src/screens src/components`
+- Ignore non-user-facing entries such as `testID`, telemetry/debug logs, and generated/system-only strings.
+- Locale key parity is enforced by:
+  - `npx jest src/i18n/__tests__/localeKeyParity.test.ts --runInBand`
+
 ## Communication
 
 Be respectful, constructive, and open to feedback. Questions and suggestions are welcome.

@@ -96,6 +96,35 @@ module.exports = {
         ],
       },
     },
+    {
+      files: ['src/screens/**/*.tsx'],
+      excludedFiles: [
+        'src/screens/LoginScreen.tsx',
+        'src/screens/RegisterScreen.tsx',
+        'src/screens/CommunityScreen.tsx',
+        'src/screens/MessagesScreen.tsx',
+        'src/screens/messaging/ChatScreen.tsx',
+        'src/screens/profile/SearchProfilesScreen.tsx',
+        'src/screens/video/SoulReelsScreen.tsx',
+      ],
+      rules: {
+        'no-restricted-syntax': [
+          'error',
+          {
+            selector:
+              "JSXOpeningElement[name.name='TextInput'] JSXAttribute[name.name='placeholder'][value.type='Literal']",
+            message:
+              'Use i18n translation keys for TextInput placeholders (e.g., t("...")).',
+          },
+          {
+            selector:
+              "JSXOpeningElement[name.name='TextInput'] JSXAttribute[name.name='placeholder'][value.type='JSXExpressionContainer'][value.expression.type='TemplateLiteral'][value.expression.expressions.length=0]",
+            message:
+              'Use i18n translation keys for TextInput placeholders (e.g., t("...")).',
+          },
+        ],
+      },
+    },
   ],
   settings: {
     'import/resolver': {
