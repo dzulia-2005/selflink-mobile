@@ -56,6 +56,8 @@ module.exports = {
         'src/components/comments/CommentComposer.tsx',
         'src/components/comments/CommentItem.tsx',
         'src/screens/profile/ProfileScreen.tsx',
+        'src/screens/astro/BirthDataScreen.tsx',
+        'src/components/astro/BirthLocationMapModal.tsx',
       ],
       rules: {
         'react/jsx-no-literals': ['error', { noStrings: true, ignoreProps: true }],

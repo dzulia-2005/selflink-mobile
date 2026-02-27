@@ -343,6 +343,81 @@
       }
     }
   },
+  "astro": {
+    "birthData": {
+      "title": "Birth Data",
+      "subtitle": "Precise birth details help us compute your Ascendant and houses. You can use the info you shared at registration or correct it here.",
+      "choice": {
+        "title": "Use saved details?",
+        "body": "We can use the birth info from your registration, or you can correct it now.",
+        "useRegistration": "Use registration data",
+        "usingRegistration": "Using registration data...",
+        "editData": "Edit / correct data"
+      },
+      "form": {
+        "required": "Required",
+        "firstNamePlaceholder": "First name",
+        "lastNamePlaceholder": "Last name",
+        "datePlaceholder": "Date of birth (YYYY-MM-DD)",
+        "timePlaceholder": "Time of birth (HH:MM, 24h)",
+        "location": "Location",
+        "cityPlaceholder": "City",
+        "countryPlaceholder": "Country",
+        "chooseOnMap": "Choose on Map",
+        "clear": "Clear",
+        "selectedOnMap": "Selected on map:",
+        "nearLocation": "near {{city}}, {{country}}",
+        "submitting": "Submitting...",
+        "saveAndGenerate": "Save & Generate Chart",
+        "hint": "Tip: if you are unsure of the exact time, use your best estimate. You can update later."
+      },
+      "validation": {
+        "latitudeRange": "Latitude must be between -90 and 90 degrees.",
+        "longitudeRange": "Longitude must be between -180 and 180 degrees."
+      },
+      "toasts": {
+        "locationSaved": "Birth location saved.",
+        "usingSavedData": "Using your saved birth data. Generating your chart...",
+        "needBirthDetails": "We need your birth details. Please fill them in.",
+        "unableToUseSavedData": "Unable to use your saved birth data. Please review your details.",
+        "savedAndGenerating": "Birth data saved. Generating your chart...",
+        "unableToSave": "Unable to save birth data. Please confirm the date, time, city, and country."
+      },
+      "accessibility": {
+        "firstNameInput": "First name",
+        "lastNameInput": "Last name",
+        "dateInput": "Date of birth",
+        "timeInput": "Time of birth",
+        "cityInput": "City",
+        "countryInput": "Country",
+        "chooseOnMap": "Choose on map",
+        "clearLocation": "Clear selected location"
+      },
+      "map": {
+        "title": "Select Birth Location",
+        "instructions": "Drag the map or tap to place the pin at your exact birth place.",
+        "loading": "Loading map...",
+        "tapToChoose": "Tap on the map to choose a location.",
+        "errors": {
+          "unavailable": "Map unavailable in this build. Missing Google Maps API key."
+        },
+        "actions": {
+          "close": "Close",
+          "tryAgain": "Try Again",
+          "useThisLocation": "Use This Location"
+        },
+        "summary": {
+          "title": "Location selected",
+          "near": "Near {{city}}, {{country}}",
+          "coords": "Lat {{lat}}, Lon {{lon}}"
+        },
+        "accessibility": {
+          "back": "Back",
+          "useLocation": "Use this location"
+        }
+      }
+    }
+  },
   "post": {
     "title": {
       "notFound": "Post not found."

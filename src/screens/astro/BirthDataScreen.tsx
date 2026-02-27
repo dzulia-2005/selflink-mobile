@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -25,6 +26,7 @@ import { useAuthStore } from '@store/authStore';
 import { useTheme, type Theme } from '@theme';
 
 export function BirthDataScreen() {
+  const { t } = useTranslation();
   const navigation =
     useNavigation<NativeStackNavigationProp<MentorStackParamList, 'BirthData'>>();
   const { theme } = useTheme();
@@ -126,7 +128,11 @@ export function BirthDataScreen() {
   };
 
   const handleConfirmMap = () => {
-    toast.push({ message: 'Birth location saved.', tone: 'info', duration: 2000 });
+    toast.push({
+      message: t('astro.birthData.toasts.locationSaved'),
+      tone: 'info',
+      duration: 2000,
+    });
     setMapVisible(false);
   };
 
@@ -141,7 +147,7 @@ export function BirthDataScreen() {
     try {
       await createOrUpdateNatalChart(payload);
       toast.push({
-        message: 'Using your saved birth data. Generating your chart…',
+        message: t('astro.birthData.toasts.usingSavedData'),
         tone: 'info',
       });
       navigation.navigate('NatalChart');
@@ -151,8 +157,8 @@ export function BirthDataScreen() {
         message:
           error instanceof Error &&
           error.message.includes('No birth data stored in profile')
-            ? 'We need your birth details. Please fill them in.'
-            : 'Unable to use your saved birth data. Please review your details.',
+            ? t('astro.birthData.toasts.needBirthDetails')
+            : t('astro.birthData.toasts.unableToUseSavedData'),
         tone: 'error',
         duration: 6000,
       });
@@ -171,14 +177,14 @@ export function BirthDataScreen() {
     const lonToSend = longitude;
     if (latToSend !== null && (latToSend < -90 || latToSend > 90)) {
       toast.push({
-        message: 'Latitude must be between -90 and 90 degrees.',
+        message: t('astro.birthData.validation.latitudeRange'),
         tone: 'error',
       });
       return;
     }
     if (lonToSend !== null && (lonToSend < -180 || lonToSend > 180)) {
       toast.push({
-        message: 'Longitude must be between -180 and 180 degrees.',
+        message: t('astro.birthData.validation.longitudeRange'),
         tone: 'error',
       });
       return;
@@ -199,13 +205,12 @@ export function BirthDataScreen() {
     setIsSubmitting(true);
     try {
       await createOrUpdateNatalChart(payload);
-      toast.push({ message: 'Birth data saved. Generating your chart…', tone: 'info' });
+      toast.push({ message: t('astro.birthData.toasts.savedAndGenerating'), tone: 'info' });
       navigation.navigate('NatalChart');
     } catch (error) {
       console.error('Birth data submission failed', error);
       toast.push({
-        message:
-          'Unable to save birth data. Please confirm the date, time, city, and country.',
+        message: t('astro.birthData.toasts.unableToSave'),
         tone: 'error',
         duration: 6000,
       });
@@ -221,76 +226,83 @@ export function BirthDataScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <ScrollView contentContainerStyle={styles.content}>
-          <Text style={styles.headline}>Birth Data</Text>
+          <Text style={styles.headline}>{t('astro.birthData.title')}</Text>
           <Text style={styles.subtitle}>
-            Precise birth details help us compute your Ascendant and houses. You can use
-            the info you shared at registration or correct it here.
+            {t('astro.birthData.subtitle')}
           </Text>
 
           {mode === 'choice' ? (
             <MetalPanel glow>
-              <Text style={styles.panelTitle}>Use saved details?</Text>
-              <Text style={styles.bodyText}>
-                We can use the birth info from your registration, or you can correct it
-                now.
-              </Text>
+              <Text style={styles.panelTitle}>{t('astro.birthData.choice.title')}</Text>
+              <Text style={styles.bodyText}>{t('astro.birthData.choice.body')}</Text>
               <MetalButton
                 title={
-                  isSubmitting ? 'Using registration data…' : 'Use registration data'
+                  isSubmitting
+                    ? t('astro.birthData.choice.usingRegistration')
+                    : t('astro.birthData.choice.useRegistration')
                 }
                 onPress={handleUseRegistrationData}
                 disabled={isSubmitting}
               />
-              <MetalButton title="Edit / correct data" onPress={() => setMode('form')} />
+              <MetalButton
+                title={t('astro.birthData.choice.editData')}
+                onPress={() => setMode('form')}
+              />
             </MetalPanel>
           ) : null}
 
           {mode === 'form' ? (
             <MetalPanel glow>
-              <Text style={styles.panelTitle}>Required</Text>
+              <Text style={styles.panelTitle}>{t('astro.birthData.form.required')}</Text>
               <TextInput
-                placeholder="First name"
+                placeholder={t('astro.birthData.form.firstNamePlaceholder')}
                 placeholderTextColor={theme.palette.silver}
                 value={firstName}
                 onChangeText={setFirstName}
                 style={styles.input}
+                accessibilityLabel={t('astro.birthData.accessibility.firstNameInput')}
               />
               <TextInput
-                placeholder="Last name"
+                placeholder={t('astro.birthData.form.lastNamePlaceholder')}
                 placeholderTextColor={theme.palette.silver}
                 value={lastName}
                 onChangeText={setLastName}
                 style={styles.input}
+                accessibilityLabel={t('astro.birthData.accessibility.lastNameInput')}
               />
               <TextInput
-                placeholder="Date of birth (YYYY-MM-DD)"
+                placeholder={t('astro.birthData.form.datePlaceholder')}
                 placeholderTextColor={theme.palette.silver}
                 value={dateOfBirth}
                 onChangeText={setDateOfBirth}
                 style={styles.input}
+                accessibilityLabel={t('astro.birthData.accessibility.dateInput')}
               />
               <TextInput
-                placeholder="Time of birth (HH:MM, 24h)"
+                placeholder={t('astro.birthData.form.timePlaceholder')}
                 placeholderTextColor={theme.palette.silver}
                 value={timeOfBirth}
                 onChangeText={setTimeOfBirth}
                 style={styles.input}
+                accessibilityLabel={t('astro.birthData.accessibility.timeInput')}
               />
 
-              <Text style={styles.panelTitle}>Location</Text>
+              <Text style={styles.panelTitle}>{t('astro.birthData.form.location')}</Text>
               <TextInput
-                placeholder="City"
+                placeholder={t('astro.birthData.form.cityPlaceholder')}
                 placeholderTextColor={theme.palette.silver}
                 value={city}
                 onChangeText={setCity}
                 style={styles.input}
+                accessibilityLabel={t('astro.birthData.accessibility.cityInput')}
               />
               <TextInput
-                placeholder="Country"
+                placeholder={t('astro.birthData.form.countryPlaceholder')}
                 placeholderTextColor={theme.palette.silver}
                 value={country}
                 onChangeText={setCountry}
                 style={styles.input}
+                accessibilityLabel={t('astro.birthData.accessibility.countryInput')}
               />
 
               <View style={styles.mapCtaRow}>
@@ -298,21 +310,27 @@ export function BirthDataScreen() {
                   onPress={handleOpenMap}
                   style={styles.mapButton}
                   activeOpacity={0.9}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('astro.birthData.accessibility.chooseOnMap')}
                 >
                   <Ionicons
                     name="location-outline"
                     size={18}
                     color={theme.palette.azure}
                   />
-                  <Text style={styles.mapButtonLabel}>Choose on Map</Text>
+                  <Text style={styles.mapButtonLabel}>
+                    {t('astro.birthData.form.chooseOnMap')}
+                  </Text>
                 </TouchableOpacity>
                 {hasSelectedCoordinate ? (
                   <TouchableOpacity
                     style={styles.clearLink}
                     onPress={handleClearCoordinate}
                     hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    accessibilityRole="button"
+                    accessibilityLabel={t('astro.birthData.accessibility.clearLocation')}
                   >
-                    <Text style={styles.clearLabel}>Clear</Text>
+                    <Text style={styles.clearLabel}>{t('astro.birthData.form.clear')}</Text>
                   </TouchableOpacity>
                 ) : null}
               </View>
@@ -325,22 +343,25 @@ export function BirthDataScreen() {
                     style={styles.selectedIcon}
                   />
                   <Text style={styles.selectedSummaryText}>
-                    Selected on map:{' '}
+                    {t('astro.birthData.form.selectedOnMap')}{' '}
                     {city && country
-                      ? `near ${city}, ${country}`
+                      ? t('astro.birthData.form.nearLocation', { city, country })
                       : `${latitude?.toFixed(4)}, ${longitude?.toFixed(4)}`}
                   </Text>
                 </View>
               ) : null}
 
               <MetalButton
-                title={isSubmitting ? 'Submitting…' : 'Save & Generate Chart'}
+                title={
+                  isSubmitting
+                    ? t('astro.birthData.form.submitting')
+                    : t('astro.birthData.form.saveAndGenerate')
+                }
                 onPress={handleSubmit}
                 disabled={isSubmitDisabled}
               />
               <Text style={styles.hint}>
-                Tip: if you are unsure of the exact time, use your best estimate. You can
-                update later.
+                {t('astro.birthData.form.hint')}
               </Text>
             </MetalPanel>
           ) : null}

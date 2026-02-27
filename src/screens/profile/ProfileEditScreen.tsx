@@ -281,6 +281,7 @@ export function ProfileEditScreen() {
               value={name}
               onChangeText={setName}
               style={styles.input}
+              accessibilityLabel={t('profile.accessibility.nameInput')}
             />
             <TextInput
               placeholder={t('profile.bioPlaceholder')}
@@ -290,6 +291,7 @@ export function ProfileEditScreen() {
               style={[styles.input, styles.multiline]}
               multiline
               numberOfLines={3}
+              accessibilityLabel={t('profile.accessibility.bioInput')}
             />
             <TextInput
               placeholder={t('profile.birthPlacePlaceholder')}
@@ -297,6 +299,7 @@ export function ProfileEditScreen() {
               value={birthPlace}
               onChangeText={setBirthPlace}
               style={styles.input}
+              accessibilityLabel={t('profile.accessibility.birthPlaceInput')}
             />
 
             <Text style={styles.label}>{t('profile.language')}</Text>
