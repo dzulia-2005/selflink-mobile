@@ -1,0 +1,184 @@
+{
+  "common": {
+    "save": "Сохранить",
+    "cancel": "Отмена",
+    "loading": "Загрузка..."
+  },
+  "profile": {
+    "loadingProfile": "Загрузка профиля...",
+    "namePlaceholder": "Имя",
+    "bioPlaceholder": "Био",
+    "birthPlacePlaceholder": "Место рождения",
+    "gender": "Пол",
+    "orientation": "Ориентация",
+    "relationshipGoal": "Цель отношений",
+    "attachmentStyle": "Стиль привязанности",
+    "values": "Ценности",
+    "preferredLifestyle": "Предпочтительный стиль жизни",
+    "loveLanguage": "Язык любви",
+    "language": "Язык",
+    "updated": "Профиль обновлён",
+    "loadError": "не удалось загрузить данные профиля.",
+    "saveError": "не удалось обновить профиль. Попробуйте снова.",
+    "languageChangeError": "не удалось сменить язык. Попробуйте снова.",
+    "saving": "Сохранение...",
+    "languageOptions": {
+      "en": "English",
+      "ru": "Русский",
+      "ka": "ქართული"
+    },
+    "options": {
+      "gender": {
+        "male": "Мужской",
+        "female": "Женский",
+        "non_binary": "небинарный",
+        "other": "Другое",
+        "prefer_not_to_say": "Предпочитаю не указывать"
+      },
+      "orientation": {
+        "hetero": "Гетеро",
+        "homo": "Гомо",
+        "bi": "Би",
+        "pan": "Пан",
+        "asexual": "Асексуал",
+        "other": "Другое",
+        "prefer_not_to_say": "Предпочитаю не указывать"
+      },
+      "relationshipGoal": {
+        "casual": "Без обязательств",
+        "long_term": "Долгосрочно",
+        "marriage": "Брак",
+        "unsure": "не уверен"
+      },
+      "attachmentStyle": {
+        "secure": "Надёжный",
+        "anxious": "Тревожный",
+        "avoidant": "Избегающий",
+        "mixed": "Смешанный"
+      },
+      "values": {
+        "growth": "Рост",
+        "freedom": "Свобода",
+        "connection": "Связь",
+        "security": "Стабильность",
+        "adventure": "Приключения",
+        "family": "Семья",
+        "career": "Карьера"
+      },
+      "preferredLifestyle": {
+        "remote_work": "Удалённая работа",
+        "travel": "Путешествия",
+        "fitness": "Фитнес",
+        "nightlife": "Ночная жизнь",
+        "early_riser": "Ранний подъём",
+        "spirituality": "Духовность"
+      },
+      "loveLanguage": {
+        "words": "Слова",
+        "quality_time": "Время вместе",
+        "acts": "Дела",
+        "gifts": "Подарки",
+        "touch": "Прикосновения"
+      }
+    }
+  },
+  "auth": {
+    "login": {
+      "emailPlaceholder": "Эл. почта",
+      "passwordPlaceholder": "Пароль",
+      "submit": "Войти",
+      "submitting": "Вход...",
+      "socialLabel": "Или продолжить через",
+      "registerLink": "Регистрация",
+      "failed": "не удалось войти. Попробуйте снова."
+    },
+    "register": {
+      "title": "Создайте аккаунт",
+      "subtitle": "Задайте ник и синхронизируйте личную матрицу.",
+      "fullNamePlaceholder": "Полное имя",
+      "usernamePlaceholder": "Имя пользователя",
+      "emailPlaceholder": "Эл. почта",
+      "passwordPlaceholder": "Пароль",
+      "confirmPasswordPlaceholder": "Подтвердите пароль",
+      "submit": "Создать аккаунт",
+      "submitting": "Создание...",
+      "signInLink": "Уже есть аккаунт? Войти",
+      "socialLink": "Продолжить через соцсети",
+      "failed": "не удалось зарегистрироваться. Попробуйте снова."
+    },
+    "social": {
+      "title": "Вход через соцсети",
+      "subtitle": "Продолжить через Google, Facebook или GitHub.",
+      "missingProjectConfig": "не указан Expo owner/slug. Укажите expo.owner + expo.slug в конфиге приложения.",
+      "googleFail": "Сбой входа Google. Попробуйте снова.",
+      "googleNoCredential": "Google не вернул данные входа.",
+      "googleUnable": "не удалось завершить вход через Google.",
+      "githubFail": "Сбой входа GitHub. Попробуйте снова.",
+      "githubNoCode": "GitHub не вернул код.",
+      "githubUnable": "не удалось завершить вход через GitHub.",
+      "facebookFail": "Сбой входа Facebook. Попробуйте снова.",
+      "facebookNoCode": "Facebook не вернул код.",
+      "facebookUnable": "не удалось завершить вход через Facebook.",
+      "googleClientMissing": "Укажите EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID в .env и перезапустите Expo через `npx expo start -c`.",
+      "githubClientMissing": "Укажите EXPO_PUBLIC_GITHUB_CLIENT_ID в .env и перезапустите Expo через `npx expo start -c`.",
+      "facebookAppMissing": "Укажите EXPO_PUBLIC_FACEBOOK_APP_ID в .env и перезапустите Expo через `npx expo start -c`.",
+      "googleNotReady": "Google-вход пока не готов.",
+      "githubNotReady": "GitHub-вход пока не готов.",
+      "facebookNotReady": "Facebook-вход пока не готов.",
+      "continueGoogle": "Продолжить Google",
+      "continueFacebook": "Продолжить Facebook",
+      "continueGithub": "Продолжить GitHub",
+      "preparingGoogle": "Подготовка входа Google...",
+      "preparingFacebook": "Подготовка входа Facebook...",
+      "preparingGithub": "Подготовка входа GitHub...",
+      "providerNotConfiguredGoogle": "Google-вход не настроен. Добавьте `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` в `.env`.",
+      "providerNotConfiguredFacebook": "Facebook-вход не настроен. Добавьте `EXPO_PUBLIC_FACEBOOK_APP_ID` в `.env`.",
+      "providerNotConfiguredGithub": "GitHub-вход не настроен. Добавьте `EXPO_PUBLIC_GITHUB_CLIENT_ID` в `.env`.",
+      "redirectHint": "Добавьте `https://auth.expo.io/{{project}}` в OAuth redirect URI для GitHub и Facebook."
+    },
+    "validation": {
+      "invalidEmail": "неверный email",
+      "passwordRequired": "Пароль обязателен",
+      "confirmPasswordRequired": "Подтвердите пароль",
+      "nameRequired": "Имя обязательно",
+      "handleRequired": "Ник обязателен",
+      "passwordMismatch": "Пароли не совпадают"
+    }
+  },
+  "app": {
+    "preparingSelflink": "Подготовка SelfLink..."
+  },
+  "nav": {
+    "tabs": {
+      "feed": "Лента",
+      "mentor": "Ментор",
+      "soulmatch": "SoulMatch",
+      "profile": "Профиль",
+      "messages": "Сообщения"
+    },
+    "headers": {
+      "messages": "Сообщения",
+      "threads": "Чаты",
+      "post": "Пост",
+      "newPost": "Новый пост",
+      "searchProfiles": "Поиск профилей",
+      "profile": "Профиль",
+      "editProfile": "Редактировать профиль",
+      "payments": "Платежи",
+      "wallet": "Кошелёк",
+      "notifications": "Уведомления",
+      "community": "Сообщество",
+      "inbox": "Входящие",
+      "birthData": "Данные рождения",
+      "natalChart": "Натальная карта",
+      "natalMentor": "Натальный ментор",
+      "dailyMentor": "Ежедневный ментор",
+      "dailyEntry": "Ежедневная запись",
+      "aiMentor": "ИИ-ментор",
+      "soulmatchRecommendations": "Рекомендации SoulMatch",
+      "soulmatch": "SoulMatch",
+      "soulmatchMentor": "Ментор SoulMatch",
+      "completePersonalMap": "Заполните личную карту"
+    }
+  }
+}

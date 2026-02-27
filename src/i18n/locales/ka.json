@@ -1,0 +1,184 @@
+{
+  "common": {
+    "save": "შენახვა",
+    "cancel": "გაუქმება",
+    "loading": "იტვირთება..."
+  },
+  "profile": {
+    "loadingProfile": "პროფილი იტვირთება...",
+    "namePlaceholder": "სახელი",
+    "bioPlaceholder": "ბიო",
+    "birthPlacePlaceholder": "დაბადების ადგილი",
+    "gender": "სქესი",
+    "orientation": "ორიენტაცია",
+    "relationshipGoal": "ურთიერთობის მიზანი",
+    "attachmentStyle": "მიბმის სტილი",
+    "values": "ღირებულებები",
+    "preferredLifestyle": "სასურველი ცხოვრების სტილი",
+    "loveLanguage": "სიყვარულის ენა",
+    "language": "ენა",
+    "updated": "პროფილი განახლდა",
+    "loadError": "პროფილის დეტალების ჩატვირთვა ვერ მოხერხდა.",
+    "saveError": "პროფილის განახლება ვერ მოხერხდა. სცადეთ თავიდან.",
+    "languageChangeError": "ენის შეცვლა ვერ მოხერხდა. სცადეთ თავიდან.",
+    "saving": "ინახება...",
+    "languageOptions": {
+      "en": "English",
+      "ru": "Русский",
+      "ka": "ქართული"
+    },
+    "options": {
+      "gender": {
+        "male": "კაცი",
+        "female": "ქალი",
+        "non_binary": "არაბინარული",
+        "other": "სხვა",
+        "prefer_not_to_say": "არჩევანი არ მაქვს"
+      },
+      "orientation": {
+        "hetero": "ჰეტერო",
+        "homo": "ჰომო",
+        "bi": "ბი",
+        "pan": "პან",
+        "asexual": "ასექსუალური",
+        "other": "სხვა",
+        "prefer_not_to_say": "არჩევანი არ მაქვს"
+      },
+      "relationshipGoal": {
+        "casual": "თავისუფალი",
+        "long_term": "გრძელვადიანი",
+        "marriage": "ქორწინება",
+        "unsure": "არ ვარ დარწმუნებული"
+      },
+      "attachmentStyle": {
+        "secure": "სტაბილური",
+        "anxious": "შფოთვადი",
+        "avoidant": "თავიდან ამრიდებელი",
+        "mixed": "შერეული"
+      },
+      "values": {
+        "growth": "ზრდა",
+        "freedom": "თავისუფლება",
+        "connection": "კავშირი",
+        "security": "უსაფრთხოება",
+        "adventure": "თავგადასავალი",
+        "family": "ოჯახი",
+        "career": "კარიერა"
+      },
+      "preferredLifestyle": {
+        "remote_work": "დისტანციური მუშაობა",
+        "travel": "მოგზაურობა",
+        "fitness": "ფიტნესი",
+        "nightlife": "ღამის ცხოვრება",
+        "early_riser": "ადრიანი გაღვიძება",
+        "spirituality": "სულიერება"
+      },
+      "loveLanguage": {
+        "words": "სიტყვები",
+        "quality_time": "ერთად გატარებული დრო",
+        "acts": "ქმედებები",
+        "gifts": "საჩუქრები",
+        "touch": "შეხება"
+      }
+    }
+  },
+  "auth": {
+    "login": {
+      "emailPlaceholder": "ელფოსტა",
+      "passwordPlaceholder": "პაროლი",
+      "submit": "შესვლა",
+      "submitting": "შედის...",
+      "socialLabel": "ან გააგრძელე",
+      "registerLink": "რეგისტრაცია",
+      "failed": "შესვლა ვერ მოხერხდა. სცადეთ თავიდან."
+    },
+    "register": {
+      "title": "შექმენი ანგარიში",
+      "subtitle": "აირჩიე ნიკი და დაასინქრონე შენი პირადი მატრიცა.",
+      "fullNamePlaceholder": "სრული სახელი",
+      "usernamePlaceholder": "მომხმარებლის სახელი",
+      "emailPlaceholder": "ელფოსტა",
+      "passwordPlaceholder": "პაროლი",
+      "confirmPasswordPlaceholder": "გაიმეორე პაროლი",
+      "submit": "ანგარიშის შექმნა",
+      "submitting": "იქმნება...",
+      "signInLink": "უკვე გაქვს ანგარიში? შედი",
+      "socialLink": "გააგრძელე სოციალური შესვლით",
+      "failed": "რეგისტრაცია ვერ მოხერხდა. სცადეთ თავიდან."
+    },
+    "social": {
+      "title": "სოციალური შესვლა",
+      "subtitle": "გააგრძელე Google-ით, Facebook-ით ან GitHub-ით.",
+      "missingProjectConfig": "Expo owner/slug ვერ მოიძებნა. მიუთითეთ expo.owner + expo.slug app config-ში.",
+      "googleFail": "Google შესვლა ჩავარდა. სცადეთ თავიდან.",
+      "googleNoCredential": "Google-მა ავტორიზაციის მონაცემი არ დააბრუნა.",
+      "googleUnable": "Google შესვლის დასრულება ვერ მოხერხდა.",
+      "githubFail": "GitHub შესვლა ჩავარდა. სცადეთ თავიდან.",
+      "githubNoCode": "GitHub-მა კოდი არ დააბრუნა.",
+      "githubUnable": "GitHub შესვლის დასრულება ვერ მოხერხდა.",
+      "facebookFail": "Facebook შესვლა ჩავარდა. სცადეთ თავიდან.",
+      "facebookNoCode": "Facebook-მა კოდი არ დააბრუნა.",
+      "facebookUnable": "Facebook შესვლის დასრულება ვერ მოხერხდა.",
+      "googleClientMissing": "დააყენეთ EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID .env-ში და გადატვირთეთ Expo `npx expo start -c`-ით.",
+      "githubClientMissing": "დააყენეთ EXPO_PUBLIC_GITHUB_CLIENT_ID .env-ში და გადატვირთეთ Expo `npx expo start -c`-ით.",
+      "facebookAppMissing": "დააყენეთ EXPO_PUBLIC_FACEBOOK_APP_ID .env-ში და გადატვირთეთ Expo `npx expo start -c`-ით.",
+      "googleNotReady": "Google შესვლა ჯერ მზად არ არის.",
+      "githubNotReady": "GitHub შესვლა ჯერ მზად არ არის.",
+      "facebookNotReady": "Facebook შესვლა ჯერ მზად არ არის.",
+      "continueGoogle": "გააგრძელე Google-ით",
+      "continueFacebook": "გააგრძელე Facebook-ით",
+      "continueGithub": "გააგრძელე GitHub-ით",
+      "preparingGoogle": "მზადდება Google შესვლა...",
+      "preparingFacebook": "მზადდება Facebook შესვლა...",
+      "preparingGithub": "მზადდება GitHub შესვლა...",
+      "providerNotConfiguredGoogle": "Google შესვლა ჯერ არ არის კონფიგურირებული. დაამატეთ `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` `.env`-ში.",
+      "providerNotConfiguredFacebook": "Facebook შესვლა ჯერ არ არის კონფიგურირებული. დაამატეთ `EXPO_PUBLIC_FACEBOOK_APP_ID` `.env`-ში.",
+      "providerNotConfiguredGithub": "GitHub შესვლა ჯერ არ არის კონფიგურირებული. დაამატეთ `EXPO_PUBLIC_GITHUB_CLIENT_ID` `.env`-ში.",
+      "redirectHint": "GitHub/Facebook OAuth redirect URI-ში დაამატეთ `https://auth.expo.io/{{project}}`."
+    },
+    "validation": {
+      "invalidEmail": "არასწორი ელფოსტა",
+      "passwordRequired": "პაროლი სავალდებულოა",
+      "confirmPasswordRequired": "გაიმეორეთ პაროლი",
+      "nameRequired": "სახელი სავალდებულოა",
+      "handleRequired": "ნიკი სავალდებულოა",
+      "passwordMismatch": "პაროლები არ ემთხვევა"
+    }
+  },
+  "app": {
+    "preparingSelflink": "SelfLink მზადდება..."
+  },
+  "nav": {
+    "tabs": {
+      "feed": "ფიდი",
+      "mentor": "მენტორი",
+      "soulmatch": "თავსებადობა",
+      "profile": "პროფილი",
+      "messages": "შეტყობინებები"
+    },
+    "headers": {
+      "messages": "შეტყობინებები",
+      "threads": "ჩატები",
+      "post": "პოსტი",
+      "newPost": "ახალი პოსტი",
+      "searchProfiles": "პროფილების ძიება",
+      "profile": "პროფილი",
+      "editProfile": "პროფილის რედაქტირება",
+      "payments": "გადახდები",
+      "wallet": "საფულე",
+      "notifications": "შეტყობინებები",
+      "community": "თემი",
+      "inbox": "შემომავალი",
+      "birthData": "დაბადების მონაცემები",
+      "natalChart": "ნატალური რუკა",
+      "natalMentor": "ნატალური მენტორი",
+      "dailyMentor": "დღიური მენტორი",
+      "dailyEntry": "დღიური ჩანაწერი",
+      "aiMentor": "AI მენტორი",
+      "soulmatchRecommendations": "თავსებადობის რეკომენდაციები",
+      "soulmatch": "თავსებადობა",
+      "soulmatchMentor": "თავსებადობის მენტორი",
+      "completePersonalMap": "შეავსე პირადი რუკა"
+    }
+  }
+}

@@ -1,0 +1,184 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "loading": "Loading..."
+  },
+  "profile": {
+    "loadingProfile": "Loading profile...",
+    "namePlaceholder": "Name",
+    "bioPlaceholder": "Bio",
+    "birthPlacePlaceholder": "Birth place",
+    "gender": "Gender",
+    "orientation": "Orientation",
+    "relationshipGoal": "Relationship goal",
+    "attachmentStyle": "Attachment style",
+    "values": "Values",
+    "preferredLifestyle": "Preferred lifestyle",
+    "loveLanguage": "Love language",
+    "language": "Language",
+    "updated": "Profile updated",
+    "loadError": "Unable to load profile details.",
+    "saveError": "Could not update profile. Try again.",
+    "languageChangeError": "Could not switch language. Try again.",
+    "saving": "Saving...",
+    "languageOptions": {
+      "en": "English",
+      "ru": "Russian",
+      "ka": "Georgian"
+    },
+    "options": {
+      "gender": {
+        "male": "Male",
+        "female": "Female",
+        "non_binary": "Non-binary",
+        "other": "Other",
+        "prefer_not_to_say": "Prefer not to say"
+      },
+      "orientation": {
+        "hetero": "Heterosexual",
+        "homo": "Homosexual",
+        "bi": "Bisexual",
+        "pan": "Pansexual",
+        "asexual": "Asexual",
+        "other": "Other",
+        "prefer_not_to_say": "Prefer not to say"
+      },
+      "relationshipGoal": {
+        "casual": "Casual",
+        "long_term": "Long-term",
+        "marriage": "Marriage",
+        "unsure": "Unsure"
+      },
+      "attachmentStyle": {
+        "secure": "Secure",
+        "anxious": "Anxious",
+        "avoidant": "Avoidant",
+        "mixed": "Mixed"
+      },
+      "values": {
+        "growth": "Growth",
+        "freedom": "Freedom",
+        "connection": "Connection",
+        "security": "Security",
+        "adventure": "Adventure",
+        "family": "Family",
+        "career": "Career"
+      },
+      "preferredLifestyle": {
+        "remote_work": "Remote work",
+        "travel": "Travel",
+        "fitness": "Fitness",
+        "nightlife": "Nightlife",
+        "early_riser": "Early riser",
+        "spirituality": "Spirituality"
+      },
+      "loveLanguage": {
+        "words": "Words",
+        "quality_time": "Quality time",
+        "acts": "Acts of service",
+        "gifts": "Gifts",
+        "touch": "Touch"
+      }
+    }
+  },
+  "auth": {
+    "login": {
+      "emailPlaceholder": "Email",
+      "passwordPlaceholder": "Password",
+      "submit": "Log in",
+      "submitting": "Signing in...",
+      "socialLabel": "Or continue with",
+      "registerLink": "Registration",
+      "failed": "Login failed. Please try again."
+    },
+    "register": {
+      "title": "Create your account",
+      "subtitle": "Define your handle and sync your personal matrix.",
+      "fullNamePlaceholder": "Full name",
+      "usernamePlaceholder": "Username",
+      "emailPlaceholder": "Email",
+      "passwordPlaceholder": "Password",
+      "confirmPasswordPlaceholder": "Confirm password",
+      "submit": "Create account",
+      "submitting": "Creating...",
+      "signInLink": "Already have an account? Sign in",
+      "socialLink": "Continue with social login",
+      "failed": "Registration failed. Please try again."
+    },
+    "social": {
+      "title": "Social login",
+      "subtitle": "Continue with Google, Facebook, or GitHub.",
+      "missingProjectConfig": "Expo project owner/slug missing. Set expo.owner + expo.slug in app config.",
+      "googleFail": "Google sign-in failed. Please try again.",
+      "googleNoCredential": "Google login returned no credential.",
+      "googleUnable": "Unable to complete Google login.",
+      "githubFail": "GitHub sign-in failed. Please try again.",
+      "githubNoCode": "GitHub login returned no code.",
+      "githubUnable": "Unable to complete GitHub login.",
+      "facebookFail": "Facebook sign-in failed. Please try again.",
+      "facebookNoCode": "Facebook login returned no code.",
+      "facebookUnable": "Unable to complete Facebook login.",
+      "googleClientMissing": "Set EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID in .env and restart Expo with `npx expo start -c`.",
+      "githubClientMissing": "Set EXPO_PUBLIC_GITHUB_CLIENT_ID in .env and restart Expo with `npx expo start -c`.",
+      "facebookAppMissing": "Set EXPO_PUBLIC_FACEBOOK_APP_ID in .env and restart Expo with `npx expo start -c`.",
+      "googleNotReady": "Google login is not ready yet.",
+      "githubNotReady": "GitHub login is not ready yet.",
+      "facebookNotReady": "Facebook login is not ready yet.",
+      "continueGoogle": "Continue with Google",
+      "continueFacebook": "Continue with Facebook",
+      "continueGithub": "Continue with GitHub",
+      "preparingGoogle": "Preparing Google login...",
+      "preparingFacebook": "Preparing Facebook login...",
+      "preparingGithub": "Preparing GitHub login...",
+      "providerNotConfiguredGoogle": "Google login is not configured yet. Add `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` to your `.env`.",
+      "providerNotConfiguredFacebook": "Facebook login is not configured yet. Add `EXPO_PUBLIC_FACEBOOK_APP_ID` to your `.env`.",
+      "providerNotConfiguredGithub": "GitHub login is not configured yet. Add `EXPO_PUBLIC_GITHUB_CLIENT_ID` to your `.env`.",
+      "redirectHint": "Add `https://auth.expo.io/{{project}}` to GitHub and Facebook OAuth redirect URIs."
+    },
+    "validation": {
+      "invalidEmail": "Invalid email",
+      "passwordRequired": "Password is required",
+      "confirmPasswordRequired": "Please confirm your password",
+      "nameRequired": "Name is required",
+      "handleRequired": "Handle is required",
+      "passwordMismatch": "Passwords do not match"
+    }
+  },
+  "app": {
+    "preparingSelflink": "Preparing SelfLink..."
+  },
+  "nav": {
+    "tabs": {
+      "feed": "Feed",
+      "mentor": "Mentor",
+      "soulmatch": "SoulMatch",
+      "profile": "Profile",
+      "messages": "Messages"
+    },
+    "headers": {
+      "messages": "Messages",
+      "threads": "Threads",
+      "post": "Post",
+      "newPost": "New Post",
+      "searchProfiles": "Search Profiles",
+      "profile": "Profile",
+      "editProfile": "Edit Profile",
+      "payments": "Payments",
+      "wallet": "Wallet",
+      "notifications": "Notifications",
+      "community": "Community",
+      "inbox": "Inbox",
+      "birthData": "Birth Data",
+      "natalChart": "Natal Chart",
+      "natalMentor": "Natal Mentor",
+      "dailyMentor": "Daily Mentor",
+      "dailyEntry": "Daily Entry",
+      "aiMentor": "AI Mentor",
+      "soulmatchRecommendations": "SoulMatch Recommendations",
+      "soulmatch": "SoulMatch",
+      "soulmatchMentor": "SoulMatch Mentor",
+      "completePersonalMap": "Complete your personal map"
+    }
+  }
+}

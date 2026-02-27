@@ -1,6 +1,7 @@
 import { NavigationContainer, DarkTheme, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, StyleSheet, View, Text } from 'react-native';
 
 import { useAuthHydration } from '@hooks/useAuthHydration';
@@ -19,24 +20,26 @@ const RootStack = createNativeStackNavigator<RootStackParamList>();
 const OnboardingStack = createNativeStackNavigator<OnboardingStackParamList>();
 
 function OnboardingNavigator() {
+  const { t } = useTranslation();
   return (
     <OnboardingStack.Navigator>
       <OnboardingStack.Screen
         name="PersonalMap"
         component={PersonalMapScreen}
-        options={{ title: 'Complete your personal map' }}
+        options={{ title: t('nav.headers.completePersonalMap') }}
       />
     </OnboardingStack.Navigator>
   );
 }
 
 function SplashScreen() {
+  const { t } = useTranslation();
   const { theme } = useTheme();
   return (
     <View style={[styles.splashContainer, { backgroundColor: theme.colors.background }]}>
       <ActivityIndicator size="large" color={theme.text.primary} />
       <Text style={[styles.splashText, { color: theme.text.primary }]}>
-        Preparing SelfLink…
+        {t('app.preparingSelflink')}
       </Text>
     </View>
   );
