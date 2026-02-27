@@ -110,9 +110,18 @@ function MessagesChatHeaderLeft() {
   const { t } = useTranslation();
   const { theme } = useTheme();
 
+  const handlePress = () => {
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+      return;
+    }
+
+    navigation.navigate('Messages', { screen: 'Threads' });
+  };
+
   return (
     <TouchableOpacity
-      onPress={() => navigation.navigate('Threads')}
+      onPress={handlePress}
       style={messageHeaderStyles.backButton}
     >
       <Ionicons name="chevron-back" size={20} color={theme.text.primary} />
