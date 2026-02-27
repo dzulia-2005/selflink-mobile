@@ -234,6 +234,81 @@
       "completePersonalMap": "Заполните личную карту"
     }
   },
+  "notifications": {
+    "title": "Уведомления",
+    "empty": {
+      "body": "Пока вы всё просмотрели."
+    }
+  },
+  "inbox": {
+    "title": "Входящие",
+    "subtitle": "Выберите диалог. Каждая ветка должна быть осмысленной.",
+    "empty": {
+      "title": "Диалогов пока нет",
+      "body": "Когда начнутся разговоры, они появятся здесь."
+    },
+    "composer": {
+      "title": "Начать разговор",
+      "subtitle": "Выберите участников из сообщества и отправьте им сообщение.",
+      "titlePlaceholder": "Название (необязательно)",
+      "searchPlaceholder": "Поиск людей по имени или хэндлу",
+      "messagePlaceholder": "Первое сообщение",
+      "noParticipants": "Участники пока не выбраны.",
+      "noMatches": "Совпадений не найдено."
+    },
+    "user": {
+      "unnamed": "Без имени",
+      "handleFallback": "handle"
+    },
+    "actions": {
+      "add": "Добавить",
+      "remove": "Убрать",
+      "sending": "Отправка...",
+      "startThread": "Начать диалог",
+      "refreshPeopleList": "Обновить список людей"
+    },
+    "alerts": {
+      "addParticipant": "Добавьте хотя бы одного участника.",
+      "addOpeningMessage": "Добавьте первое сообщение.",
+      "loadFailed": "Не удалось загрузить входящие. Попробуйте снова.",
+      "threadCreated": "Диалог создан.",
+      "createFailed": "Не удалось создать диалог."
+    },
+    "accessibility": {
+      "titleInput": "Название диалога",
+      "searchInput": "Поиск участников",
+      "messageInput": "Первое сообщение",
+      "refreshPeopleList": "Обновить список людей"
+    }
+  },
+  "threads": {
+    "empty": {
+      "title": "Сообщений пока нет",
+      "body": "Начните разговор: откройте профиль пользователя и нажмите Message."
+    },
+    "actions": {
+      "deleteConversation": "Удалить диалог"
+    },
+    "alerts": {
+      "deleteConfirm": {
+        "title": "Удалить диалог?",
+        "body": "Диалог будет удалён из входящих."
+      },
+      "deleteFailed": {
+        "title": "Не удалось удалить диалог",
+        "body": "Попробуйте снова."
+      }
+    },
+    "item": {
+      "unknownUser": "Неизвестный пользователь",
+      "conversation": "Диалог",
+      "noMessagesYet": "Сообщений пока нет.",
+      "updatedAt": "Обновлено {{value}}"
+    },
+    "accessibility": {
+      "threadsList": "Список диалогов"
+    }
+  },
   "feed": {
     "tabs": {
       "forYou": "Для вас",

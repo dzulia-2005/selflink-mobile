@@ -1,4 +1,5 @@
 import { memo, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import type { Thread } from '@services/api/threads';
@@ -10,6 +11,7 @@ type Props = {
 };
 
 export const ThreadCard = memo(function ThreadCard({ thread, onPress }: Props) {
+  const { t } = useTranslation();
   const { theme } = useTheme();
   const styles = useMemo(
     () =>
@@ -62,7 +64,7 @@ export const ThreadCard = memo(function ThreadCard({ thread, onPress }: Props) {
   return (
     <Pressable style={styles.card} onPress={() => onPress(thread)}>
       <View style={styles.header}>
-        <Text style={styles.title}>{title || 'Conversation'}</Text>
+        <Text style={styles.title}>{title || t('threads.item.conversation')}</Text>
         {thread.unread_count ? (
           <View style={styles.badge}>
             <Text style={styles.badgeText}>{thread.unread_count}</Text>
@@ -74,10 +76,10 @@ export const ThreadCard = memo(function ThreadCard({ thread, onPress }: Props) {
           {thread.last_message.body}
         </Text>
       ) : (
-        <Text style={styles.preview}>No messages yet.</Text>
+        <Text style={styles.preview}>{t('threads.item.noMessagesYet')}</Text>
       )}
       <Text style={styles.timestamp}>
-        Updated {new Date(thread.updated_at).toLocaleString()}
+        {t('threads.item.updatedAt', { value: new Date(thread.updated_at).toLocaleString() })}
       </Text>
     </Pressable>
   );

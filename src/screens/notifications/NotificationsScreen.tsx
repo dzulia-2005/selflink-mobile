@@ -1,10 +1,12 @@
+import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 
 export function NotificationsScreen() {
+  const { t } = useTranslation();
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Notifications</Text>
-      <Text style={styles.subtitle}>You are all caught up for now.</Text>
+      <Text style={styles.title}>{t('notifications.title')}</Text>
+      <Text style={styles.subtitle}>{t('notifications.empty.body')}</Text>
     </View>
   );
 }

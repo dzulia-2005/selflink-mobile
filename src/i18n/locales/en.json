@@ -231,6 +231,81 @@
       "completePersonalMap": "Complete your personal map"
     }
   },
+  "notifications": {
+    "title": "Notifications",
+    "empty": {
+      "body": "You are all caught up for now."
+    }
+  },
+  "inbox": {
+    "title": "Inbox",
+    "subtitle": "Choose a conversation. Each thread should feel intentional.",
+    "empty": {
+      "title": "No threads yet",
+      "body": "Once conversations begin, they'll appear right here."
+    },
+    "composer": {
+      "title": "Start a Conversation",
+      "subtitle": "Pick participants from your community and drop them a message.",
+      "titlePlaceholder": "Title (optional)",
+      "searchPlaceholder": "Search people by name or handle",
+      "messagePlaceholder": "Opening message",
+      "noParticipants": "No participants selected yet.",
+      "noMatches": "No matches found."
+    },
+    "user": {
+      "unnamed": "Unnamed",
+      "handleFallback": "handle"
+    },
+    "actions": {
+      "add": "Add",
+      "remove": "Remove",
+      "sending": "Sending...",
+      "startThread": "Start Thread",
+      "refreshPeopleList": "Refresh people list"
+    },
+    "alerts": {
+      "addParticipant": "Add at least one participant ID.",
+      "addOpeningMessage": "Add an opening message.",
+      "loadFailed": "Unable to load inbox. Please try again.",
+      "threadCreated": "Thread created.",
+      "createFailed": "Unable to create thread."
+    },
+    "accessibility": {
+      "titleInput": "Thread title",
+      "searchInput": "Search participants",
+      "messageInput": "Opening message",
+      "refreshPeopleList": "Refresh people list"
+    }
+  },
+  "threads": {
+    "empty": {
+      "title": "No messages yet",
+      "body": "Start a conversation by visiting someone's profile and tapping Message."
+    },
+    "actions": {
+      "deleteConversation": "Delete conversation"
+    },
+    "alerts": {
+      "deleteConfirm": {
+        "title": "Delete conversation?",
+        "body": "This removes the conversation from your inbox."
+      },
+      "deleteFailed": {
+        "title": "Unable to delete conversation",
+        "body": "Please try again."
+      }
+    },
+    "item": {
+      "unknownUser": "Unknown user",
+      "conversation": "Conversation",
+      "noMessagesYet": "No messages yet.",
+      "updatedAt": "Updated {{value}}"
+    },
+    "accessibility": {
+      "threadsList": "Threads list"
+    }
+  },
   "feed": {
     "tabs": {
       "forYou": "For You",

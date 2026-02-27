@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { memo, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Image, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import type { Thread } from '@schemas/messaging';
@@ -19,6 +20,7 @@ const ThreadListItemComponent: React.FC<Props> = ({
   onPress,
   onLongPress,
 }) => {
+  const { t } = useTranslation();
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
   const unread = thread.unread_count ?? 0;
@@ -39,10 +41,11 @@ const ThreadListItemComponent: React.FC<Props> = ({
   }, [currentUserId, thread.members]);
 
   const user = otherMember?.user;
-  const displayName = user?.name || user?.handle || thread.title || 'Unknown user';
+  const displayName =
+    user?.name || user?.handle || thread.title || t('threads.item.unknownUser');
   const avatarUrl = normalizeAvatarUrl(user?.photo || undefined);
   const isOnline = Boolean(user?.flags?.online);
-  const lastMessage = thread.last_message?.body || 'No messages yet';
+  const lastMessage = thread.last_message?.body || t('threads.item.noMessagesYet');
   const timeLabel = formatTime(thread.updated_at || thread.created_at);
 
   return (

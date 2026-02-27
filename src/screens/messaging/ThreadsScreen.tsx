@@ -1,5 +1,6 @@
 import { useNavigation } from '@react-navigation/native';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Alert, FlatList, StyleSheet, Text, View } from 'react-native';
 
 import ThreadListItem from '@components/messaging/ThreadListItem';
@@ -14,6 +15,7 @@ import {
 import { useTheme, type Theme } from '@theme';
 
 export function ThreadsScreen() {
+  const { t } = useTranslation();
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
   const navigation = useNavigation<any>();
@@ -54,12 +56,12 @@ export function ThreadsScreen() {
         return;
       }
       Alert.alert(
-        'Delete conversation?',
-        'This removes the conversation from your inbox.',
+        t('threads.alerts.deleteConfirm.title'),
+        t('threads.alerts.deleteConfirm.body'),
         [
-          { text: 'Cancel', style: 'cancel' },
+          { text: t('common.cancel'), style: 'cancel' },
           {
-            text: 'Delete conversation',
+            text: t('threads.actions.deleteConversation'),
             style: 'destructive',
             onPress: () => {
               const key = String(thread.id);
@@ -67,7 +69,10 @@ export function ThreadsScreen() {
               removeThread(thread.id)
                 .catch((err) => {
                   console.warn('ThreadsScreen: delete thread failed', err);
-                  Alert.alert('Unable to delete conversation', 'Please try again.');
+                  Alert.alert(
+                    t('threads.alerts.deleteFailed.title'),
+                    t('threads.alerts.deleteFailed.body'),
+                  );
                 })
                 .finally(() => {
                   setPendingThreadId((current) => (current === key ? null : current));
@@ -77,7 +82,7 @@ export function ThreadsScreen() {
         ],
       );
     },
-    [pendingThreadId, removeThread],
+    [pendingThreadId, removeThread, t],
   );
 
   const renderThread = useCallback(
@@ -117,9 +122,9 @@ export function ThreadsScreen() {
   if (!isLoading && threads.length === 0) {
     return (
       <View style={styles.emptyContainer}>
-        <Text style={styles.emptyTitle}>No messages yet</Text>
+        <Text style={styles.emptyTitle}>{t('threads.empty.title')}</Text>
         <Text style={styles.emptySubtitle}>
-          Start a conversation by visiting someone's profile and tapping “Message”.
+          {t('threads.empty.body')}
         </Text>
       </View>
     );
@@ -135,6 +140,7 @@ export function ThreadsScreen() {
       contentContainerStyle={styles.listContent}
       refreshing={isLoading && threads.length > 0}
       onRefresh={handleRefresh}
+      accessibilityLabel={t('threads.accessibility.threadsList')}
     />
   );
 }

@@ -234,6 +234,81 @@
       "completePersonalMap": "შეავსე პირადი რუკა"
     }
   },
+  "notifications": {
+    "title": "შეტყობინებები",
+    "empty": {
+      "body": "ამ დროისთვის ყველაფერი ნანახი გაქვთ."
+    }
+  },
+  "inbox": {
+    "title": "შემომავალი",
+    "subtitle": "აირჩიე დიალოგი. ყოველი თრედი გააზრებული უნდა იყოს.",
+    "empty": {
+      "title": "თრედები ჯერ არ არის",
+      "body": "როცა საუბრები დაიწყება, ისინი აქ გამოჩნდება."
+    },
+    "composer": {
+      "title": "საუბრის დაწყება",
+      "subtitle": "აირჩიე მონაწილეები შენი სივრციდან და გაუგზავნე შეტყობინება.",
+      "titlePlaceholder": "სათაური (სურვილისამებრ)",
+      "searchPlaceholder": "ადამიანების ძიება სახელით ან ჰენდლით",
+      "messagePlaceholder": "პირველი შეტყობინება",
+      "noParticipants": "მონაწილეები ჯერ არ არის არჩეული.",
+      "noMatches": "დამთხვევა ვერ მოიძებნა."
+    },
+    "user": {
+      "unnamed": "უსახელო",
+      "handleFallback": "handle"
+    },
+    "actions": {
+      "add": "დამატება",
+      "remove": "წაშლა",
+      "sending": "იგზავნება...",
+      "startThread": "თრედის დაწყება",
+      "refreshPeopleList": "ადამიანების სიის განახლება"
+    },
+    "alerts": {
+      "addParticipant": "დაამატე მინიმუმ ერთი მონაწილე.",
+      "addOpeningMessage": "დაამატე საწყისი შეტყობინება.",
+      "loadFailed": "შემომავალი ვერ ჩაიტვირთა. სცადეთ თავიდან.",
+      "threadCreated": "თრედი შეიქმნა.",
+      "createFailed": "თრედის შექმნა ვერ მოხერხდა."
+    },
+    "accessibility": {
+      "titleInput": "თრედის სათაური",
+      "searchInput": "მონაწილეების ძიება",
+      "messageInput": "პირველი შეტყობინება",
+      "refreshPeopleList": "ადამიანების სიის განახლება"
+    }
+  },
+  "threads": {
+    "empty": {
+      "title": "შეტყობინებები ჯერ არ არის",
+      "body": "საუბრის დასაწყებად გახსენი მომხმარებლის პროფილი და დააჭირე Message-ს."
+    },
+    "actions": {
+      "deleteConversation": "საუბრის წაშლა"
+    },
+    "alerts": {
+      "deleteConfirm": {
+        "title": "წავშალოთ საუბარი?",
+        "body": "ეს მოქმედება საუბარს წაშლის შენი შემომავლიდან."
+      },
+      "deleteFailed": {
+        "title": "საუბრის წაშლა ვერ მოხერხდა",
+        "body": "სცადეთ თავიდან."
+      }
+    },
+    "item": {
+      "unknownUser": "უცნობი მომხმარებელი",
+      "conversation": "საუბარი",
+      "noMessagesYet": "შეტყობინებები ჯერ არ არის.",
+      "updatedAt": "განახლდა {{value}}"
+    },
+    "accessibility": {
+      "threadsList": "თრედების სია"
+    }
+  },
   "feed": {
     "tabs": {
       "forYou": "თქვენთვის",
