@@ -10,7 +10,7 @@ module.exports = {
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   resolver: '<rootDir>/jest.resolver.js',
   transformIgnorePatterns: [
-    'node_modules/(?!(react-native|@react-native|expo|expo-status-bar|expo-constants|expo-linear-gradient|expo-haptics|expo-secure-store|expo-modules-core|react-native-safe-area-context|@expo|@react-navigation)/)',
+    'node_modules/(?!(react-native|@react-native|expo|expo-localization|expo-status-bar|expo-constants|expo-linear-gradient|expo-haptics|expo-secure-store|expo-modules-core|react-native-safe-area-context|@expo|@react-navigation)/)',
   ],
   moduleFileExtensions: [...sourceExts, ...assetExts, 'json', 'tsx', 'ts', 'js', 'jsx'],
   moduleNameMapper: {
