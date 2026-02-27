@@ -180,5 +180,117 @@
       "soulmatchMentor": "SoulMatch Mentor",
       "completePersonalMap": "Complete your personal map"
     }
+  },
+  "feed": {
+    "tabs": {
+      "forYou": "For You",
+      "following": "Following",
+      "reels": "Reels"
+    },
+    "search": {
+      "placeholder": "Search"
+    },
+    "empty": {
+      "title": "No posts yet",
+      "body": "Posts from your network will appear here.",
+      "cta": "Create your first post"
+    },
+    "error": {
+      "title": "We lost the signal",
+      "retry": "Retry"
+    },
+    "composer": {
+      "cta": "New post"
+    },
+    "post": {
+      "like": "Like",
+      "comment": "Comment",
+      "share": "Share",
+      "save": "Save",
+      "report": "Report",
+      "more": "More",
+      "gift": "Send gift",
+      "syncing": "Syncing...",
+      "giftsCount": "{{count}} gifts",
+      "follow": {
+        "follow": "Follow",
+        "following": "Following",
+        "pending": "..."
+      },
+      "menu": {
+        "report": "Report",
+        "hide": "Hide",
+        "copyLink": "Copy link"
+      },
+      "alerts": {
+        "sessionExpired": {
+          "title": "Session expired",
+          "body": "Please sign in again."
+        },
+        "likeFailed": {
+          "title": "Unable to update like",
+          "body": "Please try again."
+        }
+      }
+    },
+    "cards": {
+      "mentorInsight": "Mentor Insight",
+      "openMentor": "Open mentor",
+      "matrixInsight": "Matrix Insight",
+      "viewMatrix": "View matrix",
+      "soulmatch": "SoulMatch",
+      "viewMatches": "View matches",
+      "addBirthDataToUnlock": "Add your birth data to unlock matches.",
+      "userFallback": "User",
+      "matchScorePercent": "{{score}}%"
+    },
+    "create": {
+      "placeholder": "Share something... Markdown supported.",
+      "addPhotos": "Add photos",
+      "addMorePhotos": "Add more photos",
+      "addVideo": "Add video",
+      "changeVideo": "Change video",
+      "useVideo": "Use video",
+      "videoSelected": "Video selected",
+      "videoReadyToUpload": "Ready to upload",
+      "videoBadge": "VIDEO",
+      "livePreview": "Live preview",
+      "publish": "Post",
+      "accessibility": {
+        "attachImage": "Attach image",
+        "attachVideo": "Attach video",
+        "removeVideo": "Remove selected video",
+        "removePhoto": "Remove selected photo"
+      },
+      "alerts": {
+        "chooseMediaType": {
+          "title": "Choose photos or a video",
+          "body": "You can attach either up to 4 photos OR one video per post."
+        },
+        "removeVideoFirst": {
+          "body": "Remove the selected video to add photos instead."
+        },
+        "limitReached": {
+          "title": "Limit reached",
+          "body": "You can attach up to 4 photos per post."
+        },
+        "replacePhotos": {
+          "title": "Replace photos with video?",
+          "body": "You can attach either up to 4 photos or one video per post."
+        },
+        "contentRequired": {
+          "title": "Content required",
+          "body": "Write something or attach media before posting."
+        },
+        "success": {
+          "title": "Success",
+          "body": "Post created successfully."
+        },
+        "createFailed": {
+          "title": "Unable to create post",
+          "body": "Unable to create post. Please try again."
+        }
+      }
+    }
   }
 }

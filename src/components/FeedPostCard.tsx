@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Alert,
   Animated,
@@ -53,6 +54,7 @@ function FeedPostCardComponent({
   giftPreviews = [],
   giftEffects = null,
 }: Props) {
+  const { t } = useTranslation();
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
   const navigation = useNavigation<any>();
@@ -126,15 +128,15 @@ function FeedPostCardComponent({
       console.warn('FeedPostCard: like toggle failed', error);
       const status = (error as any)?.response?.status;
       if (status === 401 || status === 403) {
-        Alert.alert('Session expired', 'Please sign in again.');
+        Alert.alert(t('feed.post.alerts.sessionExpired.title'), t('feed.post.alerts.sessionExpired.body'));
         logout();
       } else {
-        Alert.alert('Unable to update like', 'Please try again.');
+        Alert.alert(t('feed.post.alerts.likeFailed.title'), t('feed.post.alerts.likeFailed.body'));
       }
     } finally {
       setLikePending(false);
     }
-  }, [likePending, likePost, unlikePost, post.id, post.liked, logout]);
+  }, [likePending, likePost, unlikePost, post.id, post.liked, logout, t]);
 
   const handleFollowToggle = useCallback(async () => {
     if (followPending || post.author.id === currentUserId) {
@@ -211,6 +213,11 @@ function FeedPostCardComponent({
   }, [navigation, post.author.id]);
 
   const showGiftPreview = giftPreviews.length > 0;
+  const authorHandleLabel = useMemo(() => `@${post.author.handle}`, [post.author.handle]);
+  const extraGiftCountLabel = useMemo(
+    () => `+${giftCount - giftPreviews.length}`,
+    [giftCount, giftPreviews.length],
+  );
 
   return (
     <Animated.View style={[styles.wrapper, entrance.style]}>
@@ -239,7 +246,7 @@ function FeedPostCardComponent({
               </TouchableOpacity>
               <TouchableOpacity style={styles.meta} onPress={handleOpenProfile}>
                 <Text style={styles.author}>{post.author.name}</Text>
-                <Text style={styles.handle}>@{post.author.handle}</Text>
+                <Text style={styles.handle}>{authorHandleLabel}</Text>
                 <Text style={styles.timestamp}>
                   {new Date(post.created_at).toLocaleString()}
                 </Text>
@@ -259,7 +266,11 @@ function FeedPostCardComponent({
                   activeOpacity={0.9}
                 >
                   <Text style={styles.followButtonText}>
-                    {followPending ? '…' : isFollowing ? 'Following' : 'Follow'}
+                    {followPending
+                      ? t('feed.post.follow.pending')
+                      : isFollowing
+                        ? t('feed.post.follow.following')
+                        : t('feed.post.follow.follow')}
                   </Text>
                 </TouchableOpacity>
               )}
@@ -292,6 +303,7 @@ function FeedPostCardComponent({
                 <TouchableOpacity
                   onPress={handleLikeToggle}
                   accessibilityRole="button"
+                  accessibilityLabel={t('feed.post.like')}
                   disabled={likePending}
                   onPressIn={likePress.onPressIn}
                   onPressOut={likePress.onPressOut}
@@ -340,6 +352,7 @@ function FeedPostCardComponent({
                 <TouchableOpacity
                   onPress={handleCommentPress}
                   accessibilityRole="button"
+                  accessibilityLabel={t('feed.post.comment')}
                   style={[styles.actionPill, commentPress.style]}
                   activeOpacity={0.85}
                   onPressIn={commentPress.onPressIn}
@@ -365,6 +378,7 @@ function FeedPostCardComponent({
                 <TouchableOpacity
                   onPress={handleGiftPress}
                   accessibilityRole="button"
+                  accessibilityLabel={t('feed.post.gift')}
                   style={[styles.actionPill, commentPress.style]}
                   activeOpacity={0.85}
                   onPressIn={commentPress.onPressIn}
@@ -401,18 +415,20 @@ function FeedPostCardComponent({
                   ))}
                   {giftCount > giftPreviews.length ? (
                     <Text style={styles.giftPreviewCount}>
-                      +{giftCount - giftPreviews.length}
+                      {extraGiftCountLabel}
                     </Text>
                   ) : null}
                   {giftSyncing ? (
-                    <Text style={styles.giftPreviewSync}>Syncing…</Text>
+                    <Text style={styles.giftPreviewSync}>{t('feed.post.syncing')}</Text>
                   ) : null}
                 </View>
               ) : giftCount > 0 ? (
                 <View style={styles.giftPreviewRow}>
-                  <Text style={styles.giftPreviewCount}>{giftCount} gifts</Text>
+                  <Text style={styles.giftPreviewCount}>
+                    {t('feed.post.giftsCount', { count: giftCount })}
+                  </Text>
                   {giftSyncing ? (
-                    <Text style={styles.giftPreviewSync}>Syncing…</Text>
+                    <Text style={styles.giftPreviewSync}>{t('feed.post.syncing')}</Text>
                   ) : null}
                 </View>
               ) : null}
@@ -429,7 +445,7 @@ function FeedPostCardComponent({
             },
           ]}
         >
-          <Text style={styles.heartIcon}>♥</Text>
+          <Ionicons name="heart" size={28} color="#F472B6" style={styles.heartIcon} />
         </Animated.View>
       </AnimatedPressable>
     </Animated.View>

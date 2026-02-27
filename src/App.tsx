@@ -3,9 +3,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { AuthProvider } from '@context/AuthContext';
 import { ToastProvider } from '@context/ToastContext';
+import { bootstrapI18n } from '@i18n';
 import { RootNavigator } from '@navigation/RootNavigator';
 import { ThemeProvider, useTheme } from '@theme';
-// import React from 'react';
 
 function AppShell() {
   const { resolved, theme } = useTheme();
@@ -17,6 +17,7 @@ function AppShell() {
   );
 
   const prepare = useCallback(async () => {
+    await bootstrapI18n();
     setIsReady(true);
   }, []);
 

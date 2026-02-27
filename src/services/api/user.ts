@@ -1,5 +1,5 @@
+import { serviceApiClient as apiClient } from '@api/client';
 import { AuthUser } from '@context/AuthContext';
-import { apiClient } from '@services/api/client';
 import type { FeedPostAuthor } from '@services/api/feed';
 
 export type UserProfile = FeedPostAuthor;

@@ -180,5 +180,117 @@
       "soulmatchMentor": "Ментор SoulMatch",
       "completePersonalMap": "Заполните личную карту"
     }
+  },
+  "feed": {
+    "tabs": {
+      "forYou": "Для вас",
+      "following": "Подписки",
+      "reels": "Reels"
+    },
+    "search": {
+      "placeholder": "Поиск"
+    },
+    "empty": {
+      "title": "Постов пока нет",
+      "body": "Здесь появятся посты вашей сети.",
+      "cta": "Создать первый пост"
+    },
+    "error": {
+      "title": "Сигнал потерян",
+      "retry": "Повторить"
+    },
+    "composer": {
+      "cta": "Новый пост"
+    },
+    "post": {
+      "like": "Лайк",
+      "comment": "Комментарий",
+      "share": "Поделиться",
+      "save": "Сохранить",
+      "report": "Пожаловаться",
+      "more": "Ещё",
+      "gift": "Отправить подарок",
+      "syncing": "Синхронизация...",
+      "giftsCount": "{{count}} подарков",
+      "follow": {
+        "follow": "Подписаться",
+        "following": "Вы подписаны",
+        "pending": "..."
+      },
+      "menu": {
+        "report": "Пожаловаться",
+        "hide": "Скрыть",
+        "copyLink": "Копировать ссылку"
+      },
+      "alerts": {
+        "sessionExpired": {
+          "title": "Сессия истекла",
+          "body": "Войдите снова."
+        },
+        "likeFailed": {
+          "title": "Не удалось обновить лайк",
+          "body": "Попробуйте снова."
+        }
+      }
+    },
+    "cards": {
+      "mentorInsight": "Инсайт ментора",
+      "openMentor": "Открыть ментора",
+      "matrixInsight": "Инсайт матрицы",
+      "viewMatrix": "Открыть матрицу",
+      "soulmatch": "SoulMatch",
+      "viewMatches": "Смотреть совпадения",
+      "addBirthDataToUnlock": "Добавьте данные рождения, чтобы открыть совпадения.",
+      "userFallback": "Пользователь",
+      "matchScorePercent": "{{score}}%"
+    },
+    "create": {
+      "placeholder": "Поделитесь чем-нибудь... Поддерживается Markdown.",
+      "addPhotos": "Добавить фото",
+      "addMorePhotos": "Добавить ещё фото",
+      "addVideo": "Добавить видео",
+      "changeVideo": "Заменить видео",
+      "useVideo": "Использовать видео",
+      "videoSelected": "Видео выбрано",
+      "videoReadyToUpload": "Готово к загрузке",
+      "videoBadge": "ВИДЕО",
+      "livePreview": "Предпросмотр",
+      "publish": "Опубликовать",
+      "accessibility": {
+        "attachImage": "Прикрепить фото",
+        "attachVideo": "Прикрепить видео",
+        "removeVideo": "Удалить выбранное видео",
+        "removePhoto": "Удалить выбранное фото"
+      },
+      "alerts": {
+        "chooseMediaType": {
+          "title": "Выберите фото или видео",
+          "body": "Можно прикрепить до 4 фото ИЛИ одно видео к посту."
+        },
+        "removeVideoFirst": {
+          "body": "Удалите выбранное видео, чтобы добавить фото."
+        },
+        "limitReached": {
+          "title": "Достигнут лимит",
+          "body": "Можно прикрепить до 4 фото к посту."
+        },
+        "replacePhotos": {
+          "title": "Заменить фото на видео?",
+          "body": "Можно прикрепить до 4 фото или одно видео к посту."
+        },
+        "contentRequired": {
+          "title": "Нужен контент",
+          "body": "Напишите текст или добавьте медиа перед публикацией."
+        },
+        "success": {
+          "title": "Готово",
+          "body": "Пост успешно создан."
+        },
+        "createFailed": {
+          "title": "Не удалось создать пост",
+          "body": "Не удалось создать пост. Попробуйте снова."
+        }
+      }
+    }
   }
 }

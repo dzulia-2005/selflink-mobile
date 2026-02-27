@@ -3,9 +3,11 @@ import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useCallback, useMemo } from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import {
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -14,25 +16,30 @@ import {
   View,
 } from 'react-native';
 
+import { type AppLanguage } from '@i18n/language';
+import { useAppLanguage } from '@i18n/useAppLanguage';
 import { useAuthStore } from '@store/authStore';
 import { useTheme, type Theme } from '@theme';
 
 import { RegisterDefaultValues } from '../components/registerDefaultValues';
-import { RegisterSchema } from '../components/schema';
+import { createRegisterSchema } from '../components/schema';
 import { Navigation, RegisterDefaultValuesType } from '../types/index.type';
 
-
+const APP_LANGUAGES: AppLanguage[] = ['en', 'ru', 'ka'];
 
 const RegisterScreen = () => {
+  const { t } = useTranslation();
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
+  const { language, setLanguage } = useAppLanguage();
   const navigation = useNavigation<Navigation>();
   const register = useAuthStore((state) => state.register);
   const isAuthenticating = useAuthStore((state) => state.isAuthenticating);
+  const schema = useMemo(() => createRegisterSchema(t), [t]);
 
   const {handleSubmit,control,formState:{errors}} = useForm({
     defaultValues: RegisterDefaultValues,
-    resolver:zodResolver(RegisterSchema),
+    resolver:zodResolver(schema),
   });
 
   const handleSubmitClick = async(payload:RegisterDefaultValuesType) => {
@@ -69,16 +76,37 @@ const RegisterScreen = () => {
         >
           <View style={styles.card}>
             <LinearGradient colors={theme.gradients.matrix} style={styles.cardAccent} />
-            <Text style={styles.title}>Create your account</Text>
+            <Text style={styles.languageLabel}>{t('profile.language')}</Text>
+            <View style={styles.languageRow}>
+              {APP_LANGUAGES.map((opt) => {
+                const active = language === opt;
+                return (
+                  <Pressable
+                    key={opt}
+                    style={[styles.languageChip, active && styles.languageChipSelected]}
+                    onPress={() => {
+                      setLanguage(opt).catch(() => undefined);
+                    }}
+                  >
+                    <Text
+                      style={[styles.languageChipLabel, active && styles.languageChipLabelSelected]}
+                    >
+                      {t(`profile.languageOptions.${opt}`)}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+            <Text style={styles.title}>{t('auth.register.title')}</Text>
             <Text style={styles.subtitle}>
-              Define your handle and sync your personal matrix.
+              {t('auth.register.subtitle')}
             </Text>
             <Controller
               name="name"
               control={control}
               render={({field:{onChange,value}})=>(
                 <TextInput
-                  placeholder="Full name"
+                  placeholder={t('auth.register.fullNamePlaceholder')}
                   placeholderTextColor={theme.text.muted}
                   style={styles.input}
                   value={value}
@@ -93,7 +121,7 @@ const RegisterScreen = () => {
               control={control}
               render={({field:{onChange,value}})=>(
                 <TextInput
-                  placeholder="Username"
+                  placeholder={t('auth.register.usernamePlaceholder')}
                   placeholderTextColor={theme.text.muted}
                   autoCapitalize="none"
                   style={styles.input}
@@ -110,7 +138,7 @@ const RegisterScreen = () => {
               control={control}
               render={({field:{onChange,value}})=>(
                 <TextInput
-                  placeholder="Email"
+                  placeholder={t('auth.register.emailPlaceholder')}
                   placeholderTextColor={theme.text.muted}
                   autoCapitalize="none"
                   keyboardType="email-address"
@@ -127,7 +155,7 @@ const RegisterScreen = () => {
               control={control}
               render={({field:{onChange,value}})=>(
                 <TextInput
-                  placeholder="Password"
+                  placeholder={t('auth.register.passwordPlaceholder')}
                   placeholderTextColor={theme.text.muted}
                   secureTextEntry
                   style={styles.input}
@@ -143,7 +171,7 @@ const RegisterScreen = () => {
               control={control}
               render={({field:{onChange,value}})=>(
                 <TextInput
-                  placeholder="Confirm password"
+                  placeholder={t('auth.register.confirmPasswordPlaceholder')}
                   placeholderTextColor={theme.text.muted}
                   secureTextEntry
                   style={styles.input}
@@ -168,15 +196,17 @@ const RegisterScreen = () => {
                 style={[styles.button, isAuthenticating && styles.buttonDisabled]}
               >
                 <Text style={styles.buttonLabel}>
-                  {isAuthenticating ? 'Creating…' : 'Create account'}
+                  {isAuthenticating
+                    ? t('auth.register.submitting')
+                    : t('auth.register.submit')}
                 </Text>
               </LinearGradient>
             </TouchableOpacity>
             <TouchableOpacity style={styles.footerLink} onPress={handleNavigateLogin}>
-              <Text style={styles.footerText}>Already have an account? Sign in</Text>
+              <Text style={styles.footerText}>{t('auth.register.signInLink')}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.footerLink} onPress={handleNavigateSocialLogin}>
-              <Text style={styles.footerText}>Continue with social login</Text>
+              <Text style={styles.footerText}>{t('auth.register.socialLink')}</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -226,6 +256,35 @@ const createStyles = (theme: Theme) =>
     subtitle: {
       color: theme.text.secondary,
       ...theme.typography.body,
+    },
+    languageLabel: {
+      color: theme.text.secondary,
+      ...theme.typography.caption,
+    },
+    languageRow: {
+      flexDirection: 'row',
+      gap: theme.spacing.xs,
+      flexWrap: 'wrap',
+    },
+    languageChip: {
+      borderRadius: theme.radii.pill,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      paddingHorizontal: theme.spacing.sm,
+      paddingVertical: theme.spacing.xs,
+      backgroundColor: theme.colors.surfaceAlt,
+    },
+    languageChipSelected: {
+      borderColor: theme.colors.primary,
+      backgroundColor: 'rgba(124, 58, 237, 0.15)',
+    },
+    languageChipLabel: {
+      color: theme.text.secondary,
+      ...theme.typography.caption,
+    },
+    languageChipLabelSelected: {
+      color: theme.text.primary,
+      fontWeight: '700',
     },
     input: {
       backgroundColor: theme.colors.surfaceAlt,

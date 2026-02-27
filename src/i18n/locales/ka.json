@@ -180,5 +180,117 @@
       "soulmatchMentor": "თავსებადობის მენტორი",
       "completePersonalMap": "შეავსე პირადი რუკა"
     }
+  },
+  "feed": {
+    "tabs": {
+      "forYou": "თქვენთვის",
+      "following": "გამოწერები",
+      "reels": "Reels"
+    },
+    "search": {
+      "placeholder": "ძიება"
+    },
+    "empty": {
+      "title": "პოსტები ჯერ არ არის",
+      "body": "აქ გამოჩნდება თქვენი ქსელის პოსტები.",
+      "cta": "შექმენი პირველი პოსტი"
+    },
+    "error": {
+      "title": "სიგნალი დაიკარგა",
+      "retry": "თავიდან ცდა"
+    },
+    "composer": {
+      "cta": "ახალი პოსტი"
+    },
+    "post": {
+      "like": "მოწონება",
+      "comment": "კომენტარი",
+      "share": "გაზიარება",
+      "save": "შენახვა",
+      "report": "რეპორტი",
+      "more": "მეტი",
+      "gift": "საჩუქრის გაგზავნა",
+      "syncing": "სინქრონიზაცია...",
+      "giftsCount": "{{count}} საჩუქარი",
+      "follow": {
+        "follow": "გამოწერა",
+        "following": "გამოწერილი",
+        "pending": "..."
+      },
+      "menu": {
+        "report": "რეპორტი",
+        "hide": "დამალვა",
+        "copyLink": "ბმულის კოპირება"
+      },
+      "alerts": {
+        "sessionExpired": {
+          "title": "სესია დასრულდა",
+          "body": "გთხოვთ თავიდან შეხვიდეთ."
+        },
+        "likeFailed": {
+          "title": "მოწონების განახლება ვერ მოხერხდა",
+          "body": "სცადეთ თავიდან."
+        }
+      }
+    },
+    "cards": {
+      "mentorInsight": "მენტორის ინსაიტი",
+      "openMentor": "მენტორის გახსნა",
+      "matrixInsight": "მატრიცის ინსაიტი",
+      "viewMatrix": "მატრიცის ნახვა",
+      "soulmatch": "SoulMatch",
+      "viewMatches": "მეტჩების ნახვა",
+      "addBirthDataToUnlock": "მეტჩების გასახსნელად დაამატეთ დაბადების მონაცემები.",
+      "userFallback": "მომხმარებელი",
+      "matchScorePercent": "{{score}}%"
+    },
+    "create": {
+      "placeholder": "გააზიარე რამე... მხარდაჭერილია Markdown.",
+      "addPhotos": "ფოტოების დამატება",
+      "addMorePhotos": "მეტი ფოტოს დამატება",
+      "addVideo": "ვიდეოს დამატება",
+      "changeVideo": "ვიდეოს შეცვლა",
+      "useVideo": "ვიდეოს გამოყენება",
+      "videoSelected": "ვიდეო არჩეულია",
+      "videoReadyToUpload": "ატვირთვისთვის მზადაა",
+      "videoBadge": "ვიდეო",
+      "livePreview": "ცოცხალი პრივიუ",
+      "publish": "დაპოსტვა",
+      "accessibility": {
+        "attachImage": "ფოტოს მიმაგრება",
+        "attachVideo": "ვიდეოს მიმაგრება",
+        "removeVideo": "არჩეული ვიდეოს წაშლა",
+        "removePhoto": "არჩეული ფოტოს წაშლა"
+      },
+      "alerts": {
+        "chooseMediaType": {
+          "title": "აირჩიეთ ფოტოები ან ვიდეო",
+          "body": "პოსტზე შეიძლება მიამაგროთ მაქს. 4 ფოტო ან ერთი ვიდეო."
+        },
+        "removeVideoFirst": {
+          "body": "ფოტოების დასამატებლად ჯერ წაშალეთ არჩეული ვიდეო."
+        },
+        "limitReached": {
+          "title": "ლიმიტი მიღწეულია",
+          "body": "ერთ პოსტზე მაქსიმუმ 4 ფოტოს დამატებაა შესაძლებელი."
+        },
+        "replacePhotos": {
+          "title": "ფოტოების ვიდეოთი ჩანაცვლება?",
+          "body": "შეგიძლიათ დაამატოთ ან 4-მდე ფოტო, ან ერთი ვიდეო."
+        },
+        "contentRequired": {
+          "title": "კონტენტი საჭიროა",
+          "body": "დაპოსტვამდე დაწერეთ ტექსტი ან დაამატეთ მედია."
+        },
+        "success": {
+          "title": "წარმატება",
+          "body": "პოსტი წარმატებით შეიქმნა."
+        },
+        "createFailed": {
+          "title": "პოსტის შექმნა ვერ მოხერხდა",
+          "body": "პოსტის შექმნა ვერ მოხერხდა. სცადეთ თავიდან."
+        }
+      }
+    }
   }
 }

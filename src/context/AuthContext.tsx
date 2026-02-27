@@ -9,8 +9,8 @@ import React, {
   useState,
 } from 'react';
 
+import { serviceApiClient as apiClient } from '@api/client';
 import { refreshSession } from '@services/api/auth';
-import { apiClient } from '@services/api/client';
 import { fetchCurrentUser, updateCurrentUser } from '@services/api/user';
 
 const TOKEN_KEY = 'selflink.auth.token';

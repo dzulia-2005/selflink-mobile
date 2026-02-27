@@ -1,4 +1,5 @@
 export type ProfileSettings = {
+  language?: string;
   gender?: string;
   orientation?: string;
   relationship_goal?: string;

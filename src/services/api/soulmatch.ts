@@ -1,3 +1,4 @@
+import { serviceApiClient as apiClient } from '@api/client';
 import {
   SoulmatchExplainLevel,
   SoulmatchMode,
@@ -6,7 +7,6 @@ import {
   SoulmatchWithResponse,
   SoulmatchWithSuccess,
 } from '@schemas/soulmatch';
-import { apiClient } from '@services/api/client';
 
 export type SoulmatchRecommendationsMeta = {
   missing_requirements?: string[];

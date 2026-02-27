@@ -1,5 +1,5 @@
+import { serviceApiClient as apiClient } from '@api/client';
 import { env } from '@config/env';
-import { apiClient } from '@services/api/client';
 import { buildUrl } from '@utils/url';
 
 export type MentorProfile = {

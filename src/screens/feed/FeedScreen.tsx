@@ -3,6 +3,7 @@ import { useFocusEffect, useIsFocused, useNavigation } from '@react-navigation/n
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   AppState,
   AppStateStatus,
@@ -52,6 +53,7 @@ import { createRealtimeDedupeStore } from '@utils/realtimeDedupe';
 type FeedTab = FeedMode | 'reels';
 
 export function FeedScreen() {
+  const { t } = useTranslation();
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
   const insets = useSafeAreaInsets();
@@ -483,12 +485,12 @@ export function FeedScreen() {
     }
     return (
       <View style={styles.emptyState}>
-        <Text style={styles.emptyText}>No posts yet</Text>
+        <Text style={styles.emptyText}>{t('feed.empty.title')}</Text>
         <TouchableOpacity
           style={styles.primaryButton}
           onPress={() => navigation.navigate('CreatePost')}
         >
-          <Text style={styles.primaryButtonLabel}>Create your first post</Text>
+          <Text style={styles.primaryButtonLabel}>{t('feed.empty.cta')}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -499,6 +501,7 @@ export function FeedScreen() {
     styles.emptyText,
     styles.primaryButton,
     styles.primaryButtonLabel,
+    t,
   ]);
 
   const showInitialSkeleton = isLoading && items.length === 0;
@@ -535,10 +538,10 @@ export function FeedScreen() {
           end={{ x: 1, y: 1 }}
           style={styles.errorCard}
         >
-          <Text style={styles.errorTitle}>We lost the signal</Text>
+          <Text style={styles.errorTitle}>{t('feed.error.title')}</Text>
           <Text style={styles.errorSubtitle}>{error}</Text>
           <TouchableOpacity style={styles.retryButton} onPress={() => loadFeed()}>
-            <Text style={styles.retryLabel}>Retry</Text>
+            <Text style={styles.retryLabel}>{t('feed.error.retry')}</Text>
           </TouchableOpacity>
         </LinearGradient>
       </View>
@@ -595,17 +598,17 @@ export function FeedScreen() {
     () => [
       {
         key: 'for_you' as FeedTab,
-        label: 'For You',
+        label: t('feed.tabs.forYou'),
         onPress: () => handleModeChange('for_you'),
       },
       {
         key: 'following' as FeedTab,
-        label: 'Following',
+        label: t('feed.tabs.following'),
         onPress: () => handleModeChange('following'),
       },
-      { key: 'reels' as FeedTab, label: 'Reels', onPress: handleReelsPress },
+      { key: 'reels' as FeedTab, label: t('feed.tabs.reels'), onPress: handleReelsPress },
     ],
-    [handleModeChange, handleReelsPress],
+    [handleModeChange, handleReelsPress, t],
   );
 
   return (
@@ -640,7 +643,7 @@ export function FeedScreen() {
                 activeOpacity={0.8}
               >
                 <Ionicons name="search" size={16} color="#888" />
-                <Text style={styles.searchPlaceholder}>Search</Text>
+                <Text style={styles.searchPlaceholder}>{t('feed.search.placeholder')}</Text>
               </TouchableOpacity>
 
               <TouchableOpacity

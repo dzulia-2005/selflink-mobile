@@ -1,6 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -17,6 +18,11 @@ import { updateMyProfile } from '@api/users';
 import { MetalButton } from '@components/MetalButton';
 import { MetalPanel } from '@components/MetalPanel';
 import { useToast } from '@context/ToastContext';
+import {
+  type AppLanguage,
+  getCanonicalLocale,
+} from '@i18n/language';
+import { useAppLanguage } from '@i18n/useAppLanguage';
 import { ProfileStackParamList } from '@navigation/types';
 import { ProfileSettings } from '@schemas/profile';
 import { fetchProfileSettings, updateProfileSettings } from '@services/api/profile';
@@ -24,6 +30,15 @@ import { useAuthStore } from '@store/authStore';
 import { useTheme, type Theme } from '@theme';
 
 type Nav = NativeStackNavigationProp<ProfileStackParamList, 'ProfileEdit'>;
+
+type OptionGroup =
+  | 'gender'
+  | 'orientation'
+  | 'relationshipGoal'
+  | 'attachmentStyle'
+  | 'values'
+  | 'preferredLifestyle'
+  | 'loveLanguage';
 
 const GENDERS = ['male', 'female', 'non_binary', 'other', 'prefer_not_to_say'];
 const ORIENTATIONS = [
@@ -55,21 +70,30 @@ const LIFESTYLE = [
   'spirituality',
 ];
 const LOVE_LANG = ['words', 'quality_time', 'acts', 'gifts', 'touch'];
+const APP_LANGUAGES: AppLanguage[] = ['en', 'ru', 'ka'];
 
 export function ProfileEditScreen() {
+  const { t } = useTranslation();
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
   const navigation = useNavigation<Nav>();
+  const { language: appLanguage, setLanguage: setAppLanguage } = useAppLanguage();
   const currentUser = useAuthStore((state) => state.currentUser);
   const setCurrentUser = useAuthStore((state) => state.setCurrentUser);
   const toast = useToast();
   const [name, setName] = useState(currentUser?.name ?? '');
   const [bio, setBio] = useState(currentUser?.bio ?? '');
-  const [locale, setLocale] = useState(currentUser?.locale ?? '');
+  const [selectedLanguage, setSelectedLanguage] = useState<AppLanguage>(appLanguage);
+  const [locale, setLocale] = useState(getCanonicalLocale(appLanguage));
   const [birthPlace, setBirthPlace] = useState(currentUser?.birth_place ?? '');
   const [saving, setSaving] = useState(false);
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [profileSettings, setProfileSettings] = useState<ProfileSettings>({});
+
+  useEffect(() => {
+    setSelectedLanguage(appLanguage);
+    setLocale((prev) => prev || getCanonicalLocale(appLanguage));
+  }, [appLanguage]);
 
   useEffect(() => {
     let mounted = true;
@@ -82,7 +106,7 @@ export function ProfileEditScreen() {
       .catch((error) => {
         console.error('ProfileEditScreen: failed to load profile settings', error);
         toast.push({
-          message: 'Unable to load profile details.',
+          message: t('profile.loadError'),
           tone: 'error',
         });
       })
@@ -94,7 +118,7 @@ export function ProfileEditScreen() {
     return () => {
       mounted = false;
     };
-  }, [toast]);
+  }, [t, toast]);
 
   const toggleListValue = useCallback((key: keyof ProfileSettings, value: string) => {
     setProfileSettings((prev: ProfileSettings) => {
@@ -110,6 +134,32 @@ export function ProfileEditScreen() {
     setProfileSettings((prev: ProfileSettings) => ({ ...prev, [key]: value }));
   }, []);
 
+  const optionLabel = useCallback(
+    (group: OptionGroup, value: string) =>
+      t(`profile.options.${group}.${value}`, {
+        defaultValue: value.replace(/_/g, ' '),
+      }),
+    [t],
+  );
+
+  const handleLanguageChange = useCallback(
+    async (nextLanguage: AppLanguage) => {
+      try {
+        await setAppLanguage(nextLanguage);
+        setSelectedLanguage(nextLanguage);
+        setLocale(getCanonicalLocale(nextLanguage));
+      } catch (error) {
+        console.error('ProfileEditScreen: failed to change language', error);
+        toast.push({
+          message: t('profile.languageChangeError'),
+          tone: 'error',
+          duration: 4000,
+        });
+      }
+    },
+    [setAppLanguage, t, toast],
+  );
+
   const handleSave = useCallback(async () => {
     if (saving) {
       return;
@@ -123,9 +173,12 @@ export function ProfileEditScreen() {
         birth_place: birthPlace || undefined,
       });
       setCurrentUser(updated);
-      await updateProfileSettings(profileSettings);
+      await updateProfileSettings({
+        ...profileSettings,
+        language: selectedLanguage,
+      });
       toast.push({
-        message: 'Profile updated',
+        message: t('profile.updated'),
         tone: 'info',
         duration: 3000,
       });
@@ -133,7 +186,7 @@ export function ProfileEditScreen() {
     } catch (error) {
       console.error('ProfileEditScreen: update failed', error);
       toast.push({
-        message: 'Could not update profile. Try again.',
+        message: t('profile.saveError'),
         tone: 'error',
         duration: 5000,
       });
@@ -148,7 +201,9 @@ export function ProfileEditScreen() {
     navigation,
     profileSettings,
     saving,
+    selectedLanguage,
     setCurrentUser,
+    t,
     toast,
   ]);
 
@@ -156,6 +211,7 @@ export function ProfileEditScreen() {
     options: string[],
     selected: string[] = [],
     onPress: (value: string) => void,
+    labelGroup: OptionGroup,
   ) => (
     <View style={styles.chipRow}>
       {options.map((opt) => {
@@ -167,7 +223,7 @@ export function ProfileEditScreen() {
             onPress={() => onPress(opt)}
           >
             <Text style={[styles.chipLabel, active && styles.chipLabelSelected]}>
-              {opt.replace(/_/g, ' ')}
+              {optionLabel(labelGroup, opt)}
             </Text>
           </Pressable>
         );
@@ -179,6 +235,7 @@ export function ProfileEditScreen() {
     options: string[],
     selected?: string,
     onPress?: (value: string) => void,
+    labelGroup: OptionGroup | 'languageOptions' = 'gender',
   ) => (
     <View style={styles.chipRow}>
       {options.map((opt) => {
@@ -190,7 +247,11 @@ export function ProfileEditScreen() {
             onPress={() => onPress?.(opt)}
           >
             <Text style={[styles.chipLabel, active && styles.chipLabelSelected]}>
-              {opt.replace(/_/g, ' ')}
+              {labelGroup === 'languageOptions'
+                ? t(`profile.languageOptions.${opt}`, {
+                    defaultValue: opt.toUpperCase(),
+                  })
+                : optionLabel(labelGroup, opt)}
             </Text>
           </Pressable>
         );
@@ -201,7 +262,7 @@ export function ProfileEditScreen() {
   if (loadingProfile) {
     return (
       <View style={styles.loading}>
-        <Text style={styles.loadingText}>Loading profile…</Text>
+        <Text style={styles.loadingText}>{t('profile.loadingProfile')}</Text>
       </View>
     );
   }
@@ -215,14 +276,14 @@ export function ProfileEditScreen() {
         <ScrollView contentContainerStyle={styles.content}>
           <MetalPanel glow>
             <TextInput
-              placeholder="Name"
+              placeholder={t('profile.namePlaceholder')}
               placeholderTextColor={theme.palette.silver}
               value={name}
               onChangeText={setName}
               style={styles.input}
             />
             <TextInput
-              placeholder="Bio"
+              placeholder={t('profile.bioPlaceholder')}
               placeholderTextColor={theme.palette.silver}
               value={bio}
               onChangeText={setBio}
@@ -231,55 +292,83 @@ export function ProfileEditScreen() {
               numberOfLines={3}
             />
             <TextInput
-              placeholder="Locale (e.g., en-US)"
-              placeholderTextColor={theme.palette.silver}
-              value={locale}
-              onChangeText={setLocale}
-              style={styles.input}
-            />
-            <TextInput
-              placeholder="Birth place"
+              placeholder={t('profile.birthPlacePlaceholder')}
               placeholderTextColor={theme.palette.silver}
               value={birthPlace}
               onChangeText={setBirthPlace}
               style={styles.input}
             />
-            <Text style={styles.label}>Gender</Text>
-            {renderRadio(GENDERS, profileSettings.gender, (v) => setValue('gender', v))}
 
-            <Text style={styles.label}>Orientation</Text>
-            {renderRadio(ORIENTATIONS, profileSettings.orientation, (v) =>
-              setValue('orientation', v),
+            <Text style={styles.label}>{t('profile.language')}</Text>
+            {renderRadio(
+              APP_LANGUAGES,
+              selectedLanguage,
+              (value) => {
+                handleLanguageChange(value as AppLanguage).catch(() => undefined);
+              },
+              'languageOptions',
             )}
 
-            <Text style={styles.label}>Relationship goal</Text>
-            {renderRadio(REL_GOALS, profileSettings.relationship_goal, (v) =>
-              setValue('relationship_goal', v),
+            <Text style={styles.label}>{t('profile.gender')}</Text>
+            {renderRadio(
+              GENDERS,
+              profileSettings.gender,
+              (value) => setValue('gender', value),
+              'gender',
             )}
 
-            <Text style={styles.label}>Attachment style</Text>
-            {renderRadio(ATTACHMENTS, profileSettings.attachment_style, (v) =>
-              setValue('attachment_style', v),
+            <Text style={styles.label}>{t('profile.orientation')}</Text>
+            {renderRadio(
+              ORIENTATIONS,
+              profileSettings.orientation,
+              (value) => setValue('orientation', value),
+              'orientation',
             )}
 
-            <Text style={styles.label}>Values</Text>
-            {renderChips(VALUES, profileSettings.values || [], (v) =>
-              toggleListValue('values', v),
+            <Text style={styles.label}>{t('profile.relationshipGoal')}</Text>
+            {renderRadio(
+              REL_GOALS,
+              profileSettings.relationship_goal,
+              (value) => setValue('relationship_goal', value),
+              'relationshipGoal',
             )}
 
-            <Text style={styles.label}>Preferred lifestyle</Text>
-            {renderChips(LIFESTYLE, profileSettings.preferred_lifestyle || [], (v) =>
-              toggleListValue('preferred_lifestyle', v),
+            <Text style={styles.label}>{t('profile.attachmentStyle')}</Text>
+            {renderRadio(
+              ATTACHMENTS,
+              profileSettings.attachment_style,
+              (value) => setValue('attachment_style', value),
+              'attachmentStyle',
             )}
 
-            <Text style={styles.label}>Love language</Text>
-            {renderChips(LOVE_LANG, profileSettings.love_language || [], (v) =>
-              toggleListValue('love_language', v),
+            <Text style={styles.label}>{t('profile.values')}</Text>
+            {renderChips(
+              VALUES,
+              profileSettings.values || [],
+              (value) => toggleListValue('values', value),
+              'values',
             )}
+
+            <Text style={styles.label}>{t('profile.preferredLifestyle')}</Text>
+            {renderChips(
+              LIFESTYLE,
+              profileSettings.preferred_lifestyle || [],
+              (value) => toggleListValue('preferred_lifestyle', value),
+              'preferredLifestyle',
+            )}
+
+            <Text style={styles.label}>{t('profile.loveLanguage')}</Text>
+            {renderChips(
+              LOVE_LANG,
+              profileSettings.love_language || [],
+              (value) => toggleListValue('love_language', value),
+              'loveLanguage',
+            )}
+
             <View style={styles.actions}>
-              <MetalButton title="Cancel" onPress={() => navigation.goBack()} />
+              <MetalButton title={t('common.cancel')} onPress={() => navigation.goBack()} />
               <MetalButton
-                title={saving ? 'Saving…' : 'Save'}
+                title={saving ? t('profile.saving') : t('common.save')}
                 onPress={handleSave}
                 disabled={saving}
               />

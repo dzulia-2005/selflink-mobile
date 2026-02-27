@@ -1,6 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { memo, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Animated, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import type { SoulMatchFeedCard as SoulMatchFeedCardData } from '@schemas/feed';
@@ -16,6 +17,7 @@ type Props = {
 const AVATAR_SIZE = 48;
 
 function SoulMatchFeedCardComponent({ data }: Props) {
+  const { t } = useTranslation();
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
   const navigation = useNavigation<any>();
@@ -46,14 +48,14 @@ function SoulMatchFeedCardComponent({ data }: Props) {
         >
           <View style={styles.inner}>
             <View style={styles.pulse} />
-            <Text style={styles.label}>SoulMatch</Text>
+            <Text style={styles.label}>{t('feed.cards.soulmatch')}</Text>
             <Text style={styles.title}>{data.title}</Text>
             {data.subtitle ? <Text style={styles.subtitle}>{data.subtitle}</Text> : null}
 
             {data.profiles.length > 0 ? (
               <View style={styles.profileRow}>
                 {data.profiles.slice(0, 3).map((profile) => {
-                  const label = profile.name || 'User';
+                  const label = profile.name || t('feed.cards.userFallback');
                   const avatarSource =
                     profile.avatarUrl && profile.avatarUrl.length > 0
                       ? { uri: profile.avatarUrl }
@@ -72,7 +74,9 @@ function SoulMatchFeedCardComponent({ data }: Props) {
                       </Text>
                       {profile.score !== undefined && profile.score !== null ? (
                         <Text style={styles.profileScore}>
-                          {Math.round(profile.score)}%
+                          {t('feed.cards.matchScorePercent', {
+                            score: Math.round(profile.score),
+                          })}
                         </Text>
                       ) : null}
                     </View>
@@ -82,7 +86,7 @@ function SoulMatchFeedCardComponent({ data }: Props) {
             ) : (
               <View style={styles.emptyProfiles}>
                 <Text style={styles.emptyProfilesText}>
-                  Add your birth data to unlock matches.
+                  {t('feed.cards.addBirthDataToUnlock')}
                 </Text>
               </View>
             )}
@@ -92,7 +96,7 @@ function SoulMatchFeedCardComponent({ data }: Props) {
               onPress={handlePress}
               activeOpacity={0.9}
             >
-              <Text style={styles.ctaText}>{data.cta ?? 'View matches'}</Text>
+              <Text style={styles.ctaText}>{data.cta ?? t('feed.cards.viewMatches')}</Text>
             </TouchableOpacity>
           </View>
         </LinearGradient>

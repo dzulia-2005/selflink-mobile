@@ -5,6 +5,22 @@ import { Alert } from 'react-native';
 import { CreatePostScreen } from '@screens/feed/CreatePostScreen';
 
 jest.mock('react-native-markdown-display', () => 'Markdown');
+jest.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) =>
+      (
+        {
+          'common.cancel': 'Cancel',
+          'feed.create.useVideo': 'Use video',
+          'feed.create.addVideo': 'Add video',
+          'feed.create.addPhotos': 'Add photos',
+          'feed.create.videoSelected': 'Video selected',
+          'feed.create.publish': 'Post',
+          'feed.create.alerts.createFailed.title': 'Unable to create post',
+        } as Record<string, string>
+      )[key] ?? key,
+  }),
+}));
 
 const mockCreatePost = jest.fn();
 const mockNavigate = jest.fn();

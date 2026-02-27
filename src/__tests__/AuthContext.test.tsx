@@ -5,12 +5,9 @@ import { Text } from 'react-native';
 import { AuthProvider } from '@context/AuthContext';
 import { useAuth } from '@hooks/useAuth';
 
-jest.mock('@services/api/client', () => {
-  const actual = jest.requireActual('@services/api/client');
+jest.mock('@api/client', () => {
   return {
-    ...actual,
-    apiClient: {
-      ...actual.apiClient,
+    serviceApiClient: {
       setToken: jest.fn(),
       setRefreshHandler: jest.fn(),
     },

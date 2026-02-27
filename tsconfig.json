@@ -22,7 +22,9 @@
       "@config/*": ["src/config/*"],
       "@services/*": ["src/services/*"],
       "@context/*": ["src/context/*"],
-      "@auth/*": ["src/auth/*"]
+      "@auth/*": ["src/auth/*"],
+      "@i18n": ["src/i18n/index"],
+      "@i18n/*": ["src/i18n/*"]
     }
   }
 }

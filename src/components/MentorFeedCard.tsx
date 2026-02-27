@@ -1,6 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { memo, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import type { MentorInsightCard } from '@schemas/feed';
@@ -13,6 +14,7 @@ type Props = {
 };
 
 function MentorFeedCardComponent({ data }: Props) {
+  const { t } = useTranslation();
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
   const navigation = useNavigation<any>();
@@ -41,7 +43,7 @@ function MentorFeedCardComponent({ data }: Props) {
           <View style={styles.inner}>
             <View style={styles.sparkleRow}>
               <View style={styles.spark} />
-              <Text style={styles.label}>Mentor Insight</Text>
+              <Text style={styles.label}>{t('feed.cards.mentorInsight')}</Text>
               <View style={styles.spark} />
             </View>
             <Text style={styles.title}>{data.title}</Text>
@@ -51,7 +53,7 @@ function MentorFeedCardComponent({ data }: Props) {
               onPress={handlePress}
               activeOpacity={0.9}
             >
-              <Text style={styles.ctaText}>{data.cta ?? 'Open mentor'}</Text>
+              <Text style={styles.ctaText}>{data.cta ?? t('feed.cards.openMentor')}</Text>
             </TouchableOpacity>
           </View>
         </LinearGradient>

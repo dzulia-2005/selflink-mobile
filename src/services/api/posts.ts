@@ -1,4 +1,4 @@
-import { apiClient } from '@services/api/client';
+import { serviceApiClient as apiClient } from '@api/client';
 import type { FeedPost } from '@services/api/feed';
 
 export type Post = FeedPost;

@@ -21,6 +21,7 @@ module.exports = function (api) {
           '@schemas': './src/types',
           '@context': './src/context',
           '@auth': './src/auth',
+          '@i18n': './src/i18n',
           'react-native-worklets/plugin': './src/utils/workletsPluginStub',
         },
       },

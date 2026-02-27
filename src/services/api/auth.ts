@@ -1,5 +1,5 @@
+import { serviceApiClient as apiClient } from '@api/client';
 import { AuthUser } from '@context/AuthContext';
-import { apiClient } from '@services/api/client';
 import { fetchCurrentUser } from '@services/api/user';
 
 type LoginResponse = {

@@ -45,6 +45,12 @@ module.exports = {
         'src/screens/auth/SocialLoginScreen.tsx',
         'src/navigation/RootNavigator.tsx',
         'src/navigation/MainTabsNavigator.tsx',
+        'src/screens/feed/FeedScreen.tsx',
+        'src/screens/feed/CreatePostScreen.tsx',
+        'src/components/FeedPostCard.tsx',
+        'src/components/MentorFeedCard.tsx',
+        'src/components/MatrixFeedCard.tsx',
+        'src/components/SoulMatchFeedCard.tsx',
       ],
       rules: {
         'react/jsx-no-literals': ['error', { noStrings: true, ignoreProps: true }],
