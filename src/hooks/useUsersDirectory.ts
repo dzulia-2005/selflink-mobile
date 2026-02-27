@@ -53,7 +53,24 @@ export function useUsersDirectory(options: Options = {}) {
 
   const applyPage = useCallback((response: UsersListResponse, reset: boolean) => {
     const normalized = response.results.map(normalizeUser);
-    setUsers((prev) => (reset ? normalized : [...prev, ...normalized]));
+    setUsers((prev) => {
+      if (reset) {
+        const unique = new Map<string, DirectoryUser>();
+        normalized.forEach((user) => {
+          unique.set(String(user.id), user);
+        });
+        return Array.from(unique.values());
+      }
+
+      const merged = new Map<string, DirectoryUser>();
+      prev.forEach((user) => {
+        merged.set(String(user.id), user);
+      });
+      normalized.forEach((user) => {
+        merged.set(String(user.id), user);
+      });
+      return Array.from(merged.values());
+    });
     setCursor(response.next);
     setHasMore(Boolean(response.next));
   }, []);
