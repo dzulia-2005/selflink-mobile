@@ -3,6 +3,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import * as Clipboard from 'expo-clipboard';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { getRecipientId, savePersonalMapProfile } from '@api/users';
@@ -22,6 +23,7 @@ const formatAccountKey = (value: string) => {
 };
 
 export function ProfileScreen() {
+  const { t } = useTranslation();
   const currentUser = useAuthStore((state) => state.currentUser);
   const personalMap = useAuthStore((state) => state.personalMap);
   const hasCompletedPersonalMap = useAuthStore((state) => state.hasCompletedPersonalMap);
@@ -36,6 +38,7 @@ export function ProfileScreen() {
     useNavigation<NativeStackNavigationProp<ProfileStackParamList, 'ProfileHome'>>();
   const { theme, mode, setMode } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
+  const handleText = currentUser?.handle ? `@${currentUser.handle}` : '';
 
   const handleLogout = useCallback(async () => {
     await logout();
@@ -111,25 +114,33 @@ export function ProfileScreen() {
     }
     try {
       await Clipboard.setStringAsync(recipientId);
-      toast.push({ message: 'Copied to clipboard', tone: 'info', duration: 1500 });
+      toast.push({
+        message: t('profile.actions.copiedToClipboard'),
+        tone: 'info',
+        duration: 1500,
+      });
     } catch (error) {
       console.warn('ProfileScreen: failed to copy recipient id', error);
-      toast.push({ message: 'Unable to copy right now.', tone: 'error' });
+      toast.push({ message: t('profile.actions.copyFailed'), tone: 'error' });
     }
-  }, [recipientId, toast]);
+  }, [recipientId, t, toast]);
 
   const handleSelectTheme = useCallback(
     async (nextMode: ThemeMode) => {
       await setMode(nextMode);
-      toast.push({ message: 'Theme updated', tone: 'info', duration: 1200 });
+      toast.push({
+        message: t('profile.actions.themeUpdated'),
+        tone: 'info',
+        duration: 1200,
+      });
     },
-    [setMode, toast],
+    [setMode, t, toast],
   );
 
   if (!currentUser) {
     return (
       <View style={styles.emptyState}>
-        <Text style={styles.emptyStateText}>We could not load your profile.</Text>
+        <Text style={styles.emptyStateText}>{t('profile.empty.loadFailed')}</Text>
       </View>
     );
   }
@@ -147,28 +158,32 @@ export function ProfileScreen() {
             onPress={handleChangePhoto}
             disabled={isUpdatingPhoto || isPicking}
             activeOpacity={0.85}
+            accessibilityRole="button"
+            accessibilityLabel={t('profile.accessibility.changePhoto')}
           >
             <Text style={styles.editPhotoLabel}>
-              {isUpdatingPhoto ? 'Updating photo…' : 'Change photo'}
+              {isUpdatingPhoto
+                ? t('profile.actions.updatingPhoto')
+                : t('profile.actions.changePhoto')}
             </Text>
           </TouchableOpacity>
           <Text style={styles.name}>{currentUser.name}</Text>
-          <Text style={styles.handle}>@{currentUser.handle}</Text>
+          <Text style={styles.handle}>{handleText}</Text>
           <Text style={styles.meta}>{currentUser.email}</Text>
           {currentUser.birth_place ? (
             <Text style={styles.meta}>{currentUser.birth_place}</Text>
           ) : null}
           <View style={styles.recipientCard}>
             <View style={styles.recipientInfo}>
-              <Text style={styles.recipientLabel}>Recipient ID (SLC)</Text>
+              <Text style={styles.recipientLabel}>{t('profile.view.recipientIdLabel')}</Text>
               <Text style={styles.recipientValue}>
                 {recipientIdLoading
-                  ? 'Loading…'
+                  ? t('profile.loading')
                   : recipientId
                     ? formatAccountKey(recipientId)
-                    : 'Not available'}
+                    : t('profile.view.notAvailable')}
               </Text>
-              <Text style={styles.recipientHint}>Share this ID to receive SLC.</Text>
+              <Text style={styles.recipientHint}>{t('profile.view.recipientIdHint')}</Text>
             </View>
             <TouchableOpacity
               style={[
@@ -178,11 +193,13 @@ export function ProfileScreen() {
               onPress={handleCopyRecipientId}
               disabled={!recipientId || recipientIdLoading}
               activeOpacity={0.85}
+              accessibilityRole="button"
+              accessibilityLabel={t('profile.accessibility.copyRecipientId')}
             >
-              <Text style={styles.copyLabel}>Copy</Text>
+              <Text style={styles.copyLabel}>{t('profile.actions.copy')}</Text>
             </TouchableOpacity>
           </View>
-          <Text style={styles.sectionTitle}>Appearance</Text>
+          <Text style={styles.sectionTitle}>{t('profile.view.sections.appearance')}</Text>
           <View style={styles.appearanceCard}>
             {(['system', 'light', 'dark'] as ThemeMode[]).map((value) => {
               const selected = mode === value;
@@ -197,103 +214,122 @@ export function ProfileScreen() {
                   activeOpacity={0.85}
                 >
                   <Text
-                    style={[
-                      styles.appearanceLabel,
-                      selected && styles.appearanceLabelActive,
-                    ]}
-                  >
-                    {value === 'system' ? 'System' : value === 'light' ? 'Light' : 'Dark'}
+                  style={[
+                    styles.appearanceLabel,
+                    selected && styles.appearanceLabelActive,
+                  ]}
+                >
+                    {value === 'system'
+                      ? t('profile.view.theme.system')
+                      : value === 'light'
+                        ? t('profile.view.theme.light')
+                        : t('profile.view.theme.dark')}
                   </Text>
                 </TouchableOpacity>
               );
             })}
           </View>
-          <Text style={styles.sectionTitle}>Personal map</Text>
+          <Text style={styles.sectionTitle}>{t('profile.view.sections.personalMap')}</Text>
           {hasCompletedPersonalMap && personalMap ? (
             <View style={styles.mapGrid}>
               <InfoRow
                 styles={styles}
-                label="First name"
+                label={t('profile.view.personalMap.firstName')}
                 value={personalMap.first_name}
               />
-              <InfoRow styles={styles} label="Last name" value={personalMap.last_name} />
               <InfoRow
                 styles={styles}
-                label="Birth date"
-                value={personalMap.birth_date ?? 'N/A'}
+                label={t('profile.view.personalMap.lastName')}
+                value={personalMap.last_name}
               />
               <InfoRow
                 styles={styles}
-                label="Birth time"
-                value={personalMap.birth_time ?? 'N/A'}
+                label={t('profile.view.personalMap.birthDate')}
+                value={personalMap.birth_date ?? t('profile.view.notAvailable')}
               />
               <InfoRow
                 styles={styles}
-                label="Birth city"
+                label={t('profile.view.personalMap.birthTime')}
+                value={personalMap.birth_time ?? t('profile.view.notAvailable')}
+              />
+              <InfoRow
+                styles={styles}
+                label={t('profile.view.personalMap.birthCity')}
                 value={personalMap.birth_place_city}
               />
               <InfoRow
                 styles={styles}
-                label="Country"
+                label={t('profile.view.personalMap.country')}
                 value={personalMap.birth_place_country}
               />
             </View>
           ) : (
-            <Text style={styles.meta}>
-              Complete your personal map to unlock mentor, matrix, and soul match
-              insights.
-            </Text>
+            <Text style={styles.meta}>{t('profile.view.personalMap.emptyHint')}</Text>
           )}
-          <Text style={styles.sectionTitle}>Billing</Text>
+          <Text style={styles.sectionTitle}>{t('profile.view.sections.billing')}</Text>
           <TouchableOpacity
             style={styles.editButton}
             onPress={() => navigation.navigate('Payments')}
             activeOpacity={0.9}
+            accessibilityRole="button"
+            accessibilityLabel={t('profile.menu.payments')}
           >
-            <Text style={styles.actionLabel}>Payments</Text>
+            <Text style={styles.actionLabel}>{t('profile.menu.payments')}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.editButton}
             onPress={() => navigation.navigate('WalletLedger')}
             activeOpacity={0.9}
+            accessibilityRole="button"
+            accessibilityLabel={t('profile.menu.wallet')}
           >
-            <Text style={styles.actionLabel}>Wallet</Text>
+            <Text style={styles.actionLabel}>{t('profile.menu.wallet')}</Text>
           </TouchableOpacity>
-          <Text style={styles.sectionTitle}>More</Text>
+          <Text style={styles.sectionTitle}>{t('profile.view.sections.more')}</Text>
           <TouchableOpacity
             style={styles.editButton}
             onPress={() => navigation.navigate('Notifications')}
             activeOpacity={0.9}
+            accessibilityRole="button"
+            accessibilityLabel={t('profile.menu.notifications')}
           >
-            <Text style={styles.actionLabel}>Notifications</Text>
+            <Text style={styles.actionLabel}>{t('profile.menu.notifications')}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.editButton}
             onPress={() => navigation.navigate('Inbox')}
             activeOpacity={0.9}
+            accessibilityRole="button"
+            accessibilityLabel={t('profile.menu.inbox')}
           >
-            <Text style={styles.actionLabel}>Inbox</Text>
+            <Text style={styles.actionLabel}>{t('profile.menu.inbox')}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.editButton}
             onPress={() => navigation.navigate('Community')}
             activeOpacity={0.9}
+            accessibilityRole="button"
+            accessibilityLabel={t('profile.menu.community')}
           >
-            <Text style={styles.actionLabel}>Community</Text>
+            <Text style={styles.actionLabel}>{t('profile.menu.community')}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.logoutButton}
             onPress={handleLogout}
             activeOpacity={0.9}
+            accessibilityRole="button"
+            accessibilityLabel={t('profile.actions.signOut')}
           >
-            <Text style={styles.logoutLabel}>Sign out</Text>
+            <Text style={styles.logoutLabel}>{t('profile.actions.signOut')}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.editButton}
             onPress={() => navigation.navigate('ProfileEdit')}
             activeOpacity={0.9}
+            accessibilityRole="button"
+            accessibilityLabel={t('profile.menu.editProfile')}
           >
-            <Text style={styles.logoutLabel}>Edit profile</Text>
+            <Text style={styles.logoutLabel}>{t('profile.menu.editProfile')}</Text>
           </TouchableOpacity>
         </LinearGradient>
       </ScrollView>

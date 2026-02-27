@@ -22,6 +22,7 @@
     "saveError": "не удалось обновить профиль. Попробуйте снова.",
     "languageChangeError": "не удалось сменить язык. Попробуйте снова.",
     "saving": "Сохранение...",
+    "loading": "Загрузка...",
     "languageOptions": {
       "en": "English",
       "ru": "Русский",
@@ -80,6 +81,55 @@
         "gifts": "Подарки",
         "touch": "Прикосновения"
       }
+    },
+    "empty": {
+      "loadFailed": "Не удалось загрузить ваш профиль."
+    },
+    "view": {
+      "recipientIdLabel": "ID получателя (SLC)",
+      "recipientIdHint": "Поделитесь этим ID, чтобы получать SLC.",
+      "notAvailable": "Недоступно",
+      "theme": {
+        "system": "Системная",
+        "light": "Светлая",
+        "dark": "Тёмная"
+      },
+      "sections": {
+        "appearance": "Оформление",
+        "personalMap": "Личная карта",
+        "billing": "Платежи",
+        "more": "Ещё"
+      },
+      "personalMap": {
+        "firstName": "Имя",
+        "lastName": "Фамилия",
+        "birthDate": "Дата рождения",
+        "birthTime": "Время рождения",
+        "birthCity": "Город рождения",
+        "country": "Страна",
+        "emptyHint": "Заполните личную карту, чтобы открыть инсайты ментора, матрицы и SoulMatch."
+      }
+    },
+    "menu": {
+      "editProfile": "Редактировать профиль",
+      "payments": "Платежи",
+      "wallet": "Кошелёк",
+      "notifications": "Уведомления",
+      "inbox": "Входящие",
+      "community": "Сообщество"
+    },
+    "actions": {
+      "changePhoto": "Сменить фото",
+      "updatingPhoto": "Обновление фото...",
+      "copy": "Копировать",
+      "signOut": "Выйти",
+      "copiedToClipboard": "Скопировано в буфер обмена",
+      "copyFailed": "Сейчас не удалось скопировать.",
+      "themeUpdated": "Тема обновлена"
+    },
+    "accessibility": {
+      "changePhoto": "Сменить фото",
+      "copyRecipientId": "Скопировать ID получателя"
     }
   },
   "auth": {

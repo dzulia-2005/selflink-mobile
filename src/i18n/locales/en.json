@@ -22,6 +22,7 @@
     "saveError": "Could not update profile. Try again.",
     "languageChangeError": "Could not switch language. Try again.",
     "saving": "Saving...",
+    "loading": "Loading...",
     "languageOptions": {
       "en": "English",
       "ru": "Russian",
@@ -80,6 +81,55 @@
         "gifts": "Gifts",
         "touch": "Touch"
       }
+    },
+    "empty": {
+      "loadFailed": "We could not load your profile."
+    },
+    "view": {
+      "recipientIdLabel": "Recipient ID (SLC)",
+      "recipientIdHint": "Share this ID to receive SLC.",
+      "notAvailable": "Not available",
+      "theme": {
+        "system": "System",
+        "light": "Light",
+        "dark": "Dark"
+      },
+      "sections": {
+        "appearance": "Appearance",
+        "personalMap": "Personal map",
+        "billing": "Billing",
+        "more": "More"
+      },
+      "personalMap": {
+        "firstName": "First name",
+        "lastName": "Last name",
+        "birthDate": "Birth date",
+        "birthTime": "Birth time",
+        "birthCity": "Birth city",
+        "country": "Country",
+        "emptyHint": "Complete your personal map to unlock mentor, matrix, and soul match insights."
+      }
+    },
+    "menu": {
+      "editProfile": "Edit profile",
+      "payments": "Payments",
+      "wallet": "Wallet",
+      "notifications": "Notifications",
+      "inbox": "Inbox",
+      "community": "Community"
+    },
+    "actions": {
+      "changePhoto": "Change photo",
+      "updatingPhoto": "Updating photo...",
+      "copy": "Copy",
+      "signOut": "Sign out",
+      "copiedToClipboard": "Copied to clipboard",
+      "copyFailed": "Unable to copy right now.",
+      "themeUpdated": "Theme updated"
+    },
+    "accessibility": {
+      "changePhoto": "Change photo",
+      "copyRecipientId": "Copy recipient ID"
     }
   },
   "auth": {

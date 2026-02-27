@@ -22,6 +22,7 @@
     "saveError": "პროფილის განახლება ვერ მოხერხდა. სცადეთ თავიდან.",
     "languageChangeError": "ენის შეცვლა ვერ მოხერხდა. სცადეთ თავიდან.",
     "saving": "ინახება...",
+    "loading": "იტვირთება...",
     "languageOptions": {
       "en": "English",
       "ru": "Русский",
@@ -80,6 +81,55 @@
         "gifts": "საჩუქრები",
         "touch": "შეხება"
       }
+    },
+    "empty": {
+      "loadFailed": "თქვენი პროფილის ჩატვირთვა ვერ მოხერხდა."
+    },
+    "view": {
+      "recipientIdLabel": "მიმღების ID (SLC)",
+      "recipientIdHint": "SLC-ის მისაღებად გაუზიარეთ ეს ID.",
+      "notAvailable": "მიუწვდომელია",
+      "theme": {
+        "system": "სისტემური",
+        "light": "ღია",
+        "dark": "მუქი"
+      },
+      "sections": {
+        "appearance": "გარეგნობა",
+        "personalMap": "პირადი რუკა",
+        "billing": "გადახდები",
+        "more": "მეტი"
+      },
+      "personalMap": {
+        "firstName": "სახელი",
+        "lastName": "გვარი",
+        "birthDate": "დაბადების თარიღი",
+        "birthTime": "დაბადების დრო",
+        "birthCity": "დაბადების ქალაქი",
+        "country": "ქვეყანა",
+        "emptyHint": "შეავსეთ პირადი რუკა, რათა გახსნათ მენტორის, მატრიცისა და SoulMatch-ის ინსაიტები."
+      }
+    },
+    "menu": {
+      "editProfile": "პროფილის რედაქტირება",
+      "payments": "გადახდები",
+      "wallet": "საფულე",
+      "notifications": "შეტყობინებები",
+      "inbox": "შემომავალი",
+      "community": "თემი"
+    },
+    "actions": {
+      "changePhoto": "ფოტოს შეცვლა",
+      "updatingPhoto": "ფოტო ახლდება...",
+      "copy": "კოპირება",
+      "signOut": "გასვლა",
+      "copiedToClipboard": "ბუფერში დაკოპირდა",
+      "copyFailed": "ახლა კოპირება ვერ მოხერხდა.",
+      "themeUpdated": "თემა განახლდა"
+    },
+    "accessibility": {
+      "changePhoto": "ფოტოს შეცვლა",
+      "copyRecipientId": "მიმღების ID-ის კოპირება"
     }
   },
   "auth": {
