@@ -12,32 +12,34 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import BirthDataScreen from '@screens/astro/BirthData';
 import NatalChartScreen from '@screens/astro/NatalChart';
-import { CommunityScreen } from '@screens/CommunityScreen';
-import { CreatePostScreen } from '@screens/feed/CreatePostScreen';
-import { FeedScreen } from '@screens/feed/FeedScreen';
-import { PostDetailsScreen } from '@screens/feed/PostDetailsScreen';
-import { InboxScreen } from '@screens/InboxScreen';
-import { DailyMentorEntryScreen } from '@screens/mentor/DailyMentorEntryScreen';
-import { DailyMentorScreen } from '@screens/mentor/DailyMentorScreen';
-import { MentorChatScreen } from '@screens/mentor/MentorChatScreen';
-import { MentorHomeScreen } from '@screens/mentor/MentorHomeScreen';
-import { NatalMentorScreen } from '@screens/mentor/NatalMentorScreen';
-import { ChatScreen } from '@screens/messaging/ChatScreen';
-import { ThreadsScreen } from '@screens/messaging/ThreadsScreen';
-import { NotificationsScreen } from '@screens/notifications/NotificationsScreen';
-import { PaymentsScreen } from '@screens/PaymentsScreen';
-import { ProfileEditScreen } from '@screens/profile/ProfileEditScreen';
-import { ProfileScreen } from '@screens/profile/ProfileScreen';
-import { SearchProfilesScreen } from '@screens/profile/SearchProfilesScreen';
-import { UserProfileScreen } from '@screens/profile/UserProfileScreen';
-import { SoulMatchDetailsScreen } from '@screens/soulmatch/SoulMatchDetailsScreen';
-import { SoulMatchMentorScreen } from '@screens/soulmatch/SoulMatchMentorScreen';
-import { SoulMatchRecommendationsScreen } from '@screens/soulmatch/SoulMatchRecommendationsScreen';
-import { SoulMatchScreen } from '@screens/SoulMatchScreen';
-import { SoulReelsScreen } from '@screens/video/SoulReelsScreen';
-import { WalletLedgerScreen } from '@screens/WalletLedgerScreen';
+import { CommunityScreen } from '@screens/community';
+import { CreatePostScreen, FeedScreen, PostDetailsScreen } from '@screens/feed';
+import {
+  DailyMentorEntryScreen,
+  DailyMentorScreen,
+  MentorChatScreen,
+  MentorHomeScreen,
+  NatalMentorScreen,
+} from '@screens/mentor';
+import { ChatScreen, InboxScreen, ThreadsScreen } from '@screens/messaging';
+import { NotificationsScreen } from '@screens/notifications';
+import { PaymentsScreen, WalletLedgerScreen } from '@screens/payments';
+import {
+  ProfileEditScreen,
+  ProfileScreen,
+  SearchProfilesScreen,
+  UserProfileScreen,
+} from '@screens/profile';
+import {
+  SoulMatchDetailsScreen,
+  SoulMatchMentorScreen,
+  SoulMatchRecommendationsScreen,
+  SoulMatchScreen,
+} from '@screens/soulmatch';
+import { SoulReelsScreen } from '@screens/video';
 import { useTheme } from '@theme';
 
+import { DOMAIN_KEYS, getDomainFeatureFlags, isDomainEnabled } from './moduleRegistry';
 import type {
   MainTabsParamList,
   FeedStackParamList,
@@ -59,6 +61,7 @@ const MessagesStack = createNativeStackNavigator<MessagesStackParamList>();
 const ProfileStack = createNativeStackNavigator<ProfileStackParamList>();
 const MentorStack = createNativeStackNavigator<MentorStackParamList>();
 const SoulMatchStack = createNativeStackNavigator<SoulMatchStackParamList>();
+const domainFlags = getDomainFeatureFlags();
 
 function getTabIconName(
   routeName: string,
@@ -162,6 +165,8 @@ function CreatePostTabBarButton(props: BottomTabBarButtonProps) {
 function FeedStackNavigator() {
   const { t } = useTranslation();
   const { theme } = useTheme();
+  const profileEnabled = isDomainEnabled(domainFlags, DOMAIN_KEYS.profile);
+  const videoEnabled = isDomainEnabled(domainFlags, DOMAIN_KEYS.video);
   return (
     <FeedStack.Navigator
       screenOptions={{
@@ -185,21 +190,27 @@ function FeedStackNavigator() {
         component={CreatePostScreen}
         options={{ title: t('nav.headers.newPost') }}
       />
-      <FeedStack.Screen
-        name="SearchProfiles"
-        component={SearchProfilesScreen}
-        options={{ title: t('nav.headers.searchProfiles') }}
-      />
-      <FeedStack.Screen
-        name="UserProfile"
-        component={UserProfileScreen}
-        options={{ title: t('nav.headers.profile') }}
-      />
-      <FeedStack.Screen
-        name="SoulReels"
-        component={SoulReelsScreen}
-        options={{ headerShown: false }}
-      />
+      {profileEnabled ? (
+        <FeedStack.Screen
+          name="SearchProfiles"
+          component={SearchProfilesScreen}
+          options={{ title: t('nav.headers.searchProfiles') }}
+        />
+      ) : null}
+      {profileEnabled ? (
+        <FeedStack.Screen
+          name="UserProfile"
+          component={UserProfileScreen}
+          options={{ title: t('nav.headers.profile') }}
+        />
+      ) : null}
+      {videoEnabled ? (
+        <FeedStack.Screen
+          name="SoulReels"
+          component={SoulReelsScreen}
+          options={{ headerShown: false }}
+        />
+      ) : null}
     </FeedStack.Navigator>
   );
 }
@@ -236,6 +247,10 @@ function MessagesStackNavigator() {
 function ProfileStackNavigator() {
   const { t } = useTranslation();
   const { theme } = useTheme();
+  const paymentsEnabled = isDomainEnabled(domainFlags, DOMAIN_KEYS.payments);
+  const notificationsEnabled = isDomainEnabled(domainFlags, DOMAIN_KEYS.notifications);
+  const communityEnabled = isDomainEnabled(domainFlags, DOMAIN_KEYS.community);
+  const messagingEnabled = isDomainEnabled(domainFlags, DOMAIN_KEYS.messaging);
   return (
     <ProfileStack.Navigator
       screenOptions={{
@@ -264,31 +279,41 @@ function ProfileStackNavigator() {
         component={ProfileEditScreen}
         options={{ title: t('nav.headers.editProfile') }}
       />
-      <ProfileStack.Screen
-        name="Payments"
-        component={PaymentsScreen}
-        options={{ title: t('nav.headers.payments') }}
-      />
-      <ProfileStack.Screen
-        name="WalletLedger"
-        component={WalletLedgerScreen}
-        options={{ title: t('nav.headers.wallet') }}
-      />
-      <ProfileStack.Screen
-        name="Notifications"
-        component={NotificationsScreen}
-        options={{ title: t('nav.headers.notifications') }}
-      />
-      <ProfileStack.Screen
-        name="Community"
-        component={CommunityScreen}
-        options={{ title: t('nav.headers.community') }}
-      />
-      <ProfileStack.Screen
-        name="Inbox"
-        component={InboxScreen}
-        options={{ title: t('nav.headers.inbox') }}
-      />
+      {paymentsEnabled ? (
+        <ProfileStack.Screen
+          name="Payments"
+          component={PaymentsScreen}
+          options={{ title: t('nav.headers.payments') }}
+        />
+      ) : null}
+      {paymentsEnabled ? (
+        <ProfileStack.Screen
+          name="WalletLedger"
+          component={WalletLedgerScreen}
+          options={{ title: t('nav.headers.wallet') }}
+        />
+      ) : null}
+      {notificationsEnabled ? (
+        <ProfileStack.Screen
+          name="Notifications"
+          component={NotificationsScreen}
+          options={{ title: t('nav.headers.notifications') }}
+        />
+      ) : null}
+      {communityEnabled ? (
+        <ProfileStack.Screen
+          name="Community"
+          component={CommunityScreen}
+          options={{ title: t('nav.headers.community') }}
+        />
+      ) : null}
+      {messagingEnabled ? (
+        <ProfileStack.Screen
+          name="Inbox"
+          component={InboxScreen}
+          options={{ title: t('nav.headers.inbox') }}
+        />
+      ) : null}
     </ProfileStack.Navigator>
   );
 }
@@ -296,6 +321,7 @@ function ProfileStackNavigator() {
 function MentorStackNavigator() {
   const { t } = useTranslation();
   const { theme } = useTheme();
+  const astroEnabled = isDomainEnabled(domainFlags, DOMAIN_KEYS.astro);
   return (
     <MentorStack.Navigator
       screenOptions={{
@@ -309,16 +335,20 @@ function MentorStackNavigator() {
         component={MentorHomeScreen}
         options={{ headerShown: false }}
       />
-      <MentorStack.Screen
-        name="BirthData"
-        component={BirthDataScreen}
-        options={{ title: t('nav.headers.birthData') }}
-      />
-      <MentorStack.Screen
-        name="NatalChart"
-        component={NatalChartScreen}
-        options={{ title: t('nav.headers.natalChart') }}
-      />
+      {astroEnabled ? (
+        <MentorStack.Screen
+          name="BirthData"
+          component={BirthDataScreen}
+          options={{ title: t('nav.headers.birthData') }}
+        />
+      ) : null}
+      {astroEnabled ? (
+        <MentorStack.Screen
+          name="NatalChart"
+          component={NatalChartScreen}
+          options={{ title: t('nav.headers.natalChart') }}
+        />
+      ) : null}
       <MentorStack.Screen
         name="NatalMentor"
         component={NatalMentorScreen}
@@ -449,6 +479,11 @@ export function MainTabsNavigator() {
   const { t } = useTranslation();
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
+  const feedEnabled = isDomainEnabled(domainFlags, DOMAIN_KEYS.feed);
+  const mentorEnabled = isDomainEnabled(domainFlags, DOMAIN_KEYS.mentor);
+  const soulmatchEnabled = isDomainEnabled(domainFlags, DOMAIN_KEYS.soulmatch);
+  const profileEnabled = isDomainEnabled(domainFlags, DOMAIN_KEYS.profile);
+  const messagingEnabled = isDomainEnabled(domainFlags, DOMAIN_KEYS.messaging);
   const safeBottom = Math.max(insets.bottom, 10);
   const tabHeight = 62 + safeBottom;
 
@@ -494,34 +529,40 @@ export function MainTabsNavigator() {
         tabBarIcon: createTabBarIcon(route.name),
       })}
     >
-      <Tab.Screen name="Feed" component={FeedStackNavigator} />
-      <Tab.Screen name="Mentor" component={MentorStackNavigator} />
-      <Tab.Screen
-        name="CreatePostTab"
-        component={FeedStackNavigator}
-        listeners={({ navigation }) => ({
-          tabPress: (event) => {
-            event.preventDefault();
-            navigation.navigate('Feed', { screen: 'CreatePost' });
-          },
-        })}
-        options={{
-          tabBarLabel: '',
-          tabBarIcon: () => null,
-          tabBarButton: CreatePostTabBarButton,
-        }}
-      />
-      <Tab.Screen name="SoulMatch" component={SoulMatchStackNavigator} />
-      <Tab.Screen name="Profile" component={ProfileStackNavigator} />
-      <Tab.Screen
-        name="Messages"
-        component={MessagesStackNavigator}
-        options={{
-          ...HIDDEN_TAB_OPTIONS,
-          headerShown: false,
-          tabBarItemStyle: { display: 'none' as const },
-        }}
-      />
+      {feedEnabled ? <Tab.Screen name="Feed" component={FeedStackNavigator} /> : null}
+      {mentorEnabled ? <Tab.Screen name="Mentor" component={MentorStackNavigator} /> : null}
+      {feedEnabled ? (
+        <Tab.Screen
+          name="CreatePostTab"
+          component={FeedStackNavigator}
+          listeners={({ navigation }) => ({
+            tabPress: (event) => {
+              event.preventDefault();
+              navigation.navigate('Feed', { screen: 'CreatePost' });
+            },
+          })}
+          options={{
+            tabBarLabel: '',
+            tabBarIcon: () => null,
+            tabBarButton: CreatePostTabBarButton,
+          }}
+        />
+      ) : null}
+      {soulmatchEnabled ? (
+        <Tab.Screen name="SoulMatch" component={SoulMatchStackNavigator} />
+      ) : null}
+      {profileEnabled ? <Tab.Screen name="Profile" component={ProfileStackNavigator} /> : null}
+      {messagingEnabled ? (
+        <Tab.Screen
+          name="Messages"
+          component={MessagesStackNavigator}
+          options={{
+            ...HIDDEN_TAB_OPTIONS,
+            headerShown: false,
+            tabBarItemStyle: { display: 'none' as const },
+          }}
+        />
+      ) : null}
     </Tab.Navigator>
   );
 }
