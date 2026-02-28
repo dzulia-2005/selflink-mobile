@@ -3,7 +3,7 @@ import React from 'react';
 import { Animated } from 'react-native';
 
 import { SoulmatchResult } from '@schemas/soulmatch';
-import { SoulMatchDetailsScreen } from '@screens/soulmatch/SoulMatchDetailsScreen';
+import { SoulMatchDetailsScreen } from '@screens/soulmatch/details';
 
 jest.mock('@react-navigation/native', () => {
   return {

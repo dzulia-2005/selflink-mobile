@@ -3,7 +3,7 @@ import React from 'react';
 import { Animated } from 'react-native';
 
 import { SoulmatchResult } from '@schemas/soulmatch';
-import { SoulMatchRecommendationsScreen } from '@screens/soulmatch/SoulMatchRecommendationsScreen';
+import { SoulMatchRecommendationsScreen } from '@screens/soulmatch/recommendations';
 
 jest.mock('@services/api/soulmatch', () => ({
   fetchRecommendations: jest.fn(),
