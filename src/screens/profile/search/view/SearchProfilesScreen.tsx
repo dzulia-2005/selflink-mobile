@@ -1,6 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import * as Clipboard from 'expo-clipboard';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   FlatList,
@@ -18,6 +19,7 @@ import { useAuthStore } from '@store/authStore';
 import { useTheme, type Theme } from '@theme';
 
 export function SearchProfilesScreen() {
+  const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const toast = useToast();
   const { theme } = useTheme();
@@ -184,17 +186,19 @@ export function SearchProfilesScreen() {
     return (
       <View style={styles.empty}>
         <Text style={styles.emptyText}>
-          {query.trim() ? 'No results.' : 'Search for a user to send SLC.'}
+          {query.trim()
+            ? t('profile.search.empty.noResults')
+            : t('profile.search.empty.prompt')}
         </Text>
       </View>
     );
-  }, [isLoading, query, results.length, styles.empty, styles.emptyText]);
+  }, [isLoading, query, results.length, styles.empty, styles.emptyText, t]);
 
   return (
     <View style={styles.container}>
       <View style={styles.formRow}>
         <TextInput
-          placeholder="Search users"
+          placeholder={t('profile.search.placeholder')}
           value={query}
           onChangeText={setQuery}
           style={styles.input}

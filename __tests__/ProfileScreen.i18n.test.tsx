@@ -1,7 +1,7 @@
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 import React from 'react';
 
-import { ProfileScreen } from '@screens/profile/ProfileScreen';
+import { ProfileScreen } from '@screens/profile';
 
 const mockSetStringAsync = jest.fn().mockResolvedValue(undefined);
 const mockToastPush = jest.fn();
