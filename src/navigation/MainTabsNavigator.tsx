@@ -10,8 +10,8 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import type { ColorValue } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { BirthDataScreen } from '@screens/astro/BirthDataScreen';
-import { NatalChartScreen } from '@screens/astro/NatalChartScreen';
+import BirthDataScreen from '@screens/astro/BirthData';
+import NatalChartScreen from '@screens/astro/NatalChart';
 import { CommunityScreen } from '@screens/CommunityScreen';
 import { CreatePostScreen } from '@screens/feed/CreatePostScreen';
 import { FeedScreen } from '@screens/feed/FeedScreen';
@@ -46,6 +46,7 @@ import type {
   MentorStackParamList,
   SoulMatchStackParamList,
 } from './types';
+
 // import React from 'react';
 
 const SELF_LINK_GREEN = '#16a34a';

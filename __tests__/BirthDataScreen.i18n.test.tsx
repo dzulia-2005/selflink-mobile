@@ -1,7 +1,7 @@
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 import React from 'react';
 
-import { BirthDataScreen } from '@screens/astro/BirthDataScreen';
+import { BirthDataScreen } from '@screens/astro/BirthData/view/BirthDataScreen';
 
 const mockNavigate = jest.fn();
 

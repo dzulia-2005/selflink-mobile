@@ -1,12 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   RefreshControl,
   ScrollView,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,
@@ -28,131 +27,23 @@ import { MetalButton } from '@components/MetalButton';
 import { MetalPanel } from '@components/MetalPanel';
 import { ErrorView, LoadingView } from '@components/StateViews';
 import { MentorStackParamList } from '@navigation/types';
-import { Aspect, NatalChart, PlanetPosition } from '@schemas/astro';
+import { NatalChart } from '@schemas/astro';
 import { getMyNatalChart } from '@services/api/astro';
-import { useTheme, type Theme } from '@theme';
+import { useTheme } from '@theme';
 
-const BASE_PLANET_ORDER = [
-  'sun',
-  'moon',
-  'mercury',
-  'venus',
-  'mars',
-  'jupiter',
-  'saturn',
-  'uranus',
-  'neptune',
-  'pluto',
-];
+import { formatPlacement } from '../components/FormatPlacement';
+import NatalChartError from '../components/NatalChartError';
+import { resolveHouseForLongitude } from '../components/ResolveHouseForLongitude';
+import { retrogradeTag } from '../components/RetrogradeTag';
+import { SummarizeAspect } from '../components/SummarizeAspect';
+import { createStyles } from '../styles/index.styles';
+import { BASE_PLANET_ORDER, NatalChartScreenProps, SIGN_ELEMENT } from '../types/index.types';
 
-const SIGN_ELEMENT: Record<string, 'fire' | 'earth' | 'air' | 'water'> = {
-  aries: 'fire',
-  leo: 'fire',
-  sagittarius: 'fire',
-  taurus: 'earth',
-  virgo: 'earth',
-  capricorn: 'earth',
-  gemini: 'air',
-  libra: 'air',
-  aquarius: 'air',
-  cancer: 'water',
-  scorpio: 'water',
-  pisces: 'water',
-};
 
-const formatPlacement = (placement?: {
-  lon?: number;
-  cusp_lon?: number;
-  sign?: string;
-}) => {
-  if (!placement?.sign) {
-    return '—';
-  }
-  const lon = typeof placement.lon === 'number' ? placement.lon : placement.cusp_lon;
-  if (typeof lon !== 'number') {
-    return placement.sign;
-  }
-  const withinSign = Math.round(((((lon % 30) + 30) % 30) + Number.EPSILON) * 10) / 10;
-  return `${placement.sign} ${withinSign}°`;
-};
-
-const retrogradeTag = (placement?: PlanetPosition | undefined) => {
-  if (typeof placement?.speed !== 'number') {
-    return null;
-  }
-  return placement.speed < 0 ? 'R' : null;
-};
-
-const resolveHouseForLongitude = (
-  houses: Record<string, { cusp_lon: number; sign?: string }>,
-  lon?: number,
-) => {
-  if (typeof lon !== 'number') {
-    return null;
-  }
-  const entries = Object.entries(houses);
-  if (entries.length === 0) {
-    return null;
-  }
-  const sorted = entries
-    .map(([key, house]) => ({ key, lon: ((house.cusp_lon % 360) + 360) % 360 }))
-    .sort((a, b) => a.lon - b.lon);
-  const target = ((lon % 360) + 360) % 360;
-  let chosen = sorted[sorted.length - 1];
-  for (const house of sorted) {
-    if (target >= house.lon) {
-      chosen = house;
-    }
-  }
-  return chosen.key;
-};
-
-const summarizeAspect = (aspect: Aspect) => {
-  const primary =
-    typeof aspect.planet1 === 'string'
-      ? aspect.planet1
-      : typeof aspect.p1 === 'string'
-        ? aspect.p1
-        : typeof aspect.body1 === 'string'
-          ? aspect.body1
-          : undefined;
-  const secondary =
-    typeof aspect.planet2 === 'string'
-      ? aspect.planet2
-      : typeof aspect.p2 === 'string'
-        ? aspect.p2
-        : typeof aspect.body2 === 'string'
-          ? aspect.body2
-          : undefined;
-  const aspectName =
-    typeof aspect.aspect === 'string'
-      ? aspect.aspect
-      : typeof aspect.type === 'string'
-        ? aspect.type
-        : typeof aspect.name === 'string'
-          ? aspect.name
-          : undefined;
-  const orbValue =
-    typeof aspect.orb === 'number'
-      ? aspect.orb
-      : typeof aspect.orb_deg === 'number'
-        ? aspect.orb_deg
-        : undefined;
-  const labelParts = [primary, aspectName, secondary].filter(Boolean) as string[];
-  const label =
-    labelParts.length > 0 ? labelParts.join(' ') : JSON.stringify(aspect).slice(0, 80);
-  return { label, orbValue };
-};
-
-type NatalChartScreenProps = {
-  prefetchedChart?: NatalChart | null;
-  skipAutoFetch?: boolean;
-};
-
-export function NatalChartScreen({
+export const NatalChartScreen: React.FC<NatalChartScreenProps> = ({
   prefetchedChart = null,
   skipAutoFetch = false,
-}: NatalChartScreenProps) {
+}: NatalChartScreenProps) => {
   const { t } = useTranslation();
   const navigation =
     useNavigation<NativeStackNavigationProp<MentorStackParamList, 'NatalChart'>>();
@@ -242,19 +133,10 @@ export function NatalChartScreen({
 
   if (error) {
     return (
-      <SafeAreaView style={styles.safeArea}>
-        <View style={styles.errorBlock}>
-          <ErrorView
-            message={error}
-            actionLabel={t('common.retry')}
-            onRetry={() => loadChart().catch(() => undefined)}
-          />
-          <MetalButton
-            title={t('astro.natal.actions.updateBirthData')}
-            onPress={() => navigation.navigate('BirthData')}
-          />
-        </View>
-      </SafeAreaView>
+     <NatalChartError
+      loadChart={loadChart}
+      error={error}
+     />
     );
   }
 
@@ -353,7 +235,7 @@ export function NatalChartScreen({
         <AspectsCard
           aspects={aspects}
           renderAspect={(aspect) => {
-            const { label, orbValue } = summarizeAspect(aspect);
+            const { label, orbValue } = SummarizeAspect(aspect);
             return (
               <View>
                 <Text style={styles.aspectTitle}>{label}</Text>
@@ -386,85 +268,6 @@ export function NatalChartScreen({
       </ScrollView>
     </SafeAreaView>
   );
-}
+};
 
-const createStyles = (theme: Theme) =>
-  StyleSheet.create({
-    safeArea: {
-      flex: 1,
-      backgroundColor: theme.palette.midnight,
-    },
-    content: {
-      paddingHorizontal: theme.spacing.lg,
-      paddingVertical: theme.spacing.lg,
-      gap: theme.spacing.lg,
-    },
-    headerRow: {
-      flexDirection: 'row',
-      gap: theme.spacing.sm,
-      alignItems: 'flex-start',
-    },
-    titleBlock: {
-      flex: 1,
-      gap: theme.spacing.sm,
-    },
-    headline: {
-      color: theme.palette.platinum,
-      ...theme.typography.headingL,
-      textShadowColor: theme.palette.glow,
-      textShadowOffset: { width: 0, height: 0 },
-      textShadowRadius: 12,
-    },
-    subtitle: {
-      color: theme.palette.silver,
-      ...theme.typography.body,
-    },
-    refreshButton: {
-      padding: theme.spacing.sm,
-      borderRadius: theme.radius.pill,
-      borderWidth: 1,
-      borderColor: theme.palette.titanium,
-      backgroundColor: theme.palette.obsidian,
-    },
-    chartPanel: {
-      borderColor: theme.palette.glow,
-      borderWidth: 1,
-    },
-    sectionHeader: {
-      gap: theme.spacing.xs,
-    },
-    sectionTitle: {
-      color: theme.palette.platinum,
-      ...theme.typography.headingM,
-    },
-    sectionDescription: {
-      color: theme.palette.silver,
-      ...theme.typography.caption,
-    },
-    wheelWrapper: {
-      alignItems: 'center',
-      justifyContent: 'center',
-      paddingVertical: theme.spacing.md,
-    },
-    aspectTitle: {
-      color: theme.palette.platinum,
-      ...theme.typography.body,
-    },
-    aspectMeta: {
-      color: theme.palette.silver,
-      ...theme.typography.caption,
-      marginTop: 2,
-    },
-    footnote: {
-      color: theme.palette.silver,
-      ...theme.typography.caption,
-      textAlign: 'center',
-      marginBottom: theme.spacing.md,
-    },
-    errorBlock: {
-      flex: 1,
-      justifyContent: 'center',
-      padding: theme.spacing.lg,
-      gap: theme.spacing.md,
-    },
-  });
+export default NatalChartScreen;
