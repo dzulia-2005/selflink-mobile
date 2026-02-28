@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction } from 'react';
 
 export type SelectSummaryProp = {
     city:string;
@@ -15,7 +15,7 @@ export type ContentProp = {
     handleOpenMap:() => void
     hasSelectedCoordinate:boolean;
     isSubmitting:boolean;
-    setMode:Dispatch<SetStateAction<"choice" | "form">>
+    setMode:Dispatch<SetStateAction<'choice' | 'form'>>
     firstName:string;
     setFirstName:Dispatch<SetStateAction<string>>;
     city:string;

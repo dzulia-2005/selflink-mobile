@@ -1,4 +1,4 @@
-import { PlanetPosition } from "@schemas/astro";
+import { PlanetPosition } from '@schemas/astro';
 
 export const retrogradeTag = (placement?: PlanetPosition | undefined) => {
   if (typeof placement?.speed !== 'number') {

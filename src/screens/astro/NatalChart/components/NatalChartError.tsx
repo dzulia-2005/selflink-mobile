@@ -1,13 +1,16 @@
-import { MetalButton } from '@components/MetalButton';
-import { ErrorView } from '@components/StateViews';
-import { MentorStackParamList } from '@navigation/types';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { t } from 'i18next';
 import React, { useMemo } from 'react';
 import { SafeAreaView, View } from 'react-native';
-import { createStyles } from '../styles/index.styles';
+
+import { MetalButton } from '@components/MetalButton';
+import { ErrorView } from '@components/StateViews';
+import { MentorStackParamList } from '@navigation/types';
 import { useTheme } from '@theme';
+
+import { createStyles } from '../styles/index.styles';
+
 
 type NatalChartErrorProp = {
   loadChart:() => Promise<void>,

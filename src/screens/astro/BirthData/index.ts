@@ -1,1 +1,1 @@
-export {default} from "./view/BirthDataScreen";
+export {default} from './view/BirthDataScreen';

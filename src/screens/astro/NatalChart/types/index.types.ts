@@ -1,4 +1,4 @@
-import { NatalChart } from "@schemas/astro";
+import { NatalChart } from '@schemas/astro';
 
 export const BASE_PLANET_ORDER = [
   'sun',

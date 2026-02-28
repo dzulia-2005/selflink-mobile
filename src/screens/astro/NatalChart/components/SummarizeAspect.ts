@@ -1,4 +1,4 @@
-import { Aspect } from "@schemas/astro";
+import { Aspect } from '@schemas/astro';
 
 export const SummarizeAspect = (aspect: Aspect) => {
   const primary =

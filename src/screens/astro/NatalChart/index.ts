@@ -1,1 +1,1 @@
-export {default} from "./view/NatalChartScreen";
+export {default} from './view/NatalChartScreen';
