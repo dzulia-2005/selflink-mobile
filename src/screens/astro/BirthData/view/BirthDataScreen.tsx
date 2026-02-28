@@ -1,6 +1,8 @@
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useEffect, useMemo, useState } from 'react';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -14,12 +16,14 @@ import { BirthDataPayload } from '@schemas/astro';
 import { createOrUpdateNatalChart } from '@services/api/astro';
 import { useAuthStore } from '@store/authStore';
 import { useTheme } from '@theme';
-import React from 'react';
-import { createStyles } from '../styles/index.styles';
-import Content from '../components/content';
 
-const BirthDataScreen = () => {
+import Content from '../components/content';
+import { createStyles } from '../styles/index.styles';
+
+
+export const BirthDataScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<MentorStackParamList, 'BirthData'>>();
+  const { t } = useTranslation();
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
   const toast = useToast();
@@ -119,7 +123,7 @@ const BirthDataScreen = () => {
   };
 
   const handleConfirmMap = () => {
-    toast.push({ message: 'Birth location saved.', tone: 'info', duration: 2000 });
+    toast.push({ message: t('astro.birthData.toasts.locationSaved'), tone: 'info', duration: 2000 });
     setMapVisible(false);
   };
 
@@ -134,7 +138,7 @@ const BirthDataScreen = () => {
     try {
       await createOrUpdateNatalChart(payload);
       toast.push({
-        message: 'Using your saved birth data. Generating your chart…',
+        message: t('astro.birthData.toasts.usingSavedData'),
         tone: 'info',
       });
       navigation.navigate('NatalChart');
@@ -144,8 +148,8 @@ const BirthDataScreen = () => {
         message:
           error instanceof Error &&
           error.message.includes('No birth data stored in profile')
-            ? 'We need your birth details. Please fill them in.'
-            : 'Unable to use your saved birth data. Please review your details.',
+            ? t('astro.birthData.toasts.needBirthDetails')
+            : t('astro.birthData.toasts.unableToUseSavedData'),
         tone: 'error',
         duration: 6000,
       });
@@ -164,14 +168,14 @@ const BirthDataScreen = () => {
     const lonToSend = longitude;
     if (latToSend !== null && (latToSend < -90 || latToSend > 90)) {
       toast.push({
-        message: 'Latitude must be between -90 and 90 degrees.',
+        message: t('astro.birthData.validation.latitudeRange'),
         tone: 'error',
       });
       return;
     }
     if (lonToSend !== null && (lonToSend < -180 || lonToSend > 180)) {
       toast.push({
-        message: 'Longitude must be between -180 and 180 degrees.',
+        message: t('astro.birthData.validation.longitudeRange'),
         tone: 'error',
       });
       return;
@@ -192,13 +196,12 @@ const BirthDataScreen = () => {
     setIsSubmitting(true);
     try {
       await createOrUpdateNatalChart(payload);
-      toast.push({ message: 'Birth data saved. Generating your chart…', tone: 'info' });
+      toast.push({ message: t('astro.birthData.toasts.savedAndGenerating'), tone: 'info' });
       navigation.navigate('NatalChart');
     } catch (error) {
       console.error('Birth data submission failed', error);
       toast.push({
-        message:
-          'Unable to save birth data. Please confirm the date, time, city, and country.',
+        message: t('astro.birthData.toasts.unableToSave'),
         tone: 'error',
         duration: 6000,
       });

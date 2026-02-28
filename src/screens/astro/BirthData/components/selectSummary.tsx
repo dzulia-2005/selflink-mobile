@@ -1,9 +1,12 @@
-import React, { useMemo } from 'react';
-import { View,Text ,} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import React, { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { View,Text } from 'react-native';
+
 import { useTheme } from '@theme';
-import { SelectSummaryProp } from '../types/index.type';
+
 import { createStyles } from '../styles/index.styles';
+import { SelectSummaryProp } from '../types/index.type';
 
 
 const SelectSummary:React.FC<SelectSummaryProp> = ({
@@ -13,6 +16,7 @@ const SelectSummary:React.FC<SelectSummaryProp> = ({
     longitude,
 }) => {
     const { theme } = useTheme();
+    const { t } = useTranslation();
     const styles = useMemo(() => createStyles(theme), [theme]);
   return (
     <View style={styles.selectedSummary}>
@@ -23,9 +27,9 @@ const SelectSummary:React.FC<SelectSummaryProp> = ({
                     style={styles.selectedIcon}
                   />
                   <Text style={styles.selectedSummaryText}>
-                    Selected on map:{' '}
+                    {t('astro.birthData.form.selectedOnMap')}{' '}
                     {city && country
-                      ? `near ${city}, ${country}`
+                      ? t('astro.birthData.form.nearLocation', { city, country })
                       : `${latitude?.toFixed(4)}, ${longitude?.toFixed(4)}`}
                   </Text>
                 </View>
