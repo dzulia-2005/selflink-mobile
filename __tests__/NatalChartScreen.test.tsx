@@ -3,7 +3,7 @@ import React from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { NatalChart } from '@schemas/astro';
-import { NatalChartScreen } from '@screens/astro/NatalChartScreen';
+import { NatalChartScreen } from '@screens/astro/NatalChart/view/NatalChartScreen';
 import { getMyNatalChart } from '@services/api/astro';
 
 jest.mock('@services/api/astro', () => ({
