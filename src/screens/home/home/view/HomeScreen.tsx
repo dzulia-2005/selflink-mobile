@@ -91,7 +91,7 @@ export function HomeScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.hero}>
           <Image
-            source={require('../../assets/icon.png')}
+            source={require('../../../../../assets/icon.png')}
             style={styles.logo}
             resizeMode="contain"
           />

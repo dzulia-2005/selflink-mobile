@@ -1,5 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -18,6 +19,7 @@ import { registerUser } from '@services/api/auth';
 import { useTheme, type Theme } from '@theme';
 
 export function RegisterScreen() {
+  const { t } = useTranslation();
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
   const { signIn } = useAuth();
@@ -94,14 +96,14 @@ export function RegisterScreen() {
           <MetalPanel glow>
             <Text style={styles.panelTitle}>Sign Up</Text>
             <TextInput
-              placeholder="Display Name"
+              placeholder={t('registerLegacy.placeholders.displayName')}
               placeholderTextColor={theme.palette.silver}
               value={name}
               onChangeText={setName}
               style={styles.input}
             />
             <TextInput
-              placeholder="Handle"
+              placeholder={t('registerLegacy.placeholders.handle')}
               placeholderTextColor={theme.palette.silver}
               autoCapitalize="none"
               value={handle}
@@ -109,7 +111,7 @@ export function RegisterScreen() {
               style={styles.input}
             />
             <TextInput
-              placeholder="Email"
+              placeholder={t('registerLegacy.placeholders.email')}
               placeholderTextColor={theme.palette.silver}
               autoCapitalize="none"
               keyboardType="email-address"
@@ -118,7 +120,7 @@ export function RegisterScreen() {
               style={styles.input}
             />
             <TextInput
-              placeholder="Password"
+              placeholder={t('registerLegacy.placeholders.password')}
               placeholderTextColor={theme.palette.silver}
               secureTextEntry
               value={password}
@@ -126,7 +128,7 @@ export function RegisterScreen() {
               style={styles.input}
             />
             <TextInput
-              placeholder="Confirm Password"
+              placeholder={t('registerLegacy.placeholders.confirmPassword')}
               placeholderTextColor={theme.palette.silver}
               secureTextEntry
               value={confirmPassword}

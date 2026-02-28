@@ -1,7 +1,7 @@
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { RegisterScreen } from '@screens/RegisterScreen';
+import { RegisterScreen } from '@screens/register';
 
 const mockSignIn = jest.fn();
 const mockRegisterUser = jest.fn();

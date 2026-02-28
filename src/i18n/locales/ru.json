@@ -146,6 +146,13 @@
       "nameInput": "Имя",
       "bioInput": "Био",
       "birthPlaceInput": "Место рождения"
+    },
+    "search": {
+      "placeholder": "Поиск пользователей",
+      "empty": {
+        "noResults": "Ничего не найдено.",
+        "prompt": "Найдите пользователя, чтобы отправить SLC."
+      }
     }
   },
   "auth": {
@@ -211,6 +218,15 @@
       "passwordMismatch": "Пароли не совпадают"
     }
   },
+  "registerLegacy": {
+    "placeholders": {
+      "displayName": "Отображаемое имя",
+      "handle": "Ник",
+      "email": "Эл. почта",
+      "password": "Пароль",
+      "confirmPassword": "Подтвердите пароль"
+    }
+  },
   "app": {
     "preparingSelflink": "Подготовка SelfLink..."
   },
@@ -251,6 +267,11 @@
     "title": "Уведомления",
     "empty": {
       "body": "Пока вы всё просмотрели."
+    }
+  },
+  "community": {
+    "search": {
+      "placeholder": "Поиск по хэндлу, имени или намерению"
     }
   },
   "mentor": {
@@ -407,6 +428,9 @@
       "conversation": "Диалог",
       "noMessagesYet": "Сообщений пока нет.",
       "updatedAt": "Обновлено {{value}}"
+    },
+    "chat": {
+      "inputPlaceholder": "Сообщение..."
     },
     "accessibility": {
       "threadsList": "Список диалогов"
