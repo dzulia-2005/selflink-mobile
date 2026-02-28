@@ -29,17 +29,18 @@ import { ErrorView, LoadingView } from '@components/StateViews';
 import { MentorStackParamList } from '@navigation/types';
 import { NatalChart } from '@schemas/astro';
 import { getMyNatalChart } from '@services/api/astro';
-import { createStyles } from '../styles/index.styles';
 import { useTheme } from '@theme';
-import { BASE_PLANET_ORDER, NatalChartScreenProps, SIGN_ELEMENT } from '../types/index.types';
-import { SummarizeAspect } from '../components/SummarizeAspect';
+
 import { formatPlacement } from '../components/FormatPlacement';
-import { retrogradeTag } from '../components/RetrogradeTag';
-import { resolveHouseForLongitude } from '../components/ResolveHouseForLongitude';
 import NatalChartError from '../components/NatalChartError';
+import { resolveHouseForLongitude } from '../components/ResolveHouseForLongitude';
+import { retrogradeTag } from '../components/RetrogradeTag';
+import { SummarizeAspect } from '../components/SummarizeAspect';
+import { createStyles } from '../styles/index.styles';
+import { BASE_PLANET_ORDER, NatalChartScreenProps, SIGN_ELEMENT } from '../types/index.types';
 
 
-const NatalChartScreen:React.FC = ({
+export const NatalChartScreen: React.FC<NatalChartScreenProps> = ({
   prefetchedChart = null,
   skipAutoFetch = false,
 }: NatalChartScreenProps) => {
