@@ -1,7 +1,7 @@
 import { render } from '@testing-library/react-native';
 import React from 'react';
 
-import { NotificationsScreen } from '@screens/notifications/NotificationsScreen';
+import { NotificationsScreen } from '@screens/notifications';
 
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({

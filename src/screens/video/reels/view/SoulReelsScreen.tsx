@@ -1,6 +1,7 @@
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   Animated,
@@ -52,6 +53,7 @@ const useSafeIsFocused = () => {
 };
 
 export function SoulReelsScreen() {
+  const { t } = useTranslation();
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
   const navigation = useSafeNavigation<any>();
@@ -480,7 +482,7 @@ export function SoulReelsScreen() {
           <TextInput
             value={commentText}
             onChangeText={setCommentText}
-            placeholder="Add a comment…"
+            placeholder={t('post.comments.composer.placeholder')}
             placeholderTextColor={theme.reels.textSecondary}
             style={styles.composerInput}
             editable={!commentPending}

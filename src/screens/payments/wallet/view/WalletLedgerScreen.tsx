@@ -80,8 +80,8 @@ import {
   shouldCompleteStripePolling,
 } from '@utils/stripePolling';
 
-import { COIN_SPEND_REFERENCES } from '../constants/coinSpendReferences';
-import { getIapProductCatalog } from '../constants/iapProducts';
+import { COIN_SPEND_REFERENCES } from '../../../../constants/coinSpendReferences';
+import { getIapProductCatalog } from '../../../../constants/iapProducts';
 
 const LEDGER_PAGE_SIZE = 25;
 const PURCHASE_CURRENCIES = ['USD', 'EUR', 'GEL'] as const;

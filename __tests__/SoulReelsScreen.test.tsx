@@ -83,7 +83,7 @@ jest.mock('react-native/Libraries/Lists/FlatList', () => {
   ));
 });
 
-jest.mock('@screens/video/SoulReelsScreen', () => {
+jest.mock('@screens/video', () => {
   const ReactModule = require('react');
   const { View, Text } = require('react-native');
   const { useVideoFeedStore } = require('@store/videoFeedStore');
@@ -101,7 +101,7 @@ jest.mock('@screens/video/SoulReelsScreen', () => {
   return { SoulReelsScreen };
 });
 
-import { SoulReelsScreen } from '@screens/video/SoulReelsScreen';
+import { SoulReelsScreen } from '@screens/video';
 
 const renderScreen = () =>
   render(
