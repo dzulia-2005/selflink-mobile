@@ -1,5 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   FlatList,
@@ -17,6 +18,7 @@ import type { UserProfile } from '@services/api/user';
 import { useTheme, type Theme } from '@theme';
 
 export function CommunityScreen() {
+  const { t } = useTranslation();
   const { theme, resolved } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
   const {
@@ -81,7 +83,7 @@ export function CommunityScreen() {
               <TextInput
                 value={search}
                 onChangeText={setSearch}
-                placeholder="Search by handle, name, or intention"
+                placeholder={t('community.search.placeholder')}
                 placeholderTextColor={theme.palette.graphite}
                 style={styles.input}
                 autoCorrect={false}

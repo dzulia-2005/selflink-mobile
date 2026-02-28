@@ -15,6 +15,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { ListRenderItem } from 'react-native';
 import {
   ActivityIndicator,
@@ -112,6 +113,7 @@ const logTypingError = (label: string, error: unknown) => {
 };
 
 export function ChatScreen() {
+  const { t } = useTranslation();
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
   const navigation = useNavigation<any>();
@@ -714,7 +716,7 @@ export function ChatScreen() {
         </View>
         <TextInput
           style={styles.input}
-          placeholder="Message..."
+          placeholder={t('threads.chat.inputPlaceholder')}
           value={input}
           onChangeText={handleInputChange}
           onBlur={() => {
