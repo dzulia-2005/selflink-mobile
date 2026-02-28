@@ -2,7 +2,7 @@ import { render, waitFor } from '@testing-library/react-native';
 import React from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { PostDetailsScreen } from '@screens/feed/PostDetailsScreen';
+import { PostDetailsScreen } from '@screens/feed';
 
 jest.mock('react-native-markdown-display', () => 'Markdown');
 
