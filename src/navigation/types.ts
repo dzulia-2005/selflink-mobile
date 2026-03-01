@@ -25,7 +25,7 @@ export type FeedStackParamList = {
   PostDetails: { postId: string; post?: unknown } | undefined;
   CreatePost: undefined;
   SearchProfiles: undefined;
-  UserProfile: { userId: number };
+  UserProfile: { userId: number; accountKey?: string };
   SoulReels: undefined;
 };
 
@@ -37,7 +37,7 @@ export type MessagesStackParamList = {
 export type ProfileStackParamList = {
   ProfileHome: undefined;
   SearchProfiles: undefined;
-  UserProfile: { userId: number };
+  UserProfile: { userId: number; accountKey?: string };
   ProfileEdit: undefined;
   Payments: undefined;
   WalletLedger: undefined;

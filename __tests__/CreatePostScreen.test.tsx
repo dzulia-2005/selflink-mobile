@@ -2,7 +2,7 @@ import { fireEvent, render, waitFor } from '@testing-library/react-native';
 import React from 'react';
 import { Alert } from 'react-native';
 
-import { CreatePostScreen } from '@screens/feed/CreatePostScreen';
+import { CreatePostScreen } from '@screens/feed';
 
 jest.mock('react-native-markdown-display', () => 'Markdown');
 jest.mock('react-i18next', () => ({

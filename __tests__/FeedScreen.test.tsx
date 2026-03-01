@@ -130,7 +130,7 @@ jest.mock('@components/skeleton/SoulMatchSkeleton', () => {
   return { SoulMatchSkeleton: () => ReactModule.createElement(View) };
 });
 
-jest.mock('@screens/feed/FeedScreen', () => {
+jest.mock('@screens/feed', () => {
   const ReactModule = require('react');
   const { View, Text, TouchableOpacity } = require('react-native');
   const { useNavigation } = require('@react-navigation/native');
@@ -231,7 +231,7 @@ jest.mock('@screens/feed/FeedScreen', () => {
 });
 
 import type { FeedItem } from '@schemas/feed';
-import { FeedScreen } from '@screens/feed/FeedScreen';
+import { FeedScreen } from '@screens/feed';
 
 let mockState: any;
 const mockLoadFeed = jest.fn().mockResolvedValue(undefined);

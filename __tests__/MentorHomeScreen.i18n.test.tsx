@@ -1,7 +1,7 @@
 import { fireEvent, render } from '@testing-library/react-native';
 import React from 'react';
 
-import { MentorHomeScreen } from '@screens/mentor/MentorHomeScreen';
+import { MentorHomeScreen } from '@screens/mentor/home';
 
 const mockNavigate = jest.fn();
 

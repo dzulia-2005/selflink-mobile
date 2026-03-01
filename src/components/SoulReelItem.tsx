@@ -22,7 +22,7 @@ type Props = {
   onLike?: (postId: string | number) => void;
   onComment?: (post: Post) => void;
   onShare?: (post: Post) => void;
-  onProfile?: (userId: number) => void;
+  onProfile?: (userId: number, accountKey?: string) => void;
   index: number;
 };
 
@@ -232,7 +232,7 @@ function SoulReelItemComponent({
           <View style={styles.metaRow}>
             <Pressable
               style={styles.authorMeta}
-              onPress={() => onProfile?.(post.author.id)}
+              onPress={() => onProfile?.(post.author.id, (post.author as any).account_key)}
               hitSlop={10}
             >
               <UserAvatar uri={post.author.photo} label={post.author.name} size={32} />

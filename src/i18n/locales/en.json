@@ -146,6 +146,13 @@
       "nameInput": "Name",
       "bioInput": "Bio",
       "birthPlaceInput": "Birth place"
+    },
+    "search": {
+      "placeholder": "Search users",
+      "empty": {
+        "noResults": "No results.",
+        "prompt": "Search for a user to send SLC."
+      }
     }
   },
   "auth": {
@@ -211,6 +218,15 @@
       "passwordMismatch": "Passwords do not match"
     }
   },
+  "registerLegacy": {
+    "placeholders": {
+      "displayName": "Display Name",
+      "handle": "Handle",
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Confirm Password"
+    }
+  },
   "app": {
     "preparingSelflink": "Preparing SelfLink..."
   },
@@ -251,6 +267,11 @@
     "title": "Notifications",
     "empty": {
       "body": "You are all caught up for now."
+    }
+  },
+  "community": {
+    "search": {
+      "placeholder": "Search by handle, name, or intention"
     }
   },
   "mentor": {
@@ -407,6 +428,9 @@
       "conversation": "Conversation",
       "noMessagesYet": "No messages yet.",
       "updatedAt": "Updated {{value}}"
+    },
+    "chat": {
+      "inputPlaceholder": "Message..."
     },
     "accessibility": {
       "threadsList": "Threads list"

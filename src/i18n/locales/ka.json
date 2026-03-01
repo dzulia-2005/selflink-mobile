@@ -146,6 +146,13 @@
       "nameInput": "სახელი",
       "bioInput": "ბიო",
       "birthPlaceInput": "დაბადების ადგილი"
+    },
+    "search": {
+      "placeholder": "მომხმარებლების ძიება",
+      "empty": {
+        "noResults": "შედეგები ვერ მოიძებნა.",
+        "prompt": "SLC-ის გასაგზავნად მოძებნეთ მომხმარებელი."
+      }
     }
   },
   "auth": {
@@ -211,6 +218,15 @@
       "passwordMismatch": "პაროლები არ ემთხვევა"
     }
   },
+  "registerLegacy": {
+    "placeholders": {
+      "displayName": "საჩვენებელი სახელი",
+      "handle": "ნიკი",
+      "email": "ელფოსტა",
+      "password": "პაროლი",
+      "confirmPassword": "გაიმეორე პაროლი"
+    }
+  },
   "app": {
     "preparingSelflink": "SelfLink მზადდება..."
   },
@@ -251,6 +267,11 @@
     "title": "შეტყობინებები",
     "empty": {
       "body": "ამ დროისთვის ყველაფერი ნანახი გაქვთ."
+    }
+  },
+  "community": {
+    "search": {
+      "placeholder": "ძებნა ჰენდლით, სახელით ან განზრახვით"
     }
   },
   "mentor": {
@@ -407,6 +428,9 @@
       "conversation": "საუბარი",
       "noMessagesYet": "შეტყობინებები ჯერ არ არის.",
       "updatedAt": "განახლდა {{value}}"
+    },
+    "chat": {
+      "inputPlaceholder": "შეტყობინება..."
     },
     "accessibility": {
       "threadsList": "თრედების სია"
