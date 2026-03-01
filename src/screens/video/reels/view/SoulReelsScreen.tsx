@@ -299,7 +299,9 @@ export function SoulReelsScreen() {
         onLike={handleLike}
         onComment={handleComment}
         onShare={handleShare}
-        onProfile={(userId) => navigation?.navigate?.('UserProfile', { userId })}
+        onProfile={(userId, accountKey) =>
+          navigation?.navigate?.('UserProfile', { userId, accountKey })
+        }
         index={index}
       />
     ),

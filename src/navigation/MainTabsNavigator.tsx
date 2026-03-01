@@ -115,12 +115,7 @@ function MessagesChatHeaderLeft() {
   const { theme } = useTheme();
 
   const handlePress = () => {
-    if (navigation.canGoBack()) {
-      navigation.goBack();
-      return;
-    }
-
-    navigation.navigate('Messages', { screen: 'Threads' });
+    navigation.goBack();
   };
 
   return (

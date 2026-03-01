@@ -22,6 +22,7 @@ import { useTheme, type Theme } from '@theme';
 
 interface RouteParams {
   userId: number;
+  accountKey?: string;
 }
 
 type ProfileRoute = RouteProp<Record<'UserProfile', RouteParams>, 'UserProfile'>;
@@ -47,6 +48,7 @@ export function UserProfileScreen() {
   const currentUserId = useAuthStore((state) => state.currentUser?.id);
   const mergeThread = useMessagingStore((state) => state.mergeThread);
   const userId = route.params.userId;
+  const routeAccountKey = route.params.accountKey;
 
   useEffect(() => {
     let isMounted = true;
@@ -150,18 +152,20 @@ export function UserProfileScreen() {
     }
   }, [isOwnProfile, mergeThread, openChatScreen, profile]);
 
+  const displayedRecipientId = profile?.account_key ?? routeAccountKey ?? null;
+
   const handleCopyRecipientId = useCallback(async () => {
-    if (!profile?.account_key) {
+    if (!displayedRecipientId) {
       return;
     }
     try {
-      await Clipboard.setStringAsync(profile.account_key);
+      await Clipboard.setStringAsync(displayedRecipientId);
       toast.push({ message: 'Copied to clipboard', tone: 'info', duration: 1500 });
     } catch (err) {
       console.warn('UserProfile: failed to copy recipient id', err);
       toast.push({ message: 'Unable to copy right now.', tone: 'error' });
     }
-  }, [profile?.account_key, toast]);
+  }, [displayedRecipientId, toast]);
 
   if (loading) {
     return (
@@ -179,7 +183,7 @@ export function UserProfileScreen() {
     );
   }
 
-  const hasRecipientId = Boolean(profile.account_key);
+  const hasRecipientId = Boolean(displayedRecipientId);
 
   return (
     <View style={styles.container}>
@@ -216,7 +220,7 @@ export function UserProfileScreen() {
           <Text style={styles.recipientLabel}>Recipient ID (SLC)</Text>
           <Text style={styles.recipientValue}>
             {hasRecipientId
-              ? formatAccountKey(profile.account_key as string)
+              ? formatAccountKey(displayedRecipientId as string)
               : 'Not available'}
           </Text>
           {hasRecipientId ? (

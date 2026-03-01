@@ -112,7 +112,12 @@ export function SearchProfilesScreen() {
       <View style={styles.resultRow}>
         <TouchableOpacity
           style={styles.userInfo}
-          onPress={() => navigation.navigate('UserProfile', { userId: item.id })}
+          onPress={() =>
+            navigation.navigate('UserProfile', {
+              userId: item.id,
+              accountKey: item.account_key,
+            })
+          }
         >
           <UserAvatar uri={item.photo} label={item.name || item.handle} size={40} />
           <View style={styles.resultMeta}>

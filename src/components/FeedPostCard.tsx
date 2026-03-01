@@ -209,8 +209,11 @@ function FeedPostCardComponent({
   }, [handleLikeToggle, handleOpenDetails, post.liked, triggerHeart]);
 
   const handleOpenProfile = useCallback(() => {
-    navigation.navigate('UserProfile', { userId: post.author.id });
-  }, [navigation, post.author.id]);
+    navigation.navigate('UserProfile', {
+      userId: post.author.id,
+      accountKey: (post.author as any).account_key,
+    });
+  }, [navigation, post.author]);
 
   const showGiftPreview = giftPreviews.length > 0;
   const authorHandleLabel = useMemo(() => `@${post.author.handle}`, [post.author.handle]);

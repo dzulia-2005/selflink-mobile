@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import {
+  CommonActions,
   RouteProp,
   useFocusEffect,
   useIsFocused,
@@ -245,6 +246,21 @@ export function ChatScreen() {
       headerRight: headerProfileButton,
     });
   }, [headerProfileButton, navigation, otherUserId]);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('beforeRemove', (event: any) => {
+      const action = event?.data?.action;
+      const isNavigateToThreads =
+        action?.type === 'NAVIGATE' && action?.payload?.name === 'Threads';
+      if (isNavigateToThreads) {
+        return;
+      }
+
+      event.preventDefault();
+      navigation.dispatch(CommonActions.navigate('Threads'));
+    });
+    return unsubscribe;
+  }, [navigation]);
 
   useFocusEffect(
     useCallback(() => {

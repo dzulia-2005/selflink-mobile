@@ -24,6 +24,22 @@ export interface UserSummary {
   posts_count?: number;
 }
 
+const resolveAccountKey = (input: unknown): string | undefined => {
+  if (!input || typeof input !== 'object') {
+    return undefined;
+  }
+  const source = input as Record<string, unknown>;
+  const candidate =
+    source.account_key ??
+    source.accountKey ??
+    source.recipient_id ??
+    source.recipient_key ??
+    source.receiver_account_key ??
+    source.wallet_account_key ??
+    (source.wallet as Record<string, unknown> | undefined)?.account_key;
+  return typeof candidate === 'string' && candidate.trim() ? candidate : undefined;
+};
+
 export async function listUsers(query?: string): Promise<User[]> {
   const url = query ? `/users/?q=${encodeURIComponent(query)}` : '/users/';
   const { data } = await apiClient.get<User[]>(url);
@@ -43,7 +59,7 @@ const mapUser = (user: User | UserSummary): UserSummary => {
     photo: fullUser.photo ?? summaryLike.photo ?? summaryLike.avatar_url,
     avatar_url: summaryLike.avatar_url ?? fullUser.photo ?? summaryLike.photo,
     bio: fullUser.bio ?? summaryLike.bio,
-    account_key: (summaryLike as any).account_key,
+    account_key: resolveAccountKey(summaryLike),
     is_following: Boolean((summaryLike as any).is_following),
     followers_count: (summaryLike as any).followers_count ?? 0,
     following_count: (summaryLike as any).following_count ?? 0,
@@ -53,7 +69,31 @@ const mapUser = (user: User | UserSummary): UserSummary => {
 
 export async function getUserProfile(id: number | string): Promise<UserSummary> {
   const { data } = await apiClient.get<User>(`/users/${id}/`);
-  return mapUser(data);
+  const mapped = mapUser(data);
+  if (mapped.account_key) {
+    return mapped;
+  }
+
+  const fallbackQuery = mapped.handle ?? mapped.username ?? mapped.name;
+  if (!fallbackQuery) {
+    return mapped;
+  }
+
+  try {
+    const matches = await searchUsers(fallbackQuery, 10);
+    const numericId = Number(mapped.id);
+    const match = matches.find((candidate) => Number(candidate.id) === numericId);
+    if (match?.account_key) {
+      return {
+        ...mapped,
+        account_key: match.account_key,
+      };
+    }
+  } catch (error) {
+    console.warn('usersApi: fallback recipient lookup failed', error);
+  }
+
+  return mapped;
 }
 
 export async function getUserById(id: number): Promise<User> {
